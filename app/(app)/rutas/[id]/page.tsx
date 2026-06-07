@@ -4,8 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getUploaderLabel, parseRutaRow } from "@/lib/rutas/helpers";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
+import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
 import { DeleteRutaButton } from "@/components/rutas/delete-ruta-button";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type RutaDetailPageProps = {
@@ -38,7 +38,7 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
     user?.email ?? null,
   );
 
-  if (!ruta.geojson) {
+  if (!ruta.geojson || !ruta.bbox) {
     notFound();
   }
 
@@ -90,15 +90,16 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
         />
       </Card>
 
-      <div className="space-y-3">
-        <Button type="button" variant="secondary" fullWidth disabled>
-          Descargar para offline (etapa 3)
-        </Button>
+      <RutaOfflineActions
+        rutaId={ruta.id}
+        nombre={ruta.nombre}
+        geojson={ruta.geojson}
+        bbox={ruta.bbox}
+      />
 
-        {isOwner ? (
-          <DeleteRutaButton rutaId={ruta.id} userId={ruta.user_id} />
-        ) : null}
-      </div>
+      {isOwner ? (
+        <DeleteRutaButton rutaId={ruta.id} userId={ruta.user_id} />
+      ) : null}
     </div>
   );
 }
