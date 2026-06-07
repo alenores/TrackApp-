@@ -3,21 +3,27 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export type UpdateProfileNameResult =
-  | { success: true }
+export type UpdateProfileResult =
+  | { success: true; emailConfirmationRequired: boolean }
   | { success: false; error: string };
 
-export async function updateProfileName(
-  nombre: string,
-): Promise<UpdateProfileNameResult> {
-  const trimmed = nombre.trim();
+export async function updateProfile(input: {
+  nombre: string;
+  email: string;
+}): Promise<UpdateProfileResult> {
+  const trimmedNombre = input.nombre.trim();
+  const trimmedEmail = input.email.trim().toLowerCase();
 
-  if (!trimmed) {
+  if (!trimmedNombre) {
     return { success: false, error: "El nombre no puede estar vacío." };
   }
 
-  if (trimmed.length > 80) {
+  if (trimmedNombre.length > 80) {
     return { success: false, error: "El nombre es demasiado largo." };
+  }
+
+  if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    return { success: false, error: "Ingresá un email válido." };
   }
 
   const supabase = await createClient();
@@ -30,8 +36,12 @@ export async function updateProfileName(
     return { success: false, error: "Tenés que iniciar sesión." };
   }
 
+  const currentEmail = (user.email ?? "").toLowerCase();
+  const emailChanged = trimmedEmail !== currentEmail;
+
   const { error } = await supabase.auth.updateUser({
-    data: { nombre: trimmed },
+    ...(emailChanged ? { email: trimmedEmail } : {}),
+    data: { nombre: trimmedNombre },
   });
 
   if (error) {
@@ -41,5 +51,5 @@ export async function updateProfileName(
   revalidatePath("/", "layout");
   revalidatePath("/perfil");
 
-  return { success: true };
+  return { success: true, emailConfirmationRequired: emailChanged };
 }
