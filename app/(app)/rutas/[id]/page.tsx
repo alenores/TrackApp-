@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserDisplayName } from "@/lib/auth/profile";
 import { getUploaderLabel, parseRutaRow } from "@/lib/rutas/helpers";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
@@ -35,7 +36,7 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
   const uploaderLabel = getUploaderLabel(
     ruta,
     user?.id ?? null,
-    user?.email ?? null,
+    getUserDisplayName(user),
   );
 
   if (!ruta.geojson || !ruta.bbox) {

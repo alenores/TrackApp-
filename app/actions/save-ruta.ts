@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { FeatureCollection } from "geojson";
+import { getUserDisplayName } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 import { formatSupabaseError } from "@/lib/supabase/errors";
 import { getGpxStoragePath, type RouteBbox } from "@/lib/gpx";
@@ -48,6 +49,7 @@ export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
     geojson: input.geojson,
     bbox: input.bbox,
     gpx_url: null,
+    subido_por_nombre: getUserDisplayName(user),
   });
 
   if (insertError) {

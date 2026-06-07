@@ -12,21 +12,20 @@ const SWIPE_MAX_PX = 112;
 type RutaCardProps = {
   ruta: Ruta;
   uploaderLabel: string;
-  selected: boolean;
-  onSelect: () => void;
 };
 
-export function RutaCard({
-  ruta,
-  uploaderLabel,
-  selected,
-  onSelect,
-}: RutaCardProps) {
+export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
   const router = useRouter();
+  const detailHref = `/rutas/${ruta.id}`;
   const startX = useRef(0);
   const startY = useRef(0);
   const swiping = useRef(false);
+  const didSwipe = useRef(false);
   const [offsetX, setOffsetX] = useState(0);
+
+  const goToDetail = () => {
+    router.push(detailHref);
+  };
 
   const resetSwipe = () => {
     setOffsetX(0);
@@ -34,16 +33,15 @@ export function RutaCard({
   };
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!selected) return;
-
     const touch = event.touches[0];
     startX.current = touch.clientX;
     startY.current = touch.clientY;
     swiping.current = true;
+    didSwipe.current = false;
   };
 
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!selected || !swiping.current) return;
+    if (!swiping.current) return;
 
     const touch = event.touches[0];
     const deltaX = touch.clientX - startX.current;
@@ -54,44 +52,41 @@ export function RutaCard({
       return;
     }
 
-    if (deltaX > 8) {
-      event.preventDefault();
-      setOffsetX(Math.min(deltaX, SWIPE_MAX_PX));
+    if (deltaX < -8) {
+      setOffsetX(Math.max(deltaX, -SWIPE_MAX_PX));
     }
   };
 
   const handleTouchEnd = () => {
-    if (!selected) return;
-
-    if (offsetX >= SWIPE_THRESHOLD_PX) {
-      router.push(`/rutas/${ruta.id}`);
+    if (offsetX <= -SWIPE_THRESHOLD_PX) {
+      didSwipe.current = true;
+      goToDetail();
     }
 
     resetSwipe();
   };
 
   const handleClick = () => {
-    if (offsetX > 8) return;
-    onSelect();
+    if (didSwipe.current) {
+      didSwipe.current = false;
+      return;
+    }
+
+    goToDetail();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onSelect();
-    }
-
-    if (selected && event.key === "ArrowRight") {
-      router.push(`/rutas/${ruta.id}`);
+      goToDetail();
     }
   };
 
   return (
     <div
-      role="button"
+      role="link"
       tabIndex={0}
-      aria-pressed={selected}
-      aria-label={`Ruta ${ruta.nombre}`}
+      aria-label={`Ver ruta ${ruta.nombre}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
@@ -99,12 +94,7 @@ export function RutaCard({
       onTouchEnd={handleTouchEnd}
       onTouchCancel={resetSwipe}
       style={{ transform: offsetX ? `translateX(${offsetX}px)` : undefined }}
-      className={[
-        "rounded-2xl transition-[transform,box-shadow] duration-150 ease-out touch-pan-y",
-        selected
-          ? "ring-2 ring-emerald-500/70 ring-offset-2 ring-offset-slate-950"
-          : "active:scale-[0.99]",
-      ].join(" ")}
+      className="rounded-2xl transition-[transform] duration-150 ease-out touch-pan-y active:scale-[0.99]"
     >
       <Card className="space-y-3">
         <div className="space-y-1">
@@ -132,10 +122,6 @@ export function RutaCard({
             </dd>
           </div>
         </dl>
-
-        {selected ? (
-          <p className="text-xs text-muted">Deslizá a la derecha para ver la ruta</p>
-        ) : null}
       </Card>
     </div>
   );

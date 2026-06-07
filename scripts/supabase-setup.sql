@@ -70,3 +70,8 @@ CREATE POLICY "descargas_delete_own"
   FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
+
+-- ─── 4. Nombre del autor en rutas ───
+
+ALTER TABLE public.rutas
+  ADD COLUMN IF NOT EXISTS subido_por_nombre text;

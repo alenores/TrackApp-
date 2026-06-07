@@ -14,6 +14,7 @@ export type Ruta = {
   gpx_url: string | null;
   geojson: GeoJSON.FeatureCollection | null;
   bbox: RouteBbox | null;
+  subido_por_nombre: string | null;
   created_at: string;
 };
 

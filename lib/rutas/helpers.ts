@@ -9,6 +9,10 @@ export function getUploaderLabel(
     return currentUserName ? `${currentUserName} (vos)` : "Vos";
   }
 
+  if (ruta.subido_por_nombre) {
+    return ruta.subido_por_nombre;
+  }
+
   return `Usuario · ${ruta.user_id.slice(0, 8)}`;
 }
 
@@ -24,6 +28,8 @@ export function parseRutaRow(row: Record<string, unknown>): Ruta {
     gpx_url: row.gpx_url == null ? null : String(row.gpx_url),
     geojson: row.geojson as Ruta["geojson"],
     bbox: row.bbox as Ruta["bbox"],
+    subido_por_nombre:
+      row.subido_por_nombre == null ? null : String(row.subido_por_nombre),
     created_at: String(row.created_at),
   };
 }

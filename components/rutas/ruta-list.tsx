@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import type { Ruta } from "@/types/database";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { RutaCard } from "@/components/rutas/ruta-card";
@@ -22,12 +19,6 @@ export function RutaList({
   title = "Rutas disponibles",
   showNewRouteFab = false,
 }: RutaListProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const handleSelect = (rutaId: string) => {
-    setSelectedId((current) => (current === rutaId ? null : rutaId));
-  };
-
   return (
     <div className={`space-y-4 ${showNewRouteFab ? "pb-16" : ""}`}>
       <div>
@@ -58,8 +49,6 @@ export function RutaList({
                   currentUserId,
                   currentUserName,
                 )}
-                selected={selectedId === ruta.id}
-                onSelect={() => handleSelect(ruta.id)}
               />
             </li>
           ))}
