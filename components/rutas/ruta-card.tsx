@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import type { Ruta } from "@/types/database";
+import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { Card } from "@/components/ui/card";
 
@@ -24,7 +24,7 @@ function applySwipeOffset(deltaX: number, cardWidth: number): number {
 }
 
 type RutaCardProps = {
-  ruta: Ruta;
+  ruta: RutaListItem;
   uploaderLabel: string;
 };
 

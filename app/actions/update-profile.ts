@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
 export type UpdateProfileResult =
@@ -26,16 +27,13 @@ export async function updateProfile(input: {
     return { success: false, error: "Ingresá un email válido." };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
-  if (authError || !user) {
+  if (!user) {
     return { success: false, error: "Tenés que iniciar sesión." };
   }
 
+  const supabase = await createClient();
   const currentEmail = (user.email ?? "").toLowerCase();
   const emailChanged = trimmedEmail !== currentEmail;
 

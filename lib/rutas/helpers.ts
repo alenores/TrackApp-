@@ -1,7 +1,9 @@
-import type { Ruta } from "@/types/database";
+import type { Ruta, RutaListItem } from "@/types/database";
+
+type RutaUploaderSource = Pick<RutaListItem, "user_id" | "subido_por_nombre">;
 
 export function getUploaderLabel(
-  ruta: Ruta,
+  ruta: RutaUploaderSource,
   currentUserId: string | null,
   currentUserName: string | null,
 ): string {
@@ -14,6 +16,21 @@ export function getUploaderLabel(
   }
 
   return `Usuario · ${ruta.user_id.slice(0, 8)}`;
+}
+
+export function parseRutaListItem(row: Record<string, unknown>): RutaListItem {
+  return {
+    id: String(row.id),
+    user_id: String(row.user_id),
+    nombre: String(row.nombre),
+    descripcion:
+      row.descripcion == null ? null : String(row.descripcion),
+    distancia_km:
+      row.distancia_km == null ? null : Number(row.distancia_km),
+    subido_por_nombre:
+      row.subido_por_nombre == null ? null : String(row.subido_por_nombre),
+    created_at: String(row.created_at),
+  };
 }
 
 export function parseRutaRow(row: Record<string, unknown>): Ruta {

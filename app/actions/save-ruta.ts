@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { FeatureCollection } from "geojson";
 import { getUserDisplayName } from "@/lib/auth/profile";
+import { getAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { formatSupabaseError } from "@/lib/supabase/errors";
 import { getGpxStoragePath, type RouteBbox } from "@/lib/gpx";
@@ -25,12 +26,9 @@ export type SaveRutaResult =
 export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
-  if (authError || !user?.id) {
+  if (!user?.id) {
     return {
       success: false,
       error: "Tenés que iniciar sesión para guardar una ruta.",

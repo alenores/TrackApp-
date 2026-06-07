@@ -1,11 +1,11 @@
-import type { Ruta } from "@/types/database";
+import type { RutaListItem } from "@/types/database";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { RutaCard } from "@/components/rutas/ruta-card";
 import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 import { Card } from "@/components/ui/card";
 
 type RutaListProps = {
-  rutas: Ruta[];
+  rutas: RutaListItem[];
   currentUserId: string | null;
   currentUserName: string | null;
   title?: string;

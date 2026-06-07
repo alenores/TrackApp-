@@ -5,6 +5,16 @@ export type RouteBbox = {
   west: number;
 };
 
+export type RutaListItem = {
+  id: string;
+  user_id: string;
+  nombre: string;
+  descripcion: string | null;
+  distancia_km: number | null;
+  subido_por_nombre: string | null;
+  created_at: string;
+};
+
 export type Ruta = {
   id: string;
   user_id: string;
