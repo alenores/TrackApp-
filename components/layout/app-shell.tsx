@@ -26,7 +26,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
   };
 
   return (
-    <div className="flex min-h-dvh bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="flex h-full min-h-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Sidebar desktop */}
       <aside className="hidden w-64 shrink-0 border-r border-border bg-surface/80 lg:block">
         <div className="sticky top-0 flex h-dvh flex-col">
@@ -61,14 +61,14 @@ export function AppShell({ userEmail, children }: AppShellProps) {
         </div>
       ) : null}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Header
           userEmail={userEmail}
           onMenuToggle={() => setSidebarOpen(true)}
           onLogout={() => void handleLogout()}
           loggingOut={loggingOut}
         />
-        <main className="flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 sm:px-4 sm:pt-4">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </main>
       </div>

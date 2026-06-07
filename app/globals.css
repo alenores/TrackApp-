@@ -34,15 +34,34 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-.leaflet-container {
-  z-index: 0;
-  font-family: inherit;
+html.pwa-standalone-zoom-lock {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
-html.pwa-standalone-zoom-lock,
 html.pwa-standalone-zoom-lock body {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+@media (display-mode: standalone) {
+  html.pwa-standalone-zoom-lock,
+  html.pwa-standalone-zoom-lock body {
+    position: fixed;
+    inset: 0;
+  }
+}
+
+.leaflet-container {
+  z-index: 0;
+  font-family: inherit;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 @keyframes pulse-bar {

@@ -1,7 +1,28 @@
+/** Selector de mapas Leaflet (pan/zoom propio). */
+export const INTERACTIVE_MAP_SELECTOR = ".leaflet-container";
+
 /** Clase en `<html>` para CSS de bloqueo si el media query no aplica. */
 export const STANDALONE_ZOOM_LOCK_CLASS = "pwa-standalone-zoom-lock";
 
 const DOUBLE_TAP_MS = 300;
+
+function isInsideInteractiveMap(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return target.closest(INTERACTIVE_MAP_SELECTOR) !== null;
+}
+
+function isMultiTouchOnInteractiveMap(event: TouchEvent): boolean {
+  for (let i = 0; i < event.touches.length; i++) {
+    const { clientX, clientY } = event.touches[i];
+    const el = document.elementFromPoint(clientX, clientY);
+    if (isInsideInteractiveMap(el)) return true;
+  }
+  return false;
+}
+
+function shouldBlockViewportPinch(event: TouchEvent): boolean {
+  return event.touches.length >= 2 && !isMultiTouchOnInteractiveMap(event);
+}
 
 /** iPhone, iPod, iPad (incl. iPadOS con UA de escritorio). */
 export function isIosTouchDevice(): boolean {
@@ -51,9 +72,8 @@ export function mountViewportZoomPrevention(): () => void {
   }
 
   const blockMultiTouch = (event: TouchEvent) => {
-    if (event.touches.length >= 2) {
-      event.preventDefault();
-    }
+    if (!shouldBlockViewportPinch(event)) return;
+    event.preventDefault();
   };
 
   add(document, "touchstart", blockMultiTouch as EventListener, CAPTURE_PASSIVE_FALSE);
@@ -62,6 +82,7 @@ export function mountViewportZoomPrevention(): () => void {
   let lastTouchEnd = 0;
 
   const blockDoubleTap = (event: TouchEvent) => {
+    if (isInsideInteractiveMap(event.target)) return;
     const now = Date.now();
     if (now - lastTouchEnd <= DOUBLE_TAP_MS) {
       event.preventDefault();

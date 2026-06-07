@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
+import { BuildStamp } from "@/components/layout/build-stamp";
 import { ServiceWorkerRegister } from "./sw-register";
 import "./globals.css";
 
@@ -37,10 +38,6 @@ export const viewport: Viewport = {
   themeColor: "#1b4332",
 };
 
-const buildVersion =
-  process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local-dev";
-const SHOW_BUILD_VERSION_BADGE = false;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased dark`}
     >
       <head>
         <meta name="application-name" content="TrackApp" />
@@ -59,19 +56,15 @@ export default function RootLayout({
         <meta name="theme-color" content="#1b4332" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true){localStorage.setItem("pwa-installed-v1","1");localStorage.setItem("pwa-ever-standalone-v1","1");}}catch(e){}})();`,
+            __html: `(function(){try{if(window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true){document.documentElement.classList.add("pwa-standalone");localStorage.setItem("pwa-installed-v1","1");localStorage.setItem("pwa-ever-standalone-v1","1");}}catch(e){}})();`,
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="fixed inset-0 flex min-h-0 flex-col overflow-hidden">
         <PreventViewportZoom />
         <ServiceWorkerRegister />
-        {children}
-        {SHOW_BUILD_VERSION_BADGE ? (
-          <div className="pointer-events-none fixed bottom-3 left-3 z-50 rounded-md bg-black/70 px-2 py-1 text-[10px] font-mono text-white">
-            version: {buildVersion}
-          </div>
-        ) : null}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+        <BuildStamp />
       </body>
     </html>
   );
