@@ -8,11 +8,12 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 
 type AppShellProps = {
+  userName: string;
   userEmail: string;
   children: React.ReactNode;
 };
 
-export function AppShell({ userEmail, children }: AppShellProps) {
+export function AppShell({ userName, userEmail, children }: AppShellProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -25,22 +26,27 @@ export function AppShell({ userEmail, children }: AppShellProps) {
     router.refresh();
   };
 
+  const logoutHandler = () => {
+    void handleLogout();
+  };
+
   return (
     <div className="flex h-full min-h-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Sidebar desktop */}
       <aside className="hidden w-64 shrink-0 border-r border-border bg-surface/80 lg:block">
-        <div className="sticky top-0 flex h-dvh flex-col">
+        <div className="flex h-full min-h-0 flex-col">
           <div className="border-b border-border px-4 py-5">
             <Link href="/" className="block">
               <p className="text-lg font-bold text-foreground">TrackApp</p>
             </Link>
-            <p className="mt-1 truncate text-xs text-muted">{userEmail}</p>
+            <p className="mt-1 truncate text-sm font-medium text-foreground">
+              {userName}
+            </p>
+            <p className="truncate text-xs text-muted">{userEmail}</p>
           </div>
-          <Sidebar />
+          <Sidebar onLogout={logoutHandler} loggingOut={loggingOut} />
         </div>
       </aside>
 
-      {/* Sidebar mobile overlay */}
       {sidebarOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
@@ -50,24 +56,29 @@ export function AppShell({ userEmail, children }: AppShellProps) {
             onClick={() => setSidebarOpen(false)}
           />
           <aside className="relative z-50 h-full w-[min(18rem,85vw)] border-r border-border bg-surface shadow-xl">
-            <div className="flex h-full flex-col">
+            <div className="flex h-full min-h-0 flex-col">
               <div className="border-b border-border px-4 py-4">
                 <p className="text-lg font-bold text-foreground">TrackApp</p>
-                <p className="mt-1 truncate text-xs text-muted">{userEmail}</p>
+                <p className="mt-1 truncate text-sm font-medium text-foreground">
+                  {userName}
+                </p>
+                <p className="truncate text-xs text-muted">{userEmail}</p>
               </div>
-              <Sidebar onNavigate={() => setSidebarOpen(false)} />
+              <Sidebar
+                onNavigate={() => setSidebarOpen(false)}
+                onLogout={() => {
+                  setSidebarOpen(false);
+                  logoutHandler();
+                }}
+                loggingOut={loggingOut}
+              />
             </div>
           </aside>
         </div>
       ) : null}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <Header
-          userEmail={userEmail}
-          onMenuToggle={() => setSidebarOpen(true)}
-          onLogout={() => void handleLogout()}
-          loggingOut={loggingOut}
-        />
+        <Header onMenuToggle={() => setSidebarOpen(true)} />
         <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </main>

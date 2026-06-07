@@ -13,6 +13,7 @@ export function AuthForm() {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -43,9 +44,20 @@ export function AuthForm() {
       return;
     }
 
+    if (!nombre.trim()) {
+      setError("El nombre es obligatorio.");
+      setLoading(false);
+      return;
+    }
+
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: {
+        data: {
+          nombre: nombre.trim(),
+        },
+      },
     });
 
     if (signUpError) {
@@ -108,6 +120,17 @@ export function AuthForm() {
       </div>
 
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
+        {mode === "register" ? (
+          <Input
+            label="Nombre"
+            type="text"
+            autoComplete="name"
+            required
+            value={nombre}
+            onChange={(event) => setNombre(event.target.value)}
+            placeholder="Tu nombre"
+          />
+        ) : null}
         <Input
           label="Email"
           type="email"

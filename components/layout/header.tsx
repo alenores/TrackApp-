@@ -1,20 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
 type HeaderProps = {
-  userEmail: string;
   onMenuToggle: () => void;
-  onLogout: () => void;
-  loggingOut: boolean;
 };
 
-export function Header({
-  userEmail,
-  onMenuToggle,
-  onLogout,
-  loggingOut,
-}: HeaderProps) {
+export function Header({ onMenuToggle }: HeaderProps) {
   return (
     <header className="z-30 shrink-0 border-b border-border bg-background">
       <div className="flex min-h-14 items-center gap-3 px-3 py-2 sm:px-4">
@@ -38,17 +28,7 @@ export function Header({
           <p className="truncate text-base font-bold tracking-tight text-foreground">
             TrackApp
           </p>
-          <p className="truncate text-xs text-muted">{userEmail}</p>
         </div>
-
-        <Button
-          variant="ghost"
-          onClick={onLogout}
-          disabled={loggingOut}
-          className="min-h-11 px-3 text-sm"
-        >
-          {loggingOut ? "Saliendo…" : "Salir"}
-        </Button>
       </div>
     </header>
   );

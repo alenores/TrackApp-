@@ -3,10 +3,10 @@ import type { Ruta } from "@/types/database";
 export function getUploaderLabel(
   ruta: Ruta,
   currentUserId: string | null,
-  currentUserEmail: string | null,
+  currentUserName: string | null,
 ): string {
   if (currentUserId && ruta.user_id === currentUserId) {
-    return currentUserEmail ? `${currentUserEmail} (vos)` : "Vos";
+    return currentUserName ? `${currentUserName} (vos)` : "Vos";
   }
 
   return `Usuario · ${ruta.user_id.slice(0, 8)}`;

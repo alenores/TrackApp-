@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 type NavItem = {
   href: string;
@@ -44,36 +45,58 @@ const navItems: NavItem[] = [
 
 type SidebarProps = {
   onNavigate?: () => void;
+  onLogout?: () => void;
+  loggingOut?: boolean;
 };
 
-export function Sidebar({ onNavigate }: SidebarProps) {
+export function Sidebar({ onNavigate, onLogout, loggingOut = false }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navegación principal" className="flex h-full flex-col gap-1 p-3">
+    <nav
+      aria-label="Navegación principal"
+      className="flex h-full min-h-0 flex-col gap-1 p-3"
+    >
       <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
         Menú
       </p>
-      {navItems.map((item) => {
-        const isActive = pathname.startsWith(item.href);
+      <div className="flex flex-col gap-1">
+        {navItems.map((item) => {
+          const isActive = pathname.startsWith(item.href);
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={[
-              "flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-medium transition-colors",
-              isActive
-                ? "bg-emerald-950/60 text-emerald-200 ring-1 ring-emerald-800/50"
-                : "text-slate-300 hover:bg-surface-elevated hover:text-foreground",
-            ].join(" ")}
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={[
+                "flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-medium transition-colors",
+                isActive
+                  ? "bg-emerald-950/60 text-emerald-200 ring-1 ring-emerald-800/50"
+                  : "text-slate-300 hover:bg-surface-elevated hover:text-foreground",
+              ].join(" ")}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {onLogout ? (
+        <div className="mt-auto border-t border-border pt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            fullWidth
+            disabled={loggingOut}
+            onClick={onLogout}
+            className="justify-start px-3 text-left text-red-300 hover:bg-red-950/40 hover:text-red-200"
           >
-            {item.icon}
-            {item.label}
-          </Link>
-        );
-      })}
+            {loggingOut ? "Saliendo…" : "Salir"}
+          </Button>
+        </div>
+      ) : null}
     </nav>
   );
 }

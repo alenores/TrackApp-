@@ -39,7 +39,7 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
 
       <Link
         href={`/rutas/${ruta.id}`}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-emerald-700/50 bg-accent-light px-5 py-3 text-base font-semibold text-accent-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-sky-600/50 bg-sky-950/50 px-5 py-3 text-base font-semibold text-sky-100 transition-colors hover:bg-sky-900/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50"
       >
         Ver ruta
       </Link>

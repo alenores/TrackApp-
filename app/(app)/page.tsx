@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getUserDisplayName } from "@/lib/auth/profile";
 import { fetchAllRutas } from "@/lib/rutas/queries";
 import { RutaList } from "@/components/rutas/ruta-list";
 
@@ -14,7 +15,7 @@ export default async function HomePage() {
     <RutaList
       rutas={rutas}
       currentUserId={user?.id ?? null}
-      currentUserEmail={user?.email ?? null}
+      currentUserName={getUserDisplayName(user)}
       showWelcome
     />
   );

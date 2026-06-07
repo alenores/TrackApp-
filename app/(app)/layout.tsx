@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { getUserDisplayName } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({
@@ -17,6 +18,11 @@ export default async function AppLayout({
   }
 
   return (
-    <AppShell userEmail={user.email ?? "Usuario"}>{children}</AppShell>
+    <AppShell
+      userName={getUserDisplayName(user)}
+      userEmail={user.email ?? ""}
+    >
+      {children}
+    </AppShell>
   );
 }
