@@ -54,6 +54,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="TrackApp" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#1b4332" />
+        <meta name="trackapp-build" content={process.env.NEXT_PUBLIC_DEPLOY_SHA ?? "local"} />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{if(window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true){document.documentElement.classList.add("pwa-standalone");localStorage.setItem("pwa-installed-v1","1");localStorage.setItem("pwa-ever-standalone-v1","1");}}catch(e){}})();`,

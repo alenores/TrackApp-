@@ -120,6 +120,26 @@ const withPWA = withPWAInit({
       },
     },
     {
+      /** HTML/navegación: NetworkFirst para recibir deploys nuevos en la PWA. */
+      urlPattern: ({ request, url }: { request: Request; url: URL }) =>
+        request.mode === "navigate" && !url.pathname.startsWith("/api/"),
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "pages-network-first",
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60,
+        },
+        networkTimeoutSeconds: 5,
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+        matchOptions: {
+          ignoreVary: true,
+        },
+      },
+    },
+    {
       urlPattern: ({ url }: { url: URL }) => !url.pathname.startsWith("/api/"),
       handler: "CacheFirst",
       options: {

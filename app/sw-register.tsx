@@ -2,11 +2,12 @@
 
 import { useEffect } from "react";
 
-const PWA_CACHE_BUST = "2026-06-07-trackapp-v1";
+const PWA_CACHE_BUST = "2026-06-07-deploy-09e2d84-v2";
 
 const OBSOLETE_CACHE_NAMES = [
   "supabase-api-cache",
   "brand-static-png-network-first",
+  "others",
 ];
 
 async function deleteObsoleteCaches(): Promise<void> {
