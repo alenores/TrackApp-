@@ -16,7 +16,7 @@ export function Header({
   loggingOut,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="z-30 shrink-0 border-b border-border bg-background">
       <div className="flex min-h-14 items-center gap-3 px-3 py-2 sm:px-4">
         <button
           type="button"

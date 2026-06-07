@@ -1,3 +1,6 @@
+/** Contenedor principal con scroll bajo la cabecera. */
+export const APP_SCROLL_PANE_SELECTOR = ".app-scroll-pane";
+
 /** Selector de mapas Leaflet (pan/zoom propio). */
 export const INTERACTIVE_MAP_SELECTOR = ".leaflet-container";
 
@@ -35,6 +38,60 @@ export function isIosTouchDevice(): boolean {
 type GestureLikeEvent = Event & { scale?: number };
 
 const CAPTURE_PASSIVE_FALSE = { capture: true, passive: false } as const;
+
+function isInsideScrollPane(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element)) return null;
+  if (isInsideInteractiveMap(target)) return null;
+  return target.closest(APP_SCROLL_PANE_SELECTOR) as HTMLElement | null;
+}
+
+function mountScrollPaneOverscrollLock(): () => void {
+  let activePane: HTMLElement | null = null;
+  let touchStartY = 0;
+
+  const onTouchStart = (event: TouchEvent) => {
+    activePane = isInsideScrollPane(event.target);
+    if (!activePane) return;
+    touchStartY = event.touches[0]?.clientY ?? 0;
+  };
+
+  const onTouchMove = (event: TouchEvent) => {
+    const pane = activePane ?? isInsideScrollPane(event.target);
+    if (!pane) return;
+
+    const touchY = event.touches[0]?.clientY ?? 0;
+    const pullingDown = touchY > touchStartY;
+    const pullingUp = touchY < touchStartY;
+    const atTop = pane.scrollTop <= 0;
+    const atBottom =
+      pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 1;
+    const cannotScroll = pane.scrollHeight <= pane.clientHeight + 1;
+
+    if (
+      cannotScroll ||
+      (atTop && pullingDown) ||
+      (atBottom && pullingUp)
+    ) {
+      event.preventDefault();
+    }
+  };
+
+  const onTouchEnd = () => {
+    activePane = null;
+  };
+
+  document.addEventListener("touchstart", onTouchStart, CAPTURE_PASSIVE_FALSE);
+  document.addEventListener("touchmove", onTouchMove, CAPTURE_PASSIVE_FALSE);
+  document.addEventListener("touchend", onTouchEnd, { capture: true });
+  document.addEventListener("touchcancel", onTouchEnd, { capture: true });
+
+  return () => {
+    document.removeEventListener("touchstart", onTouchStart, CAPTURE_PASSIVE_FALSE);
+    document.removeEventListener("touchmove", onTouchMove, CAPTURE_PASSIVE_FALSE);
+    document.removeEventListener("touchend", onTouchEnd, { capture: true });
+    document.removeEventListener("touchcancel", onTouchEnd, { capture: true });
+  };
+}
 
 /**
  * Evita zoom nativo del viewport (PWA y navegador; iOS + Android).
@@ -91,6 +148,8 @@ export function mountViewportZoomPrevention(): () => void {
   };
 
   add(document, "touchend", blockDoubleTap as EventListener, CAPTURE_PASSIVE_FALSE);
+
+  cleanups.push(mountScrollPaneOverscrollLock());
 
   return () => {
     for (const cleanup of cleanups) cleanup();

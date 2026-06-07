@@ -61,14 +61,14 @@ export function AppShell({ userEmail, children }: AppShellProps) {
         </div>
       ) : null}
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Header
           userEmail={userEmail}
           onMenuToggle={() => setSidebarOpen(true)}
           onLogout={() => void handleLogout()}
           loggingOut={loggingOut}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
+        <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </main>
       </div>

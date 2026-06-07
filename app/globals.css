@@ -58,6 +58,18 @@ html.pwa-standalone-zoom-lock body {
   }
 }
 
+.app-scroll-pane {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+html.pwa-standalone .app-scroll-pane {
+  overscroll-behavior-y: none;
+}
+
 .leaflet-container {
   z-index: 0;
   font-family: inherit;
