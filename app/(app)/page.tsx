@@ -16,7 +16,6 @@ export default async function HomePage() {
       rutas={rutas}
       currentUserId={user?.id ?? null}
       currentUserName={getUserDisplayName(user)}
-      showWelcome
     />
   );
 }

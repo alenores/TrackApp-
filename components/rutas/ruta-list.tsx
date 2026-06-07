@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Ruta } from "@/types/database";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { RutaCard } from "@/components/rutas/ruta-card";
@@ -9,7 +12,6 @@ type RutaListProps = {
   currentUserId: string | null;
   currentUserName: string | null;
   title?: string;
-  showWelcome?: boolean;
   showNewRouteFab?: boolean;
 };
 
@@ -18,22 +20,16 @@ export function RutaList({
   currentUserId,
   currentUserName,
   title = "Rutas disponibles",
-  showWelcome = false,
   showNewRouteFab = false,
 }: RutaListProps) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleSelect = (rutaId: string) => {
+    setSelectedId((current) => (current === rutaId ? null : rutaId));
+  };
+
   return (
     <div className={`space-y-4 ${showNewRouteFab ? "pb-16" : ""}`}>
-      {showWelcome ? (
-        <Card accent>
-          <h1 className="text-xl font-bold text-foreground">
-            Bienvenido a TrackApp
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
-            Explorá rutas GPX compartidas por la comunidad.
-          </p>
-        </Card>
-      ) : null}
-
       <div>
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         <p className="text-sm text-muted">
@@ -62,6 +58,8 @@ export function RutaList({
                   currentUserId,
                   currentUserName,
                 )}
+                selected={selectedId === ruta.id}
+                onSelect={() => handleSelect(ruta.id)}
               />
             </li>
           ))}
