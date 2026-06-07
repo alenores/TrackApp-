@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --surface: #1e293b;
+  --surface-elevated: #334155;
+  --border: #334155;
+  --accent: #1b4332;
+  --accent-light: #2d6a4f;
+  --accent-foreground: #d8f3dc;
+  --muted: #94a3b8;
+  --danger: #f87171;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.leaflet-container {
+  z-index: 0;
+  font-family: inherit;
+}
+
+html.pwa-standalone-zoom-lock,
+html.pwa-standalone-zoom-lock body {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+@keyframes pulse-bar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.progress-bar-pulse {
+  animation: pulse-bar 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-pulse {
+    animation: none;
+  }
+}
