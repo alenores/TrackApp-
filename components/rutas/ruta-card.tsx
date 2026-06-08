@@ -19,6 +19,9 @@ const EXIT_ANIMATION_MS = 220;
 const LONG_PRESS_MS = 500;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
 
+const RUTA_DATA_CELL_CLASS =
+  "rounded-lg border border-slate-500/20 bg-slate-900/15 px-2.5 py-2";
+
 function applySwipeOffset(deltaX: number, cardWidth: number): number {
   const travel = Math.abs(deltaX);
   const freeTravel = cardWidth * 0.85;
@@ -407,31 +410,31 @@ export function RutaCard({
             <ChevronCircle direction="right" className="mt-0.5" />
           </div>
 
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <dt className="text-muted">Distancia</dt>
-              <dd className="font-medium text-emerald-200">
+          <dl className="grid grid-cols-2 gap-2.5 text-sm">
+            <div className={RUTA_DATA_CELL_CLASS}>
+              <dt className="text-xs text-muted">Distancia</dt>
+              <dd className="mt-1 font-medium text-emerald-200">
                 {formatDistanceKm(ruta.distancia_km)}
               </dd>
             </div>
-            <div>
-              <dt className="text-muted">Subida por</dt>
-              <dd className="font-medium text-foreground">{uploaderLabel}</dd>
+            <div className={RUTA_DATA_CELL_CLASS}>
+              <dt className="text-xs text-muted">Subida por</dt>
+              <dd className="mt-1 font-medium text-foreground">{uploaderLabel}</dd>
               <UploaderAvatar
                 avatarUrl={uploaderAvatarUrl}
                 uploaderLabel={uploaderLabel}
                 size="sm"
               />
             </div>
-            <div>
-              <dt className="text-muted">Fecha</dt>
-              <dd className="font-medium text-foreground">
+            <div className={RUTA_DATA_CELL_CLASS}>
+              <dt className="text-xs text-muted">Fecha</dt>
+              <dd className="mt-1 font-medium text-foreground">
                 {formatRouteDate(ruta.created_at)}
               </dd>
             </div>
-            <div>
-              <dt className="text-muted">Offline</dt>
-              <dd className="font-medium">
+            <div className={RUTA_DATA_CELL_CLASS}>
+              <dt className="text-xs text-muted">Offline</dt>
+              <dd className="mt-1 font-medium">
                 {checkingOffline ? (
                   <span className="text-muted">…</span>
                 ) : isOffline ? (
@@ -440,7 +443,7 @@ export function RutaCard({
                     Disponible
                   </span>
                 ) : (
-                  <span className="text-muted">—</span>
+                  <span className="text-amber-100/80">No descargado</span>
                 )}
               </dd>
             </div>
