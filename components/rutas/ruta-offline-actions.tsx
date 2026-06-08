@@ -101,18 +101,6 @@ export function RutaOfflineActions({
         </Button>
       )}
 
-      {isOffline ? (
-        <Button
-          type="button"
-          variant="secondary"
-          fullWidth
-          disabled={downloading}
-          onClick={() => void handleDownload()}
-        >
-          {downloading ? "Actualizando tiles…" : "Actualizar descarga offline"}
-        </Button>
-      ) : null}
-
       {downloading && progress ? (
         <p className="text-center text-sm text-muted">
           Descargando… {progress.current} de {progress.total} tiles
