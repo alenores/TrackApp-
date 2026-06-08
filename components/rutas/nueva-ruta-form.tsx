@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { saveRuta } from "@/app/actions/save-ruta";
@@ -90,11 +91,19 @@ export function NuevaRutaForm() {
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
       <Card accent className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Nueva ruta</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Importá un archivo GPX para compartirlo con la comunidad.
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Nueva ruta</h1>
+            <p className="mt-1 text-sm text-slate-400">
+              Importá un archivo GPX para compartirlo con la comunidad.
+            </p>
+          </div>
+          <Link
+            href="/rutas"
+            className="shrink-0 text-sm text-emerald-300 hover:text-emerald-200"
+          >
+            Cancelar
+          </Link>
         </div>
 
         <Input
