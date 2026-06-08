@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
+import { triggerTapHaptic } from "@/lib/haptics";
 import { deleteOfflineRuta } from "@/lib/tiles";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { Card } from "@/components/ui/card";
@@ -72,6 +73,7 @@ export function RutaCard({
   };
 
   const goToDetail = () => {
+    triggerTapHaptic();
     router.push(detailHref);
   };
 
@@ -351,7 +353,6 @@ export function RutaCard({
         className={[
           "relative rounded-2xl touch-pan-y select-none",
           !isDragging ? "transition-transform duration-200 ease-out" : "",
-          isDragging && !isExiting ? "active:scale-[0.995]" : "",
           actionsOpen ? "z-20" : "",
         ]
           .filter(Boolean)

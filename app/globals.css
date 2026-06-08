@@ -91,3 +91,22 @@ html.pwa-standalone-zoom-lock body {
     animation: none;
   }
 }
+
+.tap-feedback {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 120ms ease-out,
+    filter 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+.tap-feedback:active:not(:disabled) {
+  transform: scale(0.97);
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-feedback:active:not(:disabled) {
+    transform: none;
+  }
+}

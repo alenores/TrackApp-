@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getUserDisplayName } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
@@ -9,6 +8,7 @@ import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
+import { RutaDetailBackLink } from "@/components/rutas/ruta-detail-back-link";
 import { RutaOfflineBadge } from "@/components/rutas/ruta-offline-badge";
 import { Card } from "@/components/ui/card";
 
@@ -50,12 +50,7 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
               </p>
             ) : null}
           </div>
-          <Link
-            href="/"
-            className="shrink-0 text-sm text-emerald-300 hover:text-emerald-200"
-          >
-            ← Volver
-          </Link>
+          <RutaDetailBackLink />
         </div>
 
         <dl className="grid grid-cols-2 gap-3 text-sm">

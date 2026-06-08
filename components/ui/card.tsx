@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
 
 type CardProps = {
   children: ReactNode;
@@ -24,7 +25,10 @@ export function Card({
           : "bg-surface",
         accent ? "border-x-4 border-x-emerald-600 border-y-border" : "border-border",
         interactive
-          ? "cursor-pointer border-slate-600/70 shadow-md transition-all hover:border-emerald-700/45 hover:bg-slate-800/90 hover:shadow-lg active:scale-[0.995]"
+          ? [
+              TAP_FEEDBACK_CLASS,
+              "cursor-pointer border-slate-600/70 shadow-md hover:border-emerald-700/45 hover:bg-slate-800/90 hover:shadow-lg",
+            ].join(" ")
           : "",
         className,
       ]

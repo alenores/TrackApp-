@@ -1,4 +1,6 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, PointerEvent } from "react";
+import { triggerTapHaptic } from "@/lib/haptics";
+import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -24,13 +26,23 @@ export function Button({
   type = "button",
   disabled,
   children,
+  onPointerDown,
   ...props
 }: ButtonProps) {
+  const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    if (!disabled) {
+      triggerTapHaptic();
+    }
+    onPointerDown?.(event);
+  };
+
   return (
     <button
       type={type}
       disabled={disabled}
+      onPointerDown={handlePointerDown}
       className={[
+        TAP_FEEDBACK_CLASS,
         "inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-base font-semibold transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60",
         "disabled:cursor-not-allowed disabled:opacity-50",

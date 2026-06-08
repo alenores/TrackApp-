@@ -13,6 +13,8 @@ import {
 } from "@/lib/navigation";
 import { createOfflineTileLayer } from "@/components/map/offline-tile-layer";
 import { Button } from "@/components/ui/button";
+import { triggerTapHaptic } from "@/lib/haptics";
+import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
 import "leaflet/dist/leaflet.css";
 
 type NavigationMapProps = {
@@ -207,8 +209,12 @@ export function NavigationMap({
         <button
           type="button"
           onClick={handleExit}
+          onPointerDown={() => triggerTapHaptic()}
           aria-label="Salir de la navegación"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-lg text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
+          className={[
+            TAP_FEEDBACK_CLASS,
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-lg text-muted hover:bg-surface-elevated hover:text-foreground",
+          ].join(" ")}
         >
           ×
         </button>
