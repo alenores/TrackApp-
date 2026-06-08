@@ -2,12 +2,13 @@
 
 import { useEffect } from "react";
 
-const PWA_CACHE_BUST = "2026-06-08-profiles-sync-v1";
+const PWA_CACHE_BUST = "2026-06-08-list-app-users-v1";
 
 const OBSOLETE_CACHE_NAMES = [
   "supabase-api-cache",
   "brand-static-png-network-first",
   "brand-static-png-cache-first",
+  "pages-network-first",
   "others",
 ];
 

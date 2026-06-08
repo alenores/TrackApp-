@@ -80,3 +80,32 @@ FROM auth.users AS u
 WHERE NOT EXISTS (
   SELECT 1 FROM public.profiles AS p WHERE p.id = u.id
 );
+
+-- Listado consultable: todos los usuarios de auth + avatar opcional de profiles
+CREATE OR REPLACE FUNCTION public.list_app_users()
+RETURNS TABLE (
+  id uuid,
+  nombre text,
+  avatar_url text
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, auth
+STABLE
+AS $$
+  SELECT
+    u.id,
+    COALESCE(
+      NULLIF(TRIM(u.raw_user_meta_data->>'nombre'), ''),
+      NULLIF(TRIM(u.raw_user_meta_data->>'full_name'), ''),
+      NULLIF(TRIM(split_part(u.email, '@', 1)), ''),
+      'Usuario'
+    ) AS nombre,
+    NULLIF(TRIM(p.avatar_url), '') AS avatar_url
+  FROM auth.users AS u
+  LEFT JOIN public.profiles AS p ON p.id = u.id
+  ORDER BY 2;
+$$;
+
+REVOKE ALL ON FUNCTION public.list_app_users() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.list_app_users() TO authenticated;

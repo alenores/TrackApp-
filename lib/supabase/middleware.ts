@@ -56,5 +56,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(homeUrl);
   }
 
+  if (user && !isPublicRoute) {
+    supabaseResponse.headers.set(
+      "Cache-Control",
+      "private, no-cache, no-store, must-revalidate",
+    );
+  }
+
   return supabaseResponse;
 }

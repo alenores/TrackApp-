@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
-// Supabase no expone auth.users al cliente: public.profiles es el listado consultable
-// (se llena con trigger SQL al registrarse o actualizar el nombre).
+// list_app_users() (SQL) lee auth.users + profiles.avatar_url; la app no puede consultar auth directo.
 
 export type DirectoryUser = {
   id: string;
@@ -9,11 +8,38 @@ export type DirectoryUser = {
   avatar_url: string | null;
 };
 
+type DirectoryRow = {
+  id: string;
+  nombre: string | null;
+  avatar_url: string | null;
+};
+
 function fallbackNombre(userId: string): string {
   return `Usuario · ${userId.slice(0, 8)}`;
 }
 
-export async function fetchAllDirectoryUsers(): Promise<DirectoryUser[]> {
+function mapDirectoryRows(rows: DirectoryRow[]): DirectoryUser[] {
+  return rows
+    .map((row) => ({
+      id: row.id,
+      nombre: row.nombre?.trim() || fallbackNombre(row.id),
+      avatar_url: row.avatar_url?.trim() || null,
+    }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+async function fetchDirectoryFromRpc(): Promise<DirectoryUser[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("list_app_users");
+
+  if (error || !Array.isArray(data)) {
+    return null;
+  }
+
+  return mapDirectoryRows(data as DirectoryRow[]);
+}
+
+async function fetchDirectoryLegacy(): Promise<DirectoryUser[]> {
   const supabase = await createClient();
 
   const [profilesResult, rutasResult] = await Promise.all([
@@ -24,11 +50,7 @@ export async function fetchAllDirectoryUsers(): Promise<DirectoryUser[]> {
   const users = new Map<string, DirectoryUser>();
 
   if (profilesResult.data) {
-    for (const row of profilesResult.data as Array<{
-      id: string;
-      nombre: string | null;
-      avatar_url: string | null;
-    }>) {
+    for (const row of profilesResult.data as DirectoryRow[]) {
       users.set(row.id, {
         id: row.id,
         nombre: row.nombre?.trim() || fallbackNombre(row.id),
@@ -54,16 +76,20 @@ export async function fetchAllDirectoryUsers(): Promise<DirectoryUser[]> {
         continue;
       }
 
-      if (
-        routeName &&
-        existing.nombre === fallbackNombre(row.user_id)
-      ) {
+      if (routeName && existing.nombre === fallbackNombre(row.user_id)) {
         existing.nombre = routeName;
       }
     }
   }
 
-  return [...users.values()].sort((a, b) =>
-    a.nombre.localeCompare(b.nombre, "es"),
-  );
+  return mapDirectoryRows([...users.values()]);
+}
+
+export async function fetchAllDirectoryUsers(): Promise<DirectoryUser[]> {
+  const fromRpc = await fetchDirectoryFromRpc();
+  if (fromRpc) {
+    return fromRpc;
+  }
+
+  return fetchDirectoryLegacy();
 }
