@@ -402,16 +402,18 @@ export function RutaCard({
             actionsOpen ? "ring-2 ring-emerald-500/50" : "",
           ].join(" ")}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 space-y-1">
-              <h2 className="text-lg font-semibold text-foreground">{ruta.nombre}</h2>
-              {ruta.descripcion ? (
-                <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
-                  {ruta.descripcion}
-                </p>
-              ) : null}
+          <div className="space-y-1">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="min-w-0 flex-1 text-lg font-semibold text-foreground">
+                {ruta.nombre}
+              </h2>
+              <ChevronCircle direction="right" className="-mt-0.5 shrink-0" />
             </div>
-            <ChevronCircle direction="right" className="mt-0.5" />
+            {ruta.descripcion ? (
+              <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
+                {ruta.descripcion}
+              </p>
+            ) : null}
           </div>
 
           <dl className={RUTA_DATA_GRID_CLASS}>
