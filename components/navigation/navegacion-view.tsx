@@ -105,6 +105,7 @@ export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
 
   return (
     <NavigationMapLoader
+      rutaId={rutaId}
       geojson={loadedRuta.geojson}
       bbox={loadedRuta.bbox}
       rutaNombre={loadedRuta.nombre}

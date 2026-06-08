@@ -61,13 +61,9 @@ html.pwa-standalone-zoom-lock body {
 .app-scroll-pane {
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-}
-
-html.pwa-standalone .app-scroll-pane {
-  overscroll-behavior-y: none;
 }
 
 .leaflet-container {

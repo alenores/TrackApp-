@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import L from "leaflet";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import "leaflet/dist/leaflet.css";
 
 type NavigationMapProps = {
+  rutaId: string;
   geojson: FeatureCollection;
   bbox: RouteBbox;
   rutaNombre: string;
@@ -37,11 +39,13 @@ function boundsFromBbox(bbox: RouteBbox): L.LatLngBoundsExpression {
 }
 
 export function NavigationMap({
+  rutaId,
   geojson,
   bbox,
   rutaNombre,
   fromOfflineCache = false,
 }: NavigationMapProps) {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const routeLayerRef = useRef<L.GeoJSON | null>(null);
@@ -54,6 +58,11 @@ export function NavigationMap({
     null,
   );
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
+
+  const showOffRouteAlert =
+    gpsStatus === "active" &&
+    distanceMeters !== null &&
+    distanceMeters > DEVIATION_THRESHOLD_METERS;
 
   const onRoute =
     distanceMeters !== null && distanceMeters <= DEVIATION_THRESHOLD_METERS;
@@ -155,33 +164,45 @@ export function NavigationMap({
     });
   }, [position]);
 
+  const handleExit = () => {
+    const confirmed = window.confirm("¿Querés salir de la navegación?");
+    if (confirmed) {
+      router.push(`/rutas/${rutaId}`);
+    }
+  };
+
   return (
     <div className="flex h-[calc(100dvh-8rem)] min-h-[420px] flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{rutaNombre}</h1>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-bold text-foreground">{rutaNombre}</h1>
           <p className="text-xs text-muted">
             {fromOfflineCache ? "Navegación offline" : "Navegación con conexión"}
           </p>
         </div>
-        {gpsStatus === "active" && distanceMeters !== null ? (
-          <div
-            className={[
-              "rounded-xl px-3 py-2 text-sm font-semibold",
-              onRoute
-                ? "bg-emerald-950/70 text-emerald-200 ring-1 ring-emerald-800/60"
-                : "bg-red-950/70 text-red-200 ring-1 ring-red-800/60",
-            ].join(" ")}
-          >
-            {onRoute ? "En ruta" : "¡Fuera de ruta!"}
-          </div>
-        ) : null}
+        <button
+          type="button"
+          onClick={handleExit}
+          aria-label="Salir de la navegación"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-lg text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
+        >
+          ×
+        </button>
       </div>
 
       <div
         ref={containerRef}
         className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-slate-900"
       />
+
+      {showOffRouteAlert ? (
+        <div
+          role="alert"
+          className="rounded-xl bg-red-950/70 px-3 py-2 text-center text-sm font-semibold text-red-200 ring-1 ring-red-800/60"
+        >
+          ¡Fuera de ruta!
+        </div>
+      ) : null}
 
       <div className="space-y-2">
         {gpsStatus === "idle" || gpsStatus === "requesting" ? (

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/layout/header";
+import { PullToRefresh } from "@/components/layout/pull-to-refresh";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 
@@ -82,9 +83,9 @@ export function AppShell({ userName, userEmail, children }: AppShellProps) {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Header onMenuToggle={() => setSidebarOpen(true)} />
-        <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
+        <PullToRefresh className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
-        </main>
+        </PullToRefresh>
       </div>
 
       {showNewRouteFab ? <NuevaRutaFab /> : null}

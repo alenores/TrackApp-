@@ -5,6 +5,7 @@ import type { RouteBbox } from "@/lib/gpx";
 import type { FeatureCollection } from "geojson";
 
 type NavigationMapLoaderProps = {
+  rutaId: string;
   geojson: FeatureCollection;
   bbox: RouteBbox;
   rutaNombre: string;
