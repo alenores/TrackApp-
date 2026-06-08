@@ -93,10 +93,12 @@ export function AppShell({
           userName={userName}
           userAvatarUrl={userAvatarUrl}
         />
-        <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-3 pt-3 sm:px-4 sm:pt-4">
-          <div className="mx-auto w-full max-w-3xl">{children}</div>
+        <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 sm:px-4 sm:pt-4">
+          <div className="mx-auto w-full max-w-3xl">
+            {children}
+            <BuildStamp />
+          </div>
         </main>
-        <BuildStamp />
       </div>
 
       {showNewRouteFab ? <NuevaRutaFab /> : null}

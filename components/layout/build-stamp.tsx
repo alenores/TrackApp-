@@ -12,13 +12,11 @@ export function BuildStamp() {
   }
 
   return (
-    <footer className="shrink-0 border-t border-border/50 bg-background px-3 pt-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
-      <p
-        className="text-center text-[10px] font-mono leading-none text-slate-400/70"
-        aria-hidden
-      >
-        {DEPLOY_SHA}
-      </p>
-    </footer>
+    <p
+      className="mt-8 pb-2 text-center text-[10px] font-mono leading-none text-slate-400/70"
+      aria-hidden
+    >
+      {DEPLOY_SHA}
+    </p>
   );
 }

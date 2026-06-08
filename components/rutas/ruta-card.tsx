@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
+import { OfflineBookmarkIcon } from "@/components/rutas/offline-bookmark-icon";
 import { triggerTapHaptic } from "@/lib/haptics";
-import { deleteOfflineRuta } from "@/lib/tiles";
+import { RUTA_OFFLINE_UPDATED_EVENT } from "@/lib/rutas/offline-events";
+import { deleteOfflineRuta, isRutaOffline } from "@/lib/tiles";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { ChevronCircle } from "@/components/ui/chevron-circle";
 import { Card } from "@/components/ui/card";
@@ -60,6 +62,33 @@ export function RutaCard({
   const [actionsOpen, setActionsOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [checkingOffline, setCheckingOffline] = useState(true);
+
+  const refreshOfflineStatus = useCallback(async () => {
+    setCheckingOffline(true);
+    const available = await isRutaOffline(ruta.id);
+    setIsOffline(available);
+    setCheckingOffline(false);
+  }, [ruta.id]);
+
+  useEffect(() => {
+    void refreshOfflineStatus();
+  }, [refreshOfflineStatus]);
+
+  useEffect(() => {
+    const handleUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ rutaId: string }>;
+      if (customEvent.detail?.rutaId === ruta.id) {
+        void refreshOfflineStatus();
+      }
+    };
+
+    window.addEventListener(RUTA_OFFLINE_UPDATED_EVENT, handleUpdate);
+    return () => {
+      window.removeEventListener(RUTA_OFFLINE_UPDATED_EVENT, handleUpdate);
+    };
+  }, [ruta.id, refreshOfflineStatus]);
 
   const updateOffset = (nextOffset: number) => {
     offsetXRef.current = nextOffset;
@@ -394,10 +423,25 @@ export function RutaCard({
                 size="sm"
               />
             </div>
-            <div className="col-span-2">
+            <div>
               <dt className="text-muted">Fecha</dt>
               <dd className="font-medium text-foreground">
                 {formatRouteDate(ruta.created_at)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Offline</dt>
+              <dd className="font-medium">
+                {checkingOffline ? (
+                  <span className="text-muted">…</span>
+                ) : isOffline ? (
+                  <span className="inline-flex items-center gap-1.5 text-emerald-200">
+                    <OfflineBookmarkIcon className="h-3.5 w-3.5 shrink-0" />
+                    Disponible
+                  </span>
+                ) : (
+                  <span className="text-muted">—</span>
+                )}
               </dd>
             </div>
           </dl>

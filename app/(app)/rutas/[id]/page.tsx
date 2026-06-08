@@ -45,13 +45,14 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
             <h1 className="break-words text-xl font-bold text-foreground">
               {ruta.nombre}
             </h1>
-            {ruta.descripcion ? (
-              <p className="mt-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
-                {ruta.descripcion}
-              </p>
-            ) : null}
           </div>
         </div>
+
+        {ruta.descripcion ? (
+          <p className="break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
+            {ruta.descripcion}
+          </p>
+        ) : null}
 
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div>

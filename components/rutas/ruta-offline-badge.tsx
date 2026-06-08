@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { OfflineBookmarkIcon } from "@/components/rutas/offline-bookmark-icon";
 import { isRutaOffline } from "@/lib/tiles";
 import { RUTA_OFFLINE_UPDATED_EVENT } from "@/lib/rutas/offline-events";
 
@@ -42,15 +43,8 @@ export function RutaOfflineBadge({ rutaId }: RutaOfflineBadgeProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
-      <svg
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden
-        className="h-4 w-4 shrink-0"
-      >
-        <path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15.8l-5-2.4L7 19.8V4z" />
-      </svg>
+    <div className="inline-flex w-fit max-w-full items-center gap-2 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+      <OfflineBookmarkIcon className="h-4 w-4 shrink-0" />
       <span>Ruta disponible offline</span>
     </div>
   );

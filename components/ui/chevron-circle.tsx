@@ -12,7 +12,7 @@ export function ChevronCircle({
   return (
     <span
       className={[
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-600/70 bg-slate-800/80 text-slate-400",
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-500/55 bg-slate-700/70 text-slate-300",
         className,
       ]
         .filter(Boolean)
