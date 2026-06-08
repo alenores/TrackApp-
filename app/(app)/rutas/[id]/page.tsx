@@ -35,7 +35,7 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
 
   return (
     <div className="space-y-4">
-      <Card accent className="space-y-3">
+      <Card tone="light" className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-foreground">{ruta.nombre}</h1>

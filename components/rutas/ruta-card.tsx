@@ -184,12 +184,30 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
           .filter(Boolean)
           .join(" ")}
       >
-        <Card className="space-y-3">
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-foreground">{ruta.nombre}</h2>
-            {ruta.descripcion ? (
-              <p className="text-sm leading-6 text-slate-400">{ruta.descripcion}</p>
-            ) : null}
+        <Card interactive className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-1">
+              <h2 className="text-lg font-semibold text-foreground">{ruta.nombre}</h2>
+              {ruta.descripcion ? (
+                <p className="line-clamp-2 text-sm leading-6 text-slate-400">
+                  {ruta.descripcion}
+                </p>
+              ) : null}
+            </div>
+            <span
+              aria-hidden
+              className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-600/70 bg-slate-800/80 text-slate-400"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+                <path
+                  d="m9 6 6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </div>
 
           <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -210,6 +228,8 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
               </dd>
             </div>
           </dl>
+
+          <p className="text-xs font-medium text-slate-500">Tocá para ver detalle</p>
         </Card>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 export function RutaDetailSkeleton() {
   return (
     <div className="space-y-4">
-      <Card accent className="space-y-3">
+      <Card tone="light" className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-7 w-4/5" />
