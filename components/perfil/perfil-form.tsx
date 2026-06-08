@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { updateProfile } from "@/app/actions/update-profile";
 import { Button } from "@/components/ui/button";
 import { CIRCLE_ICON_SURFACE_CLASS } from "@/components/ui/chevron-circle";
@@ -74,9 +80,12 @@ export function PerfilForm({
   avatarUrl,
 }: PerfilFormProps) {
   const router = useRouter();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [nombre, setNombre] = useState(initialNombre || displayNombre);
   const [emailValue, setEmailValue] = useState(email);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -86,9 +95,29 @@ export function PerfilForm({
     setEmailValue(email);
   }, [initialNombre, displayNombre, email]);
 
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
+  const clearAvatarSelection = () => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+    setAvatarFile(null);
+    setAvatarPreviewUrl(null);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+  };
+
   const resetForm = () => {
     setNombre(initialNombre || displayNombre);
     setEmailValue(email);
+    clearAvatarSelection();
     setError(null);
     setMessage(null);
   };
@@ -112,6 +141,7 @@ export function PerfilForm({
     const result = await updateProfile({
       nombre,
       email: emailValue,
+      avatarFile,
     });
 
     if (!result.success) {
@@ -120,6 +150,7 @@ export function PerfilForm({
       return;
     }
 
+    clearAvatarSelection();
     setEditing(false);
     setLoading(false);
 
@@ -135,6 +166,26 @@ export function PerfilForm({
   };
 
   const viewNombre = initialNombre || displayNombre;
+  const editingAvatarSrc = avatarPreviewUrl ?? avatarUrl;
+
+  const handleAvatarPick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+
+    setAvatarFile(file);
+    setAvatarPreviewUrl(URL.createObjectURL(file));
+    setError(null);
+  };
 
   return (
     <Card accent className="relative flex flex-col gap-4">
@@ -159,8 +210,27 @@ export function PerfilForm({
           onSubmit={(event) => void handleSubmit(event)}
           className="space-y-4"
         >
-          <div className="flex justify-center pt-1">
-            <UserAvatar src={avatarUrl} name={viewNombre} size="lg" />
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={handleAvatarPick}
+              onPointerDown={() => triggerTapHaptic()}
+              className={[TAP_FEEDBACK_CLASS, "rounded-full"].join(" ")}
+              aria-label="Cambiar foto de perfil"
+            >
+              <UserAvatar src={editingAvatarSrc} name={viewNombre} size="lg" />
+            </button>
+            <p className="text-center text-xs text-muted">
+              Tocá la foto para elegir desde la galería o sacar una nueva
+            </p>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              capture="user"
+              className="sr-only"
+              onChange={handleAvatarChange}
+            />
           </div>
 
           <Input
