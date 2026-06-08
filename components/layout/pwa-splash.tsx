@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { PUBLIC_STATIC_IMAGE_QUERY } from "@/lib/public-static-image-query";
+import { MountainBrandMark } from "@/components/brand/mountain-brand-mark";
 
 export function PwaSplash() {
   const [visible, setVisible] = useState(false);
@@ -44,14 +43,7 @@ export function PwaSplash() {
       aria-hidden
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0f172a] transition-opacity duration-300"
     >
-      <Image
-        src={`/icon-512x512.png${PUBLIC_STATIC_IMAGE_QUERY}`}
-        alt=""
-        width={128}
-        height={128}
-        priority
-        className="h-28 w-28 rounded-[1.75rem] shadow-lg shadow-black/40"
-      />
+      <MountainBrandMark className="h-28 w-28 rounded-[1.75rem] shadow-lg shadow-black/40" />
       <p className="mt-4 text-sm font-semibold tracking-wide text-emerald-100/90">
         TrackApp
       </p>

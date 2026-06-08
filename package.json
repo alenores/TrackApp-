@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "npm run generate:icons && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "generate:icons": "node scripts/generate-brand-icons.mjs"
