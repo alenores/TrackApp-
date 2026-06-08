@@ -45,23 +45,11 @@ export function RutaOfflineBadge({ rutaId }: RutaOfflineBadgeProps) {
     <div className="flex items-center gap-2 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
       <svg
         viewBox="0 0 24 24"
-        fill="none"
+        fill="currentColor"
         aria-hidden
         className="h-4 w-4 shrink-0"
       >
-        <path
-          d="M12 3v10m0 0 4-4m-4 4-4-4"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M5 17v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
+        <path d="M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15.8l-5-2.4L7 19.8V4z" />
       </svg>
       <span>Ruta disponible offline</span>
     </div>
