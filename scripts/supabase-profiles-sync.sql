@@ -2,6 +2,23 @@
 -- Supabase no permite listar auth.users desde la app; esta tabla es la vista pública.
 -- Se sincroniza sola con triggers (registro + cambio de nombre). Ejecutá una vez en SQL Editor.
 
+-- Si profiles se creó antes solo con id + avatar_url, agregar columnas faltantes:
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS nombre text;
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "profiles_select_authenticated" ON public.profiles;
+
+CREATE POLICY "profiles_select_authenticated"
+  ON public.profiles
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
 GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
 
 DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
