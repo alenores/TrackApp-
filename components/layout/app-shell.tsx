@@ -12,10 +12,16 @@ import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 type AppShellProps = {
   userName: string;
   userEmail: string;
+  userAvatarUrl?: string | null;
   children: React.ReactNode;
 };
 
-export function AppShell({ userName, userEmail, children }: AppShellProps) {
+export function AppShell({
+  userName,
+  userEmail,
+  userAvatarUrl,
+  children,
+}: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,7 +88,11 @@ export function AppShell({ userName, userEmail, children }: AppShellProps) {
       ) : null}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <Header onMenuToggle={() => setSidebarOpen(true)} />
+        <Header
+          onMenuToggle={() => setSidebarOpen(true)}
+          userName={userName}
+          userAvatarUrl={userAvatarUrl}
+        />
         <PullToRefresh className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </PullToRefresh>

@@ -10,6 +10,7 @@ type RutaListProps = {
   rutas: RutaListItem[];
   currentUserId: string | null;
   currentUserName: string | null;
+  avatarByUserId?: Record<string, string | null>;
   title?: string;
   showNewRouteFab?: boolean;
 };
@@ -32,6 +33,7 @@ export function RutaList({
   rutas,
   currentUserId,
   currentUserName,
+  avatarByUserId = {},
   title = "Rutas disponibles",
   showNewRouteFab = false,
 }: RutaListProps) {
@@ -138,6 +140,7 @@ export function RutaList({
                   currentUserId,
                   currentUserName,
                 )}
+                uploaderAvatarUrl={avatarByUserId[ruta.user_id] ?? null}
               />
             </li>
           ))}

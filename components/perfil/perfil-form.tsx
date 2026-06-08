@@ -5,12 +5,14 @@ import { useEffect, useState, type FormEvent } from "react";
 import { updateProfile } from "@/app/actions/update-profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card } from "@/components/ui/card";
 
 type PerfilFormProps = {
   initialNombre: string;
   displayNombre: string;
   email: string;
+  avatarUrl?: string | null;
 };
 
 function PencilIcon() {
@@ -36,6 +38,7 @@ export function PerfilForm({
   initialNombre,
   displayNombre,
   email,
+  avatarUrl,
 }: PerfilFormProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -97,6 +100,14 @@ export function PerfilForm({
 
   return (
     <Card accent className="relative">
+      <div className="mb-4 flex justify-center">
+        <UserAvatar
+          src={avatarUrl}
+          name={viewNombre}
+          size="lg"
+        />
+      </div>
+
       <div className="flex items-start justify-between gap-3 pr-1">
         <h1 className="text-xl font-bold text-foreground">Mi perfil</h1>
 

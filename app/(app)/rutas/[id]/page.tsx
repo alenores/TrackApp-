@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getUserDisplayName } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
+import { fetchAvatarUrlsByUserIds } from "@/lib/auth/profiles";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { fetchRutaById } from "@/lib/rutas/queries";
+import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
@@ -27,6 +29,8 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
     user?.id ?? null,
     getUserDisplayName(user),
   );
+  const uploaderAvatars = await fetchAvatarUrlsByUserIds([ruta.user_id]);
+  const uploaderAvatarUrl = uploaderAvatars[ruta.user_id] ?? null;
 
   if (!ruta.geojson || !ruta.bbox) {
     notFound();
@@ -64,6 +68,10 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
           <div>
             <dt className="text-muted">Subida por</dt>
             <dd className="font-medium text-foreground">{uploaderLabel}</dd>
+            <UploaderAvatar
+              avatarUrl={uploaderAvatarUrl}
+              uploaderLabel={uploaderLabel}
+            />
           </div>
           <div className="col-span-2">
             <dt className="text-muted">Fecha</dt>

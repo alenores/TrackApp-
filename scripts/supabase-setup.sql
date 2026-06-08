@@ -75,3 +75,35 @@ CREATE POLICY "descargas_delete_own"
 
 ALTER TABLE public.rutas
   ADD COLUMN IF NOT EXISTS subido_por_nombre text;
+
+-- ─── 5. Fotos de perfil (avatars) ───
+-- Cargá las fotos manualmente desde el dashboard o con SQL.
+-- Ver también: scripts/supabase-avatars-storage.sql
+
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  avatar_url text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "profiles_select_authenticated" ON public.profiles;
+
+CREATE POLICY "profiles_select_authenticated"
+  ON public.profiles
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
+GRANT SELECT ON TABLE public.profiles TO authenticated;
+
+-- Ejemplo para asignar foto a un usuario (reemplazá UUID y URL):
+-- INSERT INTO public.profiles (id, avatar_url)
+-- VALUES (
+--   '00000000-0000-0000-0000-000000000000',
+--   'https://TU_PROYECTO.supabase.co/storage/v1/object/public/avatars/juan.jpg'
+-- )
+-- ON CONFLICT (id) DO UPDATE
+-- SET avatar_url = EXCLUDED.avatar_url,
+--     updated_at = now();

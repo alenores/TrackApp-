@@ -1,10 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { UserAvatar } from "@/components/ui/user-avatar";
+
 type HeaderProps = {
   onMenuToggle: () => void;
+  userName: string;
+  userAvatarUrl?: string | null;
 };
 
-export function Header({ onMenuToggle }: HeaderProps) {
+export function Header({ onMenuToggle, userName, userAvatarUrl }: HeaderProps) {
   return (
     <header className="z-30 shrink-0 border-b border-border bg-background">
       <div className="flex min-h-14 items-center gap-3 px-3 py-2 sm:px-4">
@@ -29,6 +34,14 @@ export function Header({ onMenuToggle }: HeaderProps) {
             TrackApp
           </p>
         </div>
+
+        <Link
+          href="/perfil"
+          aria-label={`Mi perfil (${userName})`}
+          className="shrink-0 rounded-full transition-opacity hover:opacity-90"
+        >
+          <UserAvatar src={userAvatarUrl} name={userName} size="sm" />
+        </Link>
       </div>
     </header>
   );

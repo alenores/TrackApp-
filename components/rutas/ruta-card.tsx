@@ -6,6 +6,7 @@ import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { deleteOfflineRuta } from "@/lib/tiles";
+import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { Card } from "@/components/ui/card";
 
 const SWIPE_ACTIVATION_PX = 8;
@@ -30,10 +31,16 @@ function applySwipeOffset(deltaX: number, cardWidth: number): number {
 type RutaCardProps = {
   ruta: RutaListItem;
   uploaderLabel: string;
+  uploaderAvatarUrl?: string | null;
   isOwner: boolean;
 };
 
-export function RutaCard({ ruta, uploaderLabel, isOwner }: RutaCardProps) {
+export function RutaCard({
+  ruta,
+  uploaderLabel,
+  uploaderAvatarUrl,
+  isOwner,
+}: RutaCardProps) {
   const router = useRouter();
   const detailHref = `/rutas/${ruta.id}`;
   const cardRef = useRef<HTMLDivElement>(null);
@@ -392,6 +399,11 @@ export function RutaCard({ ruta, uploaderLabel, isOwner }: RutaCardProps) {
             <div>
               <dt className="text-muted">Subida por</dt>
               <dd className="font-medium text-foreground">{uploaderLabel}</dd>
+              <UploaderAvatar
+                avatarUrl={uploaderAvatarUrl}
+                uploaderLabel={uploaderLabel}
+                size="sm"
+              />
             </div>
             <div className="col-span-2">
               <dt className="text-muted">Fecha</dt>
