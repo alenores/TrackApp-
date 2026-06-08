@@ -4,9 +4,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { updateProfile } from "@/app/actions/update-profile";
 import { Button } from "@/components/ui/button";
+import { CIRCLE_ICON_SURFACE_CLASS } from "@/components/ui/chevron-circle";
+import { CloseCircle } from "@/components/ui/close-circle";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card } from "@/components/ui/card";
+import { triggerTapHaptic } from "@/lib/haptics";
+import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
 
 type PerfilFormProps = {
   initialNombre: string;
@@ -14,6 +18,9 @@ type PerfilFormProps = {
   email: string;
   avatarUrl?: string | null;
 };
+
+const PROFILE_FIELD_CLASS =
+  "border-slate-500/35 bg-slate-800/40 text-slate-200 placeholder:text-slate-500/80";
 
 function PencilIcon() {
   return (
@@ -31,6 +38,32 @@ function PencilIcon() {
         strokeLinecap="round"
       />
     </svg>
+  );
+}
+
+function CircleIconButton({
+  ariaLabel,
+  onClick,
+  children,
+}: {
+  ariaLabel: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const handlePointerDown = () => {
+    triggerTapHaptic();
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onClick}
+      onPointerDown={handlePointerDown}
+      className={[TAP_FEEDBACK_CLASS, "mt-0.5 shrink-0"].join(" ")}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -63,6 +96,11 @@ export function PerfilForm({
   const startEditing = () => {
     resetForm();
     setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    resetForm();
+    setEditing(false);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -100,26 +138,31 @@ export function PerfilForm({
 
   return (
     <Card accent className="relative flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3 pr-1">
+      <div className="flex items-start justify-between gap-3">
         <h2 className="text-lg font-bold text-foreground">Tu cuenta</h2>
 
-        {!editing ? (
-          <button
-            type="button"
-            onClick={startEditing}
-            aria-label="Editar perfil"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500/70 transition-colors hover:bg-surface-elevated hover:text-slate-400"
-          >
-            <PencilIcon />
-          </button>
-        ) : null}
+        {editing ? (
+          <CircleIconButton ariaLabel="Cerrar edición" onClick={cancelEditing}>
+            <CloseCircle />
+          </CircleIconButton>
+        ) : (
+          <CircleIconButton ariaLabel="Editar perfil" onClick={startEditing}>
+            <span className={CIRCLE_ICON_SURFACE_CLASS}>
+              <PencilIcon />
+            </span>
+          </CircleIconButton>
+        )}
       </div>
 
       {editing ? (
         <form
           onSubmit={(event) => void handleSubmit(event)}
-          className="mt-4 space-y-4"
+          className="space-y-4"
         >
+          <div className="flex justify-center pt-1">
+            <UserAvatar src={avatarUrl} name={viewNombre} size="lg" />
+          </div>
+
           <Input
             label="Nombre"
             type="text"
@@ -130,6 +173,7 @@ export function PerfilForm({
             onChange={(event) => setNombre(event.target.value)}
             placeholder="Tu nombre"
             error={error ?? undefined}
+            className={PROFILE_FIELD_CLASS}
           />
 
           <Input
@@ -141,6 +185,7 @@ export function PerfilForm({
             value={emailValue}
             onChange={(event) => setEmailValue(event.target.value)}
             placeholder="tu@email.com"
+            className={PROFILE_FIELD_CLASS}
           />
 
           <Button type="submit" fullWidth disabled={loading}>
@@ -148,10 +193,16 @@ export function PerfilForm({
           </Button>
         </form>
       ) : (
-        <div className="mt-4 space-y-1">
-          <p className="text-lg font-semibold text-foreground">{viewNombre}</p>
-          <p className="text-sm text-muted">{email || "—"}</p>
-        </div>
+        <>
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-foreground">{viewNombre}</p>
+            <p className="text-sm text-muted">{email || "—"}</p>
+          </div>
+
+          <div className="flex justify-center pt-1">
+            <UserAvatar src={avatarUrl} name={viewNombre} size="lg" />
+          </div>
+        </>
       )}
 
       {message ? (
@@ -159,10 +210,6 @@ export function PerfilForm({
           {message}
         </p>
       ) : null}
-
-      <div className="flex justify-center pt-1">
-        <UserAvatar src={avatarUrl} name={viewNombre} size="lg" />
-      </div>
     </Card>
   );
 }
