@@ -8,6 +8,7 @@ type NavigationMapLoaderProps = {
   geojson: FeatureCollection;
   bbox: RouteBbox;
   rutaNombre: string;
+  fromOfflineCache?: boolean;
 };
 
 const NavigationMap = dynamic(

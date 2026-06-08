@@ -1,17 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getOfflineRuta, type OfflineRuta } from "@/lib/tiles";
+import type { FeatureCollection } from "geojson";
+import type { RouteBbox } from "@/lib/gpx";
+import { getOfflineRuta } from "@/lib/tiles";
 import { NavigationMapLoader } from "@/components/navigation/navigation-map-loader";
 import { Card } from "@/components/ui/card";
 
-export function NavegacionView() {
-  const params = useParams<{ id: string }>();
-  const rutaId = params.id;
+export type OnlineRutaData = {
+  nombre: string;
+  geojson: FeatureCollection;
+  bbox: RouteBbox;
+};
 
-  const [offlineRuta, setOfflineRuta] = useState<OfflineRuta | null>(null);
+type NavegacionViewProps = {
+  rutaId: string;
+  onlineRuta?: OnlineRutaData | null;
+};
+
+type LoadedRuta = {
+  nombre: string;
+  geojson: FeatureCollection;
+  bbox: RouteBbox;
+  fromOfflineCache: boolean;
+};
+
+export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
+  const [loadedRuta, setLoadedRuta] = useState<LoadedRuta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,40 +36,62 @@ export function NavegacionView() {
 
     void (async () => {
       try {
-        const data = await getOfflineRuta(rutaId);
-        if (!data) {
-          setError(
-            "Esta ruta no está disponible offline. Descargala desde el detalle de la ruta.",
-          );
-          setOfflineRuta(null);
+        const offline = await getOfflineRuta(rutaId);
+        if (offline) {
+          setLoadedRuta({
+            nombre: offline.nombre,
+            geojson: offline.geojson,
+            bbox: offline.bbox,
+            fromOfflineCache: true,
+          });
+          setError(null);
           return;
         }
-        setOfflineRuta(data);
+
+        if (onlineRuta) {
+          setLoadedRuta({
+            nombre: onlineRuta.nombre,
+            geojson: onlineRuta.geojson,
+            bbox: onlineRuta.bbox,
+            fromOfflineCache: false,
+          });
+          setError(null);
+          return;
+        }
+
+        const offlineMessage =
+          typeof navigator !== "undefined" && !navigator.onLine
+            ? "Sin conexión. Descargá la ruta desde el detalle para navegar offline."
+            : "No se pudo cargar la ruta para navegación.";
+
+        setLoadedRuta(null);
+        setError(offlineMessage);
       } catch (loadError) {
+        setLoadedRuta(null);
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "No se pudo cargar la ruta offline.",
+            : "No se pudo cargar la ruta.",
         );
       } finally {
         setLoading(false);
       }
     })();
-  }, [rutaId]);
+  }, [rutaId, onlineRuta]);
 
   if (loading) {
     return (
       <Card className="py-8 text-center text-sm text-muted">
-        Cargando ruta offline…
+        Cargando navegación…
       </Card>
     );
   }
 
-  if (error || !offlineRuta) {
+  if (error || !loadedRuta) {
     return (
       <Card accent className="space-y-3">
         <p role="alert" className="text-sm text-red-300">
-          {error ?? "Ruta offline no encontrada."}
+          {error ?? "Ruta no encontrada."}
         </p>
         <Link
           href={rutaId ? `/rutas/${rutaId}` : "/"}
@@ -67,9 +105,10 @@ export function NavegacionView() {
 
   return (
     <NavigationMapLoader
-      geojson={offlineRuta.geojson}
-      bbox={offlineRuta.bbox}
-      rutaNombre={offlineRuta.nombre}
+      geojson={loadedRuta.geojson}
+      bbox={loadedRuta.bbox}
+      rutaNombre={loadedRuta.nombre}
+      fromOfflineCache={loadedRuta.fromOfflineCache}
     />
   );
 }

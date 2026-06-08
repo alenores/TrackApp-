@@ -18,6 +18,7 @@ type NavigationMapProps = {
   geojson: FeatureCollection;
   bbox: RouteBbox;
   rutaNombre: string;
+  fromOfflineCache?: boolean;
 };
 
 const ROUTE_STYLE: L.PathOptions = {
@@ -35,7 +36,12 @@ function boundsFromBbox(bbox: RouteBbox): L.LatLngBoundsExpression {
   ];
 }
 
-export function NavigationMap({ geojson, bbox, rutaNombre }: NavigationMapProps) {
+export function NavigationMap({
+  geojson,
+  bbox,
+  rutaNombre,
+  fromOfflineCache = false,
+}: NavigationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const routeLayerRef = useRef<L.GeoJSON | null>(null);
@@ -154,7 +160,9 @@ export function NavigationMap({ geojson, bbox, rutaNombre }: NavigationMapProps)
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-foreground">{rutaNombre}</h1>
-          <p className="text-xs text-muted">Navegación offline</p>
+          <p className="text-xs text-muted">
+            {fromOfflineCache ? "Navegación offline" : "Navegación con conexión"}
+          </p>
         </div>
         {gpsStatus === "active" && distanceMeters !== null ? (
           <div

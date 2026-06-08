@@ -86,20 +86,21 @@ export function RutaOfflineActions({
         </p>
       ) : null}
 
-      {isOffline ? (
-        <Button type="button" fullWidth onClick={handleNavigate}>
-          Navegar offline
-        </Button>
-      ) : (
+      <Button type="button" fullWidth onClick={handleNavigate}>
+        Navegar
+      </Button>
+
+      {!isOffline ? (
         <Button
           type="button"
+          variant="secondary"
           fullWidth
           disabled={downloading}
           onClick={() => void handleDownload()}
         >
           {downloading ? "Descargando…" : "Descargar para offline"}
         </Button>
-      )}
+      ) : null}
 
       {downloading && progress ? (
         <p className="text-center text-sm text-muted">
