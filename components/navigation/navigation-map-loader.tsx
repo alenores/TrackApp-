@@ -10,6 +10,7 @@ type NavigationMapLoaderProps = {
   bbox: RouteBbox;
   rutaNombre: string;
   fromOfflineCache?: boolean;
+  onRequestExit: () => void;
 };
 
 const NavigationMap = dynamic(

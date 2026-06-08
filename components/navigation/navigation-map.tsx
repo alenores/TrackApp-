@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import L from "leaflet";
@@ -40,20 +39,14 @@ function boundsFromBbox(bbox: RouteBbox): L.LatLngBoundsExpression {
   ];
 }
 
-const EXIT_CONFIRM_MESSAGE = "¿Querés salir de la navegación?";
-
-function confirmExitNavigation(): boolean {
-  return window.confirm(EXIT_CONFIRM_MESSAGE);
-}
-
 export function NavigationMap({
   rutaId,
   geojson,
   bbox,
   rutaNombre,
   fromOfflineCache = false,
-}: NavigationMapProps) {
-  const router = useRouter();
+  onRequestExit,
+}: NavigationMapProps & { onRequestExit: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const routeLayerRef = useRef<L.GeoJSON | null>(null);
@@ -173,29 +166,8 @@ export function NavigationMap({
   }, [position]);
 
   const handleExit = () => {
-    if (confirmExitNavigation()) {
-      router.push(`/rutas/${rutaId}`);
-    }
+    onRequestExit();
   };
-
-  useEffect(() => {
-    const guardUrl = window.location.href;
-    window.history.pushState({ navigationExitGuard: true }, "", guardUrl);
-
-    const handlePopState = () => {
-      if (confirmExitNavigation()) {
-        router.push(`/rutas/${rutaId}`);
-        return;
-      }
-
-      window.history.pushState({ navigationExitGuard: true }, "", guardUrl);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [rutaId, router]);
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] min-h-[420px] flex-col gap-3">

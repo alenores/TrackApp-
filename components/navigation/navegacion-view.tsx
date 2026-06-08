@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import type { RouteBbox } from "@/lib/gpx";
+import { useNavigationExitGuard } from "@/hooks/use-navigation-exit-guard";
 import { getOfflineRuta } from "@/lib/tiles";
+import { NavigationExitModal } from "@/components/navigation/navigation-exit-modal";
 import { NavigationMapLoader } from "@/components/navigation/navigation-map-loader";
 import { Card } from "@/components/ui/card";
 
@@ -27,6 +29,9 @@ type LoadedRuta = {
 };
 
 export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
+  const exitHref = `/rutas/${rutaId}`;
+  const { open, requestExit, cancelExit, confirmExit } =
+    useNavigationExitGuard(exitHref);
   const [loadedRuta, setLoadedRuta] = useState<LoadedRuta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,12 +109,20 @@ export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
   }
 
   return (
-    <NavigationMapLoader
-      rutaId={rutaId}
-      geojson={loadedRuta.geojson}
-      bbox={loadedRuta.bbox}
-      rutaNombre={loadedRuta.nombre}
-      fromOfflineCache={loadedRuta.fromOfflineCache}
-    />
+    <>
+      <NavigationMapLoader
+        rutaId={rutaId}
+        geojson={loadedRuta.geojson}
+        bbox={loadedRuta.bbox}
+        rutaNombre={loadedRuta.nombre}
+        fromOfflineCache={loadedRuta.fromOfflineCache}
+        onRequestExit={requestExit}
+      />
+      <NavigationExitModal
+        open={open}
+        onCancel={cancelExit}
+        onConfirm={confirmExit}
+      />
+    </>
   );
 }
