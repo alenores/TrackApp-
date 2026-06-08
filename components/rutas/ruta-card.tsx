@@ -1,14 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
+import { deleteOfflineRuta } from "@/lib/tiles";
 import { Card } from "@/components/ui/card";
 
 const SWIPE_ACTIVATION_PX = 8;
 const SWIPE_THRESHOLD_PX = 72;
 const EXIT_ANIMATION_MS = 220;
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
 
 function applySwipeOffset(deltaX: number, cardWidth: number): number {
   const travel = Math.abs(deltaX);
@@ -26,9 +30,10 @@ function applySwipeOffset(deltaX: number, cardWidth: number): number {
 type RutaCardProps = {
   ruta: RutaListItem;
   uploaderLabel: string;
+  isOwner: boolean;
 };
 
-export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
+export function RutaCard({ ruta, uploaderLabel, isOwner }: RutaCardProps) {
   const router = useRouter();
   const detailHref = `/rutas/${ruta.id}`;
   const cardRef = useRef<HTMLDivElement>(null);
@@ -37,14 +42,26 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
   const offsetXRef = useRef(0);
   const swiping = useRef(false);
   const didSwipe = useRef(false);
+  const longPressTriggered = useRef(false);
   const exitTimer = useRef<number | null>(null);
+  const longPressTimer = useRef<number | null>(null);
   const [offsetX, setOffsetX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const updateOffset = (nextOffset: number) => {
     offsetXRef.current = nextOffset;
     setOffsetX(nextOffset);
+  };
+
+  const clearLongPressTimer = () => {
+    if (longPressTimer.current !== null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
   };
 
   const goToDetail = () => {
@@ -63,23 +80,65 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
     swiping.current = false;
   };
 
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (isExiting) return;
-
-    const touch = event.touches[0];
-    startX.current = touch.clientX;
-    startY.current = touch.clientY;
-    swiping.current = true;
-    didSwipe.current = false;
-    setIsDragging(true);
+  const closeActions = () => {
+    setActionsOpen(false);
+    setActionError(null);
+    longPressTriggered.current = false;
   };
 
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!swiping.current || isExiting) return;
+  const openActions = () => {
+    if (!isOwner || actionsOpen || isExiting) return;
 
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - startX.current;
-    const deltaY = touch.clientY - startY.current;
+    longPressTriggered.current = true;
+    resetSwipe();
+    setActionsOpen(true);
+
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(12);
+    }
+  };
+
+  const scheduleLongPress = () => {
+    if (!isOwner || actionsOpen || isExiting) return;
+
+    clearLongPressTimer();
+    longPressTimer.current = window.setTimeout(openActions, LONG_PRESS_MS);
+  };
+
+  const handlePointerDown = (
+    clientX: number,
+    clientY: number,
+    startSwipe = true,
+  ) => {
+    if (isExiting || actionsOpen) return;
+
+    startX.current = clientX;
+    startY.current = clientY;
+    longPressTriggered.current = false;
+
+    if (startSwipe) {
+      swiping.current = true;
+      didSwipe.current = false;
+      setIsDragging(true);
+    }
+
+    scheduleLongPress();
+  };
+
+  const handlePointerMove = (clientX: number, clientY: number) => {
+    if (actionsOpen || isExiting) return;
+
+    const deltaX = clientX - startX.current;
+    const deltaY = clientY - startY.current;
+
+    if (
+      Math.abs(deltaX) > LONG_PRESS_MOVE_TOLERANCE_PX ||
+      Math.abs(deltaY) > LONG_PRESS_MOVE_TOLERANCE_PX
+    ) {
+      clearLongPressTimer();
+    }
+
+    if (!swiping.current) return;
 
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
       setIsDragging(false);
@@ -97,7 +156,15 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
     updateOffset(applySwipeOffset(deltaX, cardWidth));
   };
 
-  const handleTouchEnd = () => {
+  const handlePointerUp = () => {
+    clearLongPressTimer();
+
+    if (longPressTriggered.current || actionsOpen) {
+      swiping.current = false;
+      setIsDragging(false);
+      return;
+    }
+
     if (!swiping.current || isExiting) return;
 
     const currentOffset = offsetXRef.current;
@@ -125,7 +192,44 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
     updateOffset(0);
   };
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    handlePointerDown(touch.clientX, touch.clientY, true);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    handlePointerMove(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handlePointerUp();
+  };
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    handlePointerDown(event.clientX, event.clientY, false);
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!longPressTimer.current && !swiping.current) return;
+    handlePointerMove(event.clientX, event.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handlePointerUp();
+  };
+
+  const handleMouseLeave = () => {
+    clearLongPressTimer();
+  };
+
   const handleClick = () => {
+    if (actionsOpen || longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+
     if (didSwipe.current) {
       didSwipe.current = false;
       return;
@@ -137,9 +241,57 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
+      if (actionsOpen) return;
       goToDetail();
     }
   };
+
+  const handleEdit = () => {
+    closeActions();
+    router.push(`/rutas/${ruta.id}/editar`);
+  };
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "¿Eliminar esta ruta? Esta acción no se puede deshacer.",
+    );
+
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setActionError(null);
+
+    try {
+      await deleteOfflineRuta(ruta.id);
+    } catch {
+      // Offline data may not exist.
+    }
+
+    const result = await deleteRuta(ruta.id);
+
+    if (!result.success) {
+      setActionError(result.error);
+      setDeleting(false);
+      return;
+    }
+
+    closeActions();
+    setDeleting(false);
+    router.refresh();
+  };
+
+  useEffect(() => {
+    if (!actionsOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeActions();
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [actionsOpen]);
 
   const revealProgress = Math.min(
     1,
@@ -151,7 +303,7 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-2xl bg-emerald-950/70 px-5"
-        style={{ opacity: revealProgress * 0.95 }}
+        style={{ opacity: actionsOpen ? 0 : revealProgress * 0.95 }}
       >
         <span
           className="text-sm font-medium text-emerald-200"
@@ -174,17 +326,37 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onTouchCancel={resetSwipe}
+        onTouchCancel={() => {
+          clearLongPressTimer();
+          resetSwipe();
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onContextMenu={(event) => {
+          if (isOwner) {
+            event.preventDefault();
+            openActions();
+          }
+        }}
         style={{ transform: `translateX(${offsetX}px)` }}
         className={[
-          "relative rounded-2xl touch-pan-y",
+          "relative rounded-2xl touch-pan-y select-none",
           !isDragging ? "transition-transform duration-200 ease-out" : "",
           isDragging && !isExiting ? "active:scale-[0.995]" : "",
+          actionsOpen ? "z-20" : "",
         ]
           .filter(Boolean)
           .join(" ")}
       >
-        <Card interactive className="space-y-3">
+        <Card
+          interactive={!actionsOpen}
+          className={[
+            "space-y-3",
+            actionsOpen ? "ring-2 ring-emerald-500/50" : "",
+          ].join(" ")}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-1">
               <h2 className="text-lg font-semibold text-foreground">{ruta.nombre}</h2>
@@ -229,8 +401,75 @@ export function RutaCard({ ruta, uploaderLabel }: RutaCardProps) {
             </div>
           </dl>
 
-          <p className="text-xs font-medium text-slate-500">Tocá para ver detalle</p>
+          <p className="text-xs font-medium text-slate-500">
+            {isOwner
+              ? "Tocá para ver · Mantené presionado para editar o eliminar"
+              : "Tocá para ver detalle"}
+          </p>
+
+          {actionError ? (
+            <p role="alert" className="text-sm text-red-400">
+              {actionError}
+            </p>
+          ) : null}
         </Card>
+
+        {actionsOpen ? (
+          <>
+            <button
+              type="button"
+              aria-label="Cerrar acciones"
+              className="absolute inset-0 z-10 rounded-2xl bg-slate-950/50"
+              onClick={(event) => {
+                event.stopPropagation();
+                closeActions();
+              }}
+            />
+
+            <div className="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleEdit();
+                }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-full border border-sky-600/50 bg-sky-900/90 px-5 py-3 text-sm font-semibold text-sky-100 shadow-lg shadow-black/30 transition-transform hover:scale-105 active:scale-95"
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+                  <path
+                    d="M4 20h4l10.5-10.5a1.4 1.4 0 0 0 0-2L16.5 5.5a1.4 1.4 0 0 0-2 0L4 16v4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Editar
+              </button>
+
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void handleDelete();
+                }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-700/50 bg-red-950/90 px-5 py-3 text-sm font-semibold text-red-200 shadow-lg shadow-black/30 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+                  <path
+                    d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V5h6v2"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {deleting ? "Eliminando…" : "Eliminar"}
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

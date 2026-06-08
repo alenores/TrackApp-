@@ -44,6 +44,7 @@ export function RutaList({
             <li key={ruta.id}>
               <RutaCard
                 ruta={ruta}
+                isOwner={currentUserId === ruta.user_id}
                 uploaderLabel={getUploaderLabel(
                   ruta,
                   currentUserId,

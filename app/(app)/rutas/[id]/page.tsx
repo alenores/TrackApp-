@@ -7,7 +7,6 @@ import { fetchRutaById } from "@/lib/rutas/queries";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
-import { DeleteRutaButton } from "@/components/rutas/delete-ruta-button";
 import { Card } from "@/components/ui/card";
 
 type RutaDetailPageProps = {
@@ -22,7 +21,6 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
     notFound();
   }
 
-  const isOwner = user?.id === ruta.user_id;
   const uploaderLabel = getUploaderLabel(
     ruta,
     user?.id ?? null,
@@ -87,10 +85,6 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
         geojson={ruta.geojson}
         bbox={ruta.bbox}
       />
-
-      {isOwner ? (
-        <DeleteRutaButton rutaId={ruta.id} userId={ruta.user_id} />
-      ) : null}
     </div>
   );
 }
