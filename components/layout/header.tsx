@@ -36,7 +36,7 @@ export function Header({ onMenuToggle, userName, userAvatarUrl }: HeaderProps) {
         </div>
 
         <Link
-          href="/perfil"
+          href="/perfiles"
           aria-label={`Mi perfil (${userName})`}
           className="shrink-0 rounded-full transition-opacity hover:opacity-90"
         >

@@ -82,9 +82,13 @@ ALTER TABLE public.rutas
 
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  nombre text,
   avatar_url text,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS nombre text;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -98,12 +102,14 @@ CREATE POLICY "profiles_select_authenticated"
 
 GRANT SELECT ON TABLE public.profiles TO authenticated;
 
--- Ejemplo para asignar foto a un usuario (reemplazá UUID y URL):
--- INSERT INTO public.profiles (id, avatar_url)
+-- Ejemplo para asignar nombre y foto (reemplazá UUID y URL):
+-- INSERT INTO public.profiles (id, nombre, avatar_url)
 -- VALUES (
 --   '00000000-0000-0000-0000-000000000000',
+--   'Juan',
 --   'https://TU_PROYECTO.supabase.co/storage/v1/object/public/avatars/juan.jpg'
 -- )
 -- ON CONFLICT (id) DO UPDATE
--- SET avatar_url = EXCLUDED.avatar_url,
+-- SET nombre = EXCLUDED.nombre,
+--     avatar_url = EXCLUDED.avatar_url,
 --     updated_at = now();

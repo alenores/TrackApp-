@@ -8,13 +8,15 @@
 -- 2) Subí cada foto (ej. juan.jpg) desde el dashboard
 --
 -- 3) Copiá la URL pública y guardala en profiles.avatar_url:
---    INSERT INTO public.profiles (id, avatar_url)
+--    INSERT INTO public.profiles (id, nombre, avatar_url)
 --    VALUES (
 --      'UUID-DEL-USUARIO-EN-AUTH',
+--      'Juan',
 --      'https://TU_PROYECTO.supabase.co/storage/v1/object/public/avatars/juan.jpg'
 --    )
 --    ON CONFLICT (id) DO UPDATE
---    SET avatar_url = EXCLUDED.avatar_url,
+--    SET nombre = EXCLUDED.nombre,
+--        avatar_url = EXCLUDED.avatar_url,
 --        updated_at = now();
 --
 -- El id debe coincidir con auth.users.id (Authentication → Users → UUID).

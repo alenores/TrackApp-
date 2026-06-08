@@ -99,17 +99,9 @@ export function PerfilForm({
   const viewNombre = initialNombre || displayNombre;
 
   return (
-    <Card accent className="relative">
-      <div className="mb-4 flex justify-center">
-        <UserAvatar
-          src={avatarUrl}
-          name={viewNombre}
-          size="lg"
-        />
-      </div>
-
+    <Card accent className="relative flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3 pr-1">
-        <h1 className="text-xl font-bold text-foreground">Mi perfil</h1>
+        <h2 className="text-lg font-bold text-foreground">Tu cuenta</h2>
 
         {!editing ? (
           <button
@@ -163,10 +155,14 @@ export function PerfilForm({
       )}
 
       {message ? (
-        <p className="mt-4 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+        <p className="rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
           {message}
         </p>
       ) : null}
+
+      <div className="flex justify-center pt-1">
+        <UserAvatar src={avatarUrl} name={viewNombre} size="lg" />
+      </div>
     </Card>
   );
 }

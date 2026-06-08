@@ -47,6 +47,7 @@ export async function updateProfile(input: {
   }
 
   revalidatePath("/", "layout");
+  revalidatePath("/perfiles");
   revalidatePath("/perfil");
 
   return { success: true, emailConfirmationRequired: emailChanged };
