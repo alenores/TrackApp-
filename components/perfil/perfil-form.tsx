@@ -28,6 +28,20 @@ type PerfilFormProps = {
 const PROFILE_FIELD_CLASS =
   "border-slate-500/35 bg-slate-800/40 text-slate-200 placeholder:text-slate-500/80";
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+      <path
+        d="M4 8h3l1.5-2h7L17 8h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="3.25" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 function PencilIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
@@ -210,18 +224,32 @@ export function PerfilForm({
           onSubmit={(event) => void handleSubmit(event)}
           className="space-y-4"
         >
-          <div className="flex flex-col items-center gap-2 pt-1">
+          <div className="flex flex-col items-center gap-2.5 pt-1">
             <button
               type="button"
               onClick={handleAvatarPick}
               onPointerDown={() => triggerTapHaptic()}
-              className={[TAP_FEEDBACK_CLASS, "rounded-full"].join(" ")}
+              className={[
+                TAP_FEEDBACK_CLASS,
+                "group relative rounded-full",
+              ].join(" ")}
               aria-label="Cambiar foto de perfil"
             >
-              <UserAvatar src={editingAvatarSrc} name={viewNombre} size="lg" />
+              <UserAvatar
+                src={editingAvatarSrc}
+                name={viewNombre}
+                size="lg"
+                className="ring-2 ring-emerald-500/45 ring-offset-2 ring-offset-surface transition-[box-shadow] group-active:ring-emerald-400/70"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full border border-emerald-700/70 bg-emerald-600 text-white shadow-md">
+                <CameraIcon />
+              </span>
             </button>
-            <p className="text-center text-xs text-muted">
-              Tocá la foto para elegir desde la galería o sacar una nueva
+            <p className="text-center text-sm font-semibold text-emerald-200/95">
+              Cambiar foto
+            </p>
+            <p className="max-w-[16rem] text-center text-xs leading-5 text-muted">
+              Galería o cámara del celular
             </p>
             <input
               ref={avatarInputRef}
