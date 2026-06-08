@@ -361,7 +361,7 @@ export function RutaCard({ ruta, uploaderLabel, isOwner }: RutaCardProps) {
             <div className="min-w-0 flex-1 space-y-1">
               <h2 className="text-lg font-semibold text-foreground">{ruta.nombre}</h2>
               {ruta.descripcion ? (
-                <p className="line-clamp-2 text-sm leading-6 text-slate-400">
+                <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
                   {ruta.descripcion}
                 </p>
               ) : null}

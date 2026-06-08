@@ -7,6 +7,7 @@ import { fetchRutaById } from "@/lib/rutas/queries";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
+import { RutaOfflineBadge } from "@/components/rutas/ruta-offline-badge";
 import { Card } from "@/components/ui/card";
 
 type RutaDetailPageProps = {
@@ -35,10 +36,12 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
     <div className="space-y-4">
       <Card tone="light" className="space-y-3">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">{ruta.nombre}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words text-xl font-bold text-foreground">
+              {ruta.nombre}
+            </h1>
             {ruta.descripcion ? (
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+              <p className="mt-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
                 {ruta.descripcion}
               </p>
             ) : null}
@@ -67,6 +70,9 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
             <dd className="font-medium text-foreground">
               {formatRouteDate(ruta.created_at)}
             </dd>
+          </div>
+          <div className="col-span-2">
+            <RutaOfflineBadge rutaId={ruta.id} />
           </div>
         </dl>
       </Card>

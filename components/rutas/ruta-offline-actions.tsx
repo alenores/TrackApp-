@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import type { RouteBbox } from "@/lib/gpx";
+import { notifyRutaOfflineUpdated } from "@/lib/rutas/offline-events";
 import {
   downloadRutaOffline,
   isRutaOffline,
@@ -55,6 +56,7 @@ export function RutaOfflineActions({
         },
       );
       setIsOffline(true);
+      notifyRutaOfflineUpdated(rutaId);
     } catch (downloadError) {
       setError(
         downloadError instanceof Error
@@ -80,12 +82,6 @@ export function RutaOfflineActions({
 
   return (
     <div className="space-y-3">
-      {isOffline ? (
-        <p className="rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
-          ✓ Ruta disponible offline
-        </p>
-      ) : null}
-
       <Button type="button" fullWidth onClick={handleNavigate}>
         Navegar
       </Button>

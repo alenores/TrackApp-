@@ -38,6 +38,12 @@ function boundsFromBbox(bbox: RouteBbox): L.LatLngBoundsExpression {
   ];
 }
 
+const EXIT_CONFIRM_MESSAGE = "¿Querés salir de la navegación?";
+
+function confirmExitNavigation(): boolean {
+  return window.confirm(EXIT_CONFIRM_MESSAGE);
+}
+
 export function NavigationMap({
   rutaId,
   geojson,
@@ -165,11 +171,29 @@ export function NavigationMap({
   }, [position]);
 
   const handleExit = () => {
-    const confirmed = window.confirm("¿Querés salir de la navegación?");
-    if (confirmed) {
+    if (confirmExitNavigation()) {
       router.push(`/rutas/${rutaId}`);
     }
   };
+
+  useEffect(() => {
+    const guardUrl = window.location.href;
+    window.history.pushState({ navigationExitGuard: true }, "", guardUrl);
+
+    const handlePopState = () => {
+      if (confirmExitNavigation()) {
+        router.push(`/rutas/${rutaId}`);
+        return;
+      }
+
+      window.history.pushState({ navigationExitGuard: true }, "", guardUrl);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [rutaId, router]);
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] min-h-[420px] flex-col gap-3">
