@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RutaListItem } from "@/types/database";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { RutaCard } from "@/components/rutas/ruta-card";
@@ -38,8 +38,37 @@ export function RutaList({
   showNewRouteFab = false,
 }: RutaListProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchInputWrapRef = useRef<HTMLDivElement>(null);
+  const searchToggleRef = useRef<HTMLButtonElement>(null);
+  const searchHistoryPushedRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+
+  const closeSearch = useCallback((fromPopState = false) => {
+    setSearchOpen(false);
+    setQuery("");
+
+    if (fromPopState) {
+      searchHistoryPushedRef.current = false;
+      return;
+    }
+
+    if (searchHistoryPushedRef.current) {
+      searchHistoryPushedRef.current = false;
+      window.history.back();
+    }
+  }, []);
+
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+
+    if (!searchHistoryPushedRef.current) {
+      window.history.pushState({ rutaSearch: true }, "", window.location.href);
+      searchHistoryPushedRef.current = true;
+    }
+
+    window.setTimeout(() => searchInputRef.current?.focus(), 0);
+  }, []);
 
   const filteredRutas = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
@@ -51,16 +80,45 @@ export function RutaList({
   }, [query, rutas]);
 
   const toggleSearch = () => {
-    setSearchOpen((current) => {
-      const next = !current;
-      if (next) {
-        window.setTimeout(() => searchInputRef.current?.focus(), 0);
-      } else {
-        setQuery("");
-      }
-      return next;
-    });
+    if (searchOpen) {
+      closeSearch();
+      return;
+    }
+
+    openSearch();
   };
+
+  useEffect(() => {
+    if (!searchOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+
+      if (searchToggleRef.current?.contains(target)) {
+        return;
+      }
+
+      if (searchInputWrapRef.current?.contains(target)) {
+        return;
+      }
+
+      closeSearch();
+    };
+
+    const handlePopState = () => {
+      closeSearch(true);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [searchOpen, closeSearch]);
 
   const summaryText =
     rutas.length === 0
@@ -80,6 +138,7 @@ export function RutaList({
 
           {rutas.length > 0 ? (
             <button
+              ref={searchToggleRef}
               type="button"
               aria-label={searchOpen ? "Cerrar búsqueda" : "Buscar rutas"}
               aria-pressed={searchOpen}
@@ -97,7 +156,7 @@ export function RutaList({
         </div>
 
         {searchOpen ? (
-          <div className="space-y-2">
+          <div ref={searchInputWrapRef} className="space-y-2">
             <label htmlFor="buscar-rutas" className="sr-only">
               Buscar rutas por nombre
             </label>
