@@ -1,6 +1,7 @@
 import type { DirectoryUser } from "@/lib/auth/directory";
 import { PerfilForm } from "@/components/perfil/perfil-form";
 import { PerfilUsuarioCard } from "@/components/perfil/perfil-usuario-card";
+import { PerfilesPageRefresh } from "@/components/perfil/perfiles-page-refresh";
 
 type PerfilesViewProps = {
   currentUserId: string;
@@ -23,6 +24,7 @@ export function PerfilesView({
 
   return (
     <div className="space-y-4">
+      <PerfilesPageRefresh />
       <div>
         <h1 className="text-xl font-bold text-foreground">Perfiles</h1>
         <p className="mt-1 text-sm text-muted">

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const PWA_CACHE_BUST = "2026-06-07-mountain-icon-v2";
+const PWA_CACHE_BUST = "2026-06-08-profiles-sync-v1";
 
 const OBSOLETE_CACHE_NAMES = [
   "supabase-api-cache",

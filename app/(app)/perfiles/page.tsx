@@ -4,6 +4,8 @@ import { fetchCurrentUserAvatar } from "@/lib/auth/profiles";
 import { getAuthUser } from "@/lib/auth/session";
 import { PerfilesView } from "@/components/perfil/perfiles-view";
 
+export const dynamic = "force-dynamic";
+
 export default async function PerfilesPage() {
   const user = await getAuthUser();
 
