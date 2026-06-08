@@ -1,14 +1,16 @@
 "use client";
 
+import { ChevronCircle } from "@/components/ui/chevron-circle";
 import { TapLink } from "@/components/ui/tap-link";
 
 export function RutaDetailBackLink() {
   return (
     <TapLink
       href="/"
-      className="shrink-0 rounded-lg px-2 py-1 text-sm text-emerald-300 hover:text-emerald-200"
+      aria-label="Volver al listado de rutas"
+      className="mt-0.5 shrink-0"
     >
-      ← Volver
+      <ChevronCircle direction="left" />
     </TapLink>
   );
 }

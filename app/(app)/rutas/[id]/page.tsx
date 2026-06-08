@@ -39,7 +39,8 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
   return (
     <div className="space-y-4">
       <Card tone="light" className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <RutaDetailBackLink />
           <div className="min-w-0 flex-1">
             <h1 className="break-words text-xl font-bold text-foreground">
               {ruta.nombre}
@@ -50,7 +51,6 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
               </p>
             ) : null}
           </div>
-          <RutaDetailBackLink />
         </div>
 
         <dl className="grid grid-cols-2 gap-3 text-sm">

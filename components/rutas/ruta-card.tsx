@@ -8,6 +8,7 @@ import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { triggerTapHaptic } from "@/lib/haptics";
 import { deleteOfflineRuta } from "@/lib/tiles";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
+import { ChevronCircle } from "@/components/ui/chevron-circle";
 import { Card } from "@/components/ui/card";
 
 const SWIPE_ACTIVATION_PX = 8;
@@ -374,20 +375,7 @@ export function RutaCard({
                 </p>
               ) : null}
             </div>
-            <span
-              aria-hidden
-              className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-600/70 bg-slate-800/80 text-slate-400"
-            >
-              <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-                <path
-                  d="m9 6 6 6-6 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
+            <ChevronCircle direction="right" className="mt-0.5" />
           </div>
 
           <dl className="grid grid-cols-2 gap-3 text-sm">

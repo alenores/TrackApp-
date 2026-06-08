@@ -38,8 +38,11 @@ export function Header({ onMenuToggle, userName, userAvatarUrl }: HeaderProps) {
         <Link
           href="/perfiles"
           aria-label={`Mi perfil (${userName})`}
-          className="shrink-0 rounded-full transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center gap-2 rounded-xl py-1 pl-2 pr-1 transition-opacity hover:opacity-90"
         >
+          <span className="max-w-[7.5rem] truncate text-sm font-medium text-foreground sm:max-w-[10rem]">
+            {userName}
+          </span>
           <UserAvatar src={userAvatarUrl} name={userName} size="sm" />
         </Link>
       </div>
