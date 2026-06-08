@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <rect width="512" height="512" rx="112" fill="#1e293b"/>
   <path
-    d="M48 392h416L312 176l-72 96-56-72-88 112-48 80Z"
-    fill="#1b4332"
-  />
-  <path
-    d="M96 392h320L288 208l-64 84-48-62-72 90-48 72Z"
+    d="M40 400h432L300 168l-68 92-54-70-92 114-46 96Z"
     fill="#2d6a4f"
   />
   <path
-    d="M248 132 312 176l-24 52-52-36 12-60Z"
-    fill="#95d5b2"
-  />
-  <path
-    d="M312 176 368 248l-28 44H252l60-116Z"
+    d="M88 400h336L276 196l-60 78-46-58-70 86-46 78Z"
     fill="#40916c"
   />
-  <circle cx="372" cy="148" r="22" fill="#d8f3dc" opacity="0.95"/>
+  <path
+    d="M236 124 300 168l-28 58-56-38 20-64Z"
+    fill="#d8f3dc"
+  />
+  <path
+    d="M300 168 360 236l-30 48H244l56-116Z"
+    fill="#52b788"
+  />
+  <circle cx="364" cy="136" r="28" fill="#f1f5f9"/>
 </svg>

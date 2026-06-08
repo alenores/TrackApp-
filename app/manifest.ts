@@ -16,8 +16,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "es-AR",
     icons: [
       {
-        src: `/icon-192x192.png${q}`,
-        sizes: "192x192",
+        src: `/icon-maskable-512x512.png${q}`,
+        sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },

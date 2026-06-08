@@ -68,6 +68,7 @@ const withPWA = withPWAInit({
           p === "/logo-identidad.png" ||
           p === "/icon-192x192.png" ||
           p === "/icon-512x512.png" ||
+          p === "/icon-maskable-512x512.png" ||
           p === "/favicon.ico" ||
           p === "/icon.png" ||
           p === "/apple-icon.png"
@@ -170,6 +171,7 @@ const nextConfig: NextConfig = {
       "/logo-identidad.png",
       "/icon-192x192.png",
       "/icon-512x512.png",
+      "/icon-maskable-512x512.png",
       "/manifest.webmanifest",
     ];
     return [

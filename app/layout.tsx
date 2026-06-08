@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
 import { BuildStamp } from "@/components/layout/build-stamp";
 import { PwaSplash } from "@/components/layout/pwa-splash";
+import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
 import { ServiceWorkerRegister } from "./sw-register";
 import "./globals.css";
 
@@ -65,6 +66,7 @@ export default function RootLayout({
       <body className="fixed inset-0 flex min-h-0 flex-col overflow-hidden">
         <PreventViewportZoom />
         <PwaSplash />
+        <PwaInstallPrompt />
         <ServiceWorkerRegister />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
         <BuildStamp />
