@@ -46,21 +46,6 @@ export async function updateProfile(input: {
     return { success: false, error: error.message };
   }
 
-  const { error: profileError } = await supabase.from("profiles").upsert(
-    {
-      id: user.id,
-      nombre: trimmedNombre,
-    },
-    { onConflict: "id" },
-  );
-
-  if (profileError) {
-    return {
-      success: false,
-      error: "No se pudo guardar el perfil en el directorio de usuarios.",
-    };
-  }
-
   revalidatePath("/", "layout");
   revalidatePath("/perfiles");
   revalidatePath("/perfil");

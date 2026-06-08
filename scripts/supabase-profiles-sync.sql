@@ -1,5 +1,6 @@
--- TrackApp — sincronizar perfiles con auth.users
--- Ejecutá en Supabase → SQL Editor si ya corriste supabase-setup.sql antes.
+-- TrackApp — directorio de usuarios (public.profiles)
+-- Supabase no permite listar auth.users desde la app; esta tabla es la vista pública.
+-- Se sincroniza sola con triggers (registro + cambio de nombre). Ejecutá una vez en SQL Editor.
 
 GRANT SELECT, INSERT, UPDATE ON TABLE public.profiles TO authenticated;
 
@@ -42,6 +43,34 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_auth_user();
+
+CREATE OR REPLACE FUNCTION public.handle_auth_user_updated()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, nombre)
+  VALUES (
+    NEW.id,
+    NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'nombre', '')), '')
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET
+    nombre = EXCLUDED.nombre,
+    updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_updated ON auth.users;
+
+CREATE TRIGGER on_auth_user_updated
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW
+  WHEN (OLD.raw_user_meta_data IS DISTINCT FROM NEW.raw_user_meta_data)
+  EXECUTE FUNCTION public.handle_auth_user_updated();
 
 INSERT INTO public.profiles (id, nombre)
 SELECT

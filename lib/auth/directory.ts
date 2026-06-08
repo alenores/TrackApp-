@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 
+// Supabase no expone auth.users al cliente: public.profiles es el listado consultable
+// (se llena con trigger SQL al registrarse o actualizar el nombre).
+
 export type DirectoryUser = {
   id: string;
   nombre: string;

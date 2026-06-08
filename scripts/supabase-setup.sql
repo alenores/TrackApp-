@@ -76,9 +76,9 @@ CREATE POLICY "descargas_delete_own"
 ALTER TABLE public.rutas
   ADD COLUMN IF NOT EXISTS subido_por_nombre text;
 
--- ─── 5. Fotos de perfil (avatars) ───
--- Cargá las fotos manualmente desde el dashboard o con SQL.
--- Ver también: scripts/supabase-avatars-storage.sql
+-- ─── 5. Directorio de usuarios (profiles) ───
+-- auth.users no es consultable desde la app; profiles es la vista pública del listado.
+-- Los triggers sincronizan id + nombre; avatar_url se carga manual (ver supabase-avatars-storage.sql).
 
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
@@ -142,6 +142,34 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_auth_user();
+
+CREATE OR REPLACE FUNCTION public.handle_auth_user_updated()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, nombre)
+  VALUES (
+    NEW.id,
+    NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'nombre', '')), '')
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET
+    nombre = EXCLUDED.nombre,
+    updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_updated ON auth.users;
+
+CREATE TRIGGER on_auth_user_updated
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW
+  WHEN (OLD.raw_user_meta_data IS DISTINCT FROM NEW.raw_user_meta_data)
+  EXECUTE FUNCTION public.handle_auth_user_updated();
 
 INSERT INTO public.profiles (id, nombre)
 SELECT
