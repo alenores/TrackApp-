@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import type { RutaListItem } from "@/types/database";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { RutaCard } from "@/components/rutas/ruta-card";
-import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 import { Card } from "@/components/ui/card";
 
 type RutaListProps = {
@@ -145,7 +144,6 @@ export function RutaList({
         </ul>
       )}
 
-      {showNewRouteFab ? <NuevaRutaFab /> : null}
     </div>
   );
 }

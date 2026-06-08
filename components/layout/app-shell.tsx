@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 
 type AppShellProps = {
   userName: string;
@@ -15,8 +16,10 @@ type AppShellProps = {
 
 export function AppShell({ userName, userEmail, children }: AppShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const showNewRouteFab = pathname === "/rutas" || pathname === "/";
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -83,6 +86,8 @@ export function AppShell({ userName, userEmail, children }: AppShellProps) {
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </main>
       </div>
+
+      {showNewRouteFab ? <NuevaRutaFab /> : null}
     </div>
   );
 }
