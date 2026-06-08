@@ -1,0 +1,16 @@
+---
+description: Auto commit and push after completing project edits
+alwaysApply: true
+---
+
+# Git workflow
+
+After completing any code change or task in this project:
+
+1. Run `git status` and `git diff` to review changes.
+2. Do **not** ask the user for confirmation to commit or push.
+3. Create a commit with a clear message focused on the why.
+4. Push to the remote branch immediately after a successful commit.
+5. Never commit secrets (`.env.local`, credentials).
+
+The user has pre-approved automatic commit + push for all edits.

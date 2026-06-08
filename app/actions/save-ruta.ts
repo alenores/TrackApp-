@@ -37,8 +37,7 @@ export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
 
   const userId = user.id;
   const rutaId = crypto.randomUUID();
-
-  const { error: insertError } = await supabase.from("rutas").insert({
+  const baseInsert = {
     id: rutaId,
     user_id: userId,
     nombre: input.nombre.trim(),
@@ -47,8 +46,18 @@ export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
     geojson: input.geojson,
     bbox: input.bbox,
     gpx_url: null,
-    subido_por_nombre: getUserDisplayName(user),
-  });
+  };
+
+  let insertError = (
+    await supabase.from("rutas").insert({
+      ...baseInsert,
+      subido_por_nombre: getUserDisplayName(user),
+    })
+  ).error;
+
+  if (insertError?.message.includes("subido_por_nombre")) {
+    insertError = (await supabase.from("rutas").insert(baseInsert)).error;
+  }
 
   if (insertError) {
     return { success: false, error: formatSupabaseError(insertError.message) };
