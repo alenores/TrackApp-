@@ -2,14 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { OfflineBookmarkIcon } from "@/components/rutas/offline-bookmark-icon";
-import { isRutaOffline } from "@/lib/tiles";
+import {
+  RUTA_DATA_CELL_CLASS,
+  RUTA_DATA_LABEL_CLASS,
+} from "@/lib/rutas/data-cell-styles";
 import { RUTA_OFFLINE_UPDATED_EVENT } from "@/lib/rutas/offline-events";
+import { isRutaOffline } from "@/lib/tiles";
 
-type RutaOfflineBadgeProps = {
+type RutaOfflineFieldProps = {
   rutaId: string;
 };
 
-export function RutaOfflineBadge({ rutaId }: RutaOfflineBadgeProps) {
+export function RutaOfflineField({ rutaId }: RutaOfflineFieldProps) {
   const [isOffline, setIsOffline] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -38,14 +42,21 @@ export function RutaOfflineBadge({ rutaId }: RutaOfflineBadgeProps) {
     };
   }, [rutaId, refreshStatus]);
 
-  if (checking || !isOffline) {
-    return null;
-  }
-
   return (
-    <div className="inline-flex w-fit max-w-full items-center gap-2 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
-      <OfflineBookmarkIcon className="h-4 w-4 shrink-0" />
-      <span>Ruta disponible offline</span>
+    <div className={RUTA_DATA_CELL_CLASS}>
+      <dt className={RUTA_DATA_LABEL_CLASS}>Offline</dt>
+      <dd className="mt-0.5 font-medium">
+        {checking ? (
+          <span className="text-muted">…</span>
+        ) : isOffline ? (
+          <span className="inline-flex items-center gap-1.5 text-emerald-200">
+            <OfflineBookmarkIcon className="h-3.5 w-3.5 shrink-0" />
+            Disponible
+          </span>
+        ) : (
+          <span className="text-amber-100/80">No descargado</span>
+        )}
+      </dd>
     </div>
   );
 }

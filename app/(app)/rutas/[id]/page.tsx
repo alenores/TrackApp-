@@ -4,12 +4,19 @@ import { getAuthUser } from "@/lib/auth/session";
 import { fetchAvatarUrlsByUserIds } from "@/lib/auth/profiles";
 import { getUploaderLabel } from "@/lib/rutas/helpers";
 import { fetchRutaById } from "@/lib/rutas/queries";
+import {
+  RUTA_DATA_CELL_CLASS,
+  RUTA_DATA_GRID_CLASS,
+  RUTA_DATA_LABEL_CLASS,
+  RUTA_DATA_VALUE_CLASS,
+  RUTA_DISTANCE_VALUE_CLASS,
+} from "@/lib/rutas/data-cell-styles";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
+import { RutaOfflineField } from "@/components/rutas/ruta-offline-field";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
 import { RutaDetailBackLink } from "@/components/rutas/ruta-detail-back-link";
-import { RutaOfflineBadge } from "@/components/rutas/ruta-offline-badge";
 import { Card } from "@/components/ui/card";
 
 type RutaDetailPageProps = {
@@ -54,30 +61,28 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
           </p>
         ) : null}
 
-        <dl className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <dt className="text-muted">Distancia</dt>
-            <dd className="font-medium text-emerald-200">
+        <dl className={RUTA_DATA_GRID_CLASS}>
+          <div className={RUTA_DATA_CELL_CLASS}>
+            <dt className={RUTA_DATA_LABEL_CLASS}>Distancia</dt>
+            <dd className={RUTA_DISTANCE_VALUE_CLASS}>
               {formatDistanceKm(ruta.distancia_km)}
             </dd>
           </div>
-          <div>
-            <dt className="text-muted">Subida por</dt>
-            <dd className="font-medium text-foreground">{uploaderLabel}</dd>
+          <div className={RUTA_DATA_CELL_CLASS}>
+            <dt className={RUTA_DATA_LABEL_CLASS}>Subida por</dt>
+            <dd className={RUTA_DATA_VALUE_CLASS}>{uploaderLabel}</dd>
             <UploaderAvatar
               avatarUrl={uploaderAvatarUrl}
               uploaderLabel={uploaderLabel}
             />
           </div>
-          <div className="col-span-2">
-            <dt className="text-muted">Fecha</dt>
-            <dd className="font-medium text-foreground">
+          <div className={RUTA_DATA_CELL_CLASS}>
+            <dt className={RUTA_DATA_LABEL_CLASS}>Fecha</dt>
+            <dd className={RUTA_DATA_VALUE_CLASS}>
               {formatRouteDate(ruta.created_at)}
             </dd>
           </div>
-          <div className="col-span-2">
-            <RutaOfflineBadge rutaId={ruta.id} />
-          </div>
+          <RutaOfflineField rutaId={ruta.id} />
         </dl>
       </Card>
 

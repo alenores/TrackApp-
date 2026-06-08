@@ -6,6 +6,13 @@ import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { OfflineBookmarkIcon } from "@/components/rutas/offline-bookmark-icon";
+import {
+  RUTA_DATA_CELL_CLASS,
+  RUTA_DATA_GRID_CLASS,
+  RUTA_DATA_LABEL_CLASS,
+  RUTA_DATA_VALUE_CLASS,
+  RUTA_DISTANCE_VALUE_CLASS,
+} from "@/lib/rutas/data-cell-styles";
 import { triggerTapHaptic } from "@/lib/haptics";
 import { RUTA_OFFLINE_UPDATED_EVENT } from "@/lib/rutas/offline-events";
 import { deleteOfflineRuta, isRutaOffline } from "@/lib/tiles";
@@ -18,9 +25,6 @@ const SWIPE_THRESHOLD_PX = 72;
 const EXIT_ANIMATION_MS = 220;
 const LONG_PRESS_MS = 500;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
-
-const RUTA_DATA_CELL_CLASS =
-  "rounded-lg border border-slate-500/20 bg-slate-900/15 px-2.5 py-2";
 
 function applySwipeOffset(deltaX: number, cardWidth: number): number {
   const travel = Math.abs(deltaX);
@@ -410,16 +414,16 @@ export function RutaCard({
             <ChevronCircle direction="right" className="mt-0.5" />
           </div>
 
-          <dl className="grid grid-cols-2 gap-2.5 text-sm">
+          <dl className={RUTA_DATA_GRID_CLASS}>
             <div className={RUTA_DATA_CELL_CLASS}>
-              <dt className="text-xs text-muted">Distancia</dt>
-              <dd className="mt-1 font-medium text-emerald-200">
+              <dt className={RUTA_DATA_LABEL_CLASS}>Distancia</dt>
+              <dd className={RUTA_DISTANCE_VALUE_CLASS}>
                 {formatDistanceKm(ruta.distancia_km)}
               </dd>
             </div>
             <div className={RUTA_DATA_CELL_CLASS}>
-              <dt className="text-xs text-muted">Subida por</dt>
-              <dd className="mt-1 font-medium text-foreground">{uploaderLabel}</dd>
+              <dt className={RUTA_DATA_LABEL_CLASS}>Subida por</dt>
+              <dd className={RUTA_DATA_VALUE_CLASS}>{uploaderLabel}</dd>
               <UploaderAvatar
                 avatarUrl={uploaderAvatarUrl}
                 uploaderLabel={uploaderLabel}
@@ -427,14 +431,14 @@ export function RutaCard({
               />
             </div>
             <div className={RUTA_DATA_CELL_CLASS}>
-              <dt className="text-xs text-muted">Fecha</dt>
-              <dd className="mt-1 font-medium text-foreground">
+              <dt className={RUTA_DATA_LABEL_CLASS}>Fecha</dt>
+              <dd className={RUTA_DATA_VALUE_CLASS}>
                 {formatRouteDate(ruta.created_at)}
               </dd>
             </div>
             <div className={RUTA_DATA_CELL_CLASS}>
-              <dt className="text-xs text-muted">Offline</dt>
-              <dd className="mt-1 font-medium">
+              <dt className={RUTA_DATA_LABEL_CLASS}>Offline</dt>
+              <dd className="mt-0.5 font-medium">
                 {checkingOffline ? (
                   <span className="text-muted">…</span>
                 ) : isOffline ? (
