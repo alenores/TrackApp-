@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "TrackApp",
     short_name: "TrackApp",
-    description: "TrackApp — base del proyecto lista para desarrollar.",
+    description: "Rutas GPX, mapas y navegación offline.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
