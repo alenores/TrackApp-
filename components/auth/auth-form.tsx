@@ -50,7 +50,7 @@ export function AuthForm() {
       return;
     }
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -66,9 +66,13 @@ export function AuthForm() {
       return;
     }
 
-    setMessage(
-      "Cuenta creada. Revisá tu email si se requiere confirmación, o iniciá sesión.",
-    );
+    if (signUpData.session) {
+      router.push("/");
+      router.refresh();
+      return;
+    }
+
+    setMessage("Registrado. Ahora iniciá sesión.");
     setMode("login");
     setLoading(false);
   };
