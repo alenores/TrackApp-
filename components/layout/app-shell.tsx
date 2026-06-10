@@ -41,7 +41,7 @@ export function AppShell({
   };
 
   return (
-    <div className="flex h-full min-h-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="flex h-full min-h-0 bg-[#0f172a]">
       <aside className="hidden w-64 shrink-0 border-r border-border bg-surface/80 lg:block">
         <div className="flex h-full min-h-0 flex-col">
           <div className="border-b border-border px-4 py-5">

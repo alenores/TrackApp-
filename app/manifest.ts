@@ -5,11 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "TrackApp",
     short_name: "TrackApp",
     description: "Rutas GPX, mapas y navegación offline.",
-    start_url: "/",
+    start_url: "/rutas",
     display: "standalone",
     orientation: "portrait",
     background_color: "#0f172a",
-    theme_color: "#1b4332",
+    theme_color: "#0f172a",
     lang: "es-AR",
     icons: [
       {

@@ -1,52 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MountainBrandMark } from "@/components/brand/mountain-brand-mark";
+import { useEffect } from "react";
+import { TRACKAPP_APP_READY_EVENT } from "@/lib/pwa/app-ready";
+import { INLINE_SPLASH_ID } from "@/lib/pwa/inline-splash";
+
+const SPLASH_OUT_CLASS = `${INLINE_SPLASH_ID}--out`;
+const SPLASH_FADE_MS = 300;
+
+function isStandaloneMode(): boolean {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true
+  );
+}
+
+function removeSplashElement(splash: HTMLElement): void {
+  splash.classList.add(SPLASH_OUT_CLASS);
+  const cleanup = () => splash.remove();
+  splash.addEventListener("transitionend", cleanup, { once: true });
+  window.setTimeout(cleanup, SPLASH_FADE_MS + 50);
+}
 
 export function PwaSplash() {
-  const [visible, setVisible] = useState(false);
-
   useEffect(() => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-        true;
-
-    if (!isStandalone) {
+    const splash = document.getElementById(INLINE_SPLASH_ID);
+    if (!splash) {
       return;
     }
 
-    setVisible(true);
+    if (!isStandaloneMode()) {
+      splash.remove();
+      return;
+    }
 
-    const hide = () => setVisible(false);
-    const timer = window.setTimeout(hide, 900);
+    let dismissed = false;
 
-    if (document.readyState === "complete") {
-      window.setTimeout(hide, 650);
-    } else {
-      window.addEventListener("load", () => window.setTimeout(hide, 450), {
-        once: true,
-      });
+    const dismiss = () => {
+      if (dismissed) {
+        return;
+      }
+      dismissed = true;
+      removeSplashElement(splash);
+    };
+
+    const onAppReady = () => dismiss();
+    window.addEventListener(TRACKAPP_APP_READY_EVENT, onAppReady);
+
+    const { pathname } = window.location;
+    if (pathname === "/login" || pathname.startsWith("/offline")) {
+      dismiss();
     }
 
     return () => {
-      window.clearTimeout(timer);
+      window.removeEventListener(TRACKAPP_APP_READY_EVENT, onAppReady);
     };
   }, []);
 
-  if (!visible) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0f172a] transition-opacity duration-300"
-    >
-      <MountainBrandMark className="h-28 w-28 rounded-[1.75rem] shadow-lg shadow-black/40" />
-      <p className="mt-4 text-sm font-semibold tracking-wide text-emerald-100/90">
-        TrackApp
-      </p>
-    </div>
-  );
+  return null;
 }

@@ -4,6 +4,11 @@ import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
 import { PwaSplash } from "@/components/layout/pwa-splash";
 import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
 import { ServiceWorkerRegister } from "./sw-register";
+import {
+  INLINE_SPLASH_ID,
+  INLINE_SPLASH_MARKUP,
+  INLINE_SPLASH_STYLES,
+} from "@/lib/pwa/inline-splash";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,7 +41,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#1b4332",
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
@@ -54,7 +59,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="TrackApp" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#1b4332" />
+        <meta name="theme-color" content="#0f172a" />
+        <style dangerouslySetInnerHTML={{ __html: INLINE_SPLASH_STYLES }} />
         <meta name="trackapp-build" content={process.env.NEXT_PUBLIC_DEPLOY_SHA ?? "local"} />
         <script
           dangerouslySetInnerHTML={{
@@ -63,6 +69,12 @@ export default function RootLayout({
         />
       </head>
       <body className="fixed inset-0 flex min-h-0 flex-col overflow-hidden">
+        <div
+          id={INLINE_SPLASH_ID}
+          aria-hidden
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: INLINE_SPLASH_MARKUP }}
+        />
         <PreventViewportZoom />
         <PwaSplash />
         <PwaInstallPrompt />
