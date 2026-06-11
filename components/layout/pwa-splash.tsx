@@ -10,7 +10,7 @@ const SPLASH_FADE_MS = 300;
 
 function removeSplashElement(splash: HTMLElement): void {
   splash.classList.add(SPLASH_OUT_CLASS);
-  const cleanup = () => splash.remove();
+  const cleanup = () => { splash.style.display = "none"; };
   splash.addEventListener("transitionend", cleanup, { once: true });
   window.setTimeout(cleanup, SPLASH_FADE_MS + 50);
 }
@@ -23,7 +23,7 @@ export function PwaSplash() {
     }
 
     if (!isStandaloneMode()) {
-      splash.remove();
+      splash.style.display = "none";
       return;
     }
 
