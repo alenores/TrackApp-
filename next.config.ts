@@ -34,6 +34,28 @@ const withPWA = withPWAInit({
   },
   runtimeCaching: [
     {
+      /**
+       * RSC payloads – Next.js App Router emite fetch requests con ?_rsc=<token>
+       * durante la navegación cliente a cliente. El SW nunca debe interceptarlos
+       * ni servirlos desde caché: deben ir siempre a la red.
+       */
+      urlPattern: ({ url }: { url: URL }) => url.searchParams.has("_rsc"),
+      handler: "NetworkOnly",
+      options: {},
+    },
+    {
+      /**
+       * Prefetch interno del router de Next.js y cualquier otra petición
+       * bajo /_next/ que NO sea un asset estático (/_next/static/).
+       * Incluye: /_next/router, hints de prefetch, etc.
+       */
+      urlPattern: ({ url }: { url: URL }) =>
+        url.pathname.startsWith("/_next/") &&
+        !url.pathname.startsWith("/_next/static/"),
+      handler: "NetworkOnly",
+      options: {},
+    },
+    {
       urlPattern: /\/_next\/static\/chunks\/.+\.js$/i,
       handler: "CacheFirst",
       options: {
@@ -128,19 +150,23 @@ const withPWA = withPWAInit({
       options: {},
     },
     {
+      /**
+       * Fallback genérico: NetworkFirst para que las respuestas HTML/RSC
+       * incorrectamente cacheadas no rompan la navegación cliente.
+       * ignoreVary eliminado: con él, una respuesta HTML guardada con
+       * Vary: RSC podía ser devuelta a un fetch que esperaba datos RSC.
+       */
       urlPattern: ({ url }: { url: URL }) => !url.pathname.startsWith("/api/"),
-      handler: "CacheFirst",
+      handler: "NetworkFirst",
       options: {
         cacheName: "others",
+        networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 256,
           maxAgeSeconds: OFFLINE_MEDIA_MAX_AGE_SECONDS,
         },
         cacheableResponse: {
           statuses: [0, 200],
-        },
-        matchOptions: {
-          ignoreVary: true,
         },
       },
     },
