@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const PWA_CACHE_BUST = "2026-06-11-navigate-networkfirst-v1";
+const PWA_CACHE_BUST = "2026-06-11-middleware-getsession-v1";
 
 const OBSOLETE_CACHE_NAMES = [
   "supabase-api-cache",

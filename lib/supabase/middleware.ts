@@ -28,17 +28,14 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // getUser() verifica el token contra Supabase (red). En mobile con red
-  // inestable puede devolver { user: null, error } sin lanzar excepción.
-  // Si falla por cualquier motivo, caemos a getSession() que lee la cookie
-  // local sin red, evitando redirigir al login en falsos negativos.
-  const { data: getUserData } = await supabase.auth.getUser();
-  let user = getUserData.user;
-
-  if (!user) {
-    const { data: sessionData } = await supabase.auth.getSession();
-    user = sessionData.session?.user ?? null;
-  }
+  // Usamos getSession() en lugar de getUser() para evitar llamadas externas
+  // a Supabase en cada request. getUser() hace una request de red que puede
+  // exceder el timeout de 1.5s del Edge Runtime de Vercel en mobile.
+  // getSession() lee el JWT de la cookie (instantáneo, sin red).
+  // La verificación del token server-side ocurre en los Server Components
+  // y Server Actions, que tienen mayor tiempo de ejecución.
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname.startsWith("/login");
