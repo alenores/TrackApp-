@@ -1,3 +1,5 @@
+"use client";
+
 import type { ButtonHTMLAttributes, PointerEvent } from "react";
 import { triggerTapHaptic } from "@/lib/haptics";
 import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
