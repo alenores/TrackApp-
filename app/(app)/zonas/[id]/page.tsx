@@ -4,10 +4,9 @@ import { getUserDisplayName } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
 import { fetchAvatarUrlsByUserIds } from "@/lib/auth/profiles";
 import { fetchZonaById, fetchSectoresByZonaId } from "@/lib/zonas/queries";
-import { getZonaUploaderLabel } from "@/lib/zonas/helpers";
+import { getZonaUploaderLabel } from "@/lib/zonas/labels";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { SectorCard } from "@/components/zonas/sector-card";
 
@@ -102,8 +101,11 @@ export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
                 ({sectores.length})
               </span>
             </h2>
-            <Link href={`/zonas/${id}/sectores/nueva`}>
-              <Button className="min-h-10 px-4 py-2 text-sm">+ Nuevo sector</Button>
+            <Link
+              href={`/zonas/${id}/sectores/nueva`}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700/50 bg-accent-light px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent"
+            >
+              + Nuevo sector
             </Link>
           </div>
 
