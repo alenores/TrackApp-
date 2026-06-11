@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { DEPLOY_SHA } from "@/lib/deploy-stamp";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,6 +177,10 @@ export function AuthForm() {
               : "Crear cuenta"}
         </Button>
       </form>
+
+      <p className="text-center text-[10px] font-mono text-slate-500/60 pt-2">
+        {DEPLOY_SHA}
+      </p>
     </Card>
   );
 }

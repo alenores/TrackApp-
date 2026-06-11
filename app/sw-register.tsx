@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const PWA_CACHE_BUST = "2026-06-11-middleware-getsession-v1";
+const PWA_CACHE_BUST = "2026-06-11-no-reload-on-sw-update-v1";
 
 const OBSOLETE_CACHE_NAMES = [
   "supabase-api-cache",
@@ -19,14 +19,11 @@ async function deleteObsoleteCaches(): Promise<void> {
 }
 
 async function registerServiceWorker(): Promise<void> {
-  let refreshing = false;
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
-
+  // NOTA: eliminamos el window.location.reload() en controllerchange.
+  // El reload forzado causaba ERR_FAILED ("can't load this") en mobile cuando
+  // el SW se actualizaba mientras el usuario navegaba o hacía login.
+  // Con skipWaiting:true en el SW, el nuevo SW ya toma control inmediatamente.
+  // La siguiente navegación del usuario cargará el contenido actualizado.
   const registration = await navigator.serviceWorker.register("/sw.js");
 
   registration.addEventListener("updatefound", () => {
