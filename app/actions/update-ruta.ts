@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { formatSupabaseError } from "@/lib/supabase/errors";
+import type { ActividadTipo } from "@/types/database";
 
 export type UpdateRutaResult =
   | { success: true }
@@ -13,6 +14,7 @@ export async function updateRuta(input: {
   rutaId: string;
   nombre: string;
   descripcion: string | null;
+  actividades: ActividadTipo[];
 }): Promise<UpdateRutaResult> {
   const trimmedNombre = input.nombre.trim();
 
@@ -37,6 +39,7 @@ export async function updateRuta(input: {
       {
         nombre: trimmedNombre,
         descripcion: input.descripcion?.trim() || null,
+        actividades: input.actividades,
       },
       { count: "exact" },
     )

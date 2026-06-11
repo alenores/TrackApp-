@@ -1,4 +1,15 @@
-import type { Ruta, RutaListItem } from "@/types/database";
+import type { ActividadTipo, Ruta, RutaListItem } from "@/types/database";
+
+function parseActividades(value: unknown): ActividadTipo[] {
+  if (!Array.isArray(value)) return [];
+  const valid: ActividadTipo[] = [
+    "trekking", "correr", "mountain_bike", "moto",
+    "camioneta", "canyoning", "kayak",
+  ];
+  return (value as unknown[])
+    .map((v) => String(v) as ActividadTipo)
+    .filter((v) => valid.includes(v));
+}
 
 type RutaUploaderSource = Pick<RutaListItem, "user_id" | "subido_por_nombre">;
 
@@ -30,6 +41,7 @@ export function parseRutaListItem(row: Record<string, unknown>): RutaListItem {
     subido_por_nombre:
       row.subido_por_nombre == null ? null : String(row.subido_por_nombre),
     created_at: String(row.created_at),
+    actividades: parseActividades(row.actividades),
   };
 }
 
@@ -48,5 +60,6 @@ export function parseRutaRow(row: Record<string, unknown>): Ruta {
     subido_por_nombre:
       row.subido_por_nombre == null ? null : String(row.subido_por_nombre),
     created_at: String(row.created_at),
+    actividades: parseActividades(row.actividades),
   };
 }

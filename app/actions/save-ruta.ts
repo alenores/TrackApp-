@@ -7,6 +7,7 @@ import { getAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { formatSupabaseError } from "@/lib/supabase/errors";
 import { getGpxStoragePath, type RouteBbox } from "@/lib/gpx";
+import type { ActividadTipo } from "@/types/database";
 
 const GPX_BUCKET = "gpx-files";
 
@@ -17,6 +18,7 @@ type SaveRutaInput = {
   geojson: FeatureCollection;
   bbox: RouteBbox;
   routeFile: File;
+  actividades: ActividadTipo[];
 };
 
 export type SaveRutaResult =
@@ -46,6 +48,7 @@ export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
     geojson: input.geojson,
     bbox: input.bbox,
     gpx_url: null,
+    actividades: input.actividades,
   };
 
   let insertError = (

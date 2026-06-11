@@ -9,6 +9,8 @@ import {
   parseGpxFile,
   type ParsedGpx,
 } from "@/lib/gpx";
+import { ACTIVIDADES } from "@/lib/rutas/actividades";
+import type { ActividadTipo } from "@/types/database";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +22,18 @@ export function NuevaRutaForm() {
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [actividades, setActividades] = useState<ActividadTipo[]>([]);
   const [gpxFile, setGpxFile] = useState<File | null>(null);
   const [parsedGpx, setParsedGpx] = useState<ParsedGpx | null>(null);
   const [parsing, setParsing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const toggleActividad = (tipo: ActividadTipo) => {
+    setActividades((prev) =>
+      prev.includes(tipo) ? prev.filter((a) => a !== tipo) : [...prev, tipo],
+    );
+  };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -76,6 +85,7 @@ export function NuevaRutaForm() {
       geojson: parsedGpx.geojson,
       bbox: parsedGpx.bbox,
       routeFile: gpxFile,
+      actividades,
     });
 
     if (!result.success) {
@@ -92,12 +102,7 @@ export function NuevaRutaForm() {
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
       <Card accent className="space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Nueva ruta</h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Importá un archivo GPX para compartirlo con la comunidad.
-            </p>
-          </div>
+          <h1 className="text-xl font-bold text-foreground">Nueva ruta</h1>
           <Link
             href="/rutas"
             className="shrink-0 text-sm text-emerald-300 hover:text-emerald-200"
@@ -129,6 +134,35 @@ export function NuevaRutaForm() {
             placeholder="Detalles del recorrido, dificultad, acceso…"
             className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
           />
+        </div>
+
+        <div className="space-y-2">
+          <p className="block text-sm font-medium text-slate-300">
+            Actividades (opcional)
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            {ACTIVIDADES.map((act) => {
+              const selected = actividades.includes(act.tipo);
+              return (
+                <button
+                  key={act.tipo}
+                  type="button"
+                  onClick={() => toggleActividad(act.tipo)}
+                  className={[
+                    "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    selected
+                      ? "border-emerald-600/70 bg-emerald-900/60 text-emerald-200"
+                      : "border-border bg-surface text-slate-400 hover:border-emerald-700/50 hover:text-slate-300",
+                  ].join(" ")}
+                >
+                  <span className="text-base leading-none" aria-hidden>
+                    {act.icon}
+                  </span>
+                  {act.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-2">

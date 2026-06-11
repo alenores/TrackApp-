@@ -17,6 +17,7 @@ import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
 import { RouteMapLoader } from "@/components/map/route-map-loader";
 import { RutaOfflineActions } from "@/components/rutas/ruta-offline-actions";
 import { RutaDetailBackLink } from "@/components/rutas/ruta-detail-back-link";
+import { ActividadBadges } from "@/components/rutas/actividad-badges";
 import { Card } from "@/components/ui/card";
 
 type RutaDetailPageProps = {
@@ -60,6 +61,8 @@ export default async function RutaDetailPage({ params }: RutaDetailPageProps) {
             {ruta.descripcion}
           </p>
         ) : null}
+
+        <ActividadBadges actividades={ruta.actividades} size="md" />
 
         <dl className={RUTA_DATA_GRID_CLASS}>
           <div className={RUTA_DATA_CELL_CLASS}>

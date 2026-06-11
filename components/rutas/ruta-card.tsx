@@ -20,6 +20,7 @@ import { deleteOfflineRuta, isRutaOffline } from "@/lib/tiles";
 import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
 import { ChevronCircle } from "@/components/ui/chevron-circle";
 import { Card } from "@/components/ui/card";
+import { ActividadBadges } from "@/components/rutas/actividad-badges";
 
 const SWIPE_ACTIVATION_PX = 8;
 const SWIPE_THRESHOLD_PX = 72;
@@ -424,6 +425,7 @@ export function RutaCard({
                 {ruta.descripcion}
               </p>
             ) : null}
+            <ActividadBadges actividades={ruta.actividades} />
           </div>
 
           <dl className={RUTA_DATA_GRID_CLASS}>
@@ -464,12 +466,6 @@ export function RutaCard({
               </dd>
             </div>
           </dl>
-
-          <p className="text-xs font-medium text-slate-500">
-            {isOwner
-              ? "Tocá para ver · Mantené presionado para editar o eliminar"
-              : "Tocá para ver detalle"}
-          </p>
 
           {actionError ? (
             <p role="alert" className="text-sm text-red-400">

@@ -3,10 +3,10 @@ import { parseRutaListItem, parseRutaRow } from "@/lib/rutas/helpers";
 import type { Ruta, RutaListItem } from "@/types/database";
 
 const RUTA_LIST_COLUMNS_WITH_AUTHOR =
-  "id, nombre, descripcion, distancia_km, user_id, subido_por_nombre, created_at";
+  "id, nombre, descripcion, distancia_km, user_id, subido_por_nombre, created_at, actividades";
 
 const RUTA_LIST_COLUMNS_BASE =
-  "id, nombre, descripcion, distancia_km, user_id, created_at";
+  "id, nombre, descripcion, distancia_km, user_id, created_at, actividades";
 
 export async function fetchRutasList(): Promise<RutaListItem[]> {
   const supabase = await createClient();

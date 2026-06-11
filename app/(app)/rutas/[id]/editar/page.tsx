@@ -24,6 +24,7 @@ export default async function EditarRutaPage({ params }: EditarRutaPageProps) {
       rutaId={ruta.id}
       initialNombre={ruta.nombre}
       initialDescripcion={ruta.descripcion ?? ""}
+      initialActividades={ruta.actividades}
     />
   );
 }

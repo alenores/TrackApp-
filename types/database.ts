@@ -1,3 +1,12 @@
+export type ActividadTipo =
+  | "trekking"
+  | "correr"
+  | "mountain_bike"
+  | "moto"
+  | "camioneta"
+  | "canyoning"
+  | "kayak";
+
 export type RouteBbox = {
   north: number;
   south: number;
@@ -13,6 +22,7 @@ export type RutaListItem = {
   distancia_km: number | null;
   subido_por_nombre: string | null;
   created_at: string;
+  actividades: ActividadTipo[];
 };
 
 export type Ruta = {
@@ -26,6 +36,7 @@ export type Ruta = {
   bbox: RouteBbox | null;
   subido_por_nombre: string | null;
   created_at: string;
+  actividades: ActividadTipo[];
 };
 
 export type Descarga = {
