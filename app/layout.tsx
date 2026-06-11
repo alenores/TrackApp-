@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
 import { PwaSplash } from "@/components/layout/pwa-splash";
-import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
 import { ServiceWorkerRegister } from "./sw-register";
 import {
   INLINE_SPLASH_ID,
@@ -77,7 +76,6 @@ export default function RootLayout({
         />
         <PreventViewportZoom />
         <PwaSplash />
-        <PwaInstallPrompt />
         <ServiceWorkerRegister />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </body>

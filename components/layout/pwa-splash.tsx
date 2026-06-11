@@ -3,17 +3,10 @@
 import { useEffect } from "react";
 import { TRACKAPP_APP_READY_EVENT } from "@/lib/pwa/app-ready";
 import { INLINE_SPLASH_ID } from "@/lib/pwa/inline-splash";
+import { isStandaloneMode } from "@/lib/pwa/standalone";
 
 const SPLASH_OUT_CLASS = `${INLINE_SPLASH_ID}--out`;
 const SPLASH_FADE_MS = 300;
-
-function isStandaloneMode(): boolean {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true
-  );
-}
 
 function removeSplashElement(splash: HTMLElement): void {
   splash.classList.add(SPLASH_OUT_CLASS);

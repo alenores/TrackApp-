@@ -3,6 +3,7 @@ import { getAuthUser } from "@/lib/auth/session";
 import { fetchUploaderAvatarsForRutas } from "@/lib/rutas/avatars";
 import { fetchRutasList } from "@/lib/rutas/queries";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
+import { InstallAppBanner } from "@/components/layout/install-app-banner";
 import { RutaList } from "@/components/rutas/ruta-list";
 
 export default async function HomePage() {
@@ -12,6 +13,7 @@ export default async function HomePage() {
   return (
     <>
       <AppReadyMarker />
+      <InstallAppBanner />
       <RutaList
         rutas={rutas}
         currentUserId={user?.id ?? null}
