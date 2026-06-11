@@ -143,11 +143,26 @@ const withPWA = withPWAInit({
       },
     },
     {
-      /** HTML autenticado: siempre red para no mostrar listados viejos en la PWA. */
+      /**
+       * HTML de navegación: NetworkFirst con timeout de 4 segundos.
+       * NetworkOnly fallaba cuando el SW forzaba un reload (controllerchange)
+       * en un momento de red inestable en mobile, mostrando "can't load this".
+       * Con NetworkFirst, si la red no responde en 4s, sirve el HTML cacheado.
+       */
       urlPattern: ({ request, url }: { request: Request; url: URL }) =>
         request.mode === "navigate" && !url.pathname.startsWith("/api/"),
-      handler: "NetworkOnly",
-      options: {},
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "html-navigate-cache",
+        networkTimeoutSeconds: 4,
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60,
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
     },
     {
       /**
