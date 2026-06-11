@@ -73,6 +73,19 @@ html.pwa-standalone-zoom-lock body {
   touch-action: pan-x pan-y pinch-zoom;
 }
 
+@keyframes navigation-progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.navigation-progress-indeterminate {
+  animation: navigation-progress-slide 1.1s ease-in-out infinite;
+}
+
 @keyframes pulse-bar {
   0%,
   100% {
@@ -88,6 +101,11 @@ html.pwa-standalone-zoom-lock body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .navigation-progress-indeterminate {
+    animation: none;
+    width: 100%;
+  }
+
   .progress-bar-pulse {
     animation: none;
   }

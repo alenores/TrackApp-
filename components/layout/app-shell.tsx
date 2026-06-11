@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BuildStamp } from "@/components/layout/build-stamp";
 import { Header } from "@/components/layout/header";
+import { NavigationProgressProvider } from "@/components/layout/navigation-progress";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NuevaRutaFab } from "@/components/rutas/nueva-ruta-fab";
 
@@ -41,6 +42,7 @@ export function AppShell({
   };
 
   return (
+    <NavigationProgressProvider>
     <div className="flex h-full min-h-0 bg-[#0f172a]">
       <aside className="hidden w-64 shrink-0 border-r border-border bg-surface/80 lg:block">
         <div className="flex h-full min-h-0 flex-col">
@@ -103,5 +105,6 @@ export function AppShell({
 
       {showNewRouteFab ? <NuevaRutaFab /> : null}
     </div>
+    </NavigationProgressProvider>
   );
 }

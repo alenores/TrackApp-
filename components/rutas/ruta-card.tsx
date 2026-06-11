@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAppNavigation } from "@/components/layout/navigation-progress";
 import { deleteRuta } from "@/app/actions/delete-ruta";
 import type { RutaListItem } from "@/types/database";
 import { formatDistanceKm, formatRouteDate } from "@/lib/gpx";
@@ -53,6 +54,7 @@ export function RutaCard({
   isOwner,
 }: RutaCardProps) {
   const router = useRouter();
+  const { navigate, isPending } = useAppNavigation();
   const detailHref = `/rutas/${ruta.id}`;
   const cardRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
@@ -110,8 +112,9 @@ export function RutaCard({
   };
 
   const goToDetail = () => {
+    if (isPending || isExiting) return;
     triggerTapHaptic();
-    router.push(detailHref);
+    navigate(detailHref);
   };
 
   const resetSwipe = () => {
@@ -294,7 +297,7 @@ export function RutaCard({
 
   const handleEdit = () => {
     closeActions();
-    router.push(`/rutas/${ruta.id}/editar`);
+    navigate(`/rutas/${ruta.id}/editar`);
   };
 
   const handleDelete = async () => {
@@ -345,7 +348,14 @@ export function RutaCard({
   );
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div
+      className={[
+        "relative overflow-hidden rounded-2xl transition-opacity duration-150",
+        isPending ? "pointer-events-none opacity-60" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-2xl bg-emerald-950/70 px-5"
