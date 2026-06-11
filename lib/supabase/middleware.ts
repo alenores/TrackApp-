@@ -28,9 +28,18 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getUser() verifica el token contra el servidor de Supabase. En mobile con
+  // red inestable puede fallar o hacer timeout, lo que tiraría un 500 y el
+  // browser mostraría "can't load this". Caemos a getSession() (cookie local,
+  // sin red) como fallback para que el middleware nunca rompa la navegación.
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    const { data } = await supabase.auth.getSession();
+    user = data.session?.user ?? null;
+  }
 
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname.startsWith("/login");
