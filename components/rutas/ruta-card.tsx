@@ -425,7 +425,7 @@ export function RutaCard({
                 {ruta.descripcion}
               </p>
             ) : null}
-            <ActividadBadges actividades={ruta.actividades} />
+            <ActividadBadges actividades={ruta.actividades ?? []} />
           </div>
 
           <dl className={RUTA_DATA_GRID_CLASS}>

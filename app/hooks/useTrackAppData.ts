@@ -28,10 +28,10 @@ export type TrackAppData = {
 };
 
 const RUTA_LIST_COLUMNS =
-  "id, nombre, descripcion, distancia_km, user_id, subido_por_nombre, created_at";
+  "id, nombre, descripcion, distancia_km, user_id, subido_por_nombre, created_at, actividades";
 
 const RUTA_LIST_COLUMNS_BASE =
-  "id, nombre, descripcion, distancia_km, user_id, created_at";
+  "id, nombre, descripcion, distancia_km, user_id, created_at, actividades";
 
 type RutaGeojsonRow = {
   id: string;
