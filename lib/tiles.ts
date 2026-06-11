@@ -2,9 +2,10 @@ import type { FeatureCollection } from "geojson";
 import type { RouteBbox } from "@/lib/gpx";
 
 const DB_NAME = "trackapp-offline";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const TILES_STORE = "tiles";
 const RUTAS_STORE = "rutas";
+const SECTORES_STORE = "sectores";
 
 export const OFFLINE_ZOOM_LEVELS = [12, 13, 14, 15] as const;
 
@@ -18,6 +19,14 @@ export type OfflineRuta = {
   id: string;
   nombre: string;
   geojson: FeatureCollection;
+  bbox: RouteBbox;
+  downloadedAt: string;
+  tileCount: number;
+};
+
+export type OfflineSector = {
+  id: string;
+  nombre: string;
   bbox: RouteBbox;
   downloadedAt: string;
   tileCount: number;
@@ -41,6 +50,10 @@ export function rutaKey(rutaId: string): string {
   return `ruta_${rutaId}`;
 }
 
+export function sectorKey(sectorId: string): string {
+  return `sector_${sectorId}`;
+}
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === "undefined") {
@@ -61,6 +74,9 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(RUTAS_STORE)) {
         db.createObjectStore(RUTAS_STORE, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(SECTORES_STORE)) {
+        db.createObjectStore(SECTORES_STORE, { keyPath: "id" });
       }
     };
 
@@ -244,6 +260,65 @@ export async function deleteOfflineRuta(rutaId: string): Promise<void> {
   await runTransaction(RUTAS_STORE, "readwrite", (store) =>
     store.delete(rutaKey(rutaId)),
   );
+}
+
+export async function saveOfflineSector(sector: OfflineSector): Promise<void> {
+  await runTransaction(SECTORES_STORE, "readwrite", (store) =>
+    store.put(sector),
+  );
+}
+
+export async function getOfflineSector(
+  sectorId: string,
+): Promise<OfflineSector | null> {
+  const result = await runTransaction<OfflineSector>(
+    SECTORES_STORE,
+    "readonly",
+    (store) => store.get(sectorKey(sectorId)),
+  );
+  return result ?? null;
+}
+
+export async function isSectorOffline(sectorId: string): Promise<boolean> {
+  const sector = await getOfflineSector(sectorId);
+  return sector !== null;
+}
+
+export async function deleteOfflineSector(sectorId: string): Promise<void> {
+  await runTransaction(SECTORES_STORE, "readwrite", (store) =>
+    store.delete(sectorKey(sectorId)),
+  );
+}
+
+export async function downloadSectorOffline(
+  sector: { id: string; nombre: string; bbox: RouteBbox },
+  zoomLevels: number[],
+  onProgress?: (progress: DownloadProgress) => void,
+): Promise<void> {
+  const tiles = getAllTilesForBbox(sector.bbox, zoomLevels);
+  const total = tiles.length;
+
+  if (total === 0) {
+    throw new Error("No hay tiles para descargar con el bbox de este sector.");
+  }
+
+  for (let index = 0; index < tiles.length; index += 1) {
+    const { z, x, y } = tiles[index];
+    const existing = await getTile(z, x, y);
+    if (!existing) {
+      const blob = await fetchTileBlob(z, x, y);
+      await saveTile(z, x, y, blob);
+    }
+    onProgress?.({ current: index + 1, total });
+  }
+
+  await saveOfflineSector({
+    id: sectorKey(sector.id),
+    nombre: sector.nombre,
+    bbox: sector.bbox,
+    downloadedAt: new Date().toISOString(),
+    tileCount: total,
+  });
 }
 
 /**

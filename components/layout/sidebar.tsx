@@ -27,6 +27,28 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: "/zonas",
+    label: "Zonas",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+        <path
+          d="M3 9l9-6 9 6v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 22V12h6v10"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
     href: "/perfiles",
     label: "Perfiles",
     icon: (

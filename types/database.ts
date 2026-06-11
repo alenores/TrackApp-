@@ -45,3 +45,36 @@ export type Descarga = {
   ruta_id: string;
   created_at: string;
 };
+
+export type ZonaListItem = {
+  id: string;
+  user_id: string;
+  provincia: string;
+  nombre: string;
+  descripcion: string | null;
+  subido_por_nombre: string | null;
+  created_at: string;
+};
+
+export type Zona = ZonaListItem;
+
+export type SectorListItem = {
+  id: string;
+  zona_id: string;
+  user_id: string;
+  nombre: string;
+  descripcion: string | null;
+  lat_ne: number;
+  lon_ne: number;
+  lat_se: number;
+  lon_se: number;
+  lat_so: number;
+  lon_so: number;
+  lat_no: number;
+  lon_no: number;
+  zoom_minimo: number;
+  subido_por_nombre: string | null;
+  created_at: string;
+};
+
+export type Sector = SectorListItem;
