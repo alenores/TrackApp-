@@ -36,7 +36,7 @@ export default async function ZonasPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Zonas</h1>
           <Link href="/zonas/nueva">
-            <Button size="sm">+ Nueva</Button>
+            <Button className="min-h-10 px-4 py-2 text-sm">+ Nueva</Button>
           </Link>
         </div>
 

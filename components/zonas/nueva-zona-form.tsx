@@ -88,18 +88,14 @@ export function NuevaZonaForm() {
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Nombre
-          </label>
-          <Input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            placeholder="Ej: Sierra Chica Norte"
-            required
-          />
-        </div>
+        <Input
+          label="Nombre"
+          type="text"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          placeholder="Ej: Sierra Chica Norte"
+          required
+        />
 
         <div className="space-y-1">
           <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">

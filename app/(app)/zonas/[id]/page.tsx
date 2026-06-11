@@ -103,7 +103,7 @@ export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
               </span>
             </h2>
             <Link href={`/zonas/${id}/sectores/nueva`}>
-              <Button size="sm">+ Nuevo sector</Button>
+              <Button className="min-h-10 px-4 py-2 text-sm">+ Nuevo sector</Button>
             </Link>
           </div>
 
