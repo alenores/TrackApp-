@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { Card } from "@/components/ui/card";
 type AuthMode = "login" | "register";
 
 export function AuthForm() {
-  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
@@ -39,8 +37,11 @@ export function AuthForm() {
         return;
       }
 
-      router.push("/");
-      router.refresh();
+      // Navegación dura post-login: garantiza que las cookies de sesión
+      // de Supabase estén disponibles en el próximo request al servidor.
+      // router.push + router.refresh en secuencia compiten y pueden fallar
+      // en mobile con red variable.
+      window.location.href = "/";
       return;
     }
 
@@ -67,8 +68,7 @@ export function AuthForm() {
     }
 
     if (signUpData.session) {
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
       return;
     }
 
