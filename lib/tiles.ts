@@ -6,7 +6,7 @@ const DB_VERSION = 1;
 const TILES_STORE = "tiles";
 const RUTAS_STORE = "rutas";
 
-export const OFFLINE_ZOOM_LEVELS = [12, 13, 14, 15, 16] as const;
+export const OFFLINE_ZOOM_LEVELS = [12, 13, 14, 15] as const;
 
 export type TileCoord = {
   z: number;
@@ -244,4 +244,25 @@ export async function deleteOfflineRuta(rutaId: string): Promise<void> {
   await runTransaction(RUTAS_STORE, "readwrite", (store) =>
     store.delete(rutaKey(rutaId)),
   );
+}
+
+/**
+ * Guarda geojson+bbox en IndexedDB de forma automática (sin tiles).
+ * Si ya existe un registro con tiles descargados, preserva el tileCount.
+ */
+export async function autoSyncRutaGeojson(ruta: {
+  id: string;
+  nombre: string;
+  geojson: FeatureCollection;
+  bbox: RouteBbox;
+}): Promise<void> {
+  const existing = await getOfflineRuta(ruta.id);
+  await saveOfflineRuta({
+    id: rutaKey(ruta.id),
+    nombre: ruta.nombre,
+    geojson: ruta.geojson,
+    bbox: ruta.bbox,
+    downloadedAt: existing?.downloadedAt ?? new Date().toISOString(),
+    tileCount: existing?.tileCount ?? 0,
+  });
 }

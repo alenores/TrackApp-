@@ -26,6 +26,7 @@ type LoadedRuta = {
   geojson: FeatureCollection;
   bbox: RouteBbox;
   fromOfflineCache: boolean;
+  tilesDownloaded: boolean;
 };
 
 export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
@@ -48,6 +49,7 @@ export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
             geojson: offline.geojson,
             bbox: offline.bbox,
             fromOfflineCache: true,
+            tilesDownloaded: offline.tileCount > 0,
           });
           setError(null);
           return;
@@ -59,6 +61,7 @@ export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
             geojson: onlineRuta.geojson,
             bbox: onlineRuta.bbox,
             fromOfflineCache: false,
+            tilesDownloaded: false,
           });
           setError(null);
           return;
@@ -116,6 +119,7 @@ export function NavegacionView({ rutaId, onlineRuta }: NavegacionViewProps) {
         bbox={loadedRuta.bbox}
         rutaNombre={loadedRuta.nombre}
         fromOfflineCache={loadedRuta.fromOfflineCache}
+        tilesDownloaded={loadedRuta.tilesDownloaded}
         onRequestExit={requestExit}
       />
       <NavigationExitModal

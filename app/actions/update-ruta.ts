@@ -56,5 +56,9 @@ export async function updateRuta(input: {
   revalidatePath(`/rutas/${input.rutaId}`);
   revalidatePath(`/rutas/${input.rutaId}/editar`);
 
+  await supabase
+    .from("novedades")
+    .insert({ descripcion: `Ruta editada: ${trimmedNombre}` });
+
   return { success: true };
 }

@@ -42,5 +42,9 @@ export async function deleteRuta(rutaId: string): Promise<DeleteRutaResult> {
   revalidatePath("/rutas");
   revalidatePath(`/rutas/${rutaId}`);
 
+  await supabase
+    .from("novedades")
+    .insert({ descripcion: `Ruta eliminada: ${rutaId}` });
+
   return { success: true };
 }

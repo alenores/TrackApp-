@@ -105,5 +105,9 @@ export async function saveRuta(input: SaveRutaInput): Promise<SaveRutaResult> {
   revalidatePath("/");
   revalidatePath("/rutas");
 
+  await supabase
+    .from("novedades")
+    .insert({ descripcion: `Ruta creada: ${input.nombre.trim()}` });
+
   return { success: true, rutaId };
 }

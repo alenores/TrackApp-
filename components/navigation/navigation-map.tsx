@@ -22,6 +22,7 @@ type NavigationMapProps = {
   bbox: RouteBbox;
   rutaNombre: string;
   fromOfflineCache?: boolean;
+  tilesDownloaded?: boolean;
 };
 
 const ROUTE_STYLE: L.PathOptions = {
@@ -45,6 +46,7 @@ export function NavigationMap({
   bbox,
   rutaNombre,
   fromOfflineCache = false,
+  tilesDownloaded = false,
   onRequestExit,
 }: NavigationMapProps & { onRequestExit: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -175,7 +177,11 @@ export function NavigationMap({
         <div className="min-w-0">
           <h1 className="truncate text-lg font-bold text-foreground">{rutaNombre}</h1>
           <p className="text-xs text-muted">
-            {fromOfflineCache ? "Navegación offline" : "Navegación con conexión"}
+            {fromOfflineCache && !tilesDownloaded
+              ? "Mapa básico offline"
+              : fromOfflineCache
+                ? "Navegación offline"
+                : "Navegación con conexión"}
           </p>
         </div>
         <button
@@ -203,6 +209,12 @@ export function NavigationMap({
           className="rounded-xl bg-red-950/70 px-3 py-2 text-center text-sm font-semibold text-red-200 ring-1 ring-red-800/60"
         >
           ¡Fuera de ruta!
+        </div>
+      ) : null}
+
+      {fromOfflineCache && !tilesDownloaded ? (
+        <div className="rounded-xl border border-yellow-600/40 bg-yellow-950/30 px-3 py-2 text-center text-xs text-yellow-300">
+          Mapa básico — descargá el mapa completo para ver el terreno
         </div>
       ) : null}
 

@@ -44,7 +44,20 @@ export async function updateSession(request: NextRequest) {
     pathname === "/sw.js" ||
     pathname.startsWith("/workbox-");
 
+  // Rutas accesibles sin sesión si el usuario tiene datos en caché local.
+  // La cookie trackapp_has_cache=1 la setea lib/offline-cache.ts al guardar datos.
+  const isOfflineFriendlyRoute =
+    pathname === "/" ||
+    /^\/rutas\/[^/]+$/.test(pathname);
+
+  const hasOfflineCache =
+    request.cookies.get("trackapp_has_cache")?.value === "1";
+
   if (!user && !isAuthRoute && !isPublicRoute) {
+    if (isOfflineFriendlyRoute && hasOfflineCache) {
+      // Dejar pasar: el cliente mostrará datos del caché local
+      return supabaseResponse;
+    }
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     return NextResponse.redirect(loginUrl);

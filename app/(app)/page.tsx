@@ -1,25 +1,19 @@
 import { getUserDisplayName } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
-import { fetchUploaderAvatarsForRutas } from "@/lib/rutas/avatars";
-import { fetchRutasList } from "@/lib/rutas/queries";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { InstallAppBanner } from "@/components/layout/install-app-banner";
-import { RutaList } from "@/components/rutas/ruta-list";
+import { RutasClient } from "@/components/rutas/rutas-client";
 
 export default async function HomePage() {
-  const [user, rutas] = await Promise.all([getAuthUser(), fetchRutasList()]);
-  const avatarByUserId = await fetchUploaderAvatarsForRutas(rutas);
+  const user = await getAuthUser();
 
   return (
     <>
       <AppReadyMarker />
       <InstallAppBanner />
-      <RutaList
-        rutas={rutas}
+      <RutasClient
         currentUserId={user?.id ?? null}
         currentUserName={getUserDisplayName(user)}
-        avatarByUserId={avatarByUserId}
-        showNewRouteFab
       />
     </>
   );
