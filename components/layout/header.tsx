@@ -31,7 +31,7 @@ export function Header({ onMenuToggle, userName, userAvatarUrl }: HeaderProps) {
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-bold tracking-tight text-foreground">
-            TrackApp
+            Cba Track App
           </p>
         </div>
 
