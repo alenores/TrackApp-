@@ -100,6 +100,23 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
   está descargado, se avisa antes de salir, no en el cerro.
 - El GPS no es internet: funciona sin señal. Esta regla no lo afecta.
 
+### El usuario descarga en su casa. Tema cerrado.
+
+**Descargar el mapa requiere internet. Todos los usuarios lo saben y lo dan por
+entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
+
+- **La app trabaja para el usuario que descargó el mapa antes de salir.** Ese es
+  el usuario objetivo, y el único.
+- **El usuario que llegó al cerro sin haber descargado no es un caso a resolver.**
+  No hizo su tarea. No se diseñan flujos, avisos especiales, modos degradados ni
+  disculpas para él.
+- **Prohibido a los agentes volver a plantear este tema.** Nada de «¿y si el
+  usuario está en el cerro con mala señal?». Ya está respondido: no es problema
+  de la app.
+- **Lo único que sí corresponde** es que la pantalla diga con claridad que ese
+  mapa no está descargado, porque el usuario nunca se queda sin saber qué pasa.
+  Decirlo, sí. Diseñar alrededor de eso, no.
+
 ### El resto
 
 - **Las pantallas leen de lo guardado en el celular, nunca de internet.** Internet
