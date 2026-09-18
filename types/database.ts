@@ -1,80 +1,160 @@
-export type ActividadTipo =
+import type { FeatureCollection, LineString, Point } from "geojson";
+
+/**
+ * Tipos del dominio de TrackApp.
+ *
+ * La base guarda los nombres en snake_case español (ver docs/SCHEMA.md).
+ * Acá viven los objetos del dominio, en camelCase, que es lo que usa el resto
+ * de la app. La traducción entre una forma y la otra ocurre en un solo lugar:
+ * los archivos `datos.ts` de cada módulo.
+ */
+
+// ---------------------------------------------------------------- categorías
+
+export type CategoriaUsuario = "administrador" | "premium" | "normal";
+
+export const CATEGORIAS_USUARIO: CategoriaUsuario[] = [
+  "administrador",
+  "premium",
+  "normal",
+];
+
+export type ActividadRuta =
   | "trekking"
-  | "correr"
   | "mountain_bike"
-  | "moto"
-  | "camioneta"
-  | "canyoning"
-  | "kayak";
+  | "kayak"
+  | "canyoning";
 
-export type RouteBbox = {
-  north: number;
-  south: number;
-  east: number;
-  west: number;
+export const ACTIVIDADES_RUTA: ActividadRuta[] = [
+  "trekking",
+  "mountain_bike",
+  "kayak",
+  "canyoning",
+];
+
+export type NivelEsfuerzo = "bajo" | "medio" | "alto" | "muy_alto";
+
+export const NIVELES_ESFUERZO: NivelEsfuerzo[] = [
+  "bajo",
+  "medio",
+  "alto",
+  "muy_alto",
+];
+
+export type TipoAnotacion = "punto" | "trazo";
+
+export type IconoPunto =
+  | "refugio"
+  | "arroyo"
+  | "cumbre"
+  | "puente"
+  | "pueblo"
+  | "cartel"
+  | "fuente"
+  | "iglesia"
+  | "cruce"
+  | "mirador"
+  | "cascada";
+
+export const ICONOS_PUNTO: IconoPunto[] = [
+  "refugio",
+  "arroyo",
+  "cumbre",
+  "puente",
+  "pueblo",
+  "cartel",
+  "fuente",
+  "iglesia",
+  "cruce",
+  "mirador",
+  "cascada",
+];
+
+// ---------------------------------------------------------------- geometría
+
+/**
+ * Rectángulo alineado al norte, definido por dos esquinas: la noroeste
+ * (latNorte, lonOeste) y la sudeste (latSur, lonEste).
+ *
+ * En Argentina los cuatro números son negativos, y siempre se cumple que
+ * latNorte > latSur y lonEste > lonOeste.
+ */
+export type Rectangulo = {
+  latNorte: number;
+  latSur: number;
+  lonEste: number;
+  lonOeste: number;
 };
 
-export type RutaListItem = {
+// ---------------------------------------------------------------- entidades
+
+export type Perfil = {
   id: string;
-  user_id: string;
+  nombre: string | null;
+  avatarUrl: string | null;
+  categoria: CategoriaUsuario;
+  creadoEn: string;
+  actualizadoEn: string;
+};
+
+export type Zona = {
+  id: number;
+  perfilId: string;
   nombre: string;
   descripcion: string | null;
-  distancia_km: number | null;
-  subido_por_nombre: string | null;
-  created_at: string;
-  actividades: ActividadTipo[];
+  rectangulo: Rectangulo;
+  creadoEn: string;
+  actualizadoEn: string;
 };
 
-export type Ruta = {
-  id: string;
-  user_id: string;
+export type Sector = {
+  id: number;
+  zonaId: number;
+  perfilId: string;
   nombre: string;
   descripcion: string | null;
-  distancia_km: number | null;
-  gpx_url: string | null;
-  geojson: GeoJSON.FeatureCollection | null;
-  bbox: RouteBbox | null;
-  subido_por_nombre: string | null;
-  created_at: string;
-  actividades: ActividadTipo[];
+  rectangulo: Rectangulo;
+  creadoEn: string;
+  actualizadoEn: string;
 };
 
-export type Descarga = {
-  id: string;
-  user_id: string;
-  ruta_id: string;
-  created_at: string;
-};
-
-export type ZonaListItem = {
-  id: string;
-  user_id: string;
-  provincia: string;
+/** Lo que alcanza para dibujar una ruta en una lista, sin traer la geometría. */
+export type RutaResumen = {
+  id: number;
+  perfilId: string;
   nombre: string;
   descripcion: string | null;
-  subido_por_nombre: string | null;
-  created_at: string;
+  actividades: ActividadRuta[];
+  dificultadTecnica: number | null;
+  nivelEsfuerzo: NivelEsfuerzo | null;
+  largoKm: number | null;
+  desnivelPositivoM: number | null;
+  desnivelNegativoM: number | null;
+  rectangulo: Rectangulo;
+  creadoEn: string;
+  actualizadoEn: string;
 };
 
-export type Zona = ZonaListItem;
-
-export type SectorListItem = {
-  id: string;
-  zona_id: string;
-  user_id: string;
-  nombre: string;
-  descripcion: string | null;
-  lat_ne: number;
-  lon_ne: number;
-  lat_se: number;
-  lon_se: number;
-  lat_so: number;
-  lon_so: number;
-  lat_no: number;
-  lon_no: number;
-  zoom_minimo: number;
-  subido_por_nombre: string | null;
-  created_at: string;
+/** La ruta completa, con la línea del recorrido. */
+export type Ruta = RutaResumen & {
+  comentario: string | null;
+  equipo: string | null;
+  complicaciones: string | null;
+  geometria: FeatureCollection;
+  archivoUrl: string | null;
 };
 
-export type Sector = SectorListItem;
+export type Anotacion = {
+  id: number;
+  sectorId: number;
+  perfilId: string;
+  tipo: TipoAnotacion;
+  /** Solo cuando `tipo` es `punto`. */
+  icono: IconoPunto | null;
+  /** Solo cuando `tipo` es `trazo`. */
+  color: string | null;
+  comentario: string | null;
+  geometria: Point | LineString;
+  creadoEn: string;
+  actualizadoEn: string;
+};
