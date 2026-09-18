@@ -88,8 +88,13 @@ distancia, desnivel, dificultad y comentarios.
 concepto y no se renombra.
 
 **Zona**
-Un área geográfica que agrupa sectores.
+Agrupación de sectores, solo a modo de referencia. No tiene geometría ni mapa
+propio.
 
 **Sector**
-Un área concreta dentro de una zona, definida por cuatro esquinas, con un nivel de
-acercamiento recomendado para descargar su mapa.
+Rectángulo alineado al norte dentro de una zona, definido por **dos puntos**: la
+esquina noroeste y la sudeste. Es la unidad que se descarga.
+
+**Desnivel positivo / desnivel negativo**
+Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque
+castigan distinto. Los calcula la app desde el archivo: nunca se cargan a mano.
