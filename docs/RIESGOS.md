@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-18
+> Última revisión: 2026-09-18 (base rehecha desde cero)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -47,7 +47,7 @@ dos pantallas.
 
 ---
 
-## 🔴 R4 — La base de datos no cumple las convenciones fijas
+## ✅ R4 — La base de datos no cumple las convenciones fijas
 
 **Qué pasa.** Las convenciones fijas de Ale para toda su base (ver el skill
 `stack-tecnico-fijo`) piden nombres en snake_case español, borrado lógico,
@@ -85,7 +85,7 @@ abierta y la pantalla encendida.
 
 ---
 
-## 🔴 R6 — Una ruta sin dueño queda trabada para siempre
+## ✅ R6 — Una ruta sin dueño queda trabada para siempre
 
 **Qué pasa.** En la tabla de rutas, el dueño puede quedar vacío. Pero los
 permisos dicen «solo el creador edita y borra», comparando contra ese dueño.
@@ -100,7 +100,7 @@ sin dueño ya cargada.
 
 ---
 
-## 🔴 R7 — Los depósitos de archivos no tienen ningún límite
+## ✅ R7 — Los depósitos de archivos no tienen ningún límite
 
 **Qué pasa.** Los dos depósitos —fotos de perfil y archivos de ruta— son
 públicos, **sin límite de tamaño y sin restricción de tipo de archivo**.
@@ -117,7 +117,7 @@ no está aplicada acá.
 
 ---
 
-## 🟡 R8 — Cualquiera puede escribir en la tabla de novedades
+## ✅ R8 — Cualquiera puede escribir en la tabla de novedades
 
 **Qué pasa.** El permiso de inserción en novedades no verifica nada: cualquier
 usuario con sesión puede insertar cualquier cosa.
@@ -129,7 +129,7 @@ abierta que no debería estar.
 
 ---
 
-## 🟡 R9 — Permisos duplicados
+## ✅ R9 — Permisos duplicados
 
 **Qué pasa.** La tabla de rutas tiene ocho permisos donde alcanzan cuatro: hay
 dos juegos que hacen exactamente lo mismo con nombres distintos. Lo mismo en la
@@ -142,7 +142,7 @@ El día que haya que cambiar una regla, hay que acordarse de los dos.
 
 ---
 
-## 🟡 R10 — La tabla de descargas no se usa
+## ✅ R10 — La tabla de descargas no se usa
 
 **Qué pasa.** Existe una tabla para registrar qué ruta descargó cada usuario. El
 código de la app nunca la consulta ni la escribe.
@@ -151,3 +151,17 @@ código de la app nunca la consulta ni la escribe.
 quien lea la base.
 
 **Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## Nota de cierre — 2026-09-18
+
+**R4, R6, R7, R8, R9 y R10 quedaron resueltos de una sola vez**: la base de datos
+se rehízo desde cero a partir de las decisiones del proyecto. Los riesgos que
+describían pertenecían a la base anterior, que ya no existe.
+
+La base nueva cumple las convenciones desde el primer día: nombres en español,
+borrado lógico, fechas de auditoría automáticas, seguridad por fila, dueño
+obligatorio en cada fila, y depósitos de archivos con tope de tamaño y de tipo.
+
+**R1, R2, R3 y R5 siguen abiertos**: son de la capa de mapas, no de la base.

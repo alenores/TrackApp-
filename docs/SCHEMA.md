@@ -1,39 +1,29 @@
 # Esquema de la base de datos — TrackApp
 
-> Leído en tiempo real el 2026-09-18, directo de la base.
+> Creada desde cero el 2026-09-18, desde las decisiones del proyecto.
 > **Esta es la fuente de verdad para nombres de tablas y columnas.**
 > Si el código dice otra cosa, manda esto.
 
-⚠️ **No confundir con la base de Vías de Escalada Córdoba.** Son dos proyectos
-Supabase distintos. La de TrackApp tiene `rutas`, `sectores`, `zonas`,
-`profiles`, `novedades` y `descargas`. Si aparecen `vias`, `aperturistas` o
-`sector` en singular, es la otra base: frenar.
+Todas las tablas cumplen las convenciones fijas: nombres en snake_case español,
+borrado lógico con `eliminado_en`, `creado_en` y `actualizado_en` (esta última
+se actualiza sola con un disparador), y seguridad por fila activa.
+
+**Nada se borra de verdad.** Marcar `eliminado_en` es borrar. **Toda consulta de
+lectura filtra `eliminado_en is null`**, salvo que el caso pida ver lo borrado.
 
 ---
 
-## rutas
+## perfiles
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `id` | uuid | PK, se genera sola |
-| `user_id` | uuid | FK a los usuarios. **Acepta vacío** (ver riesgos) |
-| `nombre` | text | obligatorio |
-| `descripcion` | text | |
-| `distancia_km` | double precision | |
-| `gpx_url` | text | |
-| `geojson` | jsonb | obligatorio |
-| `bbox` | jsonb | obligatorio |
-| `created_at` | timestamptz | |
-| `subido_por_nombre` | text | |
-| `actividades` | text[] | obligatorio, arranca vacío |
+| `id` | uuid | Es el mismo id del usuario del login. Única excepción a la regla del número correlativo, y es obligada |
+| `nombre` | text | |
+| `avatar_url` | text | |
+| `categoria` | categoria_usuario | `administrador` · `premium` · `normal`. Por defecto `normal` |
 
-**Restricción sobre `actividades`:** solo admite estos siete valores —
-`trekking`, `correr`, `mountain_bike`, `moto`, `camioneta`, `canyoning`, `kayak`.
-
-**Permisos:** cualquiera ve todas. Solo el creador inserta, edita y borra.
-
-**No existen todavía:** desnivel positivo, desnivel negativo, dificultad
-técnica, nivel de esfuerzo, equipo, complicaciones. Son columnas nuevas.
+**Permisos:** todos ven todos los perfiles. Cada uno edita el suyo. El
+administrador puede cambiar la categoría de cualquiera.
 
 ---
 
@@ -41,19 +31,17 @@ técnica, nivel de esfuerzo, equipo, complicaciones. Son columnas nuevas.
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `id` | uuid | PK |
-| `user_id` | uuid | obligatorio |
-| `provincia` | text | obligatorio |
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | obligatorio |
 | `nombre` | text | obligatorio |
 | `descripcion` | text | |
-| `subido_por_nombre` | text | |
-| `created_at` | timestamptz | |
+| `lat_norte` `lat_sur` `lon_este` `lon_oeste` | double | el rectángulo, obligatorio |
 
-**No tiene coordenadas.** El rectángulo de dos puntos definido en la decisión
-011 es una columna nueva.
+**El rectángulo de la zona no se descarga nunca.** Existe solo para medir qué
+parte del territorio todavía no tiene sector encima.
 
-**Permisos:** solo usuarios con sesión ven las zonas. Solo el creador edita y
-borra.
+**Permisos:** todos los que tienen sesión las ven. **Solo el administrador crea,
+edita y borra.**
 
 ---
 
@@ -61,96 +49,88 @@ borra.
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `id` | uuid | PK |
-| `zona_id` | uuid | obligatorio, FK a zonas |
-| `user_id` | uuid | obligatorio |
+| `id` | bigint | número correlativo |
+| `zona_id` | bigint | obligatorio |
+| `perfil_id` | uuid | obligatorio |
 | `nombre` | text | obligatorio |
 | `descripcion` | text | |
-| `lat_ne` `lon_ne` | double | esquina noreste |
-| `lat_se` `lon_se` | double | esquina sudeste |
-| `lat_so` `lon_so` | double | esquina sudoeste |
-| `lat_no` `lon_no` | double | esquina noroeste |
-| `zoom_minimo` | integer | por defecto 12, mínimo 10 |
-| `subido_por_nombre` | text | |
-| `created_at` | timestamptz | |
+| `lat_norte` `lat_sur` `lon_este` `lon_oeste` | double | el rectángulo, obligatorio |
 
-**Guarda las cuatro esquinas (ocho números).** La decisión 011 lo cambia a dos
-puntos: es una migración real, no un ajuste.
+**Es la unidad que se descarga.**
 
-**Permisos:** solo usuarios con sesión ven los sectores. Solo el creador edita y
-borra. **Todavía no refleja que crear sectores es tarea exclusiva del
-administrador** (decisión 009).
+**Permisos:** todos los que tienen sesión los ven. **Solo el administrador crea,
+edita y borra.**
 
 ---
 
-## profiles
+## rutas
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `id` | uuid | PK, es el mismo id del usuario |
-| `nombre` | text | |
-| `avatar_url` | text | |
-| `updated_at` | timestamptz | obligatorio |
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | **obligatorio**, es el creador |
+| `nombre` | text | obligatorio |
+| `descripcion` | text | |
+| `comentario` | text | |
+| `actividades` | actividad_ruta[] | `trekking` · `mountain_bike` · `kayak` · `canyoning`. **Al menos una** |
+| `dificultad_tecnica` | smallint | del 1 al 10 |
+| `nivel_esfuerzo` | nivel_esfuerzo | `bajo` · `medio` · `alto` · `muy_alto` |
+| `equipo` | text | texto libre |
+| `complicaciones` | text | texto libre |
+| `largo_km` | numeric | **lo calcula la app desde el archivo. Nunca a mano** |
+| `desnivel_positivo_m` | integer | ídem |
+| `desnivel_negativo_m` | integer | ídem |
+| `geometria` | jsonb | la línea del recorrido, obligatorio |
+| `archivo_url` | text | el archivo original subido |
+| `lat_norte` `lat_sur` `lon_este` `lon_oeste` | double | el rectángulo que la abarca, obligatorio |
 
-**Permisos:** todos ven todos los perfiles. Cada uno edita el suyo.
+**Permisos:** todos los que tienen sesión las ven. **Solo el creador edita y
+borra la suya.**
 
 ---
 
-## novedades
+## anotaciones
 
 | Columna | Tipo | Notas |
 |---|---|---|
-| `id` | integer | PK autoincremental |
-| `descripcion` | text | obligatorio |
-| `created_at` | timestamptz | |
+| `id` | bigint | número correlativo |
+| `sector_id` | bigint | obligatorio. **Pertenecen al territorio, no a la ruta** |
+| `perfil_id` | uuid | obligatorio |
+| `tipo` | tipo_anotacion | `punto` o `trazo` |
+| `icono` | icono_punto | solo si es punto |
+| `color` | text | solo si es trazo |
+| `comentario` | text | texto libre, para las dos formas |
+| `geometria` | jsonb | el punto o la línea, obligatorio |
 
-**Permisos:** todos leen. **Cualquiera con sesión puede insertar cualquier
-cosa** (ver riesgos).
+**Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
+fuente · iglesia · cruce · mirador · cascada
+
+**La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
+un trazo lleva color y no lleva ícono.
+
+**Permisos:** todos los que tienen sesión las ven. **Solo el administrador crea,
+edita y borra.**
 
 ---
 
-## descargas
+## Cómo se detecta que hay novedades
 
-| Columna | Tipo | Notas |
-|---|---|---|
-| `id` | integer | PK autoincremental |
-| `user_id` | uuid | |
-| `ruta_id` | uuid | FK a rutas |
-| `created_at` | timestamptz | |
-
-Un registro único por usuario y ruta. **El código de la app nunca la consulta:
-está sin uso** (ver riesgos).
+**Mirando `actualizado_en`.** Como lo mantiene un disparador de la base, cambia
+solo cada vez que se modifica una fila. La app compara la fecha más nueva que
+tiene guardada contra la de la base. **No hay tabla de novedades.**
 
 ---
 
 ## Depósitos de archivos
 
-| Depósito | Público | Límite de tamaño | Tipos permitidos |
+| Depósito | Público | Límite | Tipos permitidos |
 |---|---|---|---|
-| `avatars` | sí | **ninguno** | **ninguno** |
-| `gpx-files` | sí | **ninguno** | **ninguno** |
-
-Ver riesgos.
-
----
-
-## Estado frente a las convenciones fijas
-
-| Convención | ¿Se cumple? |
-|---|---|
-| Nombres en snake_case español | **No.** `created_at`, `updated_at`, `user_id` |
-| `id` serial autoincremental | **No.** Las cuatro tablas principales usan uuid |
-| Borrado lógico (`eliminado_en`) | **No.** Ninguna tabla lo tiene. El borrado es definitivo |
-| `creado_en` / `actualizado_en` | **No.** Están en inglés, y falta el de modificación en casi todas |
-| RLS activo | **Sí**, en las seis tablas |
+| `avatares` | sí | 2 MB | solo webp |
+| `archivos-ruta` | sí | 10 MB | gpx, kml, kmz y xml |
 
 ---
 
 ## Auditoría de fuentes
 
-**Leído en tiempo real (2026-09-18):** el esquema completo de la base de
-TrackApp —tablas, columnas, tipos, restricciones y políticas de seguridad— y la
-lista de depósitos de archivos, obtenidos ejecutando consultas directas contra
-la base.
-
-**Pendiente de verificación:** nada. Este documento está verificado.
+**Escrito el 2026-09-18** a partir del script ejecutado contra la base, que se
+verificó devolviendo el perfil administrador correctamente.
