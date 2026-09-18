@@ -209,7 +209,7 @@ export function NuevaRutaForm() {
         </p>
       ) : null}
 
-      <Button type="submit" fullWidth disabled={saving || parsing || !parsedGpx}>
+      <Button type="submit" anchoCompleto disabled={saving || parsing || !parsedGpx}>
         {saving ? "Guardando ruta…" : "Guardar ruta"}
       </Button>
     </form>

@@ -143,7 +143,7 @@ export function EditarZonaForm({ zona }: EditarZonaFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" fullWidth disabled={saving || deleting}>
+        <Button type="submit" anchoCompleto disabled={saving || deleting}>
           {saving ? "Guardando…" : "Guardar cambios"}
         </Button>
 

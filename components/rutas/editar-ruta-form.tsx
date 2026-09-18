@@ -141,7 +141,7 @@ export function EditarRutaForm({
         </p>
       ) : null}
 
-      <Button type="submit" fullWidth disabled={saving}>
+      <Button type="submit" anchoCompleto disabled={saving}>
         {saving ? "Guardando…" : "Guardar cambios"}
       </Button>
     </form>

@@ -47,10 +47,10 @@ export function NavigationExitModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <Button type="button" fullWidth onClick={onCancel}>
+          <Button type="button" anchoCompleto onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="button" variant="danger" fullWidth onClick={onConfirm}>
+          <Button type="button" variante="destructivo" anchoCompleto onClick={onConfirm}>
             Salir
           </Button>
         </div>

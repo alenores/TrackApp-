@@ -10,6 +10,11 @@ import type { Anotacion, RutaResumen, Sector, Zona } from "@/types/database";
  * elige descargar es el mapa de un sector.**
  *
  * Ver docs/decisiones/012-modelo-de-descarga.md
+ *
+ * **Las líneas de los recorridos no van acá**, sino en el depósito grande del
+ * navegador (`recorridos.ts`): pesan demasiado para el guardado simple y
+ * llenarlo dejaría a la app sin poder guardar nada. Acá va solo lo liviano, que
+ * es lo que dibuja las pantallas al instante.
  */
 
 const CLAVE_PAQUETE = "trackapp-paquete-v1";

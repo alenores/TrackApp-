@@ -169,7 +169,7 @@ export function AuthForm() {
           </p>
         ) : null}
 
-        <Button type="submit" fullWidth disabled={loading}>
+        <Button type="submit" anchoCompleto disabled={loading}>
           {loading
             ? "Procesando…"
             : mode === "login"

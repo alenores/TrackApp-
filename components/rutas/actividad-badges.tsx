@@ -1,29 +1,52 @@
-import type { ActividadTipo } from "@/types/database";
-import { getActividadMeta } from "@/lib/rutas/actividades";
+import { mostrarActividad } from "@/lib/rutas/actividades";
+import type { ActividadRuta } from "@/types/database";
 
-type ActividadBadgesProps = {
-  actividades: ActividadTipo[];
-  size?: "sm" | "md";
+/**
+ * Los tipos de actividad de una ruta.
+ *
+ * Los íconos son dibujos y no emoji: un emoji no respeta el contraste ni el
+ * tamaño que pide la app, y con sol de frente se pierde.
+ */
+
+type Props = {
+  actividades: ActividadRuta[];
+  tamano?: "chico" | "mediano";
 };
 
-export function ActividadBadges({ actividades, size = "sm" }: ActividadBadgesProps) {
+export function ActividadBadges({ actividades, tamano = "chico" }: Props) {
   if (actividades.length === 0) return null;
+
+  const mediano = tamano === "mediano";
 
   return (
     <div className="flex flex-wrap gap-1.5">
       {actividades.map((tipo) => {
-        const meta = getActividadMeta(tipo);
+        const actividad = mostrarActividad(tipo);
+
         return (
           <span
             key={tipo}
             className={
-              size === "md"
+              mediano
                 ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-700/40 bg-emerald-950/60 px-3 py-1 text-sm font-medium text-emerald-200"
                 : "inline-flex items-center gap-1 rounded-full border border-emerald-700/30 bg-emerald-950/50 px-2 py-0.5 text-xs font-medium text-emerald-300"
             }
           >
-            <span aria-hidden>{meta.icon}</span>
-            {meta.label}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+              className={mediano ? "h-4 w-4" : "h-3.5 w-3.5"}
+            >
+              <path
+                d={actividad.trazo}
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {actividad.etiqueta}
           </span>
         );
       })}

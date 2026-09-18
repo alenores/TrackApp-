@@ -109,8 +109,8 @@ export function Sidebar({ onNavigate, onLogout, loggingOut = false }: SidebarPro
         <div className="mt-auto border-t border-border pt-3">
           <Button
             type="button"
-            variant="ghost"
-            fullWidth
+            variante="fantasma"
+            anchoCompleto
             disabled={loggingOut}
             onClick={onLogout}
             className="justify-start px-3 text-left text-red-300 hover:bg-red-950/40 hover:text-red-200"

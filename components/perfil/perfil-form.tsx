@@ -286,7 +286,7 @@ export function PerfilForm({
             className={PROFILE_FIELD_CLASS}
           />
 
-          <Button type="submit" fullWidth disabled={loading}>
+          <Button type="submit" anchoCompleto disabled={loading}>
             {loading ? "Guardando…" : "Guardar cambios"}
           </Button>
         </form>
