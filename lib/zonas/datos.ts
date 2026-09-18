@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { traerTodasLasFilas, type ResultadoLista } from "@/lib/supabase/listas";
+import {
+  mapearResultado,
+  traerTodasLasFilas,
+  type ResultadoLista,
+} from "@/lib/supabase/listas";
 import {
   COLUMNAS_RECTANGULO,
   leerRectangulo,
@@ -52,14 +56,10 @@ export async function traerZonas(): Promise<ResultadoLista<Zona>> {
       .is("eliminado_en", null)
       .order("nombre", { ascending: true })
       .order("id", { ascending: true })
-      .range(desde, hasta) as never,
+      .range(desde, hasta),
   );
 
-  const zonas = resultado.filas.map(leer);
-
-  return resultado.completa
-    ? { completa: true, filas: zonas }
-    : { completa: false, filas: zonas, motivo: resultado.motivo };
+  return mapearResultado(resultado, leer);
 }
 
 export async function traerZona(id: number): Promise<Zona | null> {

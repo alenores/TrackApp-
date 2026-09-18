@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { traerTodasLasFilas, type ResultadoLista } from "@/lib/supabase/listas";
+import {
+  mapearResultado,
+  traerTodasLasFilas,
+  type ResultadoLista,
+} from "@/lib/supabase/listas";
 import {
   COLUMNAS_RECTANGULO,
   leerRectangulo,
@@ -54,14 +58,10 @@ export async function traerSectores(): Promise<ResultadoLista<Sector>> {
       .is("eliminado_en", null)
       .order("nombre", { ascending: true })
       .order("id", { ascending: true })
-      .range(desde, hasta) as never,
+      .range(desde, hasta),
   );
 
-  const sectores = resultado.filas.map(leer);
-
-  return resultado.completa
-    ? { completa: true, filas: sectores }
-    : { completa: false, filas: sectores, motivo: resultado.motivo };
+  return mapearResultado(resultado, leer);
 }
 
 export async function traerSectoresDeZona(
@@ -77,14 +77,10 @@ export async function traerSectoresDeZona(
       .is("eliminado_en", null)
       .order("nombre", { ascending: true })
       .order("id", { ascending: true })
-      .range(desde, hasta) as never,
+      .range(desde, hasta),
   );
 
-  const sectores = resultado.filas.map(leer);
-
-  return resultado.completa
-    ? { completa: true, filas: sectores }
-    : { completa: false, filas: sectores, motivo: resultado.motivo };
+  return mapearResultado(resultado, leer);
 }
 
 export async function traerSector(id: number): Promise<Sector | null> {

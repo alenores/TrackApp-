@@ -1,6 +1,10 @@
 import type { FeatureCollection } from "geojson";
 import { createClient } from "@/lib/supabase/server";
-import { traerTodasLasFilas, type ResultadoLista } from "@/lib/supabase/listas";
+import {
+  mapearResultado,
+  traerTodasLasFilas,
+  type ResultadoLista,
+} from "@/lib/supabase/listas";
 import {
   COLUMNAS_RECTANGULO,
   leerRectangulo,
@@ -101,14 +105,10 @@ export async function traerRutas(): Promise<ResultadoLista<RutaResumen>> {
       .is("eliminado_en", null)
       .order("creado_en", { ascending: false })
       .order("id", { ascending: false })
-      .range(desde, hasta) as never,
+      .range(desde, hasta),
   );
 
-  const rutas = resultado.filas.map(leerResumen);
-
-  return resultado.completa
-    ? { completa: true, filas: rutas }
-    : { completa: false, filas: rutas, motivo: resultado.motivo };
+  return mapearResultado(resultado, leerResumen);
 }
 
 /** Una ruta con su línea del recorrido. `null` si no existe o está borrada. */
