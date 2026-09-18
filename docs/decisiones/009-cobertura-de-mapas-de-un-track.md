@@ -47,18 +47,14 @@ señal.** Ver la regla «Todo se sabe en casa» en `AGENTS.md`.
 - **No se le ofrece al usuario crear el sector que falta.** Ni siquiera al
   premium. Cargar zonas y sectores, y descargar sus mapas, es tarea exclusiva
   del administrador mientras el producto sea chico.
-- **Ale sí quiere enterarse** de que ese tramo quedó sin cobertura.
+- **No se construye ninguna funcionalidad de administración de tramos sin
+  cobertura.** Ni listado, ni aviso al administrador, ni panel, ni nada.
+  Ale lo ve como cualquier otro usuario, mirando el track.
+- **Prohibido a los agentes proponer funcionalidad alrededor de esto.** El
+  faltante se avisa en la pantalla del track y ahí termina el tema.
 
-### Nota técnica que simplifica esto
-
-El faltante **se puede detectar en el momento en que se sube el track**, no
-recién cuando alguien intenta usarlo. El cruce contra los sectores es un cálculo,
-no depende de que un usuario llegue ahí ni de que reporte nada.
-
-Es decir: el administrador puede tener la lista de tramos sin cobertura sin que
-ningún usuario tenga que avisar nada.
+El aviso alcanza. Nada más.
 
 ## Pendiente
 
-- **Cómo se entera Ale.** Decisión funcional no tomada.
 - Cómo se presenta visualmente. Va con el mockup de esa pantalla.
