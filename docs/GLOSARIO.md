@@ -9,6 +9,10 @@
 El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamiento
 tiene su propio juego. Cada nivel adicional multiplica por cuatro la cantidad.
 
+**Sin mapa**
+Modo de navegación con la línea del track y el punto de GPS sobre fondo vacío,
+sin cartografía. Es un modo válido, no una falla.
+
 **Mapa simple**
 El mapa sin vista satelital. **Siempre incluye curvas de nivel**, sin excepción.
 

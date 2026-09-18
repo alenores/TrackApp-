@@ -13,6 +13,13 @@
 Esto es lo único que está decidido, y alcanza para que la base de datos y el
 sistema de permisos nazcan preparados.
 
+## Lo primero que sí se definió (2026-09-18)
+
+**Sobre los tracks:** cualquier usuario ve y consulta todos los tracks, de
+cualquier otro usuario. Solo el creador puede editar o eliminar el suyo.
+
+Ver `decisiones/008-tres-modos-de-uso-y-permisos.md`.
+
 ## Lo que NO está definido
 
 **Qué puede hacer cada categoría.** Y no se inventa.
