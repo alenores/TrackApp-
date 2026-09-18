@@ -93,6 +93,30 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 - **Nunca decir «listo» sobre una descarga incompleta.** Si faltó algo, se avisa.
 - **Sin señal no se oculta contenido ya guardado.**
 
+### Navegar sin señal
+
+**Lección aprendida en Vías de Escalada, a los golpes.** Sin señal, la navegación
+interna entre pantallas vuelve a pedir la receta de la pantalla y la rearma de
+cero — aunque ya la hayas visitado. Sin señal eso termina en **pantalla en
+blanco**.
+
+- **Todo link entre pantallas usa la pieza compartida de navegación**, nunca un
+  link pelado. Sin eso, la app queda en blanco en modo avión.
+- **Con señal no cambia nada.** El único costo, sin señal, es perder la animación.
+- **Nunca borrar en masa lo que el navegador tiene guardado.** Si una pantalla
+  tiene que salir siempre fresca, se configura así de entrada; no se limpia todo
+  a lo bruto, porque eso se lleva puesto el uso sin señal.
+
+### Cuando una pantalla revienta
+
+La app tiene que tener **una red de rescate propia** para cuando una pantalla
+falla al dibujarse. Sin ella la pantalla queda completamente vacía y el usuario
+no tiene ni un cartel que leer. Esa red **no se borra ni se vacía nunca**.
+
+**Ningún componente que envuelva la app puede quedarse en blanco mientras
+espera.** Si algo tiene que esperar, muestra el contenido y tapa después, nunca
+al revés.
+
 ---
 
 ## Pantallas emergentes
@@ -117,6 +141,67 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
   nuevo, se agrega al conjunto compartido, no suelto en una pantalla.
 - **No se escriben colores, tamaños ni espaciados a mano.** Salen de las variables
   del sistema de diseño.
+- **Los botones tienen variantes definidas**: principal, secundario y destructivo.
+  No se arma un botón nuevo escribiendo clases a mano.
+- **Un solo rojo para borrar en toda la app.** En Vías de Escalada llegaron a
+  convivir dos rojos distintos para el mismo botón de borrar, repartidos en
+  decenas de pantallas. Cambiar una regla de diseño obligaba a tocar dieciséis
+  archivos.
+
+---
+
+## Separación de capas
+
+Cada cosa vive en un solo lugar. Si la lógica se mezcla con la pantalla, cambiar
+una regla obliga a tocar veinte archivos y nadie sabe cuál manda.
+
+| Qué | Dónde vive |
+|---|---|
+| Reglas de negocio y cálculos | capa de lógica, sin nada de pantalla |
+| Datos guardados y sincronización | capa de datos |
+| Pantallas y componentes | solo presentación, **sin pedir datos por su cuenta** |
+
+**Un componente de pantalla no consulta la base ni descarga nada.** Recibe lo que
+tiene que mostrar.
+
+---
+
+## Pedir listas a la base: el tope de 1000
+
+**La base devuelve como máximo 1000 filas por respuesta y no avisa.** No da error:
+responde bien, con la lista cortada. En Vías de Escalada eso dejó 202 rutas
+invisibles sin un solo cartel, durante meses.
+
+- **Ninguna consulta sin filtro y sin tope.** O se traen todas por tandas, o se
+  pide un límite explícito. No hay tercera opción.
+- **Una consulta por tandas ordena por una columna única**, si no las tandas se
+  pisan entre sí.
+- **Contar y ordenar es trabajo de la base, no del celular.** Si solo hace falta
+  un número, no se traen las filas para contarlas.
+- **Verificar antes de dar por buena una descarga:** comparar lo que llegó contra
+  el total que informa la base. Si no coincide, se avisa. Nunca decir «listo»
+  sobre algo incompleto.
+
+---
+
+## Checklist obligatoria de pantalla o módulo nuevo
+
+Esto es lo que hace que las reglas de arriba se cumplan de verdad en vez de
+quedar escritas. **Una pantalla nueva no está terminada hasta que cumple los
+once puntos.**
+
+1. Usa las piezas compartidas. No inventó ninguna.
+2. Colores, tamaños y espaciados salen de las variables. Ninguno escrito a mano.
+3. Se ve bien en modo sol **y** en modo noche. Se probaron los dos.
+4. Todas las zonas tocables cumplen el mínimo.
+5. Las emergentes usan la pieza única y cierran con el botón físico de atrás.
+6. Los botones de volver vuelven, no van.
+7. Tiene resuelto **qué se ve cuando no hay nada**, **mientras carga** y **cuando
+   falla**. Ninguno de los tres queda mudo.
+8. Funciona sin señal, o dice claramente por qué no puede.
+9. Los textos están en voseo y los errores dicen qué pasó y qué hacer.
+10. Las palabras nuevas se agregaron al glosario.
+11. Si toca algo crítico, trae su prueba automática.
 
 ---
 
@@ -134,19 +219,6 @@ rompe algo** — hasta que falla en el cerro.
   vale lo mismo que ninguna.
 - **Una prueba que falla no se ajusta para que pase.** Se arregla lo que rompió.
   Prohibido saltear, desactivar o tapar una prueba para llegar a verde.
-
----
-
-## La ubicación es dato sensible
-
-Esta app sabe dónde estuvo una persona, cuándo y por dónde.
-
-- **Por defecto la posición se usa y se descarta.** No se guarda, no se sube, no
-  se comparte.
-- **Guardar o transmitir la ubicación requiere una decisión explícita y escrita**
-  en `docs/decisiones/`. Nunca puede aparecer como efecto colateral de otra cosa.
-- Lo mismo vale para cualquier dato que permita reconstruir por dónde anduvo
-  alguien.
 
 ---
 

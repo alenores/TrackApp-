@@ -32,6 +32,25 @@ Se fijaron las tres categorías de usuario, **sin permisos**.
 
 - `004` — Tres niveles de usuario (permisos deliberadamente sin definir)
 - `005` — Pruebas automáticas como red de seguridad
+- `006` — Sin tratamiento de dato sensible. Ale lo descartó: la app funciona
+  sobre confianza total. Se quitó la regla de ubicación de las reglas base.
+
+### Reglas agregadas en la segunda pasada
+
+Al revisar contra Vías de Escalada aparecieron cinco cosas que se habían
+salteado y que sí son cimiento:
+
+- **Navegar sin señal:** sin señal la navegación interna deja la pantalla en
+  blanco si no se usa la pieza compartida de navegación. Lección aprendida a los
+  golpes en el otro proyecto.
+- **Red de rescate cuando una pantalla revienta**, que no se borra nunca.
+- **Separación de capas:** lógica, datos y pantalla en lugares distintos. Un
+  componente de pantalla no consulta la base por su cuenta.
+- **Tope de 1000 filas de la base:** devuelve la lista cortada sin avisar. En el
+  otro proyecto dejó 202 rutas invisibles durante meses.
+- **Checklist obligatoria de once puntos para toda pantalla nueva**, que es el
+  mecanismo que hace cumplir el resto de las reglas.
+- **Botones con variantes definidas y un solo rojo para borrar.**
 
 ### Corrección de rumbo
 
