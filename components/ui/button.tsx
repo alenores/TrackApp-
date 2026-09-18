@@ -4,26 +4,46 @@ import type { ButtonHTMLAttributes, PointerEvent } from "react";
 import { triggerTapHaptic } from "@/lib/haptics";
 import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+/**
+ * **El único botón de la app.**
+ *
+ * No se arma un botón nuevo escribiendo clases a mano: si hace falta una
+ * variante que no está, se agrega acá. Así una regla de diseño se cambia en un
+ * solo lugar y no en dieciséis.
+ *
+ * La zona tocable nunca baja de 56 píxeles, y de 64 en la pantalla de
+ * navegación: se toca caminando, con guantes, y el dedo no apunta fino.
+ */
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant;
-  fullWidth?: boolean;
+export type VarianteDeBoton =
+  | "principal"
+  | "secundario"
+  | "destructivo"
+  | "fantasma";
+
+const CLASES_POR_VARIANTE: Record<VarianteDeBoton, string> = {
+  principal:
+    "bg-accent-light text-accent-foreground hover:bg-accent border border-emerald-700/50",
+  secundario:
+    "bg-surface-elevated text-foreground hover:bg-slate-600 border border-border",
+  // Un solo rojo de borrar en toda la app. No escribir otro a mano.
+  destructivo:
+    "bg-[var(--rojo-fondo)] text-[var(--rojo-texto)] hover:bg-[var(--rojo-fondo-fuerte)] border border-[var(--rojo-borde)]",
+  fantasma:
+    "bg-transparent text-muted hover:bg-surface-elevated hover:text-foreground",
 };
 
-const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-accent-light text-accent-foreground hover:bg-accent border border-emerald-700/50",
-  secondary:
-    "bg-surface-elevated text-foreground hover:bg-slate-600 border border-border",
-  ghost: "bg-transparent text-muted hover:bg-surface-elevated hover:text-foreground",
-  danger:
-    "bg-red-950/60 text-red-300 hover:bg-red-900/60 border border-red-800/50",
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variante?: VarianteDeBoton;
+  anchoCompleto?: boolean;
+  /** `true` en la pantalla de navegación, donde la zona tocable sube a 64. */
+  paraNavegacion?: boolean;
 };
 
 export function Button({
-  variant = "primary",
-  fullWidth = false,
+  variante = "principal",
+  anchoCompleto = false,
+  paraNavegacion = false,
   className = "",
   type = "button",
   disabled,
@@ -31,25 +51,26 @@ export function Button({
   onPointerDown,
   ...props
 }: ButtonProps) {
-  const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    if (!disabled) {
-      triggerTapHaptic();
-    }
-    onPointerDown?.(event);
+  const alTocar = (evento: PointerEvent<HTMLButtonElement>) => {
+    if (!disabled) triggerTapHaptic();
+    onPointerDown?.(evento);
   };
 
   return (
     <button
       type={type}
       disabled={disabled}
-      onPointerDown={handlePointerDown}
+      onPointerDown={alTocar}
       className={[
         TAP_FEEDBACK_CLASS,
-        "inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-base font-semibold transition-colors",
+        "inline-flex items-center justify-center rounded-xl px-5 font-semibold transition-colors",
+        paraNavegacion
+          ? "min-h-16 py-4 text-lg"
+          : "min-h-14 py-3 text-base",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        fullWidth ? "w-full" : "",
-        variantClasses[variant],
+        anchoCompleto ? "w-full" : "",
+        CLASES_POR_VARIANTE[variante],
         className,
       ]
         .filter(Boolean)

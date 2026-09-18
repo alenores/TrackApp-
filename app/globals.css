@@ -10,7 +10,13 @@
   --accent-light: #2d6a4f;
   --accent-foreground: #d8f3dc;
   --muted: #94a3b8;
-  --danger: #f87171;
+
+  /* Un solo rojo de borrar en toda la app. Nunca escribir otro a mano. */
+  --rojo: #f87171;
+  --rojo-texto: #fca5a5;
+  --rojo-fondo: rgb(69 10 10 / 0.6);
+  --rojo-fondo-fuerte: rgb(127 29 29 / 0.6);
+  --rojo-borde: rgb(153 27 27 / 0.5);
 }
 
 @theme inline {
@@ -23,7 +29,7 @@
   --color-accent-light: var(--accent-light);
   --color-accent-foreground: var(--accent-foreground);
   --color-muted: var(--muted);
-  --color-danger: var(--danger);
+  --color-rojo: var(--rojo);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
