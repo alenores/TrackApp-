@@ -1,6 +1,6 @@
 # 003 — Modelo offline
 
-**Fecha:** 2026-09-17 · **Estado:** 🟡 ABIERTA — falta decidir
+**Fecha:** 2026-09-17 · **Estado:** 🟡 PARCIALMENTE CERRADA — actualizada 2026-09-18
 
 ## Contexto
 
@@ -13,6 +13,20 @@ pantallas siguen yendo a internet aunque haya descarga hecha.
 desde ahí las pantallas leen **solo** de lo guardado, nunca de internet. Descrito
 en su glosario como *"funciona como un PDF descargado"*. Detecta novedades
 comparando el último registro de cada tabla y ofrece actualizar.
+
+## Cerrado el 2026-09-18
+
+**La navegación es 100% sin conexión, sin excepciones.** El 99% de las salidas
+se hacen sin señal. Navegar un track con el punto de GPS no consulta internet
+nunca, por ningún motivo. No existe el caso especial: si un agente cree haberlo
+encontrado, está equivocado.
+
+**El usuario elige qué mapa descarga**, entre dos opciones:
+
+1. **Mapa simple**, que siempre incluye curvas de nivel.
+2. **Mapa satelital**, en la versión gratuita de 10 metros por píxel.
+
+Todo lo que la navegación necesita se descarga antes de salir.
 
 ## Lo que sí está decidido
 

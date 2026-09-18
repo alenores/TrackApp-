@@ -86,12 +86,30 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
 ## Offline
 
+### La navegación es 100% sin conexión. Sin excepciones.
+
+**El 99% de las salidas se hacen sin señal.** Por lo tanto:
+
+- **Navegar un track con el punto de GPS NO consulta internet. Nunca. Por ningún
+  motivo.** Ni para un dato suelto, ni para "enriquecer", ni para verificar algo,
+  ni como respaldo, ni "solo si hay señal".
+- **No existe la excepción.** Si un agente cree haber encontrado un caso donde
+  convendría pedir un dato a internet durante la navegación, **está equivocado**.
+  No se implementa, no se propone y no se pregunta.
+- Todo lo que la navegación necesita **se descargó antes de salir**. Si algo no
+  está descargado, se avisa antes de salir, no en el cerro.
+- El GPS no es internet: funciona sin señal. Esta regla no lo afecta.
+
+### El resto
+
 - **Las pantallas leen de lo guardado en el celular, nunca de internet.** Internet
   sirve para actualizar lo guardado, no para dibujar una pantalla.
 - **Lo que se descarga tiene que poder borrarse.** Si el usuario quita algo de
   offline, el espacio se libera de verdad.
 - **Nunca decir «listo» sobre una descarga incompleta.** Si faltó algo, se avisa.
 - **Sin señal no se oculta contenido ya guardado.**
+- **El usuario elige qué mapa descarga:** simple (con curvas de nivel) o
+  satelital. Ver `docs/decisiones/007-de-donde-salen-los-mapas.md`.
 
 ### Navegar sin señal
 
