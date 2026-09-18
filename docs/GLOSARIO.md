@@ -9,6 +9,12 @@
 El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamiento
 tiene su propio juego. Cada nivel adicional multiplica por cuatro la cantidad.
 
+**Mapa simple**
+El mapa sin vista satelital. **Siempre incluye curvas de nivel**, sin excepción.
+
+**Mapa satelital**
+El mapa con la foto del terreno real de fondo.
+
 **Mapa básico**
 La línea del recorrido dibujada sobre fondo vacío, sin cartografía. Es lo que se
 ve sin conexión cuando no se descargaron las imágenes del mapa.
