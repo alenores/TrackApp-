@@ -1,6 +1,6 @@
 # 003 — Modelo offline
 
-**Fecha:** 2026-09-17 · **Estado:** 🟡 PARCIALMENTE CERRADA — actualizada 2026-09-18
+**Fecha:** 2026-09-17 · **Estado:** ✅ CERRADA el 2026-09-18 — ver `012-modelo-de-descarga.md`
 
 ## Contexto
 
@@ -47,7 +47,7 @@ cuando se retome el tema:
 - Por zona geográfica, descargando una región completa de una vez.
 - Automático alrededor de las rutas marcados como favoritos.
 
-**Esta decisión está abierta. No implementar nada de offline sin cerrarla.**
+**CERRADA.** El modelo de descarga quedó definido en `012-modelo-de-descarga.md`.
 
 **Aclaración (2026-09-18):** ni siquiera está decidido que la app descargue
 mapas. Eso depende de la definición funcional, que todavía no ocurrió. Nada de
