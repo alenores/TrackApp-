@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-17
+> Última revisión: 2026-09-18
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -66,8 +66,9 @@ más cuantos más datos se acumulen.
 **Cómo se arregla.** Con migraciones sobre la base actual, no rehaciendo la app.
 
 **Detectado:** 2026-09-17, leyendo el código.
-**No verificado contra la base**: la base de TrackApp no fue accesible en esa
-sesión. El diagnóstico sale del código y de los tipos declarados.
+**✅ Verificado contra la base el 2026-09-18.** Confirmado: ninguna de las
+cuatro convenciones se cumple. Los ids además son uuid y no seriales. Ver
+`SCHEMA.md`.
 
 ---
 
@@ -81,3 +82,72 @@ abierta y la pantalla encendida.
 (ver `decisiones/002-pwa-y-empaquetado-android.md`). Es opcional y descartable.
 
 **Detectado:** 2026-09-17.
+
+---
+
+## 🔴 R6 — Una ruta sin dueño queda trabada para siempre
+
+**Qué pasa.** En la tabla de rutas, el dueño puede quedar vacío. Pero los
+permisos dicen «solo el creador edita y borra», comparando contra ese dueño.
+
+**Consecuencia.** Si una ruta queda sin dueño, **nadie puede editarla ni
+borrarla jamás.** Ni su autor, ni Ale. Queda trabada en la app para siempre.
+
+**Cómo se arregla.** Exigir que toda ruta tenga dueño, y revisar si hay alguna
+sin dueño ya cargada.
+
+**Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## 🔴 R7 — Los depósitos de archivos no tienen ningún límite
+
+**Qué pasa.** Los dos depósitos —fotos de perfil y archivos de ruta— son
+públicos, **sin límite de tamaño y sin restricción de tipo de archivo**.
+
+**Consecuencia.** Cualquiera con sesión puede subir un archivo de cualquier
+tamaño y de cualquier tipo. Un solo archivo grande puede consumir el espacio
+gratuito.
+
+**Referencia:** en Vías de Escalada esto ya está resuelto — ahí los depósitos
+tienen tope de 2 MB y solo aceptan imágenes en un formato. La lección existe,
+no está aplicada acá.
+
+**Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## 🟡 R8 — Cualquiera puede escribir en la tabla de novedades
+
+**Qué pasa.** El permiso de inserción en novedades no verifica nada: cualquier
+usuario con sesión puede insertar cualquier cosa.
+
+**Consecuencia.** Baja hoy, porque son Ale y sus amigos. Pero es una puerta
+abierta que no debería estar.
+
+**Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## 🟡 R9 — Permisos duplicados
+
+**Qué pasa.** La tabla de rutas tiene ocho permisos donde alcanzan cuatro: hay
+dos juegos que hacen exactamente lo mismo con nombres distintos. Lo mismo en la
+tabla de descargas.
+
+**Consecuencia.** Funciona, pero cada duplicado es un lugar donde equivocarse.
+El día que haya que cambiar una regla, hay que acordarse de los dos.
+
+**Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## 🟡 R10 — La tabla de descargas no se usa
+
+**Qué pasa.** Existe una tabla para registrar qué ruta descargó cada usuario. El
+código de la app nunca la consulta ni la escribe.
+
+**Consecuencia.** Ninguna hoy. Pero es una tabla que no hace nada y confunde a
+quien lea la base.
+
+**Detectado:** 2026-09-18, leyendo la base.
