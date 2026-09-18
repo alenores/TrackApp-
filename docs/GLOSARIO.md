@@ -29,6 +29,14 @@ Lo mismo, con las imágenes de la cartografía descargadas.
 **Nivel de acercamiento (zoom)**
 Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sendero).
 
+**Cobertura**
+La relación entre un track y los sectores que lo cruzan. Un tramo puede estar
+cubierto y descargado, cubierto sin descargar, o sin cobertura.
+
+**Sin cobertura**
+Un tramo de track por el que no pasa ningún sector. No hay mapa disponible para
+esa parte del recorrido.
+
 **Desvío**
 Distancia entre la posición del usuario y la línea del recorrido. Por encima de
 50 metros se considera fuera de ruta y se alerta.

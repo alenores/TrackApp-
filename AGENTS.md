@@ -37,6 +37,19 @@ persona cree que está bien ubicada y no lo está.
   a secas no sirve.
 - **El aviso de error no puede depender de lo mismo que falló.**
 
+### Todo se sabe en casa. En el cerro no hay sorpresas.
+
+La app tiene un solo momento para avisar las cosas: **cuando el usuario todavía
+tiene señal y está en su casa.** Enterarse a mitad de camino de que falta algo
+no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema.
+
+- **Todo lo que el usuario necesita saber antes de salir, se muestra antes de
+  salir**, completo y sin que tenga que ir a buscarlo.
+- **Prohibido descubrir un faltante durante la salida.** Si la app puede saberlo
+  con señal, lo dice con señal.
+- Ante la duda entre avisar de más en casa o avisar en el cerro: **siempre en
+  casa.**
+
 ---
 
 ## Diseño para exterior (ver `docs/DISENO_EXTERIOR.md`)
