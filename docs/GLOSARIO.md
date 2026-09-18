@@ -52,7 +52,11 @@ esa parte del recorrido.
 
 **Desvío**
 Distancia entre la posición del usuario y la línea del recorrido. Por encima de
-50 metros se considera fuera de ruta y se alerta.
+50 metros se considera que el usuario se desvió y se alerta.
+
+**Ojo con el texto en pantalla:** la app hoy dice «¡Fuera de ruta!», que usa una
+palabra prohibida por el glosario. Hay que reemplazarlo. Propuesta: «Te
+desviaste». **Pendiente de confirmar con Ale.**
 
 ## Diseño
 
@@ -79,9 +83,13 @@ El resto de los usuarios: amigos de amigos y cualquiera que llegue.
 
 ## Dominio
 
-**Ruta**
-Un recorrido cargado desde un archivo GPX o KML. Tiene una línea, una distancia y
-un tipo de actividad.
+**Track**
+El recorrido subido a la app desde un archivo. Tiene una línea, un nombre, una
+distancia, desnivel, dificultad y comentarios.
+
+**Es la palabra definitiva y la única.** Nunca «ruta», «trayecto» ni
+«recorrido». Es la única palabra en inglés permitida en el proyecto, por
+decisión explícita de Ale.
 
 **Zona**
 Un área geográfica que agrupa sectores.

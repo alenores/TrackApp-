@@ -15,6 +15,9 @@ y **no debe usarse para escribir consultas sin verificar antes**.
 
 `rutas` · `zonas` · `sectores` · `profiles` · `novedades`
 
+**Ojo:** la tabla se llama `rutas` en la base actual, pero el concepto se llama
+**Track**. Ese renombre entra con la migración de convenciones (ver `RIESGOS.md` R4).
+
 Más dos depósitos de archivos: uno para avatares y uno para archivos GPX.
 
 ## Deuda conocida

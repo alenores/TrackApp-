@@ -1,6 +1,6 @@
 # TrackApp — reglas para agentes de IA
 
-> App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
+> App de navegación de Tracks al aire libre. Se usa caminando, con sol fuerte,
 > con guantes, sin señal y con la batería como recurso escaso.
 > Última revisión: 2026-09-18
 
@@ -217,7 +217,7 @@ tiene que mostrar.
 ## Pedir listas a la base: el tope de 1000
 
 **La base devuelve como máximo 1000 filas por respuesta y no avisa.** No da error:
-responde bien, con la lista cortada. En Vías de Escalada eso dejó 202 rutas
+responde bien, con la lista cortada. En Vías de Escalada eso dejó 202 vías
 invisibles sin un solo cartel, durante meses.
 
 - **Ninguna consulta sin filtro y sin tope.** O se traen todas por tandas, o se
@@ -284,9 +284,11 @@ rompe algo** — hasta que falla en el cerro.
 ## Un concepto, una palabra
 
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
-- **Cada concepto tiene una sola palabra en toda la app.** Si es «ruta», es ruta
-  en la pantalla, en el código y en la base. Nunca «recorrido» ni «track» para
-  lo mismo.
+- **Única excepción, decidida por Ale: `Track`.** Es la palabra definitiva para
+  el recorrido subido a la app, en pantalla, en el código y en la base.
+  **Prohibido «ruta», «trayecto» y «recorrido» para lo mismo.**
+- **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
+  variantes, sin «acá le decimos de otra forma porque queda mejor».
 - Las palabras del proyecto viven en `docs/GLOSARIO.md`. **Palabra nueva, entrada
   nueva.** Si no está ahí, no se usa.
 

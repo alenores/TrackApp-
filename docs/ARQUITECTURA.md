@@ -13,7 +13,7 @@ Es el stack fijo de Ale, sin desvíos.
 | Módulo | Estado | Documentado |
 |---|---|---|
 | Autenticación y perfiles | existe, sin revisar | ⬜ |
-| Rutas (alta, listado, detalle) | existe, sin revisar | ⬜ |
+| Tracks (alta, listado, detalle) | existe, sin revisar | ⬜ |
 | Navegación con GPS | existe, analizado | 🟡 parcial, abajo |
 | Zonas y sectores | existe, sin revisar | ⬜ |
 | Offline y descargas | existe, analizado | 🟡 ver `decisiones/003` |
@@ -27,7 +27,7 @@ del proyecto).
 
 **Dos mapas distintos:**
 
-- **Mapa de vista** — en el detalle de ruta y en la vista previa al subir un
+- **Mapa de vista** — en el detalle del Track y en la vista previa al subir un
   recorrido. Dibuja la línea del recorrido. Sin GPS. **No lee lo descargado**
   (ver `RIESGOS.md` R3).
 - **Mapa de navegación** — sigue la posición con GPS, calcula la distancia a la
@@ -36,7 +36,7 @@ del proyecto).
 
 **Descarga offline:**
 
-- Rutas: niveles de acercamiento fijos, sin elección del usuario.
+- Tracks: niveles de acercamiento fijos, sin elección del usuario.
 - Sectores: el usuario elige desde qué nivel de detalle descargar. Estima el peso
   y pide confirmación si la descarga es grande.
 - Cada nivel de acercamiento adicional multiplica por cuatro la cantidad de
@@ -56,7 +56,7 @@ sobre fondo vacío.
 ## Auditoría de fuentes
 
 **Leído en tiempo real (2026-09-17):** código de mapas, navegación, descarga
-offline, componentes de rutas y zonas, configuración del proyecto, tipos de la
+offline, componentes de Tracks y zonas, configuración del proyecto, tipos de la
 base, e historial completo del repositorio.
 
 **Pendiente de verificación:** el esquema real de la base de datos. La base de

@@ -62,11 +62,16 @@ Además de dibujarse en la app, **las anotaciones pueden importarse por la misma
 puerta que los tracks.** Si Ale ya marcó puntos o líneas en Google Earth, los
 exporta y los sube igual que un track: es el mismo formato de archivo.
 
-## Posibilidad abierta (no decidida)
+## Las anotaciones son siempre para usar sin conexión
 
-Como las anotaciones pesan casi nada y son independientes del mapa, **el modo
-sin mapa podría mostrarlas igual**. Eso lo convertiría de un fondo vacío en un
-croquis hecho a mano: el río dibujado, los puntos de referencia, y el track.
+**Decidido por Ale, 2026-09-18. No es opcional ni configurable.**
 
-**No está decidido.** Queda anotado como algo que la arquitectura permite sin
-costo.
+- **Las anotaciones viajan siempre al celular.** No hay un caso donde se
+  consulten por internet, ni uno donde el usuario elija si bajarlas.
+- **Se muestran en los tres modos**, incluido el modo sin mapa. Ahí el fondo
+  vacío deja de estar vacío: quedan el Track, los puntos y los trazos dibujados
+  a mano. Un croquis hecho por el administrador.
+- Pesan coordenadas y texto, así que no hay motivo para dejarlas afuera de
+  ninguna descarga.
+
+**Prohibido proponer cargarlas desde internet o hacerlas opcionales.**
