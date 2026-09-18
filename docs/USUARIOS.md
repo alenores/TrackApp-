@@ -20,6 +20,12 @@ cualquier otro usuario. Solo el creador puede editar o eliminar el suyo.
 
 Ver `decisiones/008-tres-modos-de-uso-y-permisos.md`.
 
+**Sobre zonas y sectores:** **solo el administrador** los crea y descarga sus
+mapas. Ni siquiera el usuario premium puede. Es tarea exclusiva del
+administrador mientras el producto sea chico.
+
+Ver `decisiones/009-cobertura-de-mapas-de-un-track.md`.
+
 ## Lo que NO está definido
 
 **Qué puede hacer cada categoría.** Y no se inventa.

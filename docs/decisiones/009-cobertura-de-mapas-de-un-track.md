@@ -40,9 +40,25 @@ y el usuario tiene que saberlo antes de salir, no al llegar ahí.
 Todo esto existe por una sola razón: **el usuario se entera en su casa, con
 señal.** Ver la regla «Todo se sabe en casa» en `AGENTS.md`.
 
+## Qué pasa cuando un tramo no tiene cobertura
+
+**Se avisa. Nada más.** (Decidido por Ale, 2026-09-18.)
+
+- **No se le ofrece al usuario crear el sector que falta.** Ni siquiera al
+  premium. Cargar zonas y sectores, y descargar sus mapas, es tarea exclusiva
+  del administrador mientras el producto sea chico.
+- **Ale sí quiere enterarse** de que ese tramo quedó sin cobertura.
+
+### Nota técnica que simplifica esto
+
+El faltante **se puede detectar en el momento en que se sube el track**, no
+recién cuando alguien intenta usarlo. El cruce contra los sectores es un cálculo,
+no depende de que un usuario llegue ahí ni de que reporte nada.
+
+Es decir: el administrador puede tener la lista de tramos sin cobertura sin que
+ningún usuario tenga que avisar nada.
+
 ## Pendiente
 
-- Cómo se resuelve un tramo sin cobertura: si se ofrece crear el sector que
-  falta, si se avisa y nada más, o si se hace otra cosa. **Decisión funcional
-  de Ale, todavía no tomada.**
+- **Cómo se entera Ale.** Decisión funcional no tomada.
 - Cómo se presenta visualmente. Va con el mockup de esa pantalla.
