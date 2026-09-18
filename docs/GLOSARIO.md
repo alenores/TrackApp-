@@ -10,7 +10,7 @@ El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamien
 tiene su propio juego. Cada nivel adicional multiplica por cuatro la cantidad.
 
 **Sin mapa**
-Modo de navegación con la línea del track y el punto de GPS sobre fondo vacío,
+Modo de navegación con la línea de la ruta y el punto de GPS sobre fondo vacío,
 sin cartografía. Es un modo válido, no una falla.
 
 **Mapa simple**
@@ -43,20 +43,16 @@ elegible. Sirve para marcar lo que el mapa no muestra: un río, una huella, un
 alambrado.
 
 **Cobertura**
-La relación entre un track y los sectores que lo cruzan. Un tramo puede estar
+La relación entre una ruta y los sectores que la cruzan. Un tramo puede estar
 cubierto y descargado, cubierto sin descargar, o sin cobertura.
 
 **Sin cobertura**
-Un tramo de track por el que no pasa ningún sector. No hay mapa disponible para
+Un tramo de ruta por el que no pasa ningún sector. No hay mapa disponible para
 esa parte del recorrido.
 
 **Desvío**
 Distancia entre la posición del usuario y la línea del recorrido. Por encima de
-50 metros se considera que el usuario se desvió y se alerta.
-
-**Ojo con el texto en pantalla:** la app hoy dice «¡Fuera de ruta!», que usa una
-palabra prohibida por el glosario. Hay que reemplazarlo. Propuesta: «Te
-desviaste». **Pendiente de confirmar con Ale.**
+50 metros se considera que el usuario está fuera de ruta y se alerta.
 
 ## Diseño
 
@@ -83,13 +79,13 @@ El resto de los usuarios: amigos de amigos y cualquiera que llegue.
 
 ## Dominio
 
-**Track**
+**Ruta**
 El recorrido subido a la app desde un archivo. Tiene una línea, un nombre, una
 distancia, desnivel, dificultad y comentarios.
 
 **Es la palabra definitiva y la única.** Nunca «ruta», «trayecto» ni
-«recorrido». Es la única palabra en inglés permitida en el proyecto, por
-decisión explícita de Ale.
+«recorrido». `TrackApp` sigue siendo el nombre del producto: eso no es el
+concepto y no se renombra.
 
 **Zona**
 Un área geográfica que agrupa sectores.

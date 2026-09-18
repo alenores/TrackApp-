@@ -15,7 +15,7 @@ sistema de permisos nazcan preparados.
 
 ## Lo primero que sí se definió (2026-09-18)
 
-**Sobre los tracks:** cualquier usuario ve y consulta todos los tracks, de
+**Sobre las rutas:** cualquier usuario ve y consulta todas las rutas, de
 cualquier otro usuario. Solo el creador puede editar o eliminar el suyo.
 
 Ver `decisiones/008-tres-modos-de-uso-y-permisos.md`.
@@ -24,7 +24,7 @@ Ver `decisiones/008-tres-modos-de-uso-y-permisos.md`.
 mapas. Ni siquiera el usuario premium puede. Es tarea exclusiva del
 administrador mientras el producto sea chico.
 
-Ver `decisiones/009-cobertura-de-mapas-de-un-track.md`.
+Ver `decisiones/009-cobertura-de-mapas-de-un-ruta.md`.
 
 ## Lo que NO está definido
 

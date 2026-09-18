@@ -1,6 +1,6 @@
 # TrackApp — reglas para agentes de IA
 
-> App de navegación de Tracks al aire libre. Se usa caminando, con sol fuerte,
+> App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
 > con guantes, sin señal y con la batería como recurso escaso.
 > Última revisión: 2026-09-18
 
@@ -103,7 +103,7 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
 **El 99% de las salidas se hacen sin señal.** Por lo tanto:
 
-- **Navegar un track con el punto de GPS NO consulta internet. Nunca. Por ningún
+- **Navegar una ruta con el punto de GPS NO consulta internet. Nunca. Por ningún
   motivo.** Ni para un dato suelto, ni para "enriquecer", ni para verificar algo,
   ni como respaldo, ni "solo si hay señal".
 - **No existe la excepción.** Si un agente cree haber encontrado un caso donde
@@ -284,9 +284,11 @@ rompe algo** — hasta que falla en el cerro.
 ## Un concepto, una palabra
 
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
-- **Única excepción, decidida por Ale: `Track`.** Es la palabra definitiva para
-  el recorrido subido a la app, en pantalla, en el código y en la base.
-  **Prohibido «ruta», «trayecto» y «recorrido» para lo mismo.**
+  Sin excepciones.
+- **El recorrido subido a la app se llama `ruta`.** En pantalla, en el código y
+  en la base. **Prohibido «ruta», «trayecto» y «recorrido» para lo mismo.**
+  La única excepción es `TrackApp`, que es el nombre del producto, no del
+  concepto.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
   variantes, sin «acá le decimos de otra forma porque queda mejor».
 - Las palabras del proyecto viven en `docs/GLOSARIO.md`. **Palabra nueva, entrada

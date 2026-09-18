@@ -34,13 +34,13 @@ vez de pedir una que no existe. Se ve más borroso pero nunca queda vacío.
 
 ---
 
-## 🔴 R3 — La pantalla de detalle del Track ignora lo descargado
+## 🔴 R3 — La pantalla de detalle de la ruta ignora lo descargado
 
 **Qué pasa.** Hay dos mapas en la app. El de navegación sabe leer lo guardado en
-el celular; el del detalle del Track siempre va a internet.
+el celular; el del detalle de la ruta siempre va a internet.
 
-**Consecuencia.** Se descarga un Track completo, se llega al cerro, se abre el
-detalle de ese Track y el mapa está vacío. La descarga solo sirve en una de las
+**Consecuencia.** Se descarga una ruta completa, se llega al cerro, se abre el
+detalle de esa ruta y el mapa está vacío. La descarga solo sirve en una de las
 dos pantallas.
 
 **Detectado:** 2026-09-17, leyendo el código.
@@ -56,7 +56,7 @@ tres.
 
 En concreto:
 - Columnas en inglés (`created_at`, `user_id`).
-- **Borrado físico real.** Al borrar un Track, zona o sector, desaparece para
+- **Borrado físico real.** Al borrar una ruta, zona o sector, desaparece para
   siempre. No hay papelera, no hay deshacer, no queda registro de que existió.
 - No se guarda cuándo se modificó cada registro.
 

@@ -45,8 +45,8 @@ consecuencias, todas buenas:
 2. **Pesan poquísimo.** Son coordenadas y texto, no imágenes.
 3. **Pueden viajar siempre**, incluso en el modo sin mapa.
 
-**Pertenecen al territorio, no al track.** Una anotación existe por sí misma:
-el árbol gigante es el árbol gigante, pase el track que pase. Se descargan con
+**Pertenecen al territorio, no al ruta.** Una anotación existe por sí misma:
+el árbol gigante es el árbol gigante, pase la ruta que pase. Se descargan con
 el sector, como los mapas.
 
 ## Quién las crea
@@ -59,8 +59,8 @@ celular no se prohíbe, pero no es donde se optimiza.
 ## Entrada desde afuera
 
 Además de dibujarse en la app, **las anotaciones pueden importarse por la misma
-puerta que los tracks.** Si Ale ya marcó puntos o líneas en Google Earth, los
-exporta y los sube igual que un track: es el mismo formato de archivo.
+puerta que las rutas.** Si Ale ya marcó puntos o líneas en Google Earth, los
+exporta y los sube igual que una ruta: es el mismo formato de archivo.
 
 ## Las anotaciones son siempre para usar sin conexión
 
@@ -69,7 +69,7 @@ exporta y los sube igual que un track: es el mismo formato de archivo.
 - **Las anotaciones viajan siempre al celular.** No hay un caso donde se
   consulten por internet, ni uno donde el usuario elija si bajarlas.
 - **Se muestran en los tres modos**, incluido el modo sin mapa. Ahí el fondo
-  vacío deja de estar vacío: quedan el Track, los puntos y los trazos dibujados
+  vacío deja de estar vacío: quedan la ruta, los puntos y los trazos dibujados
   a mano. Un croquis hecho por el administrador.
 - Pesan coordenadas y texto, así que no hay motivo para dejarlas afuera de
   ninguna descarga.

@@ -6,7 +6,7 @@
 
 Hay dos modelos posibles, y hay una referencia propia que funciona bien.
 
-**Modelo actual de TrackApp:** se descarga de a un Track o de a un sector. Algunas
+**Modelo actual de TrackApp:** se descarga de a una ruta o de a un sector. Algunas
 pantallas siguen yendo a internet aunque haya descarga hecha.
 
 **Modelo de Vías de Escalada Córdoba:** se descarga un paquete único con todo, y
@@ -17,7 +17,7 @@ comparando el último registro de cada tabla y ofrece actualizar.
 ## Cerrado el 2026-09-18
 
 **La navegación es 100% sin conexión, sin excepciones.** El 99% de las salidas
-se hacen sin señal. Navegar un track con el punto de GPS no consulta internet
+se hacen sin señal. Navegar una ruta con el punto de GPS no consulta internet
 nunca, por ningún motivo. No existe el caso especial: si un agente cree haberlo
 encontrado, está equivocado.
 
@@ -43,9 +43,9 @@ son las imágenes del mapa, y bajar todo el mapa de Córdoba no entra en un celu
 Hay que definir el criterio de qué mapa se descarga y cuándo. Opciones a evaluar
 cuando se retome el tema:
 
-- Por Track o sector elegido, como ahora, pero con el resto del modelo corregido.
+- Por ruta o sector elegido, como ahora, pero con el resto del modelo corregido.
 - Por zona geográfica, descargando una región completa de una vez.
-- Automático alrededor de los Tracks marcados como favoritos.
+- Automático alrededor de las rutas marcados como favoritos.
 
 **Esta decisión está abierta. No implementar nada de offline sin cerrarla.**
 
