@@ -55,9 +55,28 @@ el mismo número, y el día que no coincidan nadie sabría cuál vale.
 |---|---|
 | Nombre | texto |
 | Descripción | texto |
+| Rectángulo | **dos puntos**: esquina noroeste y esquina sudeste |
 
-**La zona es solo una referencia para agrupar sectores.** No tiene geometría
-propia ni mapa propio. No se le agrega nada más sin una decisión nueva.
+### El rectángulo de la zona NO es para descargar
+
+Es la única cosa que hace falta entender de la zona, y es fácil de romper:
+
+- **La zona no tiene mapa propio y nunca se descarga.** La unidad de descarga es
+  el sector, siempre. **Prohibido usar el rectángulo de la zona como área de
+  descarga**, por más que técnicamente se pueda.
+- **El rectángulo de la zona existe para una sola cosa: medir cobertura.** Sirve
+  para saber qué parte del territorio de esa zona todavía no tiene ningún sector
+  encima.
+
+### La cobertura de una zona
+
+Como la zona es un rectángulo y los sectores son rectángulos, calcular qué falta
+es restar rectángulos: se pinta la zona, se pintan los sectores encima, y lo que
+quedó sin pintar es el agujero.
+
+**Eso tiene que verse en una pantalla**, no ser un número. El administrador mira
+la zona y ve de un vistazo qué está cubierto y qué no. Es herramienta de
+administración, así que vive en la experiencia de computadora.
 
 ---
 

@@ -35,6 +35,17 @@ y hay que decir exactamente qué falta.
 territorio que ningún sector cubre, se dice. Ese tramo se va a recorrer sin mapa
 y el usuario tiene que saberlo antes de salir, no al llegar ahí.
 
+## La cobertura se mira desde dos lados
+
+Es el mismo concepto visto de dos maneras, y las dos existen:
+
+| Desde | Pregunta que responde | Para quién |
+|---|---|---|
+| **Una ruta** | ¿Qué sectores necesito bajar para recorrerla? | Cualquier usuario |
+| **Una zona** | ¿Qué parte de este territorio todavía no tiene sector? | Solo el administrador |
+
+La segunda se documenta en `011-datos-de-rutas-zonas-y-sectores.md`.
+
 ## Regla que lo gobierna
 
 Todo esto existe por una sola razón: **el usuario se entera en su casa, con

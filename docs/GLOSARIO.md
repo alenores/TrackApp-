@@ -88,8 +88,9 @@ distancia, desnivel, dificultad y comentarios.
 concepto y no se renombra.
 
 **Zona**
-Agrupación de sectores, solo a modo de referencia. No tiene geometría ni mapa
-propio.
+Agrupación de sectores, con nombre, descripción y un rectángulo propio de dos
+puntos. **El rectángulo de la zona no se descarga nunca**: existe solo para
+medir qué parte de su territorio todavía no tiene sector encima.
 
 **Sector**
 Rectángulo alineado al norte dentro de una zona, definido por **dos puntos**: la
