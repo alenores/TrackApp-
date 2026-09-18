@@ -286,7 +286,7 @@ rompe algo** — hasta que falla en el cerro.
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
   Sin excepciones.
 - **El recorrido subido a la app se llama `ruta`.** En pantalla, en el código y
-  en la base. **Prohibido «ruta», «trayecto» y «recorrido» para lo mismo.**
+  en la base. **Prohibido «track», «trayecto» y «recorrido» para lo mismo.**
   La única excepción es `TrackApp`, que es el nombre del producto, no del
   concepto.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
