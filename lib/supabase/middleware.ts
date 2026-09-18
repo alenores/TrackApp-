@@ -50,13 +50,13 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/workbox-");
 
   // Rutas accesibles sin sesión si el usuario tiene datos en caché local.
-  // La cookie trackapp_has_cache=1 la setea lib/offline-cache.ts al guardar datos.
+  // La galletita trackapp-tiene-paquete=1 la pone lib/offline/paquete.ts al guardar.
   const isOfflineFriendlyRoute =
     pathname === "/" ||
     /^\/rutas\/[^/]+$/.test(pathname);
 
   const hasOfflineCache =
-    request.cookies.get("trackapp_has_cache")?.value === "1";
+    request.cookies.get("trackapp-tiene-paquete")?.value === "1";
 
   if (!user && !isAuthRoute && !isPublicRoute) {
     if (isOfflineFriendlyRoute && hasOfflineCache) {
