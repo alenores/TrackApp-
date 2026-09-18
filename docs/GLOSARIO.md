@@ -29,6 +29,19 @@ Lo mismo, con las imágenes de la cartografía descargadas.
 **Nivel de acercamiento (zoom)**
 Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sendero).
 
+**Anotación**
+Algo que el administrador agrega encima del mapa para enriquecerlo. Puede ser
+un punto o un trazo. Siempre admite un comentario escrito.
+
+**Punto**
+Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
+puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada).
+
+**Trazo**
+Anotación de una línea dibujada a mano uniendo varios puntos, con color
+elegible. Sirve para marcar lo que el mapa no muestra: un río, una huella, un
+alambrado.
+
 **Cobertura**
 La relación entre un track y los sectores que lo cruzan. Un tramo puede estar
 cubierto y descargado, cubierto sin descargar, o sin cobertura.
