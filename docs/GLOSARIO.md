@@ -35,6 +35,17 @@ Fondo oscuro con texto claro. Para poca luz.
 El área que responde al toque de un botón. Puede ser más grande que el dibujo del
 botón. Nunca baja de 56 píxeles.
 
+## Usuarios
+
+**Administrador**
+Ale. Único dueño del producto. Hay uno solo.
+
+**Premium**
+Los amigos de Ale.
+
+**Normal**
+El resto de los usuarios: amigos de amigos y cualquiera que llegue.
+
 ## Dominio
 
 **Ruta**

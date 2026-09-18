@@ -34,3 +34,7 @@ cuando se retome el tema:
 - Automático alrededor de las rutas marcadas como favoritas.
 
 **Esta decisión está abierta. No implementar nada de offline sin cerrarla.**
+
+**Aclaración (2026-09-18):** ni siquiera está decidido que la app descargue
+mapas. Eso depende de la definición funcional, que todavía no ocurrió. Nada de
+lo escrito arriba da por sentada esa función.

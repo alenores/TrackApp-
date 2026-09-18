@@ -4,6 +4,58 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-18 — Cimientos: reglas base del proyecto
+
+### Estado al inicio
+
+Andamiaje de documentación creado el día anterior. Faltaban las reglas de
+fondo que gobiernan todo el proyecto.
+
+### Lo que se hizo
+
+Se cerraron cinco reglas base que no dependen de decisiones funcionales:
+
+- **Red de seguridad:** ninguna función crítica se entrega sin prueba
+  automática. Es el único mecanismo que le avisa a Ale que algo se rompió sin
+  que tenga que leer código.
+- **La ubicación es dato sensible:** por defecto se usa y se descarta.
+  Guardarla requiere decisión explícita y escrita.
+- **Cómo habla la app:** voseo, directo, errores que dicen qué pasó y qué hacer.
+- **Un concepto, una palabra:** todo en español, pantalla y código. Glosario
+  como fuente.
+- **Entender antes de tocar:** método obligatorio ante un error, con
+  explicación a Ale en criollo antes de arreglar.
+
+Se fijaron las tres categorías de usuario, **sin permisos**.
+
+### Decisiones tomadas
+
+- `004` — Tres niveles de usuario (permisos deliberadamente sin definir)
+- `005` — Pruebas automáticas como red de seguridad
+
+### Corrección de rumbo
+
+Se intentó definir los permisos de cada categoría de usuario. **Fue un error:**
+los permisos son consecuencia de funciones que todavía no existen. Se registró
+la categorización sin permisos y se dejó el resto para cuando la app esté
+definida funcionalmente.
+
+De ahí sale una regla general: **no se toman decisiones funcionales antes de la
+definición funcional**, ni se le piden a Ale disfrazadas de decisiones técnicas.
+
+### Deuda e inconsistencias detectadas
+
+- Sigue sin definirse «qué NO es la app». Se decidió que se deriva de lo que sí
+  es, y por eso queda para después de la definición funcional.
+- Falta elegir herramienta de pruebas.
+
+### Pendientes para la próxima
+
+**Ale describe funcionalmente cómo tiene que trabajar la aplicación.** Ese es el
+siguiente paso acordado.
+
+---
+
 ## Sesión 2026-09-17 — Análisis de mapas y arranque de la documentación
 
 ### Estado al inicio

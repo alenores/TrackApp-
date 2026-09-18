@@ -2,7 +2,7 @@
 
 > App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
 > con guantes, sin señal y con la batería como recurso escaso.
-> Última revisión: 2026-09-17
+> Última revisión: 2026-09-18
 
 ---
 
@@ -120,6 +120,86 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
 ---
 
+## La red de seguridad
+
+**Ale no lee código. Sin pruebas automáticas, nadie se entera cuando un cambio
+rompe algo** — hasta que falla en el cerro.
+
+- **Ninguna función de la que dependa la seguridad del usuario se entrega sin una
+  prueba automática que la cubra.** La prueba se define **junto con** la función,
+  no después.
+- Qué funciones son ésas se define a medida que se define la app. No se decide
+  de antemano ni se adivina.
+- Las pruebas cubren **lo crítico**, no todo. Una batería enorme que nadie mira
+  vale lo mismo que ninguna.
+- **Una prueba que falla no se ajusta para que pase.** Se arregla lo que rompió.
+  Prohibido saltear, desactivar o tapar una prueba para llegar a verde.
+
+---
+
+## La ubicación es dato sensible
+
+Esta app sabe dónde estuvo una persona, cuándo y por dónde.
+
+- **Por defecto la posición se usa y se descarta.** No se guarda, no se sube, no
+  se comparte.
+- **Guardar o transmitir la ubicación requiere una decisión explícita y escrita**
+  en `docs/decisiones/`. Nunca puede aparecer como efecto colateral de otra cosa.
+- Lo mismo vale para cualquier dato que permita reconstruir por dónde anduvo
+  alguien.
+
+---
+
+## Cómo habla la app
+
+- **Voseo argentino**, directo, sin tecnicismos. El usuario no sabe programar.
+- **Los errores dicen qué pasó y qué hacer.** Prohibido «error inesperado»,
+  «algo salió mal» y cualquier variante que no informe nada.
+- Sin signos de exclamación de relleno ni entusiasmo impostado. La app informa,
+  no anima.
+- Un mensaje corto que se entiende gana a uno preciso que no.
+
+---
+
+## Un concepto, una palabra
+
+- **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
+- **Cada concepto tiene una sola palabra en toda la app.** Si es «ruta», es ruta
+  en la pantalla, en el código y en la base. Nunca «recorrido» ni «track» para
+  lo mismo.
+- Las palabras del proyecto viven en `docs/GLOSARIO.md`. **Palabra nueva, entrada
+  nueva.** Si no está ahí, no se usa.
+
+---
+
+## Ante un problema: entender antes de tocar
+
+**Prohibido ir directo a modificar código ante un error.** El orden es:
+
+1. Agregar registros para ver qué datos están llegando de verdad.
+2. Plantear cuál sería el resultado correcto, a mano.
+3. Comparar lo real contra lo esperado.
+4. Recién ahí decidir si el problema es de datos, de lógica o de código.
+
+**Y antes de arreglar, explicarle a Ale en criollo qué está pasando**, para que
+pueda aportar su mirada. Él conoce el uso real; el agente conoce el código.
+
+Al cerrar un problema van dos cosas, no una: **arreglarlo**, y **ver si se puede
+evitar que vuelva a pasar**.
+
+---
+
+## Usuarios
+
+Hay tres categorías, y están fijadas: **administrador** (Ale, único dueño del
+producto), **premium** (sus amigos) y **normal** (el resto).
+
+**Qué puede hacer cada una todavía NO está definido, y no se inventa.** Se
+define función por función, a medida que cada función se define. Ver
+`docs/USUARIOS.md`.
+
+---
+
 ## Base de datos
 
 Convenciones fijas de Ale (ver el skill `stack-tecnico-fijo`):
@@ -141,8 +221,9 @@ una consulta.
 
 1. `npx tsc --noEmit` sin errores.
 2. `npm run lint` sin errores.
-3. Si el cambio es visual: mockup aprobado por Ale **antes** de tocar código.
-4. Si el cambio toca offline: probado con el modo avión activado.
+3. Las pruebas automáticas pasan. Si el cambio toca algo crítico, trae su prueba.
+4. Si el cambio es visual: mockup aprobado por Ale **antes** de tocar código.
+5. Si el cambio toca offline: probado con el modo avión activado.
 
 ---
 
