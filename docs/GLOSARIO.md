@@ -17,7 +17,13 @@ sin cartografía. Es un modo válido, no una falla.
 El mapa sin vista satelital. **Siempre incluye curvas de nivel**, sin excepción.
 
 **Mapa satelital**
-El mapa con la foto del terreno real de fondo.
+El mapa con la foto del terreno real de fondo. También puede mostrar curvas de
+nivel, que se prenden y apagan.
+
+**Curvas de nivel**
+Las líneas que marcan el desnivel. No son parte de la imagen del mapa: son un
+dato aparte que se descarga una vez por sector y se dibuja sobre cualquiera de
+los dos mapas. Siempre visibles en el simple, opcionales sobre el satelital.
 
 **Mapa básico**
 La línea del recorrido dibujada sobre fondo vacío, sin cartografía. Es lo que se
