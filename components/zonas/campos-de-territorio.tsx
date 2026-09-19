@@ -5,6 +5,10 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { Campo } from "@/components/ui/campo";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import {
+  mostrarPeso,
+  pesoAproximadoDelMapa,
+} from "@/lib/mapas/descarga";
 import { leerCoordenada, type LecturaDeCoordenada } from "@/lib/coordenadas";
 import {
   rectanguloDeLosCampos,
@@ -117,10 +121,21 @@ export function CamposDeTerritorio({
                 {mostrarTamano(armado.rectangulo)}
               </span>
             </div>
-            <p className="text-sm leading-6 text-texto-suave">
-              Cuánto va a pesar el mapa todavía no se sabe: los archivos no están
-              cargados en la app.
-            </p>
+            {queEs === "sector" ? (
+              <p className="text-sm leading-6 text-texto-suave">
+                Su mapa va a pesar{" "}
+                <strong className="font-semibold text-dato">
+                  {mostrarPeso(pesoAproximadoDelMapa(armado.rectangulo))}
+                </strong>{" "}
+                más o menos en el celular de cada uno.
+              </p>
+            ) : (
+              <p className="text-sm leading-6 text-texto-suave">
+                El rectángulo de la zona no se descarga: sirve para ver qué parte
+                del territorio todavía no tiene sector encima. Lo que se baja son
+                los sectores.
+              </p>
+            )}
           </div>
         ) : null}
       </Tarjeta>

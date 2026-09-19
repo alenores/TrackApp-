@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/mapa/capas-base";
 import { coloresDelMapa } from "@/components/mapa/colores";
 import { useModo } from "@/hooks/use-modo";
+import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
@@ -45,6 +46,35 @@ const VACIO: FeatureCollection = { type: "FeatureCollection", features: [] };
  * la ruta, el GPS y las anotaciones siempre encima.
  */
 const PRIMERA_CAPA_DE_LA_APP = "rectangulos-relleno";
+
+/**
+ * Pone el fondo del mapa **debajo** de todo lo de la app.
+ *
+ * **Si el fondo falla, la app sigue dibujando.** La línea de la ruta, el punto
+ * del GPS y los recuadros no pueden depender de que el fondo se arme bien: son
+ * lo que de verdad hace falta para no perderse, y el fondo es un lujo. Por eso
+ * esto va aparte, envuelto, y devuelve el motivo en vez de tirar.
+ */
+function ponerElFondo(mapa: maplibregl.Map, modo: Modo): string | null {
+  try {
+    for (const vieja of capasDelFondo(modo)) {
+      if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
+    }
+
+    const debajoDe = mapa.getLayer(PRIMERA_CAPA_DE_LA_APP)
+      ? PRIMERA_CAPA_DE_LA_APP
+      : undefined;
+
+    for (const capa of capasDelFondo(modo)) mapa.addLayer(capa, debajoDe);
+
+    mapa.setSprite(iconosDelFondo(modo));
+    return null;
+  } catch (error) {
+    return error instanceof Error && error.message
+      ? error.message
+      : "el fondo del mapa no se pudo armar";
+  }
+}
 
 export type PosicionEnElMapa = {
   lat: number;
@@ -147,6 +177,8 @@ export function Mapa({
    * entero cada vez que el usuario toca sol/noche perdería la posición y lo
    * dibujado. Se lee de acá, y el cambio de modo lo maneja su propio efecto.
    */
+  /** Qué salió mal con el fondo, si algo salió mal. Se muestra: no se traga. */
+  const [avisoDelFondo, setAvisoDelFondo] = useState<string | null>(null);
   const modoRef = useRef(modo);
   useEffect(() => {
     modoRef.current = modo;
@@ -185,9 +217,6 @@ export function Mapa({
 
     mapa.on("load", () => {
       const colores = coloresDelMapa();
-
-      // El fondo va primero: todo lo de la app se dibuja encima.
-      for (const capa of capasDelFondo(modoRef.current)) mapa.addLayer(capa);
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
@@ -273,9 +302,19 @@ export function Mapa({
         },
       });
 
+      // Lo de la app ya está: de acá en adelante todo lo pendiente se dibuja,
+      // pase lo que pase con el fondo.
       listoRef.current = true;
       for (const dibujar of esperandoRef.current) dibujar();
       esperandoRef.current = [];
+
+      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current));
+    });
+
+    // Un fondo que no carga no puede quedarse callado.
+    mapa.on("error", (evento) => {
+      const motivo = evento?.error?.message;
+      if (motivo) setAvisoDelFondo(motivo);
     });
 
     mapaRef.current = mapa;
@@ -297,20 +336,9 @@ export function Mapa({
       if (!mapa.getLayer("ruta-linea")) return;
       const colores = coloresDelMapa();
 
-      /**
-       * El fondo se cambia capa por capa, no rearmando el estilo.
-       *
-       * Rearmar el estilo se lleva puestas las capas de la app —la ruta, el
-       * GPS, las anotaciones— y habría que volver a dibujarlas todas. Sacar y
-       * poner las del fondo deja intacto todo lo demás.
-       */
-      for (const vieja of capasDelFondo(modo === "sol" ? "noche" : "sol")) {
-        if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
-      }
-      for (const nueva of capasDelFondo(modo)) {
-        if (!mapa.getLayer(nueva.id)) mapa.addLayer(nueva, PRIMERA_CAPA_DE_LA_APP);
-      }
-      mapa.setSprite(iconosDelFondo(modo));
+      // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
+      // lleva puestas las capas de la app y habría que volver a dibujarlas.
+      setAvisoDelFondo(ponerElFondo(mapa, modo));
 
       mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
@@ -442,6 +470,18 @@ export function Mapa({
         .join(" ")}
     >
       <div ref={contenedorRef} className="h-full w-full" />
+
+      {/*
+        El fondo puede fallar y la app sigue andando, pero el usuario tiene que
+        saberlo: si no, ve un mapa vacío y no sabe si es que no bajó nada o si
+        se rompió algo.
+      */}
+      {avisoDelFondo ? (
+        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
+          El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves
+          —la ruta, tu posición y los recuadros— sigue siendo correcto.
+        </p>
+      ) : null}
 
       {/*
         El acercar de dos dedos es un gesto fino: con guantes no se acierta.
