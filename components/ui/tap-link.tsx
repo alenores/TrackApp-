@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import type { ComponentProps } from "react";
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 type TapLinkProps = ComponentProps<typeof Link>;
 
@@ -11,9 +11,9 @@ export function TapLink({ className = "", onPointerDown, ...props }: TapLinkProp
   return (
     <Link
       {...props}
-      className={[TAP_FEEDBACK_CLASS, className].filter(Boolean).join(" ")}
+      className={[CLASE_DE_RESPUESTA_AL_TOQUE, className].filter(Boolean).join(" ")}
       onPointerDown={(event) => {
-        triggerTapHaptic();
+        vibrarAlTocar();
         onPointerDown?.(event);
       }}
     />

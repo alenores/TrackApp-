@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronCircle } from "@/components/ui/chevron-circle";
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 /**
  * **El botón de volver vuelve, no va.**
@@ -44,7 +44,7 @@ export function BotonVolver({
     <button
       type="button"
       aria-label={etiqueta}
-      onPointerDown={() => triggerTapHaptic()}
+      onPointerDown={() => vibrarAlTocar()}
       onClick={() => {
         if (hayPantallaAnterior()) {
           router.back();
@@ -53,7 +53,7 @@ export function BotonVolver({
         router.push(destinoSiNoHayVuelta);
       }}
       className={[
-        TAP_FEEDBACK_CLASS,
+        CLASE_DE_RESPUESTA_AL_TOQUE,
         "flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
         className,

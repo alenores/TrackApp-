@@ -1,5 +1,6 @@
 import type { FeatureCollection, Position } from "geojson";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
+import { distanciaEnKm, puntoDeCoordenada } from "@/lib/geo";
 import type { Rectangulo } from "@/types/database";
 
 /**
@@ -11,7 +12,6 @@ import type { Rectangulo } from "@/types/database";
  * probar entero.
  */
 
-const RADIO_TIERRA_KM = 6371;
 
 /**
  * Cuántos metros tiene que cambiar la altura para que el cambio se cuente.
@@ -34,26 +34,6 @@ export type NumerosDelRecorrido = {
   /** Cuántos puntos trae el archivo. Se muestra para confirmar que se leyó. */
   puntos: number;
 };
-
-function aRadianes(grados: number): number {
-  return (grados * Math.PI) / 180;
-}
-
-function distanciaKm(
-  lonA: number,
-  latA: number,
-  lonB: number,
-  latB: number,
-): number {
-  const dLat = aRadianes(latB - latA);
-  const dLon = aRadianes(lonB - lonA);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(aRadianes(latA)) *
-      Math.cos(aRadianes(latB)) *
-      Math.sin(dLon / 2) ** 2;
-  return RADIO_TIERRA_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 /** Saca todas las líneas del recorrido, sea cual sea la forma que traiga. */
 export function lineasDelRecorrido(
@@ -98,7 +78,10 @@ export function calcularLargoKm(geometria: FeatureCollection): number {
       const actual = linea[i];
       if (!esCoordenadaValida(anterior) || !esCoordenadaValida(actual)) continue;
 
-      total += distanciaKm(anterior[0], anterior[1], actual[0], actual[1]);
+      total += distanciaEnKm(
+        puntoDeCoordenada(anterior),
+        puntoDeCoordenada(actual),
+      );
     }
   }
 

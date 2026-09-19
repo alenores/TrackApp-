@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FeatureCollection } from "geojson";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { borrarRuta } from "@/app/actions/rutas";
 import { ActividadBadges } from "@/components/rutas/actividad-badges";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";

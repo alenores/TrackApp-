@@ -4,13 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDelNavegador } from "@/hooks/use-del-navegador";
 import {
   type BeforeInstallPromptEvent,
-  dismissInstallPrompt,
-  isAndroidDevice,
-  isInstallDismissed,
-  isIosDevice,
-  isMobileBrowser,
-  isStandaloneMode,
-} from "@/lib/pwa/standalone";
+  anotarQueNoQuiereInstalar,
+  esAndroid,
+  yaDijoQueNoInstalar,
+  esIphone,
+  esCelular,
+  estaInstalada,
+} from "@/lib/pwa/instalada";
 
 /**
  * El cartel que ofrece instalar la app en el celular.
@@ -24,7 +24,7 @@ import {
 
 const FALLBACK_DELAY_MS = 2500;
 
-export type UsePwaInstallResult = {
+export type InstalarApp = {
   show: boolean;
   isIos: boolean;
   isAndroid: boolean;
@@ -36,12 +36,12 @@ export type UsePwaInstallResult = {
   dismiss: () => void;
 };
 
-export function usePwaInstall(): UsePwaInstallResult {
-  const isIos = useDelNavegador(isIosDevice, false);
-  const isAndroid = useDelNavegador(isAndroidDevice, false);
-  const esMovil = useDelNavegador(isMobileBrowser, false);
-  const yaEstaInstalada = useDelNavegador(isStandaloneMode, false);
-  const yaDijoQueNo = useDelNavegador(isInstallDismissed, false);
+export function useInstalarApp(): InstalarApp {
+  const isIos = useDelNavegador(esIphone, false);
+  const isAndroid = useDelNavegador(esAndroid, false);
+  const esMovil = useDelNavegador(esCelular, false);
+  const yaEstaInstalada = useDelNavegador(estaInstalada, false);
+  const yaDijoQueNo = useDelNavegador(yaDijoQueNoInstalar, false);
 
   const [cerradoAhora, setCerradoAhora] = useState(false);
   const [instaladaAhora, setInstaladaAhora] = useState(false);
@@ -62,7 +62,7 @@ export function usePwaInstall(): UsePwaInstallResult {
     };
 
     const alQuedarInstalada = () => {
-      dismissInstallPrompt();
+      anotarQueNoQuiereInstalar();
       setInstaladaAhora(true);
       setInstallEvent(null);
     };
@@ -92,7 +92,7 @@ export function usePwaInstall(): UsePwaInstallResult {
   const show = puedeOfrecerse && (installEvent !== null || needsManualInstall);
 
   const dismiss = useCallback(() => {
-    dismissInstallPrompt();
+    anotarQueNoQuiereInstalar();
     setCerradoAhora(true);
   }, []);
 
@@ -106,7 +106,7 @@ export function usePwaInstall(): UsePwaInstallResult {
       const eleccion = await installEvent.userChoice;
 
       if (eleccion.outcome === "accepted") {
-        dismissInstallPrompt();
+        anotarQueNoQuiereInstalar();
         setInstaladaAhora(true);
       }
     } finally {

@@ -1,4 +1,4 @@
-import { NavegacionView } from "@/components/navigation/navegacion-view";
+import { PantallaDeNavegacion } from "@/components/navegacion/pantalla-de-navegacion";
 
 /**
  * Navegar una ruta.
@@ -14,5 +14,5 @@ type NavegacionPageProps = {
 export default async function NavegacionPage({ params }: NavegacionPageProps) {
   const { id } = await params;
 
-  return <NavegacionView rutaId={Number(id)} />;
+  return <PantallaDeNavegacion rutaId={Number(id)} />;
 }

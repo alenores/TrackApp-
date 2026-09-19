@@ -1,3 +1,4 @@
+import { aRadianes, RADIO_TIERRA_KM } from "@/lib/geo";
 import type { Rectangulo } from "@/types/database";
 
 /**
@@ -7,12 +8,6 @@ import type { Rectangulo } from "@/types/database";
  * no existen, así que cualquier número de megas sería inventado, y un número
  * inventado en pantalla es peor que no poner nada: el usuario lo cree.
  */
-
-const RADIO_TIERRA_KM = 6371;
-
-function aRadianes(grados: number): number {
-  return (grados * Math.PI) / 180;
-}
 
 export type TamanoDelRectangulo = {
   anchoKm: number;

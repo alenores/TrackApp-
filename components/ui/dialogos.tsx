@@ -140,25 +140,25 @@ export function ProveedorDeDialogos({ children }: { children: ReactNode }) {
 }
 
 /**
- * Si el proveedor no está puesto, cae al cartel del navegador: feo, pero
- * visible. Un aviso que no aparece es peor que uno feo.
+ * Confirmar y avisar desde cualquier pantalla.
+ *
+ * **No hay respaldo a los carteles del sistema operativo.** Antes había uno, y
+ * como el proveedor nunca se había conectado, TODA la app terminaba mostrando
+ * carteles de Android en cada borrado — justo lo que la regla prohíbe, y nadie
+ * se enteró porque el respaldo funcionaba.
+ *
+ * Ahora, si el proveedor faltara, se rompe fuerte y a la vista: la red de
+ * rescate muestra un cartel de la app explicando qué pasó. Un error ruidoso se
+ * arregla; uno silencioso se convierte en la forma normal de funcionar.
  */
 export function useDialogos(): Dialogos {
   const contexto = useContext(ContextoDeDialogos);
 
-  return useMemo<Dialogos>(() => {
-    if (contexto) return contexto;
+  if (!contexto) {
+    throw new Error(
+      "Esta pantalla quiso mostrar un cartel de confirmar o avisar, pero la pieza que los dibuja no está puesta alrededor de la app.",
+    );
+  }
 
-    return {
-      confirmar: async (pedido) =>
-        window.confirm(
-          [pedido.titulo, pedido.mensaje].filter(Boolean).join("\n\n"),
-        ),
-      avisar: async (pedido) => {
-        window.alert(
-          [pedido.titulo, pedido.mensaje].filter(Boolean).join("\n\n"),
-        );
-      },
-    };
-  }, [contexto]);
+  return contexto;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import type { Perfil } from "@/types/database";
 
 /**
@@ -17,7 +17,7 @@ export async function traerPerfilesPorId(
   if (unicos.length === 0) return {};
 
   try {
-    const supabase = createClient();
+    const supabase = crearClienteEnElNavegador();
     const { data, error } = await supabase
       .from("perfiles")
       .select("id, nombre, avatar_url, categoria, creado_en, actualizado_en")

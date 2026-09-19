@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { DEPLOY_SHA } from "@/lib/deploy-stamp";
-import { createClient } from "@/lib/supabase/client";
+import { SELLO_DE_VERSION } from "@/lib/sello-de-version";
+import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -24,7 +24,7 @@ export function AuthForm() {
     setError(null);
     setMessage(null);
 
-    const supabase = createClient();
+    const supabase = crearClienteEnElNavegador();
 
     if (mode === "login") {
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -179,7 +179,7 @@ export function AuthForm() {
       </form>
 
       <p className="text-center text-[10px] font-mono text-texto-suave pt-2">
-        {DEPLOY_SHA}
+        {SELLO_DE_VERSION}
       </p>
     </Card>
   );

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { TRACKAPP_APP_READY_EVENT } from "@/lib/pwa/app-ready";
-import { INLINE_SPLASH_ID } from "@/lib/pwa/inline-splash";
-import { isStandaloneMode } from "@/lib/pwa/standalone";
+import { TRACKAPP_APP_READY_EVENT } from "@/lib/pwa/app-lista";
+import { ID_DE_LA_PANTALLA_DE_ARRANQUE } from "@/lib/pwa/pantalla-de-arranque";
+import { estaInstalada } from "@/lib/pwa/instalada";
 
-const SPLASH_OUT_CLASS = `${INLINE_SPLASH_ID}--out`;
+const SPLASH_OUT_CLASS = `${ID_DE_LA_PANTALLA_DE_ARRANQUE}--out`;
 const SPLASH_FADE_MS = 300;
 
 function removeSplashElement(splash: HTMLElement): void {
@@ -17,12 +17,12 @@ function removeSplashElement(splash: HTMLElement): void {
 
 export function PwaSplash() {
   useEffect(() => {
-    const splash = document.getElementById(INLINE_SPLASH_ID);
+    const splash = document.getElementById(ID_DE_LA_PANTALLA_DE_ARRANQUE);
     if (!splash) {
       return;
     }
 
-    if (!isStandaloneMode()) {
+    if (!estaInstalada()) {
       splash.style.display = "none";
       return;
     }

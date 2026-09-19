@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { SectorCard } from "@/components/zonas/sector-card";
 import { BotonVolver } from "@/components/ui/boton-volver";

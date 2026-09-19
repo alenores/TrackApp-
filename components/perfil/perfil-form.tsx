@@ -15,8 +15,8 @@ import { CloseCircle } from "@/components/ui/close-circle";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card } from "@/components/ui/card";
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 type PerfilFormProps = {
   initialNombre: string;
@@ -71,7 +71,7 @@ function CircleIconButton({
   children: React.ReactNode;
 }) {
   const handlePointerDown = () => {
-    triggerTapHaptic();
+    vibrarAlTocar();
   };
 
   return (
@@ -80,7 +80,7 @@ function CircleIconButton({
       aria-label={ariaLabel}
       onClick={onClick}
       onPointerDown={handlePointerDown}
-      className={[TAP_FEEDBACK_CLASS, "mt-0.5 shrink-0"].join(" ")}
+      className={[CLASE_DE_RESPUESTA_AL_TOQUE, "mt-0.5 shrink-0"].join(" ")}
     >
       {children}
     </button>
@@ -236,9 +236,9 @@ export function PerfilForm({
             <button
               type="button"
               onClick={handleAvatarPick}
-              onPointerDown={() => triggerTapHaptic()}
+              onPointerDown={() => vibrarAlTocar()}
               className={[
-                TAP_FEEDBACK_CLASS,
+                CLASE_DE_RESPUESTA_AL_TOQUE,
                 "group relative rounded-full",
               ].join(" ")}
               aria-label="Cambiar foto de perfil"

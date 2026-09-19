@@ -1,5 +1,5 @@
 import type { FeatureCollection } from "geojson";
-import { createClient } from "@/lib/supabase/client";
+import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import { leerRectangulo } from "@/lib/datos/rectangulo";
 import {
@@ -49,7 +49,7 @@ export type ResultadoDeSincronizacion =
  * de la base, no del celular.
  */
 async function ultimaModificacionEnLaBase(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = crearClienteEnElNavegador();
 
   const fechas = await Promise.all(
     TABLAS_DEL_PAQUETE.map(async (tabla) => {
@@ -85,7 +85,7 @@ async function bajarRutas(): Promise<{
   completa: boolean;
   motivo?: string;
 }> {
-  const supabase = createClient();
+  const supabase = crearClienteEnElNavegador();
 
   const resultado = await traerTodasLasFilas<
     FilaConRectangulo & Record<string, unknown>
@@ -136,7 +136,7 @@ async function bajarRutas(): Promise<{
 }
 
 async function bajarZonas(): Promise<{ zonas: Zona[]; completa: boolean }> {
-  const supabase = createClient();
+  const supabase = crearClienteEnElNavegador();
 
   const resultado = await traerTodasLasFilas<
     FilaConRectangulo & Record<string, unknown>
@@ -166,7 +166,7 @@ async function bajarSectores(): Promise<{
   sectores: Sector[];
   completa: boolean;
 }> {
-  const supabase = createClient();
+  const supabase = crearClienteEnElNavegador();
 
   const resultado = await traerTodasLasFilas<
     FilaConRectangulo & Record<string, unknown>
@@ -197,7 +197,7 @@ async function bajarAnotaciones(): Promise<{
   anotaciones: Anotacion[];
   completa: boolean;
 }> {
-  const supabase = createClient();
+  const supabase = crearClienteEnElNavegador();
 
   const resultado = await traerTodasLasFilas<Record<string, unknown>>(
     (desde, hasta) =>

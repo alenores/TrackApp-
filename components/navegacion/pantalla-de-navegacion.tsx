@@ -3,19 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
-import { NavigationExitModal } from "@/components/navigation/navigation-exit-modal";
+import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigationExitGuard } from "@/hooks/use-navigation-exit-guard";
+import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
-import { triggerTapHaptic } from "@/lib/haptics";
+import { vibrarAlTocar } from "@/lib/vibracion";
 import {
-  DEVIATION_THRESHOLD_METERS,
-  getDistanceToRouteMeters,
-  getGpsErrorMessage,
-  type GpsStatus,
-} from "@/lib/navigation";
+  distanciaALaRutaEnMetros,
+  mensajeDeErrorDelGps,
+  METROS_DE_DESVIO_QUE_AVISAN,
+  type EstadoDelGps,
+} from "@/lib/navegacion/desvio";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
 import { sectoresConMapaBajado } from "@/lib/offline/mapas";
@@ -39,10 +39,10 @@ type NavegacionViewProps = {
   rutaId: number;
 };
 
-export function NavegacionView({ rutaId }: NavegacionViewProps) {
+export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const salida = `/rutas/${rutaId}`;
   const { open, requestExit, cancelExit, confirmExit } =
-    useNavigationExitGuard(salida);
+    useSalidaDeNavegacion(salida);
 
   const vigilanciaRef = useRef<number | null>(null);
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
@@ -50,7 +50,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
   const [anotaciones, setAnotaciones] = useState<Anotacion[]>([]);
   const [cargandoRecorrido, setCargandoRecorrido] = useState(true);
-  const [estadoDelGps, setEstadoDelGps] = useState<GpsStatus>("idle");
+  const [estadoDelGps, setEstadoDelGps] = useState<EstadoDelGps>("apagado");
   const [errorDelGps, setErrorDelGps] = useState<string | null>(null);
   const [posicion, setPosicion] = useState<{ lat: number; lon: number } | null>(
     null,
@@ -60,7 +60,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
   const [metrosDeDesvio, setMetrosDeDesvio] = useState<number | null>(null);
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
 
-  usePantallaDespierta(estadoDelGps === "active");
+  usePantallaDespierta(estadoDelGps === "andando");
 
   // Todo sale del celular, nunca de internet.
   useEffect(() => {
@@ -115,7 +115,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
 
   // Un reloj lento, solo para saber si la posición envejeció.
   useEffect(() => {
-    if (estadoDelGps !== "active") return;
+    if (estadoDelGps !== "andando") return;
     const tic = window.setInterval(() => setAhora(Date.now()), 5000);
     return () => window.clearInterval(tic);
   }, [estadoDelGps]);
@@ -133,11 +133,11 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
       setErrorDelGps(
         "Este celular no tiene GPS disponible para la app. Fijate en los permisos del navegador.",
       );
-      setEstadoDelGps("unavailable");
+      setEstadoDelGps("no_disponible");
       return;
     }
 
-    setEstadoDelGps("requesting");
+    setEstadoDelGps("pidiendo");
     setErrorDelGps(null);
 
     if (vigilanciaRef.current !== null) {
@@ -150,18 +150,18 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         const lon = lectura.coords.longitude;
 
         setPosicion({ lat, lon });
-        setEstadoDelGps("active");
+        setEstadoDelGps("andando");
         setUltimaNoticia(Date.now());
         setAhora(Date.now());
 
         if (recorrido) {
-          setMetrosDeDesvio(getDistanceToRouteMeters(lat, lon, recorrido));
+          setMetrosDeDesvio(distanciaALaRutaEnMetros(lat, lon, recorrido));
         }
       },
       (error) => {
-        setErrorDelGps(getGpsErrorMessage(error));
+        setErrorDelGps(mensajeDeErrorDelGps(error));
         setEstadoDelGps(
-          error.code === error.PERMISSION_DENIED ? "denied" : "unavailable",
+          error.code === error.PERMISSION_DENIED ? "sin_permiso" : "no_disponible",
         );
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
@@ -169,20 +169,20 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
   }, [recorrido]);
 
   const estoyFueraDeRuta =
-    estadoDelGps === "active" &&
+    estadoDelGps === "andando" &&
     metrosDeDesvio !== null &&
-    metrosDeDesvio > DEVIATION_THRESHOLD_METERS;
+    metrosDeDesvio > METROS_DE_DESVIO_QUE_AVISAN;
 
   // Avisar vibrando: yendo por el sendero, nadie está mirando la pantalla.
   useEffect(() => {
-    if (estoyFueraDeRuta) triggerTapHaptic(220);
+    if (estoyFueraDeRuta) vibrarAlTocar(220);
   }, [estoyFueraDeRuta]);
 
   const segundosSinNoticias =
     ultimaNoticia === null ? 0 : Math.round((ahora - ultimaNoticia) / 1000);
 
   const posicionVieja =
-    estadoDelGps === "active" &&
+    estadoDelGps === "andando" &&
     segundosSinNoticias > SEGUNDOS_PARA_AVISAR_POSICION_VIEJA;
 
   if (cargandoRecorrido) {
@@ -224,7 +224,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
           <button
             type="button"
             onClick={() => requestExit()}
-            onPointerDown={() => triggerTapHaptic()}
+            onPointerDown={() => vibrarAlTocar()}
             aria-label="Salir de la navegación"
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-2xl text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
@@ -285,14 +285,14 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         ) : null}
 
         <div className="space-y-2">
-          {estadoDelGps === "idle" || estadoDelGps === "requesting" ? (
+          {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
             <Button
               anchoCompleto
               paraNavegacion
-              disabled={estadoDelGps === "requesting"}
+              disabled={estadoDelGps === "pidiendo"}
               onClick={prenderGps}
             >
-              {estadoDelGps === "requesting" ? "Prendiendo el GPS…" : "Prender el GPS"}
+              {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
             </Button>
           ) : null}
 
@@ -310,9 +310,9 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
           <div className="flex items-center gap-3">
             <BotonDeModo paraNavegacion />
 
-            {estadoDelGps === "active" && metrosDeDesvio !== null ? (
+            {estadoDelGps === "andando" && metrosDeDesvio !== null ? (
               <p className="flex-1 text-center text-lg font-medium text-texto-suave">
-                {metrosDeDesvio <= DEVIATION_THRESHOLD_METERS
+                {metrosDeDesvio <= METROS_DE_DESVIO_QUE_AVISAN
                   ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
                   : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
               </p>
@@ -323,7 +323,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         </div>
       </div>
 
-      <NavigationExitModal
+      <ModalDeSalida
         open={open}
         onCancel={cancelExit}
         onConfirm={confirmExit}

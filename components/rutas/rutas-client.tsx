@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { RutaList } from "@/components/rutas/ruta-list";
 import { RutaListSkeleton } from "@/components/rutas/ruta-list-skeleton";
 import { Card } from "@/components/ui/card";

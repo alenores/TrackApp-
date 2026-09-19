@@ -1,13 +1,13 @@
-import { getUserDisplayName, getUserStoredNombre } from "@/lib/auth/profile";
-import { fetchAllDirectoryUsers } from "@/lib/auth/directory";
+import { nombreParaMostrar, nombreGuardado } from "@/lib/cuenta/nombre";
+import { fetchAllDirectoryUsers } from "@/lib/cuenta/directorio";
 import { traerMiPerfil } from "@/lib/perfiles/datos";
-import { getAuthUser } from "@/lib/auth/session";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import { PerfilesView } from "@/components/perfil/perfiles-view";
 
 export const dynamic = "force-dynamic";
 
 export default async function PerfilesPage() {
-  const user = await getAuthUser();
+  const user = await traerUsuario();
 
   if (!user?.id) {
     return null;
@@ -21,8 +21,8 @@ export default async function PerfilesPage() {
   return (
     <PerfilesView
       currentUserId={user.id}
-      initialNombre={getUserStoredNombre(user)}
-      displayNombre={getUserDisplayName(user)}
+      initialNombre={nombreGuardado(user)}
+      displayNombre={nombreParaMostrar(user)}
       email={user.email ?? ""}
       avatarUrl={avatarUrl}
       users={users}

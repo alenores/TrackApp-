@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth/session";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { EditarRutaForm } from "@/components/rutas/editar-ruta-form";
 
@@ -15,7 +15,7 @@ type Props = {
 
 export default async function PaginaDeEditarRuta({ params }: Props) {
   const { id } = await params;
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
 
   return (
     <>

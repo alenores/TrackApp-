@@ -1,8 +1,8 @@
 "use client";
 
 import type { ButtonHTMLAttributes, PointerEvent } from "react";
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 /**
  * **El único botón de la app.**
@@ -52,7 +52,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const alTocar = (evento: PointerEvent<HTMLButtonElement>) => {
-    if (!disabled) triggerTapHaptic();
+    if (!disabled) vibrarAlTocar();
     onPointerDown?.(evento);
   };
 
@@ -62,7 +62,7 @@ export function Button({
       disabled={disabled}
       onPointerDown={alTocar}
       className={[
-        TAP_FEEDBACK_CLASS,
+        CLASE_DE_RESPUESTA_AL_TOQUE,
         "inline-flex items-center justify-center rounded-xl px-5 font-semibold transition-colors",
         paraNavegacion ? "min-h-16 py-4 text-lg" : "min-h-14 py-3 text-base",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",

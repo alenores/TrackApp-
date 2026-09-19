@@ -1,8 +1,8 @@
 "use client";
 
 import { useModo } from "@/hooks/use-modo";
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 /**
  * El botón que cambia entre modo sol y modo noche.
@@ -29,11 +29,11 @@ export function BotonDeModo({
     <button
       type="button"
       onClick={cambiar}
-      onPointerDown={() => triggerTapHaptic()}
+      onPointerDown={() => vibrarAlTocar()}
       aria-label={vaASol ? "Pasar al modo sol" : "Pasar al modo noche"}
       title={vaASol ? "Pasar al modo sol" : "Pasar al modo noche"}
       className={[
-        TAP_FEEDBACK_CLASS,
+        CLASE_DE_RESPUESTA_AL_TOQUE,
         "flex shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave",
         "hover:bg-superficie-alta hover:text-texto",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",

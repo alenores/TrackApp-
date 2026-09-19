@@ -1,17 +1,17 @@
 /** Contenedor principal con scroll bajo la cabecera. */
-export const APP_SCROLL_PANE_SELECTOR = ".app-scroll-pane";
+export const SELECTOR_DEL_PANEL_QUE_SE_DESPLAZA = ".app-scroll-pane";
 
 /** Selector de mapas Leaflet (pan/zoom propio). */
-export const INTERACTIVE_MAP_SELECTOR = ".leaflet-container";
+export const SELECTOR_DEL_MAPA = ".leaflet-container";
 
 /** Clase en `<html>` para CSS de bloqueo si el media query no aplica. */
-export const STANDALONE_ZOOM_LOCK_CLASS = "pwa-standalone-zoom-lock";
+export const CLASE_QUE_TRABA_EL_ZOOM = "pwa-standalone-zoom-lock";
 
 const DOUBLE_TAP_MS = 300;
 
 function isInsideInteractiveMap(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
-  return target.closest(INTERACTIVE_MAP_SELECTOR) !== null;
+  return target.closest(SELECTOR_DEL_MAPA) !== null;
 }
 
 function isMultiTouchOnInteractiveMap(event: TouchEvent): boolean {
@@ -28,7 +28,7 @@ function shouldBlockViewportPinch(event: TouchEvent): boolean {
 }
 
 /** iPhone, iPod, iPad (incl. iPadOS con UA de escritorio). */
-export function isIosTouchDevice(): boolean {
+export function esIphoneTactil(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent.toLowerCase();
   if (/iphone|ipod|ipad/.test(ua)) return true;
@@ -42,7 +42,7 @@ const CAPTURE_PASSIVE_FALSE = { capture: true, passive: false } as const;
 function isInsideScrollPane(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Element)) return null;
   if (isInsideInteractiveMap(target)) return null;
-  return target.closest(APP_SCROLL_PANE_SELECTOR) as HTMLElement | null;
+  return target.closest(SELECTOR_DEL_PANEL_QUE_SE_DESPLAZA) as HTMLElement | null;
 }
 
 function mountScrollPaneOverscrollLock(): () => void {
@@ -96,16 +96,16 @@ function mountScrollPaneOverscrollLock(): () => void {
 /**
  * Evita zoom nativo del viewport (PWA y navegador; iOS + Android).
  */
-export function mountViewportZoomPrevention(): () => void {
+export function trabarElZoom(): () => void {
   if (typeof document === "undefined") {
     return () => {};
   }
 
   const root = document.documentElement;
-  root.classList.add(STANDALONE_ZOOM_LOCK_CLASS);
+  root.classList.add(CLASE_QUE_TRABA_EL_ZOOM);
 
   const cleanups: Array<() => void> = [
-    () => root.classList.remove(STANDALONE_ZOOM_LOCK_CLASS),
+    () => root.classList.remove(CLASE_QUE_TRABA_EL_ZOOM),
   ];
 
   const add = (
@@ -122,7 +122,7 @@ export function mountViewportZoomPrevention(): () => void {
     event.preventDefault();
   };
 
-  if (isIosTouchDevice()) {
+  if (esIphoneTactil()) {
     for (const type of ["gesturestart", "gesturechange", "gestureend"] as const) {
       add(document, type, blockGesture as EventListener, { passive: false });
     }

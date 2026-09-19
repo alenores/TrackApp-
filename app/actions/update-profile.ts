@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import {
-  AVATAR_BUCKET,
-  getAvatarStoragePath,
-  validateAvatarFile,
-} from "@/lib/auth/avatar-storage";
-import { getAuthUser } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+  DEPOSITO_DE_FOTOS,
+  rutaDeLaFoto,
+  revisarLaFoto,
+} from "@/lib/cuenta/fotos";
+import { traerUsuario } from "@/lib/cuenta/sesion";
+import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 
 export type UpdateProfileResult =
   | { success: true; emailConfirmationRequired: boolean }
@@ -33,20 +33,20 @@ export async function updateProfile(input: {
     return { success: false, error: "Ingresá un email válido." };
   }
 
-  const user = await getAuthUser();
+  const user = await traerUsuario();
 
   if (!user) {
     return { success: false, error: "Tenés que iniciar sesión." };
   }
 
   if (input.avatarFile) {
-    const avatarError = validateAvatarFile(input.avatarFile);
+    const avatarError = revisarLaFoto(input.avatarFile);
     if (avatarError) {
       return { success: false, error: avatarError };
     }
   }
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const currentEmail = (user.email ?? "").toLowerCase();
   const emailChanged = trimmedEmail !== currentEmail;
 
@@ -60,11 +60,11 @@ export async function updateProfile(input: {
   }
 
   if (input.avatarFile) {
-    const storagePath = getAvatarStoragePath(user.id);
+    const storagePath = rutaDeLaFoto(user.id);
     const fileBuffer = await input.avatarFile.arrayBuffer();
 
     const { error: uploadError } = await supabase.storage
-      .from(AVATAR_BUCKET)
+      .from(DEPOSITO_DE_FOTOS)
       .upload(storagePath, fileBuffer, {
         contentType: input.avatarFile.type,
         upsert: true,
@@ -79,7 +79,7 @@ export async function updateProfile(input: {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath);
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(storagePath);
 
     const avatarUrl = `${publicUrl}?v=${Date.now()}`;
 

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import type { FeatureCollection } from "geojson";
-import { getAuthUser } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { traerUsuario } from "@/lib/cuenta/sesion";
+import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import { escribirRectangulo } from "@/lib/datos/rectangulo";
 import { exito, falla, traducirErrorDeBase, type Resultado } from "@/lib/datos/resultado";
 import { calcularNumerosDelRecorrido } from "@/lib/rutas/recorrido";
@@ -46,7 +46,7 @@ export async function crearRuta(
   geometria: FeatureCollection,
   archivo: File | null,
 ): Promise<Resultado<{ rutaId: number }>> {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
   if (!usuario?.id) {
     return falla("Entrá con tu cuenta para poder subir una ruta.");
   }
@@ -66,7 +66,7 @@ export async function crearRuta(
     );
   }
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
 
   const { data, error } = await supabase
     .from("rutas")
@@ -120,7 +120,7 @@ async function guardarArchivo(
   perfilId: string,
   archivo: File,
 ): Promise<Resultado> {
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const ruta = rutaDelArchivo(perfilId, rutaId, archivo.name);
 
   const { error: errorDeSubida } = await supabase.storage
@@ -154,7 +154,7 @@ export async function editarRuta(
   rutaId: number,
   datos: DatosDeRuta,
 ): Promise<Resultado> {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
   if (!usuario?.id) {
     return falla("Entrá con tu cuenta para poder editar una ruta.");
   }
@@ -167,7 +167,7 @@ export async function editarRuta(
     return falla("Elegí al menos un tipo de actividad para la ruta.");
   }
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
 
   const { error } = await supabase
     .from("rutas")
@@ -194,12 +194,12 @@ export async function editarRuta(
 
 /** Borrar es marcar la fecha de borrado. La fila queda. */
 export async function borrarRuta(rutaId: number): Promise<Resultado> {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
   if (!usuario?.id) {
     return falla("Entrá con tu cuenta para poder borrar una ruta.");
   }
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
 
   const { error } = await supabase
     .from("rutas")

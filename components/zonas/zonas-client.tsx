@@ -1,6 +1,6 @@
 "use client";
 
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { ZonaList } from "@/components/zonas/zona-list";
 import { Card } from "@/components/ui/card";
 

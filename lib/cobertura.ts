@@ -1,4 +1,5 @@
 import type { FeatureCollection, Position } from "geojson";
+import { distanciaEnMetros, puntoDeCoordenada } from "@/lib/geo";
 import type { Rectangulo, Sector } from "@/types/database";
 
 /**
@@ -17,8 +18,6 @@ import type { Rectangulo, Sector } from "@/types/database";
 /** Cada cuántos metros se evalúa la línea al medir el tramo sin cobertura. */
 const PASO_DE_MUESTREO_M = 50;
 
-const RADIO_TIERRA_M = 6371000;
-
 export type EstadoDeSector = "descargado" | "falta_descargar";
 
 export type SectorNecesario = {
@@ -36,26 +35,6 @@ export type Cobertura = {
 };
 
 // ------------------------------------------------------------------ geometría
-
-function aRadianes(grados: number): number {
-  return (grados * Math.PI) / 180;
-}
-
-function distanciaEnMetros(
-  lonA: number,
-  latA: number,
-  lonB: number,
-  latB: number,
-): number {
-  const dLat = aRadianes(latB - latA);
-  const dLon = aRadianes(lonB - lonA);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(aRadianes(latA)) *
-      Math.cos(aRadianes(latB)) *
-      Math.sin(dLon / 2) ** 2;
-  return RADIO_TIERRA_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 export function puntoDentroDelRectangulo(
   lon: number,
@@ -118,7 +97,10 @@ function* recorrerLinea(
         continue;
       }
 
-      const largo = distanciaEnMetros(lonA, latA, lonB, latB);
+      const largo = distanciaEnMetros(
+        { lat: latA, lon: lonA },
+        { lat: latB, lon: lonB },
+      );
       if (largo === 0) continue;
 
       const pasos = Math.max(1, Math.ceil(largo / PASO_DE_MUESTREO_M));

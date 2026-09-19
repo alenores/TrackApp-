@@ -1,5 +1,5 @@
 import type { FeatureCollection } from "geojson";
-import toGeoJSON from "togeojson";
+import { gpx, kml } from "@tmcw/togeojson";
 import {
   calcularNumerosDelRecorrido,
   type NumerosDelRecorrido,
@@ -97,8 +97,8 @@ export async function leerArchivoDeRuta(
   try {
     geometria =
       formato === "gpx"
-        ? (toGeoJSON.gpx(documento) as FeatureCollection)
-        : (toGeoJSON.kml(documento) as FeatureCollection);
+        ? (gpx(documento) as FeatureCollection)
+        : (kml(documento) as FeatureCollection);
   } catch {
     return {
       ok: false,

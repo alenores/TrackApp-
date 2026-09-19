@@ -1,6 +1,6 @@
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card } from "@/components/ui/card";
-import type { DirectoryUser } from "@/lib/auth/directory";
+import type { DirectoryUser } from "@/lib/cuenta/directorio";
 
 type PerfilUsuarioCardProps = {
   user: DirectoryUser;

@@ -9,7 +9,7 @@ type NavigationExitModalProps = {
   onConfirm: () => void;
 };
 
-export function NavigationExitModal({
+export function ModalDeSalida({
   open,
   onCancel,
   onConfirm,

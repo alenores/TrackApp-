@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth/session";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { RutasClient } from "@/components/rutas/rutas-client";
 
@@ -9,7 +9,7 @@ import { RutasClient } from "@/components/rutas/rutas-client";
  * que aparecer sin señal.
  */
 export default async function RutasPage() {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
 
   return (
     <>

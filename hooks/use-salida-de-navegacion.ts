@@ -11,7 +11,7 @@ function resolvePathname(href: string): string {
   return href.split("?")[0]?.split("#")[0] ?? href;
 }
 
-export function useNavigationExitGuard(defaultExitHref: string) {
+export function useSalidaDeNavegacion(defaultExitHref: string) {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

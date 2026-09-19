@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { BuildStamp } from "@/components/layout/build-stamp";
 import { Header } from "@/components/layout/header";
 import { NavigationProgressProvider } from "@/components/layout/navigation-progress";
@@ -31,7 +31,7 @@ export function AppShell({
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    const supabase = createClient();
+    const supabase = crearClienteEnElNavegador();
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();

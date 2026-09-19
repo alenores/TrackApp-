@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { borrarRuta, editarRuta } from "@/app/actions/rutas";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import {
   CamposDeRuta,
   CAMPOS_VACIOS,

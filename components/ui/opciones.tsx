@@ -1,7 +1,7 @@
 "use client";
 
-import { triggerTapHaptic } from "@/lib/haptics";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 /**
  * Elegir entre varias opciones, tocando.
@@ -67,10 +67,10 @@ export function Opciones<T extends string | number>({
               role={multiple ? undefined : "radio"}
               aria-checked={multiple ? undefined : elegida}
               aria-pressed={multiple ? elegida : undefined}
-              onPointerDown={() => triggerTapHaptic()}
+              onPointerDown={() => vibrarAlTocar()}
               onClick={() => alElegir(opcion.valor)}
               className={[
-                TAP_FEEDBACK_CLASS,
+                CLASE_DE_RESPUESTA_AL_TOQUE,
                 "flex min-h-14 items-center justify-center gap-1.5 rounded-xl border px-2 text-sm font-semibold transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
                 elegida

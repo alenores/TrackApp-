@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TAP_FEEDBACK_CLASS } from "@/lib/tap-feedback";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 /**
  * La tarjeta: el bloque con el que está armada toda la app.
@@ -47,7 +47,7 @@ export function Card({
         franja ? FRANJAS[franja] : "",
         interactiva
           ? [
-              TAP_FEEDBACK_CLASS,
+              CLASE_DE_RESPUESTA_AL_TOQUE,
               "cursor-pointer shadow-[var(--sombra-alta)] hover:border-acento-borde",
             ].join(" ")
           : "",

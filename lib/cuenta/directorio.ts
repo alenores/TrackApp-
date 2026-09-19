@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 
 // list_app_users() (SQL) lee auth.users + profiles.avatar_url; la app no puede consultar auth directo.
 
@@ -29,7 +29,7 @@ function mapDirectoryRows(rows: DirectoryRow[]): DirectoryUser[] {
 }
 
 async function fetchDirectoryFromRpc(): Promise<DirectoryUser[] | null> {
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase.rpc("list_app_users");
 
   if (error || !Array.isArray(data)) {
@@ -40,7 +40,7 @@ async function fetchDirectoryFromRpc(): Promise<DirectoryUser[] | null> {
 }
 
 async function fetchDirectoryLegacy(): Promise<DirectoryUser[]> {
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
 
   const [profilesResult, rutasResult] = await Promise.all([
     supabase.from("profiles").select("id, nombre, avatar_url"),

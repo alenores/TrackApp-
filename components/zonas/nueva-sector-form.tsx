@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { crearSector } from "@/app/actions/territorio";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CamposDeTerritorio } from "@/components/zonas/campos-de-territorio";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Button } from "@/components/ui/button";

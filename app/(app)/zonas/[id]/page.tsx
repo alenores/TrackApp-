@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth/session";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { ZonaDetalle } from "@/components/zonas/zona-detalle";
 
@@ -14,7 +14,7 @@ type Props = {
 
 export default async function PaginaDeZona({ params }: Props) {
   const { id } = await params;
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
 
   return (
     <>

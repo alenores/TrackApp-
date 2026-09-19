@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import type { LineString, Point } from "geojson";
-import { getAuthUser } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { traerUsuario } from "@/lib/cuenta/sesion";
+import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
   escribirRectangulo,
   rectanguloEsValido,
@@ -32,7 +32,7 @@ function limpiar(texto: string | null): string | null {
 }
 
 async function exigirSesion(): Promise<{ id: string } | null> {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
   return usuario?.id ? { id: usuario.id } : null;
 }
 
@@ -57,7 +57,7 @@ export async function crearZona(
   if (!limpiar(datos.nombre)) return falla("Ponele un nombre a la zona.");
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
     .from("zonas")
     .insert({
@@ -88,7 +88,7 @@ export async function editarZona(
   if (!limpiar(datos.nombre)) return falla("Ponele un nombre a la zona.");
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { error } = await supabase
     .from("zonas")
     .update({
@@ -110,7 +110,7 @@ export async function borrarZona(zonaId: number): Promise<Resultado> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const ahora = new Date().toISOString();
 
   // Los sectores de la zona se van con ella, y sus anotaciones con ellos.
@@ -165,7 +165,7 @@ export async function crearSector(
   if (!limpiar(datos.nombre)) return falla("Ponele un nombre al sector.");
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
     .from("sectores")
     .insert({
@@ -197,7 +197,7 @@ export async function editarSector(
   if (!limpiar(datos.nombre)) return falla("Ponele un nombre al sector.");
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { error } = await supabase
     .from("sectores")
     .update({
@@ -218,7 +218,7 @@ export async function borrarSector(sectorId: number): Promise<Resultado> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const ahora = new Date().toISOString();
 
   await supabase
@@ -282,7 +282,7 @@ export async function crearAnotacion(
   const problema = revisarAnotacion(datos);
   if (problema) return falla(problema);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
     .from("anotaciones")
     .insert({
@@ -317,7 +317,7 @@ export async function editarAnotacion(
   const problema = revisarAnotacion(datos);
   if (problema) return falla(problema);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { error } = await supabase
     .from("anotaciones")
     .update({
@@ -340,7 +340,7 @@ export async function borrarAnotacion(anotacionId: number): Promise<Resultado> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { error } = await supabase
     .from("anotaciones")
     .update({ eliminado_en: new Date().toISOString() })

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { DEPLOY_SHA } from "@/lib/deploy-stamp";
+import { SELLO_DE_VERSION } from "@/lib/sello-de-version";
 import { isRutaDetailPath } from "@/lib/rutas/paths";
 
 export function BuildStamp() {
@@ -16,7 +16,7 @@ export function BuildStamp() {
       className="mt-8 pb-2 text-center text-[10px] font-mono leading-none text-texto-suave"
       aria-hidden
     >
-      {DEPLOY_SHA}
+      {SELLO_DE_VERSION}
     </p>
   );
 }

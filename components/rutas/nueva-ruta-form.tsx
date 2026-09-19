@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { crearRuta } from "@/app/actions/rutas";
-import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import {
   CamposDeRuta,

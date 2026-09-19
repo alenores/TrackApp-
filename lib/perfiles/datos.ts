@@ -1,6 +1,6 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/auth/session";
+import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import type { CategoriaUsuario, Perfil } from "@/types/database";
 
 /**
@@ -35,10 +35,10 @@ function leer(fila: Fila): Perfil {
 
 /** El perfil de quien está usando la app. `null` si no hay sesión. */
 export const traerMiPerfil = cache(async (): Promise<Perfil | null> => {
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
   if (!usuario?.id) return null;
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
     .from("perfiles")
     .select(COLUMNAS)
@@ -67,7 +67,7 @@ export async function traerPerfiles(ids: string[]): Promise<Map<string, Perfil>>
   const unicos = [...new Set(ids)].filter(Boolean);
   if (unicos.length === 0) return new Map();
 
-  const supabase = await createClient();
+  const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
     .from("perfiles")
     .select(COLUMNAS)

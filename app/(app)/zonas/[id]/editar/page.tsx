@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth/session";
+import { traerUsuario } from "@/lib/cuenta/sesion";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { EditarZonaForm } from "@/components/zonas/editar-zona-form";
 
@@ -8,7 +8,7 @@ type Props = {
 
 export default async function PaginaDeEditarZona({ params }: Props) {
   const { id } = await params;
-  const usuario = await getAuthUser();
+  const usuario = await traerUsuario();
 
   return (
     <>

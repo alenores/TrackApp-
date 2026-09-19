@@ -1,11 +1,11 @@
-export const PWA_INSTALL_DISMISS_KEY = "pwa-install-dismissed-v2";
+export const LLAVE_DE_NO_INSTALAR = "pwa-install-dismissed-v2";
 
 export type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-export function isStandaloneMode(): boolean {
+export function estaInstalada(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
@@ -18,7 +18,7 @@ export function isStandaloneMode(): boolean {
   );
 }
 
-export function isIosDevice(): boolean {
+export function esIphone(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
@@ -27,7 +27,7 @@ export function isIosDevice(): boolean {
   return /iphone|ipad|ipod/.test(ua);
 }
 
-export function isAndroidDevice(): boolean {
+export function esAndroid(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
@@ -35,25 +35,25 @@ export function isAndroidDevice(): boolean {
   return /android/i.test(window.navigator.userAgent);
 }
 
-export function isMobileBrowser(): boolean {
-  return isIosDevice() || isAndroidDevice();
+export function esCelular(): boolean {
+  return esIphone() || esAndroid();
 }
 
-export function isInstallDismissed(): boolean {
+export function yaDijoQueNoInstalar(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
 
   try {
-    return window.localStorage.getItem(PWA_INSTALL_DISMISS_KEY) === "1";
+    return window.localStorage.getItem(LLAVE_DE_NO_INSTALAR) === "1";
   } catch {
     return false;
   }
 }
 
-export function dismissInstallPrompt(): void {
+export function anotarQueNoQuiereInstalar(): void {
   try {
-    window.localStorage.setItem(PWA_INSTALL_DISMISS_KEY, "1");
+    window.localStorage.setItem(LLAVE_DE_NO_INSTALAR, "1");
   } catch {
     /* ignore */
   }

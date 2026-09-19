@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
-export function getUserDisplayName(user: User | null | undefined): string {
+export function nombreParaMostrar(user: User | null | undefined): string {
   if (!user) return "Usuario";
 
   const metadata = user.user_metadata as Record<string, unknown> | undefined;
@@ -19,7 +19,7 @@ export function getUserDisplayName(user: User | null | undefined): string {
   return "Usuario";
 }
 
-export function getUserStoredNombre(user: User | null | undefined): string {
+export function nombreGuardado(user: User | null | undefined): string {
   if (!user) return "";
 
   const metadata = user.user_metadata as Record<string, unknown> | undefined;

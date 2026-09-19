@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { usePwaInstall } from "@/lib/pwa/use-pwa-install";
+import { useInstalarApp } from "@/lib/pwa/use-instalar-app";
 
 function ShareIcon() {
   return (
@@ -57,7 +57,7 @@ export function InstallAppBanner() {
     hintText,
     install,
     dismiss,
-  } = usePwaInstall();
+  } = useInstalarApp();
 
   if (!show) {
     return null;

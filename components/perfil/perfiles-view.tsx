@@ -1,4 +1,4 @@
-import type { DirectoryUser } from "@/lib/auth/directory";
+import type { DirectoryUser } from "@/lib/cuenta/directorio";
 import { PerfilForm } from "@/components/perfil/perfil-form";
 import { PerfilUsuarioCard } from "@/components/perfil/perfil-usuario-card";
 
