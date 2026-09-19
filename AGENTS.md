@@ -140,6 +140,11 @@ entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
 
 - **Las pantallas leen de lo guardado en el celular, nunca de internet.** Internet
   sirve para actualizar lo guardado, no para dibujar una pantalla.
+  **Una sola excepción, y está cerrada:** al definir el rectángulo de una zona o
+  un sector el mapa se trae en vivo, porque eso se hace en casa pegando
+  direcciones de Google Maps y sin mapa abajo la pantalla no sirve. Ver
+  `docs/decisiones/018-el-mapa-en-vivo-al-definir-un-rectangulo.md`. **Ninguna
+  otra pantalla, y jamás navegando.**
 - **Lo que se descarga tiene que poder borrarse.** Si el usuario quita algo de
   offline, el espacio se libera de verdad.
 - **Nunca decir «listo» sobre una descarga incompleta.** Si faltó algo, se avisa.

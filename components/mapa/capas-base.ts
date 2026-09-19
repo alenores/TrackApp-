@@ -66,7 +66,20 @@ export function iconosDelFondo(modo: Modo): string {
   return direccionCompleta(modo === "sol" ? ICONOS_DE_SOL : ICONOS_DE_NOCHE);
 }
 
-export function estiloDelMapa(modo: Modo): StyleSpecification {
+/**
+ * Dónde pedir los pedazos cuando el mapa se mira **en vivo**.
+ *
+ * **Es la única excepción a «las pantallas leen de lo guardado».** Al definir el
+ * rectángulo de una zona o de un sector, el usuario está en su casa, con señal,
+ * pegando direcciones de Google Maps. Sin un mapa abajo no puede ver si el
+ * rectángulo cae donde quiere, y un rectángulo flotando en gris no le dice
+ * nada. Nada de esto pasa navegando: navegar sigue leyendo solo lo guardado.
+ *
+ * Ver `docs/decisiones/018-el-mapa-en-vivo-al-definir-un-rectangulo.md`
+ */
+const EN_VIVO = "/api/mapa/{z}/{x}/{y}";
+
+export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
   return {
     version: 8,
     glyphs: direccionCompleta(LETRAS),
@@ -74,7 +87,7 @@ export function estiloDelMapa(modo: Modo): StyleSpecification {
     sources: {
       [FUENTE_DEL_FONDO]: {
         type: "vector",
-        tiles: [DIRECCION_DE_LAS_TESELAS],
+        tiles: [enVivo ? direccionCompleta(EN_VIVO) : DIRECCION_DE_LAS_TESELAS],
         minzoom: 0,
         /**
          * Pasado este acercamiento no se pide nada nuevo: se agranda el último

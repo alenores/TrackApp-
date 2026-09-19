@@ -146,6 +146,7 @@ export function CamposDeTerritorio({
             Dónde queda
           </h2>
           <CargadorDeMapa
+            enVivo
             rectangulo={armado.rectangulo}
             rectangulosExistentes={rectangulosExistentes}
           />

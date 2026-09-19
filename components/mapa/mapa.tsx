@@ -97,6 +97,13 @@ type MapaProps = {
   rectangulosExistentes?: Rectangulo[];
   /** `true` en la pantalla de navegación, que va a pantalla completa. */
   pantallaCompleta?: boolean;
+  /**
+   * `true` para traer el fondo en vivo en vez de leerlo de lo guardado.
+   *
+   * **Solo al definir el rectángulo de una zona o un sector**, que se hace en
+   * casa y con señal. Nunca navegando.
+   */
+  enVivo?: boolean;
   className?: string;
 };
 
@@ -163,6 +170,7 @@ export function Mapa({
   rectangulo = null,
   rectangulosExistentes = [],
   pantallaCompleta = false,
+  enVivo = false,
   className = "",
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -190,6 +198,8 @@ export function Mapa({
   const [armado, setArmado] = useState(false);
   /** Cuántas cosas hay dibujadas encima del fondo. */
   const [dibujado, setDibujado] = useState(0);
+  /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
+  const enVivoRef = useRef(enVivo);
   const modoRef = useRef(modo);
   useEffect(() => {
     modoRef.current = modo;
@@ -218,7 +228,7 @@ export function Mapa({
 
     const mapa = new maplibregl.Map({
       container: contenedorRef.current,
-      style: estiloDelMapa(modoRef.current),
+      style: estiloDelMapa(modoRef.current, enVivoRef.current),
       // Córdoba, para que sin fondo el mapa igual arranque en algún lado.
       center: [-64.5, -31.5],
       zoom: 9,
