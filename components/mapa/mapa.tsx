@@ -3,10 +3,15 @@
 import { useEffect, useRef } from "react";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
 import * as maplibregl from "maplibre-gl";
-import { elegirFondo } from "@/components/mapa/capas-base";
+import {
+  capasDelFondo,
+  estiloDelMapa,
+  iconosDelFondo,
+} from "@/components/mapa/capas-base";
 import { coloresDelMapa } from "@/components/mapa/colores";
 import { useModo } from "@/hooks/use-modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
+import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -32,6 +37,14 @@ const FUENTE_ANOTACIONES = "anotaciones";
 const FUENTE_RECTANGULOS = "rectangulos";
 
 const VACIO: FeatureCollection = { type: "FeatureCollection", features: [] };
+
+/**
+ * La primera capa propia de la app.
+ *
+ * Las capas del fondo se insertan **antes** de esta, así el mapa queda abajo y
+ * la ruta, el GPS y las anotaciones siempre encima.
+ */
+const PRIMERA_CAPA_DE_LA_APP = "rectangulos-relleno";
 
 export type PosicionEnElMapa = {
   lat: number;
@@ -127,6 +140,17 @@ export function Mapa({
   /** Lo que se quiso dibujar antes de que el mapa terminara de armarse. */
   const esperandoRef = useRef<Array<() => void>>([]);
   const { modo } = useModo();
+  /**
+   * El modo actual, para el armado del mapa.
+   *
+   * El armado corre una sola vez y no puede depender del modo: rearmar el mapa
+   * entero cada vez que el usuario toca sol/noche perdería la posición y lo
+   * dibujado. Se lee de acá, y el cambio de modo lo maneja su propio efecto.
+   */
+  const modoRef = useRef(modo);
+  useEffect(() => {
+    modoRef.current = modo;
+  }, [modo]);
 
   /**
    * Dibuja ahora si el mapa ya está armado, o cuando termine de armarse.
@@ -143,11 +167,12 @@ export function Mapa({
   useEffect(() => {
     if (!contenedorRef.current || mapaRef.current) return;
 
-    const fondo = elegirFondo();
+    // Antes que nada: enseñarle al mapa a leer los pedazos del celular.
+    registrarElMapaGuardado();
 
     const mapa = new maplibregl.Map({
       container: contenedorRef.current,
-      style: fondo.estilo,
+      style: estiloDelMapa(modoRef.current),
       // Córdoba, para que sin fondo el mapa igual arranque en algún lado.
       center: [-64.5, -31.5],
       zoom: 9,
@@ -160,6 +185,9 @@ export function Mapa({
 
     mapa.on("load", () => {
       const colores = coloresDelMapa();
+
+      // El fondo va primero: todo lo de la app se dibuja encima.
+      for (const capa of capasDelFondo(modoRef.current)) mapa.addLayer(capa);
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
@@ -268,6 +296,21 @@ export function Mapa({
     const pintar = () => {
       if (!mapa.getLayer("ruta-linea")) return;
       const colores = coloresDelMapa();
+
+      /**
+       * El fondo se cambia capa por capa, no rearmando el estilo.
+       *
+       * Rearmar el estilo se lleva puestas las capas de la app —la ruta, el
+       * GPS, las anotaciones— y habría que volver a dibujarlas todas. Sacar y
+       * poner las del fondo deja intacto todo lo demás.
+       */
+      for (const vieja of capasDelFondo(modo === "sol" ? "noche" : "sol")) {
+        if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
+      }
+      for (const nueva of capasDelFondo(modo)) {
+        if (!mapa.getLayer(nueva.id)) mapa.addLayer(nueva, PRIMERA_CAPA_DE_LA_APP);
+      }
+      mapa.setSprite(iconosDelFondo(modo));
 
       mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);

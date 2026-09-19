@@ -1,70 +1,94 @@
-import type { StyleSpecification } from "maplibre-gl";
+import { layers, namedFlavor } from "@protomaps/basemaps";
+import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
+import { DIRECCION_DE_LAS_TESELAS } from "@/lib/mapas/protocolo";
+import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
+import type { Modo } from "@/lib/modo";
 
 /**
- * De dónde sale el fondo del mapa.
+ * De dónde sale el fondo del mapa y cómo se dibuja.
  *
  * **Este es el único lugar de la app que sabe de dónde sale un mapa.** Ninguna
  * pantalla se entera: piden el fondo y dibujan lo que venga.
  *
- * Hay tres fondos y el usuario elige entre los dos primeros:
- *   - **simple**: el mapa vectorial con curvas de nivel;
- *   - **satelital**: la foto aérea, también con curvas encima;
- *   - **sin mapa**: fondo vacío con la línea de la ruta y el punto del GPS.
+ * El fondo se lee **siempre de lo guardado en el celular**, nunca de internet.
+ * Un sector que el usuario bajó se dibuja; uno que no bajó no dibuja nada y se
+ * ve el fondo liso de la app. **Eso no es una falla, es un modo legítimo**: la
+ * línea de la ruta y el punto del GPS se ven igual, y el aviso de desvío no
+ * mira el mapa.
  *
- * El tercero **no es una falla, es un modo legítimo**. Alcanza para saber si
- * vas por el camino o te desviaste, porque el cálculo del desvío no mira el
- * mapa. Es lo que se ve mientras no haya archivos descargados, y hoy es lo
- * único que hay: los archivos todavía no existen.
- *
- * **Prohibido poner acá los mapas de OpenStreetMap.** Su política de uso
- * prohíbe expresamente descargarlos por adelantado para usarlos sin señal, que
- * es justo lo que hace esta app, y avisan que bloquean sin aviso. Ver
+ * **Prohibido poner acá los mapas de OpenStreetMap servidos por su comunidad.**
+ * Su política prohíbe expresamente bajarlos por adelantado para usarlos sin
+ * señal, que es justo lo que hace esta app. Ver
  * docs/decisiones/007-de-donde-salen-los-mapas.md
  */
 
 export type TipoDeFondo = "sin-mapa" | "simple" | "satelital";
 
+/** El nombre con el que el mapa conoce a los pedazos guardados. */
+export const FUENTE_DEL_FONDO = "fondo";
+
 /**
- * El estilo del modo sin mapa: vacío.
+ * Las letras y los íconos del mapa viajan **dentro de la app**.
  *
- * **Sin capa de fondo a propósito.** El color lo pone el recuadro que contiene
- * al mapa, con las variables de siempre, así cambia solo entre modo sol y modo
- * noche. Un color escrito acá quedaría fijo en los dos.
- *
- * Las capas de la ruta, el GPS y las anotaciones las agrega el mapa encima,
- * sea cual sea el fondo.
+ * Si se pidieran a internet, un mapa sin señal quedaría sin un solo nombre
+ * escrito. Al estar acá, entran en el paquete que el celular guarda solo.
  */
-function estiloSinMapa(): StyleSpecification {
+const LETRAS = "/fuentes-del-mapa/{fontstack}/{range}.pbf";
+const ICONOS_DE_SOL = "/iconos-del-mapa/light";
+const ICONOS_DE_NOCHE = "/iconos-del-mapa/dark";
+
+/**
+ * El estilo con el que arranca el mapa.
+ *
+ * Trae la fuente de los pedazos guardados pero **ninguna capa de fondo**: esas
+ * se agregan después, según el modo sol o noche, y se cambian sin rearmar el
+ * mapa entero. Sin capa de fondo el color lo pone el recuadro que contiene al
+ * mapa, con las variables de siempre.
+ */
+export function iconosDelFondo(modo: Modo): string {
+  return modo === "sol" ? ICONOS_DE_SOL : ICONOS_DE_NOCHE;
+}
+
+export function estiloDelMapa(modo: Modo): StyleSpecification {
   return {
     version: 8,
-    // Sin fuentes: en este modo no se pide un solo byte a ningún lado.
-    sources: {},
+    glyphs: LETRAS,
+    sprite: iconosDelFondo(modo),
+    sources: {
+      [FUENTE_DEL_FONDO]: {
+        type: "vector",
+        tiles: [DIRECCION_DE_LAS_TESELAS],
+        minzoom: 0,
+        /**
+         * Pasado este acercamiento no se pide nada nuevo: se agranda el último
+         * pedazo que hay. Sin esto, acercarse de más deja la pantalla en blanco.
+         */
+        maxzoom: ACERCAMIENTO_MAXIMO,
+      },
+    },
     layers: [],
   };
 }
 
-export type FondoDisponible = {
-  tipo: TipoDeFondo;
-  estilo: StyleSpecification;
-};
-
 /**
- * Qué fondo se puede dibujar, según lo que el usuario tenga descargado.
+ * Las capas que dibujan el mapa, para un modo de color.
  *
- * Cuando existan los archivos, las dos capas se arman **acá** y el resto de la
- * app no cambia una línea.
+ * **Sin la capa de fondo liso** que trae el juego original: ese color taparía
+ * el del recuadro y quedaría fijo en los dos modos. La tierra, el agua, los
+ * caminos y los nombres sí vienen todos.
  */
-export function elegirFondo(): FondoDisponible {
-  // Todavía no hay archivos de mapa. No se inventa un proveedor de terceros.
-  return { tipo: "sin-mapa", estilo: estiloSinMapa() };
+export function capasDelFondo(modo: Modo): LayerSpecification[] {
+  return layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
+    lang: "es",
+  }).filter((capa) => capa.type !== "background");
 }
 
 /**
  * ¿Ya se pueden descargar mapas?
  *
- * Se responde desde el mismo lugar que elige el fondo, así el día que existan
- * **no hay que tocar ninguna pantalla**.
+ * Se responde desde el mismo lugar que arma el fondo, así las pantallas no
+ * tienen que saber nada de esto.
  */
 export function sePuedenDescargarMapas(): boolean {
-  return elegirFondo().tipo !== "sin-mapa";
+  return true;
 }
