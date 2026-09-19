@@ -4,6 +4,60 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-19 — Los mapas se bajan de verdad
+
+### Estado al inicio
+
+El mapa era un fondo vacío: la app dibujaba la línea de la ruta y el punto del
+GPS sobre nada. Estaba decidido de dónde saldría el mapa (decisión 007) pero no
+existía ni el mecanismo ni la pantalla.
+
+### Lo que se hizo
+
+**Bajar el mapa de un sector, de punta a punta.** Se recortan del archivo
+mundial solo los pedazos del rectángulo del sector y quedan en el celular.
+Medido contra el archivo de verdad: un sector de sierra son 84 pedazos, 1 MB y
+6 segundos. Una zona entera, 3292 pedazos — por eso existen los sectores.
+
+**Dos cosas cambiaron la arquitectura y se supieron probando, no leyendo:** el
+archivo del mundo no le entrega pedazos a un navegador, así que el servidor de
+TrackApp hace de puente; y su nombre cambia todos los días, así que la dirección
+se busca en vez de escribirse. Ver decisión 017.
+
+**El motor offline no abría ni una pantalla en modo avión.** La configuración
+decía, para toda pantalla, «traela siempre de internet». Se reescribió entera
+tomando como molde la de Vías de Escalada. Es el hallazgo más grave de la
+sesión y no tenía nada que ver con los mapas.
+
+**Once alertas críticas de seguridad**, dos de ellas de ejecución de código sin
+estar logueado, cerradas al actualizar el framework.
+
+### Decisiones tomadas
+
+- `017` — Cómo llega el mapa al celular: el servidor hace de puente, no se aloja
+  nada, la dirección se busca, y las letras del mapa viajan adentro de la app.
+
+### Riesgos
+
+- **R1, R2 y R11 resueltos.** Borrar libera el espacio de verdad y no se lleva
+  el mapa del vecino; acercarse de más agranda en vez de quedar en blanco; las
+  pantallas se enteran solas de lo que se bajó.
+- **R14 nuevo, y bajado de crítico a deuda:** la librería que hace andar la app
+  sin señal está abandonada desde 2022. Vías de Escalada usa la misma versión
+  sobre el mismo framework y funciona, así que no es un incendio.
+- **R15 nuevo y resuelto:** la app no abría ni una pantalla sin señal.
+
+### Lo que queda
+
+- Probar en **modo avión**. Es la única prueba que vale y no se puede
+  automatizar.
+- Las **curvas de nivel** desde el modelo de elevación de 5 metros de IDECOR,
+  que se verificó que cubre toda la sierra (decisión 013).
+- El **satelital**: lo mejor libre para la sierra son 10 metros por píxel. Se
+  ven bosques y lagos, no senderos. Se construye después del simple.
+
+---
+
 ## Sesión 2026-09-18 — Cimientos: reglas base del proyecto
 
 ### Estado al inicio

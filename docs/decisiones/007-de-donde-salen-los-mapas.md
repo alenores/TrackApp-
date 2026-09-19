@@ -1,6 +1,8 @@
 # 007 — De dónde salen los mapas
 
 **Fecha:** 2026-09-18 · **Estado:** vigente
+> **Sus dos pendientes los cerró la decisión 017** (2026-09-19): cómo llega el
+> mapa al celular, y cuánto cuesta alojarlo (nada: no se aloja).
 
 ## El problema que lo origina
 
@@ -50,9 +52,12 @@ sin conexión.
 - **IDECOR (Córdoba) y CONAE**: imágenes de alta resolución (30–50 cm) de
   acceso libre y descargables.
 
-**Pendiente de verificar:** si la cobertura de alta resolución de IDECOR llega a
-las sierras o solo cubre localidades. Esto cambia mucho el resultado y hay que
-confirmarlo antes de prometer nada.
+**Verificado (2026-09-19).** IDECOR publica un modelo de elevación de 5 metros
+que **cubre toda la sierra**, Champaquí y Achala incluidos, con licencia libre.
+De ahí van a salir las curvas de nivel. Su foto de alta resolución, en cambio,
+cubre localidades y no la sierra: para el satelital lo mejor libre disponible
+son 10 metros por píxel, con lo que se ven bosques, lagos y paredes de roca,
+pero no un sendero ni un refugio.
 
 ## Alternativas descartadas
 
@@ -77,7 +82,6 @@ por dos motivos independientes, cada uno suficiente:
 
 ## Consecuencia de costo
 
-Todo lo elegido es gratuito. El único costo es alojar los archivos de mapa.
-
-**Pendiente:** dimensionar ese costo de almacenamiento antes de cerrar la
-arquitectura offline (decisión 003).
+Todo lo elegido es gratuito, **y no hay costo de almacenamiento**: la app no
+aloja ningún archivo de mapa. Se recortan los pedazos del rectángulo que eligió
+el usuario y se guardan en su teléfono. Ver decisión 017.

@@ -27,7 +27,7 @@ sector **no se lleva puesto el mapa del sector de al lado**.
 
 ---
 
-## 🟡 R2 — Sin señal, el mapa desaparece al acercarse
+## ✅ R2 — Sin señal, el mapa desaparece al acercarse
 
 **Qué pasaba.** Se descargaban imágenes hasta cierto nivel de acercamiento, pero
 el mapa dejaba acercarse mucho más allá. Pasado ese punto pedía imágenes que no
@@ -40,11 +40,13 @@ la línea de la ruta se dibuja a cualquier acercamiento.
 último nivel con detalle, y no lo adivina: se lo pregunta al archivo de mapa.
 Un pedazo que no está guardado devuelve vacío, nunca un pedido a internet.
 
-**Por qué sigue anotado.** Falta la otra mitad: que al pasarse del último nivel
-bajado el mapa **agrande la última imagen disponible** en vez de quedar en
-blanco. Eso se configura al armar el estilo del mapa, que todavía no existe.
+**Cómo quedó (2026-09-19).** Las dos mitades, resueltas. La descarga baja hasta
+el último acercamiento que **el archivo de mapa declara tener** —no se adivina,
+se le pregunta—, y el estilo del mapa está armado para que pasado ese punto
+**agrande el último pedazo que hay** en vez de pedir uno que no está. Un pedazo
+que no está guardado devuelve vacío, nunca un pedido a internet.
 
-**Detectado:** 2026-09-17 · **Neutralizado:** 2026-09-19
+**Detectado:** 2026-09-17 · **Resuelto:** 2026-09-19
 
 ---
 
@@ -171,7 +173,7 @@ quien lea la base.
 
 ---
 
-## 🟡 R11 — Nadie lleva la cuenta de qué mapa está descargado
+## ✅ R11 — Nadie lleva la cuenta de qué mapa está descargado
 
 **Qué pasaba.** La app calculaba bien qué sectores cruza una ruta, pero **la
 lista de sectores descargados estaba vacía siempre**, porque no había nada que
@@ -182,9 +184,11 @@ sector tiene mapa, de qué tipo, cuánto pesó y hasta qué acercamiento se baj�
 Se anota **recién cuando el celular confirma que entraron todos los pedazos**;
 una descarga cortada no deja el sector marcado. Hay prueba automática de eso.
 
-**Por qué sigue anotado.** Todavía no hay de dónde bajar: falta confirmar la
-dirección del archivo de mapa mundial. Hasta entonces la lista sigue vacía, que
-es la respuesta correcta.
+**Cómo quedó (2026-09-19).** Cerrado. Ya hay de dónde bajar —probado contra el
+archivo de verdad— y las pantallas leen la cuenta por una pieza que **avisa
+cuando cambia**: bajar o sacar un mapa las vuelve a dibujar solas. Antes lo
+leían por afuera y la ruta podía seguir diciendo «te falta un mapa» con el mapa
+ya bajado.
 
 **Detectado:** 2026-09-19, escribiendo la cobertura.
 
@@ -295,6 +299,11 @@ obligatorio en cada fila, y depósitos de archivos con tope de tamaño y de tipo
 espacio de verdad y no se lleva el mapa del sector de al lado, y hay pruebas
 automáticas que lo sostienen. **R11 quedó a medias a propósito**: la cuenta de
 lo descargado ya es real, falta de dónde bajar.
+
+**R2 y R11 quedaron resueltos** al cerrar la descarga de mapas: hay de dónde
+bajar, se baja hasta donde el archivo declara tener detalle, acercarse de más
+agranda en vez de quedar en blanco, y las pantallas se enteran solas de lo que
+se bajó o se sacó.
 
 **Se actualizó Next.js de 16.2.6 a 16.3.5**, que cierra once alertas críticas,
 entre ellas dos de ejecución de código a distancia sin necesidad de estar

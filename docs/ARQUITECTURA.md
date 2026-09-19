@@ -52,13 +52,30 @@ filas por respuesta y no avisa: responde bien, con la lista cortada.
 **Hay un solo mapa en toda la app.** Los tres modos —sin mapa, mapa simple y
 mapa satelital— son ese mismo mapa con distinto fondo. No son tres pantallas.
 
-**Hoy el fondo es «sin mapa», y eso es correcto, no una falla:** los archivos de
-mapa todavía no existen. Se ven la línea de la ruta, el punto del GPS, las
-anotaciones y los rectángulos de los sectores sobre fondo vacío. Con eso alcanza
+**El fondo sale de lo que el usuario bajó, sector por sector.** Un sector con
+mapa bajado se dibuja; uno sin bajar no dibuja nada y se ve el fondo liso de la
+app. **Eso no es una falla, es un modo legítimo:** se ven igual la línea de la
+ruta, el punto del GPS, las anotaciones y los rectángulos, y con eso alcanza
 para saber si vas por el camino, porque el cálculo del desvío no mira el mapa.
 
-De dónde sale el fondo se decide en **un solo lugar**. El día que existan los
-archivos, ninguna pantalla se entera.
+De dónde sale el fondo se decide en **un solo lugar**: ninguna pantalla lo sabe.
+
+**Cómo llega el mapa al celular.** El mapa del mundo vive en un archivo único en
+internet, de más de cien gigas, y no se baja entero: se le piden los pedacitos
+del rectángulo del sector. Ese archivo no le entrega pedazos a un navegador, así
+que el servidor de TrackApp hace de puente mientras dura la descarga. **No se
+aloja nada**: no hay archivo de mapa guardado en ningún servidor propio. Un
+sector de sierra son 84 pedazos, 1 MB y 6 segundos, medidos. Ver
+`decisiones/017`.
+
+**Navegar no consulta internet porque no hay a dónde salir.** El mapa lee los
+pedazos por una dirección que no sale del teléfono. Las letras y los íconos del
+mapa son archivos de la app, no pedidos a un servidor: si no, un mapa sin señal
+quedaría sin un solo nombre escrito.
+
+**Borrar el mapa de un sector no borra sus pedazos a ciegas.** Los sectores
+vecinos los comparten, así que se dice qué pedazos siguen haciendo falta y se va
+todo lo demás.
 
 **Los mapas de OpenStreetMap no vuelven.** Su política de uso prohíbe
 expresamente descargarlos por adelantado para usarlos sin señal, que es justo lo

@@ -131,3 +131,22 @@ demasiado y viajan aparte.
 **Desnivel positivo / desnivel negativo**
 Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque
 castigan distinto. Los calcula la app desde el archivo: nunca se cargan a mano.
+
+**Pedazo de mapa**
+La unidad mínima en que se guarda un mapa: un cuadradito del terreno, que
+existe repetido a distintos acercamientos. Un sector de sierra son unos 84.
+**Se dice «pedazo», nunca «tesela» ni «tile».**
+
+**Acercamiento**
+Cuánto se acerca el mapa. Cada nivel de acercamiento tiene su propia grilla de
+pedazos. **Prohibido «zoom» y «nivel de zoom».**
+
+**Puente**
+Lo que hace el servidor de TrackApp cuando el celular baja un mapa: le pide los
+pedazos al archivo del mundo y se los pasa. Existe porque ese archivo no le
+entrega pedazos a un navegador. Ver `decisiones/017`.
+
+**Depósito**
+Donde el celular guarda lo pesado: las líneas de los recorridos y los pedazos de
+mapa. Es distinto del **paquete**, que es lo liviano y dibuja las pantallas al
+instante.
