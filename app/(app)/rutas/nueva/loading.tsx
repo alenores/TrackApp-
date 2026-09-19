@@ -1,4 +1,4 @@
-import { NuevaRutaSkeleton } from "@/components/layout/page-skeletons";
+import { NuevaRutaSkeleton } from "@/components/armazon/esqueletos";
 
 export default function NuevaRutaLoading() {
   return <NuevaRutaSkeleton />;

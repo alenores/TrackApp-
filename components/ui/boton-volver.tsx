@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronCircle } from "@/components/ui/chevron-circle";
+import { FlechaRedonda } from "@/components/ui/flecha-redonda";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
@@ -61,7 +61,7 @@ export function BotonVolver({
         .filter(Boolean)
         .join(" ")}
     >
-      <ChevronCircle direction="left" />
+      <FlechaRedonda direction="left" />
     </button>
   );
 }

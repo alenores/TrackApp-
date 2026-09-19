@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { Armazon } from "@/components/armazon/armazon";
 import { nombreParaMostrar } from "@/lib/cuenta/nombre";
 import { traerMiPerfil } from "@/lib/perfiles/datos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
@@ -18,12 +18,12 @@ export default async function AppLayout({
   const userAvatarUrl = (await traerMiPerfil())?.avatarUrl ?? null;
 
   return (
-    <AppShell
+    <Armazon
       userName={nombreParaMostrar(user)}
       userEmail={user.email ?? ""}
       userAvatarUrl={userAvatarUrl}
     >
       {children}
-    </AppShell>
+    </Armazon>
   );
 }

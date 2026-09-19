@@ -1,5 +1,12 @@
 # Auditoría del trabajo hecho — 2026-09-19
 
+> **Estado: arreglada.** Todo lo que sigue quedó corregido el mismo día, salvo
+> los dos puntos marcados `PENDIENTE`, que esperan una comprobación contra la
+> base que solo puede hacer Ale.
+>
+> Durante los arreglos aparecieron **tres hallazgos más** que la primera pasada
+> no había visto: están al final, como G6, G7 y G8.
+
 > Pedida por Ale después de descubrir que 34 pantallas escribían los colores a
 > mano. La pregunta de fondo era: **¿qué más hay mal que no salió a la luz?**
 >
@@ -16,9 +23,13 @@ proyecto viejo sin que lo tocara.
 
 ## El resumen
 
-**Cinco hallazgos graves y cinco medios.** De los cinco graves, **tres son míos**
-y dos vienen del código viejo que dejé en pie sin revisar — que, en los hechos,
-también es mío: se me pidió expresamente no dejarme llevar por lo anterior.
+**Ocho hallazgos graves y cinco medios.** Cinco los encontró la auditoría; los
+otros tres aparecieron arreglando los primeros, que es lo habitual: al abrir una
+puerta se ven las de al lado.
+
+De los ocho graves, **cinco son míos** y tres vienen del código viejo que dejé en
+pie sin revisar — que, en los hechos, también es mío: se me pidió expresamente no
+dejarme llevar por lo anterior.
 
 ---
 
@@ -144,15 +155,22 @@ acordarse de los cuatro.
 
 ---
 
-## M8 — Tres zonas tocables por debajo del mínimo
+## M8 — Dos zonas tocables por debajo del mínimo
 
 **La regla.** «Zona tocable de cualquier botón: 56 × 56 px. Nunca baja de esos
 números.»
 
-**Qué pasa.** El botón de buscar en la lista de rutas y el ícono del cartel de
-instalar miden 44. El botón de cambiar la foto de perfil mide 32.
+**Qué pasaba.** El botón de buscar en la lista de rutas medía 44 y el de cambiar
+la foto de perfil, 32.
 
-**De quién es.** Los tres vienen del código viejo. Los dejé.
+**Corrección a la primera pasada.** También había anotado el ícono del cartel de
+instalar, pero no es un botón: es un dibujo decorativo. Ése no era violación.
+
+**Arreglado.** Los dos botones ahora tienen 56 de zona tocable. El de la foto se
+sigue viendo chico, que es lo correcto: lo que no puede achicarse es la zona que
+responde al toque.
+
+**De quién es.** Los dos venían del código viejo. Los dejé.
 
 ---
 
@@ -176,6 +194,60 @@ vacía.
 
 ---
 
+## G6 — No existía la red de rescate
+
+**La regla.** «La app tiene que tener una red de rescate propia para cuando una
+pantalla falla al dibujarse. Sin ella la pantalla queda completamente vacía y el
+usuario no tiene ni un cartel que leer.»
+
+**Qué pasaba.** No había ninguna. Si cualquier pantalla fallaba al dibujarse, el
+usuario se quedaba con la pantalla en blanco y nada que leer. En el cerro eso es
+peligroso: la persona cree que la app está pensando.
+
+Es la regla sobre la que se apoya todo el producto —«el usuario nunca se queda
+sin saber qué pasa»— y era la única que no estaba implementada en ningún lado.
+
+**Arreglado.** Hay dos redes, una para una pantalla y otra para cuando falla el
+armazón entero. **Ninguna de las dos usa piezas de la app**: si lo que se rompió
+es el botón, un aviso hecho con ese botón tampoco se dibuja.
+
+**De quién es.** Mío. Escribí la regla en `AGENTS.md` y no la implementé.
+
+---
+
+## G7 — Subir la foto de perfil escribe en un depósito que no existe
+
+**Qué pasa.** El código guarda las fotos en un depósito llamado `avatars`. El que
+se creó con la base nueva se llama `avatares`.
+
+Si son distintos, subir una foto de perfil falla siempre.
+
+**Estado: PENDIENTE DE VERIFICACIÓN**, junto con G2.
+
+**De quién es.** Del código viejo, y mío por no haberlo revisado al rehacer la
+base.
+
+---
+
+## G8 — Al cerrar sesión no se borraba nada del celular
+
+**Qué pasaba.** Cerrar sesión cerraba la sesión y nada más. Las rutas, las zonas,
+los sectores y las líneas de los recorridos quedaban guardados en el celular.
+
+**Consecuencia.** El que entrara después con otra cuenta abría la app y veía las
+rutas del anterior, dibujadas desde el celular sin pasar por la base. Es un
+problema de privacidad, no de prolijidad.
+
+**Cómo apareció.** Buscando código muerto. La función que borra lo guardado
+existía y no la llamaba nadie: el código muerto era el síntoma, no el problema.
+
+**Arreglado.** Al cerrar sesión se borra todo lo guardado antes de salir, y si
+algo no se puede borrar igual se sale: quedarse sin poder salir sería peor.
+
+**De quién es.** Mío.
+
+---
+
 # Lo que SÍ está bien
 
 No para compensar, sino porque una auditoría que solo lista lo malo no sirve
@@ -192,15 +264,28 @@ para decidir:
 
 ---
 
-# El orden en que conviene arreglarlo
+# Qué quedó hecho
 
-1. **G1** — conectar la pieza de carteles. Es de una línea y hoy la app muestra
-   carteles del sistema en cada borrado.
-2. **G2** — comprobar la pantalla de Perfiles y arreglarla o borrarla.
-3. **G3** — probar el cálculo de desvío. Es lo que te cuida en el cerro.
-4. **G4 y G5** — las otras dos pruebas que faltan.
-5. **M6** — pasar todo a español de una vez, incluida la carpeta duplicada.
-6. **M7 a M10** — el resto.
+| | Hallazgo | Estado |
+|---|---|---|
+| G1 | Carteles del sistema operativo | ✅ arreglado |
+| G2 | Pantalla de Perfiles contra la base vieja | ⏳ pendiente de comprobación |
+| G3 | Desvío sin prueba | ✅ 23 pruebas |
+| G4 | Listas por tandas sin prueba | ✅ 11 pruebas |
+| G5 | Lectura de archivos sin prueba | ✅ 10 pruebas |
+| G6 | No existía la red de rescate | ✅ arreglado |
+| G7 | Depósito de fotos equivocado | ⏳ pendiente de comprobación |
+| G8 | Cerrar sesión no borraba nada | ✅ arreglado |
+| M6 | Media app en inglés | ✅ todo en español |
+| M7 | La fórmula de distancia repetida | ✅ una sola, y ahora no se puede confundir el orden |
+| M8 | Zonas tocables chicas | ✅ arreglado |
+| M9 | Código muerto | ✅ sacado, y uno era el síntoma de G8 |
+| M10 | Formulario mudo al cargar | ✅ arreglado |
+
+Además, sin estar en la lista: la librería que lee los GPX era la vieja y
+arrastraba cuatro vulnerabilidades críticas. Se cambió por la mantenida.
+
+De 119 pruebas se pasó a **164**.
 
 ---
 
@@ -214,8 +299,12 @@ chequeo de tipos, del chequeo de estilo y de las pruebas.
 
 **Pendiente de verificación:**
 - **G2.** Si en la base de TrackApp existen la función `list_app_users`, la tabla
-  `profiles` y las columnas `rutas.user_id` y `rutas.subido_por_nombre`. No tengo
-  acceso en tiempo real a esa base por MCP. Hasta que Ale corra la consulta, G2
-  queda como sospecha fundada y no como hecho.
+  `profiles` y las columnas `rutas.user_id` y `rutas.subido_por_nombre`.
+- **G7.** Cómo se llama el depósito de fotos de perfil: `avatars` o `avatares`.
 
-**Este documento no está listo para compartirse externamente hasta resolver G2.**
+No tengo acceso en tiempo real a esa base por MCP —solo veo la de Vías de
+Escalada— así que los dos quedan como sospecha fundada y no como hecho hasta que
+Ale corra las consultas.
+
+**Este documento no está listo para compartirse externamente hasta resolver G2 y
+G7.**

@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Boton } from "@/components/ui/boton";
+import { Tarjeta } from "@/components/ui/tarjeta";
 
 type NavigationExitModalProps = {
   open: boolean;
@@ -33,7 +33,7 @@ export function ModalDeSalida({
         onClick={onCancel}
       />
 
-      <Card className="relative z-10 w-full max-w-sm space-y-4 shadow-xl">
+      <Tarjeta className="relative z-10 w-full max-w-sm space-y-4 shadow-xl">
         <div className="space-y-2">
           <h2
             id="navigation-exit-title"
@@ -47,14 +47,14 @@ export function ModalDeSalida({
         </div>
 
         <div className="flex flex-col gap-2">
-          <Button type="button" anchoCompleto onClick={onCancel}>
+          <Boton type="button" anchoCompleto onClick={onCancel}>
             Cancelar
-          </Button>
-          <Button type="button" variante="destructivo" anchoCompleto onClick={onConfirm}>
+          </Boton>
+          <Boton type="button" variante="destructivo" anchoCompleto onClick={onConfirm}>
             Salir
-          </Button>
+          </Boton>
         </div>
-      </Card>
+      </Tarjeta>
     </div>
   );
 }

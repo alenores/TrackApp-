@@ -10,7 +10,7 @@ import { useEffect } from "react";
  * cartel de confirmación, que es exactamente lo contrario de lo que espera
  * cualquiera.
  *
- * Lo usa `Modal` por su cuenta. **No hace falta llamarlo aparte.**
+ * Lo usa `Emergente` por su cuenta. **No hace falta llamarlo aparte.**
  *
  * El estado del historial va **sin dirección**: si cambiara la dirección,
  * abrir un cartel dispararía un pedido a internet, y sin señal eso termina en

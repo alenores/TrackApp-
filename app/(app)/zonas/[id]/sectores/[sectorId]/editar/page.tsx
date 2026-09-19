@@ -1,6 +1,6 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { EditarSectorForm } from "@/components/zonas/editar-sector-form";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { FormularioDeEditarSector } from "@/components/zonas/formulario-de-editar-sector";
 
 type Props = {
   params: Promise<{ id: string; sectorId: string }>;
@@ -12,8 +12,8 @@ export default async function PaginaDeEditarSector({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
-      <EditarSectorForm
+      <MarcaDeAppLista />
+      <FormularioDeEditarSector
         zonaId={Number(id)}
         sectorId={Number(sectorId)}
         miPerfilId={usuario?.id ?? null}

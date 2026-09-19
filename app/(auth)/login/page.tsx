@@ -1,5 +1,5 @@
-import { AuthForm } from "@/components/auth/auth-form";
+import { FormularioDeIngreso } from "@/components/cuenta/formulario-de-ingreso";
 
 export default function LoginPage() {
-  return <AuthForm />;
+  return <FormularioDeIngreso />;
 }

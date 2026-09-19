@@ -1,5 +1,5 @@
-import { RutaDetailSkeleton } from "@/components/rutas/ruta-detail-skeleton";
+import { EsqueletoDeFichaDeRuta } from "@/components/rutas/esqueleto-de-ficha";
 
 export default function RutaDetailLoading() {
-  return <RutaDetailSkeleton />;
+  return <EsqueletoDeFichaDeRuta />;
 }

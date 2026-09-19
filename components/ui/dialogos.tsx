@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { BotonDeModal, Modal } from "@/components/ui/modal";
+import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 
 /**
  * Confirmar y avisar, dibujados por la app.
@@ -91,7 +91,7 @@ export function ProveedorDeDialogos({ children }: { children: ReactNode }) {
     <ContextoDeDialogos.Provider value={valor}>
       {children}
 
-      <Modal
+      <Emergente
         abierto={estado.clase === "confirmar"}
         alCerrar={() =>
           estado.clase === "confirmar" ? estado.responder(false) : undefined
@@ -103,24 +103,24 @@ export function ProveedorDeDialogos({ children }: { children: ReactNode }) {
         acciones={
           estado.clase === "confirmar" ? (
             <>
-              <BotonDeModal
+              <BotonDeEmergente
                 variante="secundario"
                 onClick={() => estado.responder(false)}
               >
                 {estado.pedido.textoDeCancelar ?? "Cancelar"}
-              </BotonDeModal>
-              <BotonDeModal
+              </BotonDeEmergente>
+              <BotonDeEmergente
                 variante={estado.pedido.destructivo ? "destructivo" : "principal"}
                 onClick={() => estado.responder(true)}
               >
                 {estado.pedido.textoDeAceptar ?? "Confirmar"}
-              </BotonDeModal>
+              </BotonDeEmergente>
             </>
           ) : null
         }
       />
 
-      <Modal
+      <Emergente
         abierto={estado.clase === "avisar"}
         alCerrar={() =>
           estado.clase === "avisar" ? estado.responder() : undefined
@@ -129,9 +129,9 @@ export function ProveedorDeDialogos({ children }: { children: ReactNode }) {
         descripcion={estado.clase === "avisar" ? estado.pedido.mensaje : undefined}
         acciones={
           estado.clase === "avisar" ? (
-            <BotonDeModal variante="principal" onClick={estado.responder}>
+            <BotonDeEmergente variante="principal" onClick={estado.responder}>
               {estado.pedido.textoDeAceptar ?? "Entendido"}
-            </BotonDeModal>
+            </BotonDeEmergente>
           ) : null
         }
       />

@@ -1,6 +1,6 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { EditarRutaForm } from "@/components/rutas/editar-ruta-form";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { FormularioDeEditarRuta } from "@/components/rutas/formulario-de-editar-ruta";
 
 /**
  * Editar una ruta.
@@ -19,8 +19,8 @@ export default async function PaginaDeEditarRuta({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
-      <EditarRutaForm rutaId={Number(id)} miPerfilId={usuario?.id ?? null} />
+      <MarcaDeAppLista />
+      <FormularioDeEditarRuta rutaId={Number(id)} miPerfilId={usuario?.id ?? null} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Tarjeta } from "@/components/ui/tarjeta";
+import { Campo } from "@/components/ui/campo";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
 import { ACTIVIDADES, mostrarEsfuerzo } from "@/lib/rutas/actividades";
@@ -82,12 +82,12 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
 
   return (
     <>
-      <Card className="space-y-3">
+      <Tarjeta className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Cómo se llama
         </h2>
 
-        <Input
+        <Campo
           label="Nombre"
           id="nombre-de-la-ruta"
           value={campos.nombre}
@@ -103,9 +103,9 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
           onChange={(evento) => cambiar({ descripcion: evento.target.value })}
           placeholder="En dos líneas: por dónde va y qué esperar."
         />
-      </Card>
+      </Tarjeta>
 
-      <Card>
+      <Tarjeta>
         <Opciones
           etiqueta="Para qué sirve"
           opciones={OPCIONES_DE_ACTIVIDAD}
@@ -114,9 +114,9 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
           columnas={2}
           multiple
         />
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-4">
+      <Tarjeta className="space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Qué tan exigente es
         </h2>
@@ -144,9 +144,9 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
           }
           columnas={4}
         />
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-4">
+      <Tarjeta className="space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Lo que conviene saber antes
         </h2>
@@ -177,7 +177,7 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
           onChange={(evento) => cambiar({ comentario: evento.target.value })}
           placeholder="Cuándo la hiciste, con quién, cuánto tardaste."
         />
-      </Card>
+      </Tarjeta>
     </>
   );
 }

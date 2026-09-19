@@ -1,5 +1,5 @@
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { NuevaSectorForm } from "@/components/zonas/nueva-sector-form";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { FormularioDeNuevoSector } from "@/components/zonas/formulario-de-nuevo-sector";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -10,8 +10,8 @@ export default async function PaginaDeNuevoSector({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
-      <NuevaSectorForm zonaId={Number(id)} />
+      <MarcaDeAppLista />
+      <FormularioDeNuevoSector zonaId={Number(id)} />
     </>
   );
 }

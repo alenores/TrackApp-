@@ -1,8 +1,8 @@
 "use client";
 
 import { CampoDeCoordenada } from "@/components/ui/campo-de-coordenada";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Tarjeta } from "@/components/ui/tarjeta";
+import { Campo } from "@/components/ui/campo";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { leerCoordenada, type LecturaDeCoordenada } from "@/lib/coordenadas";
@@ -45,12 +45,12 @@ export function CamposDeTerritorio({
 
   return (
     <>
-      <Card className="space-y-3">
+      <Tarjeta className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Cómo se llama
         </h2>
 
-        <Input
+        <Campo
           label="Nombre"
           id={`nombre-de-la-${queEs}`}
           value={campos.nombre}
@@ -67,9 +67,9 @@ export function CamposDeTerritorio({
           onChange={(evento) => cambiar({ descripcion: evento.target.value })}
           placeholder="Para qué sirve y qué abarca."
         />
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-4">
+      <Tarjeta className="space-y-4">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
             Las dos esquinas
@@ -123,10 +123,10 @@ export function CamposDeTerritorio({
             </p>
           </div>
         ) : null}
-      </Card>
+      </Tarjeta>
 
       {armado.ok ? (
-        <Card className="space-y-2">
+        <Tarjeta className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
             Dónde queda
           </h2>
@@ -137,7 +137,7 @@ export function CamposDeTerritorio({
           <p className="text-sm leading-6 text-texto-suave">
             Mirá que el recuadro caiga donde querés antes de guardar.
           </p>
-        </Card>
+        </Tarjeta>
       ) : null}
     </>
   );

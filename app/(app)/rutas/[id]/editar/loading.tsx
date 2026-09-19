@@ -1,4 +1,4 @@
-import { EditarRutaSkeleton } from "@/components/layout/page-skeletons";
+import { EditarRutaSkeleton } from "@/components/armazon/esqueletos";
 
 export default function EditarRutaLoading() {
   return <EditarRutaSkeleton />;

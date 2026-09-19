@@ -1,5 +1,5 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { ZonaDetalle } from "@/components/zonas/zona-detalle";
 
 /**
@@ -18,7 +18,7 @@ export default async function PaginaDeZona({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
+      <MarcaDeAppLista />
       <ZonaDetalle zonaId={Number(id)} miPerfilId={usuario?.id ?? null} />
     </>
   );

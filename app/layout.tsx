@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
+import { SinZoom } from "@/components/sin-zoom";
 import { ProveedorDeDialogos } from "@/components/ui/dialogos";
-import { PwaSplash } from "@/components/layout/pwa-splash";
+import { PantallaDeArranque } from "@/components/armazon/pantalla-de-arranque";
 import { ServiceWorkerRegister } from "./sw-register";
 import { GUION_DE_ARRANQUE } from "@/lib/modo";
 import {
@@ -83,8 +83,8 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: DIBUJO_DE_LA_PANTALLA_DE_ARRANQUE }}
         />
-        <PreventViewportZoom />
-        <PwaSplash />
+        <SinZoom />
+        <PantallaDeArranque />
         <ServiceWorkerRegister />
         {/*
           Los carteles de confirmar y avisar los dibuja la app, nunca el sistema

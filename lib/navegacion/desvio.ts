@@ -94,14 +94,35 @@ export function distanciaALaRutaEnMetros(
   return masCerca;
 }
 
-/** ¿Voy por la ruta? */
+/**
+ * ¿Hay que avisarle que se desvió?
+ *
+ * Recibe los metros ya medidos porque la pantalla los muestra igual: volver a
+ * calcularlos sería trabajo de más. Está acá, y no escrito en la pantalla, para
+ * que el límite se compare en un solo lugar.
+ *
+ * **Sin medición se avisa.** Si todavía no se sabe dónde está, es preferible un
+ * aviso de más que dejar a alguien creyendo que va bien.
+ */
+export function hayQueAvisarDelDesvio(
+  metros: number | null,
+  metrosQueAvisan: number = METROS_DE_DESVIO_QUE_AVISAN,
+): boolean {
+  if (metros === null) return true;
+  return metros > metrosQueAvisan;
+}
+
+/** ¿Voy por la ruta? Mide y compara de una. */
 export function voyPorLaRuta(
   lat: number,
   lon: number,
   recorrido: FeatureCollection,
   metrosQueAvisan: number = METROS_DE_DESVIO_QUE_AVISAN,
 ): boolean {
-  return distanciaALaRutaEnMetros(lat, lon, recorrido) <= metrosQueAvisan;
+  return !hayQueAvisarDelDesvio(
+    distanciaALaRutaEnMetros(lat, lon, recorrido),
+    metrosQueAvisan,
+  );
 }
 
 /**

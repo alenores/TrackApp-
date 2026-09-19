@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
-import { SectorCard } from "@/components/zonas/sector-card";
+import { TarjetaDeSector } from "@/components/zonas/tarjeta-de-sector";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Boton } from "@/components/ui/boton";
+import { Tarjeta } from "@/components/ui/tarjeta";
 import { calcularHuecoDeZona } from "@/lib/cobertura";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 
@@ -34,21 +34,21 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
 
   if (estado === "abriendo") {
     return (
-      <Card className="py-8 text-center text-base text-texto-suave">
+      <Tarjeta className="py-8 text-center text-base text-texto-suave">
         Abriendo la zona…
-      </Card>
+      </Tarjeta>
     );
   }
 
   if (!zona) {
     return (
-      <Card franja="rojo" className="space-y-3">
+      <Tarjeta franja="rojo" className="space-y-3">
         <p role="alert" className="text-base leading-6 text-rojo-texto">
           Esta zona no está en el celular. Puede que la hayan borrado, o que
           todavía no se haya guardado acá.
         </p>
         <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
-      </Card>
+      </Tarjeta>
     );
   }
 
@@ -60,14 +60,14 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
   return (
     <div className="space-y-3">
       {estado === "sin_senal" ? (
-        <Card>
+        <Tarjeta>
           <p className="text-sm font-medium text-texto-suave">
             Sin señal. Estás viendo lo último que quedó guardado en el celular.
           </p>
-        </Card>
+        </Tarjeta>
       ) : null}
 
-      <Card className="space-y-3">
+      <Tarjeta className="space-y-3">
         <div className="flex items-start gap-2">
           <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
           <h1 className="min-w-0 flex-1 break-words pt-3 text-xl font-semibold text-texto">
@@ -87,9 +87,9 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
             {mostrarTamano(zona.rectangulo)}
           </span>
         </div>
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-2">
+      <Tarjeta className="space-y-2">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Dónde queda
         </h2>
@@ -97,9 +97,9 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
           rectangulo={zona.rectangulo}
           rectangulosExistentes={sectores.map((sector) => sector.rectangulo)}
         />
-      </Card>
+      </Tarjeta>
 
-      <Card franja={todoCubierto ? "verde" : "ambar"} className="space-y-3">
+      <Tarjeta franja={todoCubierto ? "verde" : "ambar"} className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           Cuánto está cubierto
         </h2>
@@ -137,7 +137,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
             {100 - porcentajeSinCubrir}%
           </span>
         </div>
-      </Card>
+      </Tarjeta>
 
       <div className="space-y-2">
         <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
@@ -147,15 +147,15 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         </h2>
 
         {sectores.length === 0 ? (
-          <Card>
+          <Tarjeta>
             <p className="text-sm leading-6 text-texto-suave">
               Esta zona todavía no tiene sectores. El sector es el pedazo de mapa
               que se descarga de una vez: sin sectores no hay nada que bajar.
             </p>
-          </Card>
+          </Tarjeta>
         ) : (
           sectores.map((sector) => (
-            <SectorCard
+            <TarjetaDeSector
               key={sector.id}
               sector={sector}
               soyAdministrador={miPerfilId === sector.perfilId}
@@ -164,23 +164,23 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         )}
       </div>
 
-      <Button
+      <Boton
         anchoCompleto
         paraNavegacion
         onClick={() => router.push(`/zonas/${zonaId}/sectores/nueva`)}
       >
         Crear un sector
-      </Button>
+      </Boton>
 
       {soyElAutor ? (
         <div className="pb-2">
-          <Button
+          <Boton
             anchoCompleto
             variante="secundario"
             onClick={() => router.push(`/zonas/${zonaId}/editar`)}
           >
             Editar la zona
-          </Button>
+          </Boton>
         </div>
       ) : null}
     </div>

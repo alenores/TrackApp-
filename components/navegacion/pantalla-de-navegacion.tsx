@@ -5,15 +5,15 @@ import type { FeatureCollection } from "geojson";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Boton } from "@/components/ui/boton";
+import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import {
   distanciaALaRutaEnMetros,
   mensajeDeErrorDelGps,
-  METROS_DE_DESVIO_QUE_AVISAN,
+  hayQueAvisarDelDesvio,
   type EstadoDelGps,
 } from "@/lib/navegacion/desvio";
 import { seSuperponen } from "@/lib/datos/rectangulo";
@@ -171,7 +171,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const estoyFueraDeRuta =
     estadoDelGps === "andando" &&
     metrosDeDesvio !== null &&
-    metrosDeDesvio > METROS_DE_DESVIO_QUE_AVISAN;
+    hayQueAvisarDelDesvio(metrosDeDesvio);
 
   // Avisar vibrando: yendo por el sendero, nadie está mirando la pantalla.
   useEffect(() => {
@@ -187,15 +187,15 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
 
   if (cargandoRecorrido) {
     return (
-      <Card className="py-8 text-center text-base text-texto-suave">
+      <Tarjeta className="py-8 text-center text-base text-texto-suave">
         Abriendo la ruta…
-      </Card>
+      </Tarjeta>
     );
   }
 
   if (!recorrido) {
     return (
-      <Card franja="rojo" className="space-y-3">
+      <Tarjeta franja="rojo" className="space-y-3">
         <p role="alert" className="text-base leading-6 text-rojo-texto">
           Esta ruta no está guardada en el celular, así que no se puede navegar
           sin señal.
@@ -203,10 +203,10 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         <p className="text-sm leading-6 text-texto-suave">
           Abrila una vez con conexión desde tu casa y queda guardada sola.
         </p>
-        <Button variante="secundario" anchoCompleto onClick={() => requestExit()}>
+        <Boton variante="secundario" anchoCompleto onClick={() => requestExit()}>
           Volver a la ruta
-        </Button>
-      </Card>
+        </Boton>
+      </Tarjeta>
     );
   }
 
@@ -286,14 +286,14 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
 
         <div className="space-y-2">
           {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
-            <Button
+            <Boton
               anchoCompleto
               paraNavegacion
               disabled={estadoDelGps === "pidiendo"}
               onClick={prenderGps}
             >
               {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-            </Button>
+            </Boton>
           ) : null}
 
           {errorDelGps ? (
@@ -312,7 +312,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
 
             {estadoDelGps === "andando" && metrosDeDesvio !== null ? (
               <p className="flex-1 text-center text-lg font-medium text-texto-suave">
-                {metrosDeDesvio <= METROS_DE_DESVIO_QUE_AVISAN
+                {!hayQueAvisarDelDesvio(metrosDeDesvio)
                   ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
                   : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
               </p>

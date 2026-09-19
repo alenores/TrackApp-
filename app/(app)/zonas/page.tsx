@@ -1,5 +1,5 @@
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { ZonasClient } from "@/components/zonas/zonas-client";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { PantallaDeZonas } from "@/components/zonas/pantalla-de-zonas";
 import { soyAdministrador } from "@/lib/perfiles/datos";
 
 /**
@@ -13,8 +13,8 @@ export default async function ZonasPage() {
 
   return (
     <>
-      <AppReadyMarker />
-      <ZonasClient soyAdministrador={esAdministrador} />
+      <MarcaDeAppLista />
+      <PantallaDeZonas soyAdministrador={esAdministrador} />
     </>
   );
 }

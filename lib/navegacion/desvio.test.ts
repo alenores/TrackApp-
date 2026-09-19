@@ -2,6 +2,7 @@ import type { FeatureCollection } from "geojson";
 import { describe, expect, it } from "vitest";
 import {
   distanciaALaRutaEnMetros,
+  hayQueAvisarDelDesvio,
   METROS_DE_DESVIO_QUE_AVISAN,
   mensajeDeErrorDelGps,
   voyPorLaRuta,
@@ -195,5 +196,27 @@ describe("los mensajes cuando el GPS no anda", () => {
       expect(mensaje).not.toMatch(/^Error desconocido\.?$/i);
       expect(mensaje).not.toMatch(/algo salió mal/i);
     }
+  });
+});
+
+describe("la decisión de avisar, con los metros ya medidos", () => {
+  it("no avisa dentro del límite y sí avisa pasándolo", () => {
+    expect(hayQueAvisarDelDesvio(0)).toBe(false);
+    expect(hayQueAvisarDelDesvio(49.9)).toBe(false);
+    expect(hayQueAvisarDelDesvio(50)).toBe(false);
+    expect(hayQueAvisarDelDesvio(50.1)).toBe(true);
+  });
+
+  it("sin medición avisa, que es el lado seguro", () => {
+    expect(hayQueAvisarDelDesvio(null)).toBe(true);
+  });
+
+  it("avisa si la distancia es infinita, que es lo que devuelve un recorrido vacío", () => {
+    expect(hayQueAvisarDelDesvio(Infinity)).toBe(true);
+  });
+
+  it("respeta un límite distinto si se lo pasan", () => {
+    expect(hayQueAvisarDelDesvio(150, 200)).toBe(false);
+    expect(hayQueAvisarDelDesvio(250, 200)).toBe(true);
   });
 });

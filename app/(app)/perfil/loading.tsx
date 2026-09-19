@@ -1,4 +1,4 @@
-import { PerfilSkeleton } from "@/components/layout/page-skeletons";
+import { PerfilSkeleton } from "@/components/armazon/esqueletos";
 
 export default function PerfilLoading() {
   return <PerfilSkeleton />;

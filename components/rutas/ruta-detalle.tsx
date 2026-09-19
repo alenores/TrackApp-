@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { borrarRuta } from "@/app/actions/rutas";
-import { ActividadBadges } from "@/components/rutas/actividad-badges";
+import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Boton } from "@/components/ui/boton";
+import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
-import { UserAvatar } from "@/components/ui/user-avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { calcularCobertura, type Cobertura } from "@/lib/cobertura";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { sectoresConMapaBajado } from "@/lib/offline/mapas";
@@ -93,15 +93,15 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
 
   if (estado === "abriendo" || buscandoRecorrido) {
     return (
-      <Card className="py-8 text-center text-base text-texto-suave">
+      <Tarjeta className="py-8 text-center text-base text-texto-suave">
         Abriendo la ruta…
-      </Card>
+      </Tarjeta>
     );
   }
 
   if (!ruta) {
     return (
-      <Card franja="rojo" className="space-y-3">
+      <Tarjeta franja="rojo" className="space-y-3">
         <p role="alert" className="text-base leading-6 text-rojo-texto">
           Esta ruta no está en el celular. Puede que la hayan borrado, o que
           todavía no se haya guardado acá.
@@ -110,7 +110,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           Con conexión, volvé a la lista y se pone al día sola.
         </p>
         <BotonVolverALaLista />
-      </Card>
+      </Tarjeta>
     );
   }
 
@@ -156,14 +156,14 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   return (
     <div className="space-y-3">
       {estado === "sin_senal" ? (
-        <Card>
+        <Tarjeta>
           <p className="text-sm font-medium text-texto-suave">
             Sin señal. Estás viendo lo último que quedó guardado en el celular.
           </p>
-        </Card>
+        </Tarjeta>
       ) : null}
 
-      <Card className="space-y-3">
+      <Tarjeta className="space-y-3">
         <div className="flex items-start gap-2">
           <BotonVolverALaLista />
           <h1 className="min-w-0 flex-1 break-words pt-3 text-xl font-semibold text-texto">
@@ -177,10 +177,10 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           </p>
         ) : null}
 
-        <ActividadBadges actividades={ruta.actividades} tamano="mediano" />
+        <InsigniasDeActividad actividades={ruta.actividades} tamano="mediano" />
 
         <div className="flex items-center gap-2 border-t border-borde pt-3">
-          <UserAvatar src={autor?.avatarUrl} name={autor?.nombre ?? "?"} size="sm" />
+          <Avatar src={autor?.avatarUrl} name={autor?.nombre ?? "?"} size="sm" />
           <p className="text-sm text-texto-suave">
             Subida por{" "}
             <span className="font-medium text-texto">
@@ -189,9 +189,9 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
             el {fechaCorta(ruta.creadoEn)}
           </p>
         </div>
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-2">
+      <Tarjeta className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
             Los números
@@ -246,9 +246,9 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           </div>
           <BarraDeEsfuerzo nivel={ruta.nivelEsfuerzo} />
         </div>
-      </Card>
+      </Tarjeta>
 
-      <Card className="space-y-2">
+      <Tarjeta className="space-y-2">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
           El recorrido
         </h2>
@@ -260,7 +260,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
             app una vez con conexión y queda guardada sola.
           </p>
         )}
-      </Card>
+      </Tarjeta>
 
       {cobertura ? (
         <BloqueDeCobertura
@@ -270,7 +270,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       ) : null}
 
       {hayTextos ? (
-        <Card className="space-y-4">
+        <Tarjeta className="space-y-4">
           {ruta.equipo ? (
             <Texto titulo="Qué llevar" cuerpo={ruta.equipo} />
           ) : null}
@@ -280,35 +280,35 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           {ruta.comentario ? (
             <Texto titulo="Comentario" cuerpo={ruta.comentario} />
           ) : null}
-        </Card>
+        </Tarjeta>
       ) : null}
 
-      <Button
+      <Boton
         anchoCompleto
         paraNavegacion
         disabled={!recorrido}
         onClick={() => router.push(`/navegacion/${ruta.id}`)}
       >
         Navegar esta ruta
-      </Button>
+      </Boton>
 
       {soyElAutor ? (
         <div className="flex gap-2 pb-2">
-          <Button
+          <Boton
             variante="secundario"
             className="flex-1"
             onClick={() => router.push(`/rutas/${ruta.id}/editar`)}
           >
             Editar
-          </Button>
-          <Button
+          </Boton>
+          <Boton
             variante="destructivo"
             className="flex-1"
             disabled={borrando}
             onClick={() => void alBorrar()}
           >
             {borrando ? "Borrando…" : "Borrar"}
-          </Button>
+          </Boton>
         </div>
       ) : null}
     </div>

@@ -1,5 +1,5 @@
-import { NuevaRutaForm } from "@/components/rutas/nueva-ruta-form";
+import { FormularioDeNuevaRuta } from "@/components/rutas/formulario-de-nueva-ruta";
 
 export default function NuevaRutaPage() {
-  return <NuevaRutaForm />;
+  return <FormularioDeNuevaRuta />;
 }

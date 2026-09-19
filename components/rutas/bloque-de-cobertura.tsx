@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { sePuedenDescargarMapas } from "@/components/mapa/capas-base";
-import { Card } from "@/components/ui/card";
+import { Tarjeta } from "@/components/ui/tarjeta";
 import { coberturaCompleta, type Cobertura } from "@/lib/cobertura";
 
 /**
@@ -43,7 +43,7 @@ export function BloqueDeCobertura({
   );
 
   return (
-    <Card franja={franja} className="space-y-3">
+    <Tarjeta franja={franja} className="space-y-3">
       <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
         El mapa de esta ruta
       </h2>
@@ -143,7 +143,7 @@ export function BloqueDeCobertura({
           Crear un sector que lo cubra
         </Link>
       ) : null}
-    </Card>
+    </Tarjeta>
   );
 }
 

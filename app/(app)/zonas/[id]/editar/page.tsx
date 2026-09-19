@@ -1,6 +1,6 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { EditarZonaForm } from "@/components/zonas/editar-zona-form";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { FormularioDeEditarZona } from "@/components/zonas/formulario-de-editar-zona";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,8 +12,8 @@ export default async function PaginaDeEditarZona({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
-      <EditarZonaForm zonaId={Number(id)} miPerfilId={usuario?.id ?? null} />
+      <MarcaDeAppLista />
+      <FormularioDeEditarZona zonaId={Number(id)} miPerfilId={usuario?.id ?? null} />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import type { FeatureCollection, Position } from "geojson";
-import { distanciaEnMetros, puntoDeCoordenada } from "@/lib/geo";
+import { distanciaEnMetros } from "@/lib/geo";
 import type { Rectangulo, Sector } from "@/types/database";
 
 /**

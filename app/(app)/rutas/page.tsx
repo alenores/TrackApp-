@@ -1,6 +1,6 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { RutasClient } from "@/components/rutas/rutas-client";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { PantallaDeRutas } from "@/components/rutas/pantalla-de-rutas";
 
 /**
  * Todas las rutas.
@@ -13,8 +13,8 @@ export default async function RutasPage() {
 
   return (
     <>
-      <AppReadyMarker />
-      <RutasClient miPerfilId={usuario?.id ?? null} />
+      <MarcaDeAppLista />
+      <PantallaDeRutas miPerfilId={usuario?.id ?? null} />
     </>
   );
 }

@@ -2,7 +2,7 @@ import { nombreParaMostrar, nombreGuardado } from "@/lib/cuenta/nombre";
 import { fetchAllDirectoryUsers } from "@/lib/cuenta/directorio";
 import { traerMiPerfil } from "@/lib/perfiles/datos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { PerfilesView } from "@/components/perfil/perfiles-view";
+import { PantallaDePerfiles } from "@/components/perfil/pantalla-de-perfiles";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export default async function PerfilesPage() {
   ]);
 
   return (
-    <PerfilesView
+    <PantallaDePerfiles
       currentUserId={user.id}
       initialNombre={nombreGuardado(user)}
       displayNombre={nombreParaMostrar(user)}

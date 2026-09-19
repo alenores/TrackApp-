@@ -1,5 +1,5 @@
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { AppReadyMarker } from "@/components/layout/app-ready-marker";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { RutaDetalle } from "@/components/rutas/ruta-detalle";
 
 /**
@@ -20,7 +20,7 @@ export default async function PaginaDeRuta({ params }: Props) {
 
   return (
     <>
-      <AppReadyMarker />
+      <MarcaDeAppLista />
       <RutaDetalle rutaId={Number(id)} miPerfilId={usuario?.id ?? null} />
     </>
   );

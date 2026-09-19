@@ -17,13 +17,6 @@ import {
 
 export const FORMATOS_ACEPTADOS = ".gpx,.kml";
 
-export const TIPOS_ACEPTADOS = [
-  "application/gpx+xml",
-  "application/vnd.google-earth.kml+xml",
-  "application/xml",
-  "text/xml",
-].join(",");
-
 export type RecorridoLeido = NumerosDelRecorrido & {
   geometria: FeatureCollection;
 };

@@ -1,4 +1,4 @@
-import { NavegacionSkeleton } from "@/components/layout/page-skeletons";
+import { NavegacionSkeleton } from "@/components/armazon/esqueletos";
 
 export default function NavegacionLoading() {
   return <NavegacionSkeleton />;
