@@ -10,6 +10,7 @@ import { Encabezado } from "@/components/armazon/encabezado";
 import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progreso";
 import { MenuLateral } from "@/components/armazon/menu-lateral";
 import { BotonDeSubirRuta } from "@/components/rutas/boton-de-subir-ruta";
+import { useDialogos } from "@/components/ui/dialogos";
 
 type AppShellProps = {
   userName: string;
@@ -26,11 +27,30 @@ export function Armazon({
 }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { confirmar } = useDialogos();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const showNewRouteFab = pathname === "/rutas" || pathname === "/";
 
+  /**
+   * Cerrar sesión se confirma, y el cartel dice lo que de verdad pasa.
+   *
+   * **No es un botón más.** Al salir se borra del celular todo lo bajado: las
+   * rutas, los sectores y los mapas. Volver a tenerlo necesita señal. Un toque
+   * fantasma con la pantalla mojada, en el cerro, dejaría a la persona sin
+   * mapa y sin forma de recuperarlo hasta volver.
+   */
   const handleLogout = async () => {
+    const seguro = await confirmar({
+      titulo: "¿Cerrar sesión?",
+      mensaje:
+        "Se borra de este celular todo lo bajado: las rutas, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
+      textoDeAceptar: "Cerrar sesión",
+      destructivo: true,
+    });
+
+    if (!seguro) return;
+
     setLoggingOut(true);
 
     // Lo guardado en el celular se va con la cuenta: si no, el que entre
