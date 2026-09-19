@@ -221,7 +221,33 @@ tarde en el cerro, se lee. Eso lo confirma un ojo afuera.
 
 ---
 
-## 🔴 R14 — El motor que hace andar la app sin señal está abandonado
+## ✅ R15 — La app no abría ni una pantalla sin señal
+
+**Qué pasaba.** La configuración del motor offline decía, para **toda** pantalla
+que el usuario abriera, «traelo siempre de internet». Se guardaban el código,
+los estilos y las fotos, pero **ninguna pantalla**. En modo avión no había nada
+para dibujar: todo caía en el cartel de «sin señal».
+
+Había dos fallas más que llevaban al mismo lugar: faltaban las dos líneas que
+apagan la regla del inicio que arma la librería sola —que no encuentra lo
+guardado al reabrir— y el cupo de código guardado era 128, el número que en Vías
+de Escalada ya se comprobó que no alcanza para varias publicaciones seguidas.
+
+**Cómo quedó (2026-09-19).** La configuración se reescribió entera tomando como
+molde la de Vías de Escalada, que lleva años corregida a los golpes. Cada
+pantalla tiene ahora su regla, y las dos respuestas que el navegador pide por
+pantalla —el documento y el pedido interno del link— se guardan por separado.
+Las del cerro van primero a lo guardado; las de entrada preguntan a la red con
+poca paciencia, para que llegue una versión nueva.
+
+**Lo que falta.** Probarlo en modo avión. Es la única prueba que vale y no se
+puede automatizar.
+
+**Detectado:** 2026-09-19, comparando contra Vías de Escalada.
+
+---
+
+## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión
 —guardar las pantallas, responder cuando no hay red, mostrar la pantalla de
@@ -229,15 +255,15 @@ tarde en el cerro, se lee. Eso lo confirma un ojo afuera.
 publicó en agosto de 2022**, hace más de cuatro años, y está pensada para una
 versión de Next.js muy anterior a la que usa la app hoy.
 
-**Consecuencia.** Dos, y la segunda es la grave:
+**Qué tan urgente es.** Menos de lo que parece: **Vías de Escalada usa la misma
+librería y la misma versión sobre el mismo framework, y funciona impecable.** La
+calidad del uso sin señal no sale de la librería, sale de cómo está configurada
+—ver R15—. Las cinco alertas de seguridad que arrastra son de herramientas que
+corren **al compilar**, no en el celular: para aprovecharlas habría que poder
+meter código en el proyecto, y quien puede eso ya no necesita la vulnerabilidad.
 
-1. Arrastra cinco alertas de seguridad que ninguna actualización puede cerrar.
-   Son de herramientas que corren **al compilar**, no en el celular del usuario,
-   así que el riesgo real es bajo: para aprovecharlas habría que poder meter
-   código en el proyecto, y quien puede eso ya no necesita la vulnerabilidad.
-2. **Lo que hace andar la app sin señal —lo más importante del producto— depende
-   de algo que nadie mantiene.** El día que una actualización de Next.js lo
-   rompa, no hay a quién recurrir y la app deja de servir en el cerro.
+**Lo que sí es cierto.** El día que una actualización del framework la rompa, no
+hay a quién recurrir. Es deuda a pagar, no un incendio.
 
 **Cómo se arregla.** Cambiarla por `@serwist/next`, que sí está mantenida
 —última versión de julio de 2026— y hace el mismo trabajo. No es un cambio
