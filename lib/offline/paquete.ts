@@ -1,4 +1,4 @@
-import type { Anotacion, RutaResumen, Sector, Zona } from "@/types/database";
+import type { Anotacion, RutaSinRecorrido, Sector, Zona } from "@/types/database";
 
 /**
  * El paquete offline: lo que la app guarda en el celular para funcionar sin
@@ -21,7 +21,7 @@ const CLAVE_PAQUETE = "trackapp-paquete-v1";
 const CLAVE_GALLETITA = "trackapp-tiene-paquete";
 
 export type Paquete = {
-  rutas: RutaResumen[];
+  rutas: RutaSinRecorrido[];
   zonas: Zona[];
   sectores: Sector[];
   anotaciones: Anotacion[];
@@ -49,6 +49,36 @@ const PAQUETE_VACIO: Paquete = {
  */
 function hayDondeGuardar(): boolean {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
+// ------------------------------------------------ el paquete, como estado vivo
+
+/**
+ * Lo último leído del celular.
+ *
+ * Existe para que la pantalla pueda pedir el paquete en cada dibujado sin
+ * volver a leer y desarmar todo el texto guardado. Mientras nadie lo cambie,
+ * siempre se devuelve exactamente lo mismo.
+ */
+let enMemoria: Paquete | null | undefined;
+
+const mirando = new Set<() => void>();
+
+export function mirarElPaquete(avisar: () => void): () => void {
+  mirando.add(avisar);
+  return () => {
+    mirando.delete(avisar);
+  };
+}
+
+export function paqueteEnMemoria(): Paquete | null {
+  if (enMemoria === undefined) enMemoria = leerPaquete();
+  return enMemoria;
+}
+
+function avisarQueCambio(nuevo: Paquete | null): void {
+  enMemoria = nuevo;
+  for (const avisar of mirando) avisar();
 }
 
 export function leerPaquete(): Paquete | null {
@@ -83,11 +113,14 @@ export function guardarPaquete(
   if (!hayDondeGuardar()) return { ok: false, sinEspacio: false };
 
   try {
-    localStorage.setItem(
-      CLAVE_PAQUETE,
-      JSON.stringify({ ...paquete, guardadoEn: new Date().toISOString() }),
-    );
+    const guardado: Paquete = {
+      ...paquete,
+      guardadoEn: new Date().toISOString(),
+    };
+
+    localStorage.setItem(CLAVE_PAQUETE, JSON.stringify(guardado));
     marcarQueHayPaquete();
+    avisarQueCambio(guardado);
     return { ok: true };
   } catch (error) {
     const sinEspacio =
@@ -105,6 +138,7 @@ export function borrarPaquete(): void {
   try {
     localStorage.removeItem(CLAVE_PAQUETE);
     desmarcarQueHayPaquete();
+    avisarQueCambio(null);
   } catch {
     // Si no se puede borrar, el paquete viejo queda. No rompe nada.
   }

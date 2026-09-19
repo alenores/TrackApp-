@@ -1,35 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import {
-  aplicarModo,
+  cambiarModo,
   elOtroModo,
-  guardarModo,
-  leerModoGuardado,
+  mirarElModo,
   MODO_POR_DEFECTO,
+  modoPuesto,
   type Modo,
 } from "@/lib/modo";
 
 /**
  * El modo de color que está puesto, y cómo cambiarlo.
  *
- * El modo real ya lo dejó puesto el guión que corre antes de dibujar, así que
- * acá solo se lee para que el botón muestre el estado correcto.
+ * El modo de verdad lo manda el atributo del documento, que el guión de
+ * arranque ya dejó puesto antes de que se dibujara nada. Acá solo se lee, así
+ * que el botón muestra siempre el estado real y nunca hay un parpadeo.
  */
 export function useModo(): { modo: Modo; cambiar: () => void } {
-  const [modo, setModo] = useState<Modo>(MODO_POR_DEFECTO);
-
-  useEffect(() => {
-    setModo(leerModoGuardado());
-  }, []);
+  const modo = useSyncExternalStore(
+    mirarElModo,
+    modoPuesto,
+    () => MODO_POR_DEFECTO,
+  );
 
   const cambiar = useCallback(() => {
-    setModo((actual) => {
-      const nuevo = elOtroModo(actual);
-      aplicarModo(nuevo);
-      guardarModo(nuevo);
-      return nuevo;
-    });
+    cambiarModo(elOtroModo(modoPuesto()));
   }, []);
 
   return { modo, cambiar };

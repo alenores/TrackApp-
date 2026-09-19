@@ -72,3 +72,33 @@ export const GUION_DE_ARRANQUE = `(function(){try{var m=localStorage.getItem(${J
 )};}document.documentElement.setAttribute("data-modo",m);var b=document.querySelector('meta[name="theme-color"]');if(b){b.setAttribute("content",m==="sol"?${JSON.stringify(
   COLOR_DE_BARRA.sol,
 )}:${JSON.stringify(COLOR_DE_BARRA.noche)});}}catch(e){}})();`;
+
+// ------------------------------------------------ el modo, como estado vivo
+
+/**
+ * Quién está mirando el modo, para avisarles cuando cambia.
+ *
+ * El modo real lo manda el atributo del documento, que ya dejó puesto el guión
+ * de arranque. Acá solo se avisa que cambió, así los botones se enteran.
+ */
+const mirando = new Set<() => void>();
+
+export function mirarElModo(avisar: () => void): () => void {
+  mirando.add(avisar);
+  return () => {
+    mirando.delete(avisar);
+  };
+}
+
+export function modoPuesto(): Modo {
+  if (typeof document === "undefined") return MODO_POR_DEFECTO;
+  const puesto = document.documentElement.getAttribute("data-modo");
+  return esModo(puesto) ? puesto : MODO_POR_DEFECTO;
+}
+
+/** Cambia el modo, lo guarda y avisa a todas las pantallas. */
+export function cambiarModo(modo: Modo): void {
+  aplicarModo(modo);
+  guardarModo(modo);
+  for (const avisar of mirando) avisar();
+}

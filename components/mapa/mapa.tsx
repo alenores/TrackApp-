@@ -43,6 +43,10 @@ type MapaProps = {
   miPosicion?: PosicionEnElMapa | null;
   /** A qué encuadrar al abrir. */
   encuadre?: Rectangulo | null;
+  /** El pedazo de mapa que se está definiendo ahora. */
+  rectangulo?: Rectangulo | null;
+  /** Los pedazos de mapa que ya existen, para ver dónde cae el nuevo. */
+  rectangulosExistentes?: Rectangulo[];
   /** `true` en la pantalla de navegación, que va a pantalla completa. */
   pantallaCompleta?: boolean;
   className?: string;
@@ -60,6 +64,8 @@ export function Mapa({
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
+  rectangulo = null,
+  rectangulosExistentes = [],
   pantallaCompleta = false,
   className = "",
 }: MapaProps) {
@@ -67,6 +73,7 @@ export function Mapa({
   const mapaRef = useRef<L.Map | null>(null);
   const capaDeLaRutaRef = useRef<L.GeoJSON | null>(null);
   const capaDeAnotacionesRef = useRef<L.LayerGroup | null>(null);
+  const capaDeRectangulosRef = useRef<L.LayerGroup | null>(null);
   const marcaDePosicionRef = useRef<L.CircleMarker | null>(null);
 
   // Armado del mapa. Una sola vez.
@@ -86,6 +93,7 @@ export function Mapa({
       fondo.crearCapa().addTo(mapa);
     }
 
+    capaDeRectangulosRef.current = L.layerGroup().addTo(mapa);
     capaDeAnotacionesRef.current = L.layerGroup().addTo(mapa);
     mapaRef.current = mapa;
 
@@ -94,9 +102,35 @@ export function Mapa({
       mapaRef.current = null;
       capaDeLaRutaRef.current = null;
       capaDeAnotacionesRef.current = null;
+      capaDeRectangulosRef.current = null;
       marcaDePosicionRef.current = null;
     };
   }, []);
+
+  // Los pedazos de mapa: el que se está definiendo y los que ya existen.
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    const capa = capaDeRectangulosRef.current;
+    if (!mapa || !capa) return;
+
+    capa.clearLayers();
+
+    for (const existente of rectangulosExistentes) {
+      L.rectangle(limitesDe(existente), {
+        className: "rectangulo-existente",
+        weight: 2,
+      }).addTo(capa);
+    }
+
+    if (!rectangulo) return;
+
+    L.rectangle(limitesDe(rectangulo), {
+      className: "rectangulo-nuevo",
+      weight: 3,
+    }).addTo(capa);
+
+    mapa.fitBounds(limitesDe(rectangulo), { padding: [36, 36] });
+  }, [rectangulo, rectangulosExistentes]);
 
   // La línea de la ruta.
   useEffect(() => {

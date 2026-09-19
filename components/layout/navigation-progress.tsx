@@ -53,9 +53,12 @@ function NavigationProgressBar({ active }: { active: boolean }) {
 
 export function NavigationProgressProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [isNavigating, setIsNavigating] = useState(false);
-  const pathnameRef = useRef(pathname);
+  // De qué pantalla salió la navegación que está en curso. Apenas cambia la
+  // dirección, la navegación terminó: se deduce, no hace falta apagarla a mano.
+  const [saliendoDe, setSaliendoDe] = useState<string | null>(null);
   const timeoutRef = useRef<number | null>(null);
+
+  const isNavigating = saliendoDe !== null && saliendoDe === pathname;
 
   const clearNavigationTimeout = useCallback(() => {
     if (timeoutRef.current !== null) {
@@ -66,22 +69,14 @@ export function NavigationProgressProvider({ children }: { children: ReactNode }
 
   const startNavigation = useCallback(() => {
     clearNavigationTimeout();
-    setIsNavigating(true);
+    setSaliendoDe(window.location.pathname);
+    // Si la pantalla nueva nunca llega, la barra no se queda girando para
+    // siempre: a los pocos segundos se apaga sola.
     timeoutRef.current = window.setTimeout(() => {
-      setIsNavigating(false);
+      setSaliendoDe(null);
       timeoutRef.current = null;
     }, NAVIGATION_TIMEOUT_MS);
   }, [clearNavigationTimeout]);
-
-  const completeNavigation = useCallback(() => {
-    clearNavigationTimeout();
-    setIsNavigating(false);
-  }, [clearNavigationTimeout]);
-
-  useEffect(() => {
-    pathnameRef.current = pathname;
-    completeNavigation();
-  }, [pathname, completeNavigation]);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -94,7 +89,7 @@ export function NavigationProgressProvider({ children }: { children: ReactNode }
 
       const href = anchor.getAttribute("href");
       if (!href || !isInternalAppHref(href)) return;
-      if (isSamePathNavigation(href, pathnameRef.current)) return;
+      if (isSamePathNavigation(href, window.location.pathname)) return;
 
       startNavigation();
     };

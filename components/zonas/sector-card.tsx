@@ -6,6 +6,7 @@ import { borrarSector } from "@/app/actions/territorio";
 import { Card } from "@/components/ui/card";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Modal, BotonDeModal } from "@/components/ui/modal";
+import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Sector } from "@/types/database";
 
 /**
@@ -20,21 +21,6 @@ type SectorCardProps = {
   sector: Sector;
   soyAdministrador: boolean;
 };
-
-/** Cuántos kilómetros de lado tiene el rectángulo, para dar una idea del área. */
-function tamanoAproximado(sector: Sector): string {
-  const KM_POR_GRADO_DE_LATITUD = 111;
-  const alto = (sector.rectangulo.latNorte - sector.rectangulo.latSur) * KM_POR_GRADO_DE_LATITUD;
-  const anchoEnGrados = sector.rectangulo.lonEste - sector.rectangulo.lonOeste;
-  const latitudMedia =
-    (sector.rectangulo.latNorte + sector.rectangulo.latSur) / 2;
-  const ancho =
-    anchoEnGrados *
-    KM_POR_GRADO_DE_LATITUD *
-    Math.cos((latitudMedia * Math.PI) / 180);
-
-  return `${ancho.toFixed(1).replace(".", ",")} × ${alto.toFixed(1).replace(".", ",")} km`;
-}
 
 export function SectorCard({ sector, soyAdministrador }: SectorCardProps) {
   const router = useRouter();
@@ -82,7 +68,7 @@ export function SectorCard({ sector, soyAdministrador }: SectorCardProps) {
             ) : null}
           </div>
 
-          <p className="text-xs text-texto-suave">{tamanoAproximado(sector)}</p>
+          <p className="text-xs text-texto-suave">{mostrarTamano(sector.rectangulo)}</p>
         </Card>
 
         {soyAdministrador ? (

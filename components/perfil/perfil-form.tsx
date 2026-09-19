@@ -98,16 +98,24 @@ export function PerfilForm({
   const [editing, setEditing] = useState(false);
   const [nombre, setNombre] = useState(initialNombre || displayNombre);
   const [emailValue, setEmailValue] = useState(email);
+  const [loQueLlego, setLoQueLlego] = useState({ initialNombre, displayNombre, email });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Cuando el servidor manda datos nuevos, los campos se ponen al día. Va
+  // durante el dibujado: en un efecto se vería un instante el dato viejo.
+  if (
+    loQueLlego.initialNombre !== initialNombre ||
+    loQueLlego.displayNombre !== displayNombre ||
+    loQueLlego.email !== email
+  ) {
+    setLoQueLlego({ initialNombre, displayNombre, email });
     setNombre(initialNombre || displayNombre);
     setEmailValue(email);
-  }, [initialNombre, displayNombre, email]);
+  }
 
   useEffect(() => {
     return () => {

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { Button } from "@/components/ui/button";
 
@@ -19,9 +21,15 @@ import { Button } from "@/components/ui/button";
  * - que el atrás cierre la emergente y no la app.
  *
  * **No escribir capas ni niveles de apilado a mano en ninguna pantalla.**
+ *
+ * El apilado no lleva números. Todas las emergentes se cuelgan al final del
+ * documento y se dibujan en el orden en que se abrieron, así la última siempre
+ * queda arriba. Un número escrito a mano es justo lo que termina tapando un
+ * aviso que nadie ve.
  */
 
-let emergentesAbiertas = 0;
+/** Por encima de cualquier cosa de la app. Uno solo, para todas. */
+const NIVEL_DE_LAS_EMERGENTES = 10_000;
 
 type ModalProps = {
   abierto: boolean;
@@ -44,36 +52,28 @@ export function Modal({
   acciones,
   ancho = "normal",
 }: ModalProps) {
-  const nivelRef = useRef(0);
+  const yaEstaVivo = useYaEnElNavegador();
 
   useCerrarConAtras(abierto, alCerrar);
 
   useEffect(() => {
     if (!abierto) return;
 
-    emergentesAbiertas += 1;
-    nivelRef.current = emergentesAbiertas;
-
     // Con una emergente abierta, el fondo no se mueve.
     const desbordeAnterior = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
-      emergentesAbiertas = Math.max(0, emergentesAbiertas - 1);
       document.body.style.overflow = desbordeAnterior;
     };
   }, [abierto]);
 
-  if (!abierto) return null;
+  if (!abierto || !yaEstaVivo) return null;
 
-  // Arranca bien arriba de cualquier número escrito a mano: una emergente
-  // tapada es un aviso que nadie ve.
-  const nivel = 10_000 + nivelRef.current;
-
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 flex items-end justify-center bg-velo p-4 sm:items-center"
-      style={{ zIndex: nivel }}
+      style={{ zIndex: NIVEL_DE_LAS_EMERGENTES }}
       onClick={alCerrar}
       role="presentation"
     >
@@ -117,7 +117,8 @@ export function Modal({
           </div>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

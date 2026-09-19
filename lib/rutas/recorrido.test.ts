@@ -199,3 +199,38 @@ describe("calcularNumerosDelRecorrido", () => {
     );
   });
 });
+
+describe("cuántos puntos trae el archivo", () => {
+  it("los cuenta sumando todas las líneas del recorrido", () => {
+    const numeros = calcularNumerosDelRecorrido({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [-64.9, -31.9, 900],
+              [-64.8, -31.8, 950],
+              [-64.7, -31.7, 1000],
+            ],
+          },
+        },
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [-64.6, -31.6, 1050],
+              [-64.5, -31.5, 1100],
+            ],
+          },
+        },
+      ],
+    });
+
+    expect(numeros?.puntos).toBe(5);
+  });
+});

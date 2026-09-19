@@ -1,17 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 
 export function NuevaRutaFab() {
-  const [mounted, setMounted] = useState(false);
+  // El portal necesita el `document`, que recién existe en el navegador.
+  const yaEstaVivo = useYaEnElNavegador();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (!yaEstaVivo) {
     return null;
   }
 

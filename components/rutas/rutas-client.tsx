@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
 import { RutaList } from "@/components/rutas/ruta-list";
 import { RutaListSkeleton } from "@/components/rutas/ruta-list-skeleton";
 import { Card } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
+import { traerPerfilesPorId } from "@/lib/perfiles/cliente";
 import type { Perfil } from "@/types/database";
 
 /**
@@ -19,51 +19,15 @@ type RutasClientProps = {
   miPerfilId: string | null;
 };
 
-async function traerPerfiles(ids: string[]): Promise<Record<string, Perfil>> {
-  const unicos = [...new Set(ids.filter(Boolean))];
-  if (unicos.length === 0) return {};
-
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("perfiles")
-    .select("id, nombre, avatar_url, categoria, creado_en, actualizado_en")
-    .in("id", unicos)
-    .is("eliminado_en", null);
-
-  if (error || !data) return {};
-
-  const porId: Record<string, Perfil> = {};
-
-  for (const fila of data as Array<{
-    id: string;
-    nombre: string | null;
-    avatar_url: string | null;
-    categoria: Perfil["categoria"];
-    creado_en: string;
-    actualizado_en: string;
-  }>) {
-    porId[fila.id] = {
-      id: fila.id,
-      nombre: fila.nombre,
-      avatarUrl: fila.avatar_url,
-      categoria: fila.categoria,
-      creadoEn: fila.creado_en,
-      actualizadoEn: fila.actualizado_en,
-    };
-  }
-
-  return porId;
-}
-
 export function RutasClient({ miPerfilId }: RutasClientProps) {
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const [perfiles, setPerfiles] = useState<Record<string, Perfil>>({});
 
-  const rutas = paquete?.rutas ?? [];
+  const rutas = useMemo(() => paquete?.rutas ?? [], [paquete]);
 
   useEffect(() => {
     if (rutas.length === 0) return;
-    void traerPerfiles(rutas.map((ruta) => ruta.perfilId)).then(setPerfiles);
+    void traerPerfilesPorId(rutas.map((ruta) => ruta.perfilId)).then(setPerfiles);
   }, [rutas]);
 
   if (estado === "abriendo") {

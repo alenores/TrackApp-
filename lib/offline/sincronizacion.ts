@@ -14,7 +14,7 @@ import {
 } from "@/lib/offline/recorridos";
 import type {
   Anotacion,
-  RutaResumen,
+  RutaSinRecorrido,
   Sector,
   Zona,
 } from "@/types/database";
@@ -80,7 +80,7 @@ type FilaConRectangulo = {
 };
 
 async function bajarRutas(): Promise<{
-  resumenes: RutaResumen[];
+  resumenes: RutaSinRecorrido[];
   recorridos: Map<number, FeatureCollection>;
   completa: boolean;
   motivo?: string;
@@ -98,7 +98,7 @@ async function bajarRutas(): Promise<{
       .range(desde, hasta),
   );
 
-  const resumenes: RutaResumen[] = [];
+  const resumenes: RutaSinRecorrido[] = [];
   const recorridos = new Map<number, FeatureCollection>();
 
   for (const fila of resultado.filas) {
@@ -109,12 +109,17 @@ async function bajarRutas(): Promise<{
       perfilId: String(fila.perfil_id),
       nombre: String(fila.nombre),
       descripcion: (fila.descripcion as string | null) ?? null,
-      actividades: (fila.actividades as RutaResumen["actividades"]) ?? [],
+      actividades: (fila.actividades as RutaSinRecorrido["actividades"]) ?? [],
       dificultadTecnica: (fila.dificultad_tecnica as number | null) ?? null,
-      nivelEsfuerzo: (fila.nivel_esfuerzo as RutaResumen["nivelEsfuerzo"]) ?? null,
+      nivelEsfuerzo: (fila.nivel_esfuerzo as RutaSinRecorrido["nivelEsfuerzo"]) ?? null,
       largoKm: fila.largo_km === null ? null : Number(fila.largo_km),
       desnivelPositivoM: (fila.desnivel_positivo_m as number | null) ?? null,
       desnivelNegativoM: (fila.desnivel_negativo_m as number | null) ?? null,
+      // Lo que hay que poder leer en el cerro, donde no hay señal.
+      comentario: (fila.comentario as string | null) ?? null,
+      equipo: (fila.equipo as string | null) ?? null,
+      complicaciones: (fila.complicaciones as string | null) ?? null,
+      archivoUrl: (fila.archivo_url as string | null) ?? null,
       rectangulo: leerRectangulo(fila),
       creadoEn: String(fila.creado_en),
       actualizadoEn: String(fila.actualizado_en),

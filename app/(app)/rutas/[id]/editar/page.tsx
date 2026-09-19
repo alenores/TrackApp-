@@ -1,30 +1,26 @@
-import { notFound, redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth/session";
-import { fetchRutaById } from "@/lib/rutas/queries";
+import { AppReadyMarker } from "@/components/layout/app-ready-marker";
 import { EditarRutaForm } from "@/components/rutas/editar-ruta-form";
 
-type EditarRutaPageProps = {
+/**
+ * Editar una ruta.
+ *
+ * Como la ficha, dibuja desde lo guardado en el celular: la pantalla se abre
+ * al instante y sin depender de que llegue la respuesta de la base.
+ */
+
+type Props = {
   params: Promise<{ id: string }>;
 };
 
-export default async function EditarRutaPage({ params }: EditarRutaPageProps) {
+export default async function PaginaDeEditarRuta({ params }: Props) {
   const { id } = await params;
-  const [user, ruta] = await Promise.all([getAuthUser(), fetchRutaById(id)]);
-
-  if (!ruta) {
-    notFound();
-  }
-
-  if (!user || user.id !== ruta.user_id) {
-    redirect(`/rutas/${id}`);
-  }
+  const usuario = await getAuthUser();
 
   return (
-    <EditarRutaForm
-      rutaId={ruta.id}
-      initialNombre={ruta.nombre}
-      initialDescripcion={ruta.descripcion ?? ""}
-      initialActividades={ruta.actividades}
-    />
+    <>
+      <AppReadyMarker />
+      <EditarRutaForm rutaId={Number(id)} miPerfilId={usuario?.id ?? null} />
+    </>
   );
 }

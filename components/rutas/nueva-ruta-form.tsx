@@ -1,217 +1,259 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { saveRuta } from "@/app/actions/save-ruta";
+import { useRef, useState } from "react";
+import { crearRuta } from "@/app/actions/rutas";
+import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import {
-  formatDistanceKm,
-  parseGpxFile,
-  type ParsedGpx,
-} from "@/lib/gpx";
-import { ACTIVIDADES } from "@/lib/rutas/actividades";
-import type { ActividadTipo } from "@/types/database";
-import { RouteMapLoader } from "@/components/map/route-map-loader";
+  CamposDeRuta,
+  CAMPOS_VACIOS,
+  type CamposDeLaRuta,
+} from "@/components/rutas/campos-de-ruta";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { calcularCobertura } from "@/lib/cobertura";
+import { seSuperponen } from "@/lib/datos/rectangulo";
+import { sectoresConMapaBajado } from "@/lib/offline/mapas";
+import {
+  FORMATOS_ACEPTADOS,
+  leerArchivoDeRuta,
+  type RecorridoLeido,
+} from "@/lib/rutas/archivo";
+import { mostrarDesnivel, mostrarLargo } from "@/lib/rutas/actividades";
+
+/**
+ * Subir una ruta.
+ *
+ * Dos cosas mandan en esta pantalla:
+ *
+ * 1. **El largo y los desniveles salen del archivo, no se escriben.** Un número
+ *    tipeado a mano se equivoca y nadie se entera hasta que falta agua.
+ * 2. **Acá se avisa si falta bajar un mapa.** Este es el momento en que el
+ *    usuario todavía tiene señal y está en su casa. Enterarse a mitad de camino
+ *    no es un aviso: es una sorpresa.
+ */
 
 export function NuevaRutaForm() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { paquete } = useDatosDeLaApp();
+  const entradaDeArchivo = useRef<HTMLInputElement>(null);
 
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [actividades, setActividades] = useState<ActividadTipo[]>([]);
-  const [gpxFile, setGpxFile] = useState<File | null>(null);
-  const [parsedGpx, setParsedGpx] = useState<ParsedGpx | null>(null);
-  const [parsing, setParsing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [archivo, setArchivo] = useState<File | null>(null);
+  const [recorrido, setRecorrido] = useState<RecorridoLeido | null>(null);
+  const [errorDelArchivo, setErrorDelArchivo] = useState<string | null>(null);
+  const [leyendo, setLeyendo] = useState(false);
 
-  const toggleActividad = (tipo: ActividadTipo) => {
-    setActividades((prev) =>
-      prev.includes(tipo) ? prev.filter((a) => a !== tipo) : [...prev, tipo],
+  const [campos, setCampos] = useState<CamposDeLaRuta>(CAMPOS_VACIOS);
+  const [guardando, setGuardando] = useState(false);
+  const [errorAlGuardar, setErrorAlGuardar] = useState<string | null>(null);
+
+  const alElegirArchivo = async (elegido: File | null) => {
+    setErrorDelArchivo(null);
+    setRecorrido(null);
+    setArchivo(elegido);
+
+    if (!elegido) return;
+
+    setLeyendo(true);
+    const lectura = await leerArchivoDeRuta(elegido);
+    setLeyendo(false);
+
+    if (!lectura.ok) {
+      setErrorDelArchivo(lectura.error);
+      setArchivo(null);
+      return;
+    }
+
+    setRecorrido(lectura.recorrido);
+
+    // El nombre del archivo suele ser el mejor punto de partida.
+    if (!campos.nombre.trim()) {
+      const sinExtension = elegido.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+      setCampos((actuales) => ({ ...actuales, nombre: sinExtension }));
+    }
+  };
+
+  const alGuardar = async () => {
+    setErrorAlGuardar(null);
+
+    if (!recorrido || !archivo) {
+      setErrorAlGuardar("Elegí primero el archivo del recorrido.");
+      return;
+    }
+
+    setGuardando(true);
+    const resultado = await crearRuta(
+      {
+        nombre: campos.nombre,
+        descripcion: campos.descripcion || null,
+        comentario: campos.comentario || null,
+        actividades: campos.actividades,
+        dificultadTecnica: campos.dificultadTecnica,
+        nivelEsfuerzo: campos.nivelEsfuerzo,
+        equipo: campos.equipo || null,
+        complicaciones: campos.complicaciones || null,
+      },
+      recorrido.geometria,
+      archivo,
     );
-  };
+    setGuardando(false);
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    setError(null);
-    setParsedGpx(null);
-    setGpxFile(null);
-
-    if (!file) return;
-
-    setParsing(true);
-    try {
-      const parsed = await parseGpxFile(file);
-      setGpxFile(file);
-      setParsedGpx(parsed);
-    } catch (parseError) {
-      setError(
-        parseError instanceof Error
-          ? parseError.message
-          : "No se pudo procesar el archivo GPX o KML.",
-      );
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } finally {
-      setParsing(false);
-    }
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-
-    if (!nombre.trim()) {
-      setError("El nombre de la ruta es obligatorio.");
+    if (!resultado.ok) {
+      setErrorAlGuardar(resultado.error);
       return;
     }
 
-    if (!gpxFile || !parsedGpx) {
-      setError("Seleccioná un archivo GPX o KML válido.");
-      return;
-    }
-
-    setSaving(true);
-
-    const result = await saveRuta({
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim() || null,
-      distanciaKm: parsedGpx.distanceKm,
-      geojson: parsedGpx.geojson,
-      bbox: parsedGpx.bbox,
-      routeFile: gpxFile,
-      actividades,
-    });
-
-    if (!result.success) {
-      setError(result.error);
-      setSaving(false);
-      return;
-    }
-
-    router.push(`/rutas/${result.rutaId}`);
-    router.refresh();
+    router.push(`/rutas/${resultado.datos.rutaId}`);
   };
+
+  const sectores = paquete?.sectores ?? [];
+  const cobertura = recorrido
+    ? calcularCobertura(recorrido.geometria, sectores, sectoresConMapaBajado())
+    : null;
+
+  const zonaDeLaRuta = recorrido
+    ? (paquete?.zonas ?? []).find((zona) =>
+        seSuperponen(zona.rectangulo, recorrido.rectangulo),
+      ) ?? null
+    : null;
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
-      <Card franja="ambar" className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-xl font-bold text-texto">Nueva ruta</h1>
-          <Link
-            href="/rutas"
-            className="shrink-0 text-sm text-acento-tenue hover:text-verde-texto"
-          >
-            Cancelar
-          </Link>
-        </div>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <BotonVolver destinoSiNoHayVuelta="/rutas" etiqueta="Volver a las rutas" />
+        <h1 className="text-xl font-semibold text-texto">Subir una ruta</h1>
+      </div>
 
-        <Input
-          label="Nombre"
-          required
-          value={nombre}
-          onChange={(event) => setNombre(event.target.value)}
-          placeholder="Ej: Cerro Champaquí"
+      <Card className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          El archivo
+        </h2>
+
+        <input
+          ref={entradaDeArchivo}
+          id="archivo-de-la-ruta"
+          type="file"
+          accept={FORMATOS_ACEPTADOS}
+          className="sr-only"
+          onChange={(evento) => {
+            void alElegirArchivo(evento.target.files?.[0] ?? null);
+          }}
         />
 
-        <div className="space-y-2">
-          <label
-            htmlFor="descripcion"
-            className="block text-sm font-medium text-texto-suave"
-          >
-            Descripción (opcional)
-          </label>
-          <textarea
-            id="descripcion"
-            value={descripcion}
-            onChange={(event) => setDescripcion(event.target.value)}
-            rows={3}
-            placeholder="Detalles del recorrido, dificultad, acceso…"
-            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="block text-sm font-medium text-texto-suave">
-            Actividades (opcional)
-          </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {ACTIVIDADES.map((act) => {
-              const selected = actividades.includes(act.tipo);
-              return (
-                <button
-                  key={act.tipo}
-                  type="button"
-                  onClick={() => toggleActividad(act.tipo)}
-                  className={[
-                    "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                    selected
-                      ? "border-acento-borde bg-verde-fondo text-verde-texto"
-                      : "border-borde bg-superficie text-texto-suave hover:border-acento-borde hover:text-texto",
-                  ].join(" ")}
-                >
-                  <span className="text-base leading-none" aria-hidden>
-                    {act.icon}
-                  </span>
-                  {act.label}
-                </button>
-              );
-            })}
+        {archivo && recorrido ? (
+          <div className="flex items-center gap-3 rounded-xl border border-borde-fuerte bg-fondo px-3 py-3">
+            <IconoDeArchivo />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-texto">
+                {archivo.name}
+              </p>
+              <p className="mt-0.5 text-xs text-texto-suave">
+                {recorrido.puntos.toLocaleString("es-AR")} puntos leídos
+              </p>
+            </div>
+            <Button
+              variante="secundario"
+              className="px-4 text-sm"
+              onClick={() => entradaDeArchivo.current?.click()}
+            >
+              Cambiar
+            </Button>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="gpx-file"
-            className="block text-sm font-medium text-texto-suave"
+        ) : (
+          <Button
+            anchoCompleto
+            variante="secundario"
+            disabled={leyendo}
+            onClick={() => entradaDeArchivo.current?.click()}
           >
-            Archivo GPX o KML
-          </label>
-          <input
-            ref={fileInputRef}
-            id="gpx-file"
-            type="file"
-            accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml"
-            onChange={(event) => void handleFileChange(event)}
-            className="block w-full min-h-12 cursor-pointer rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto file:mr-3 file:rounded-lg file:border-0 file:bg-verde-fondo file:px-3 file:py-2 file:text-sm file:font-medium file:text-verde-texto"
-          />
-          {parsing ? (
-            <p className="text-sm text-texto-suave">Procesando archivo…</p>
-          ) : null}
-        </div>
-      </Card>
+            {leyendo ? "Leyendo el archivo…" : "Elegir el archivo .gpx o .kml"}
+          </Button>
+        )}
 
-      {parsedGpx ? (
-        <Card className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-texto-suave">
-              Vista previa
-            </h2>
-            <p className="text-sm font-medium text-verde-texto">
-              {formatDistanceKm(parsedGpx.distanceKm)}
+        {errorDelArchivo ? (
+          <div className="flex items-start gap-2 rounded-xl border border-rojo-borde bg-rojo-fondo px-3 py-3">
+            <p role="alert" className="text-sm leading-6 text-rojo-texto">
+              {errorDelArchivo}
             </p>
           </div>
-          <RouteMapLoader geojson={parsedGpx.geojson} bbox={parsedGpx.bbox} />
+        ) : null}
+
+        {recorrido ? (
+          <div className="rounded-xl border border-borde-suave bg-fondo px-3 py-3">
+            <p className="mb-2 text-xs text-texto-suave">
+              Esto lo sacó la app del archivo. No se escribe a mano.
+            </p>
+            <dl className="grid grid-cols-3 gap-3">
+              <div>
+                <dt className="text-xs text-texto-suave">Largo</dt>
+                <dd className="mt-0.5 text-lg font-semibold tabular-nums text-dato">
+                  {mostrarLargo(recorrido.largoKm)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-texto-suave">Se sube</dt>
+                <dd className="mt-0.5 text-lg font-semibold tabular-nums text-texto">
+                  {mostrarDesnivel(recorrido.desnivelPositivoM, "positivo")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-texto-suave">Se baja</dt>
+                <dd className="mt-0.5 text-lg font-semibold tabular-nums text-texto">
+                  {mostrarDesnivel(recorrido.desnivelNegativoM, "negativo")}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        ) : null}
+      </Card>
+
+      {cobertura ? (
+        <BloqueDeCobertura
+          cobertura={cobertura}
+          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
+        />
+      ) : null}
+
+      <CamposDeRuta campos={campos} alCambiar={setCampos} />
+
+      {errorAlGuardar ? (
+        <Card franja="rojo">
+          <p role="alert" className="text-sm leading-6 text-rojo-texto">
+            {errorAlGuardar}
+          </p>
         </Card>
       ) : null}
 
-      {error ? (
-        <p
-          role="alert"
-          className="rounded-lg border border-rojo-borde bg-rojo-fondo px-3 py-2 text-sm text-rojo-texto"
+      <div className="pb-2">
+        <Button
+          anchoCompleto
+          paraNavegacion
+          disabled={guardando || !recorrido}
+          onClick={() => void alGuardar()}
         >
-          {error}
-        </p>
-      ) : null}
+          {guardando ? "Guardando…" : "Guardar la ruta"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-      <Button type="submit" anchoCompleto disabled={saving || parsing || !parsedGpx}>
-        {saving ? "Guardando ruta…" : "Guardar ruta"}
-      </Button>
-    </form>
+function IconoDeArchivo() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6 shrink-0 text-acento-tenue"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.9}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 3v5h5" />
+    </svg>
   );
 }

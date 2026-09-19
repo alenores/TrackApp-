@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { leerPaquete, type Paquete } from "@/lib/offline/paquete";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  mirarElPaquete,
+  paqueteEnMemoria,
+  type Paquete,
+} from "@/lib/offline/paquete";
 import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
 
 /**
@@ -28,40 +32,41 @@ export type DatosDeLaApp = {
   aviso: string | null;
 };
 
+/** Lo que pasó con el último intento de ponerse al día. */
+type Puesta =
+  | { clase: "buscando" }
+  | { clase: "al_dia" }
+  | { clase: "sin_senal" }
+  | { clase: "fallo"; motivo: string };
+
 export function useDatosDeLaApp(): DatosDeLaApp {
-  const [paquete, setPaquete] = useState<Paquete | null>(null);
-  const [estado, setEstado] = useState<EstadoDeLosDatos>("abriendo");
-  const [aviso, setAviso] = useState<string | null>(null);
+  // El paquete guardado ya está en la primera pantalla: no se espera a nada.
+  const paquete = useSyncExternalStore(
+    mirarElPaquete,
+    paqueteEnMemoria,
+    () => null,
+  );
+
+  const [puesta, setPuesta] = useState<Puesta>({ clase: "buscando" });
 
   useEffect(() => {
     let vigente = true;
-
-    // Primero lo que ya está: la pantalla no espera a internet para dibujar.
-    const guardado = leerPaquete();
-    if (guardado) {
-      setPaquete(guardado);
-      setEstado("listo");
-    }
 
     void (async () => {
       const resultado = await sincronizarPaquete();
       if (!vigente) return;
 
-      setPaquete(resultado.paquete);
-
       if (resultado.clase === "fallo") {
-        setEstado(resultado.paquete ? "incompleto" : "sin_datos");
-        setAviso(resultado.motivo);
+        setPuesta({ clase: "fallo", motivo: resultado.motivo });
         return;
       }
 
       if (resultado.clase === "sin_senal") {
-        setEstado(resultado.paquete ? "sin_senal" : "sin_datos");
+        setPuesta({ clase: "sin_senal" });
         return;
       }
 
-      setEstado(resultado.paquete ? "listo" : "sin_datos");
-      setAviso(null);
+      setPuesta({ clase: "al_dia" });
     })();
 
     return () => {
@@ -69,5 +74,30 @@ export function useDatosDeLaApp(): DatosDeLaApp {
     };
   }, []);
 
-  return { paquete, estado, aviso };
+  if (puesta.clase === "buscando") {
+    // Con algo guardado no hay nada que esperar: se muestra y listo.
+    return {
+      paquete,
+      estado: paquete ? "listo" : "abriendo",
+      aviso: null,
+    };
+  }
+
+  if (puesta.clase === "fallo") {
+    return {
+      paquete,
+      estado: paquete ? "incompleto" : "sin_datos",
+      aviso: puesta.motivo,
+    };
+  }
+
+  if (puesta.clase === "sin_senal") {
+    return {
+      paquete,
+      estado: paquete ? "sin_senal" : "sin_datos",
+      aviso: null,
+    };
+  }
+
+  return { paquete, estado: paquete ? "listo" : "sin_datos", aviso: null };
 }

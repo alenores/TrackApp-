@@ -16,6 +16,9 @@ import {
   getGpsErrorMessage,
   type GpsStatus,
 } from "@/lib/navigation";
+import { seSuperponen } from "@/lib/datos/rectangulo";
+import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
+import { sectoresConMapaBajado } from "@/lib/offline/mapas";
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import type { Anotacion, Rectangulo } from "@/types/database";
@@ -55,6 +58,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
   const [ultimaNoticia, setUltimaNoticia] = useState<number | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
   const [metrosDeDesvio, setMetrosDeDesvio] = useState<number | null>(null);
+  const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
 
   usePantallaDespierta(estadoDelGps === "active");
 
@@ -74,21 +78,30 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         setRectangulo(ruta.rectangulo);
 
         // Las anotaciones de los sectores por los que pasa esta ruta.
-        const sectoresQueLaCruzan = (paquete?.sectores ?? [])
-          .filter(
-            (sector) =>
-              ruta.rectangulo.latSur <= sector.rectangulo.latNorte &&
-              ruta.rectangulo.latNorte >= sector.rectangulo.latSur &&
-              ruta.rectangulo.lonOeste <= sector.rectangulo.lonEste &&
-              ruta.rectangulo.lonEste >= sector.rectangulo.lonOeste,
-          )
-          .map((sector) => sector.id);
+        const sectoresQueLaCruzan = (paquete?.sectores ?? []).filter((sector) =>
+          seSuperponen(ruta.rectangulo, sector.rectangulo),
+        );
+
+        const idsQueLaCruzan = sectoresQueLaCruzan.map((sector) => sector.id);
 
         setAnotaciones(
           (paquete?.anotaciones ?? []).filter((anotacion) =>
-            sectoresQueLaCruzan.includes(anotacion.sectorId),
+            idsQueLaCruzan.includes(anotacion.sectorId),
           ),
         );
+
+        // Se navega igual, pero el usuario tiene que saber por dónde va sin
+        // mapa. Es todo cálculo con lo que ya está en el celular: acá no se
+        // consulta internet ni de casualidad.
+        if (guardado) {
+          setAvisoDelMapa(
+            avisoPorFaltaDeMapa(
+              guardado,
+              sectoresQueLaCruzan,
+              sectoresConMapaBajado(),
+            ),
+          );
+        }
       }
 
       setRecorrido(guardado);
@@ -218,6 +231,29 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
             ×
           </button>
         </div>
+
+        {avisoDelMapa ? (
+          <div
+            role="status"
+            className="flex items-start gap-2 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="mt-0.5 h-5 w-5 shrink-0 text-ambar-icono"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.1}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M12 3.5 21 19H3Z" />
+              <path d="M12 10v4" />
+              <path d="M12 17.2v.1" />
+            </svg>
+            <p className="text-sm leading-6 text-ambar-texto">{avisoDelMapa}</p>
+          </div>
+        ) : null}
 
         <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-borde">
           <CargadorDeMapa

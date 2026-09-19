@@ -1,149 +1,211 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { updateRuta } from "@/app/actions/update-ruta";
-import { ACTIVIDADES } from "@/lib/rutas/actividades";
-import type { ActividadTipo } from "@/types/database";
+import { useState } from "react";
+import { borrarRuta, editarRuta } from "@/app/actions/rutas";
+import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import {
+  CamposDeRuta,
+  CAMPOS_VACIOS,
+  type CamposDeLaRuta,
+} from "@/components/rutas/campos-de-ruta";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { useDialogos } from "@/components/ui/dialogos";
+import { mostrarDesnivel, mostrarLargo } from "@/lib/rutas/actividades";
+
+/**
+ * Editar una ruta.
+ *
+ * Se editan los datos que escribió una persona. **El largo y los desniveles no
+ * se tocan**: salen del archivo y cambiarlos a mano sería inventar.
+ */
 
 type EditarRutaFormProps = {
-  rutaId: string;
-  initialNombre: string;
-  initialDescripcion: string;
-  initialActividades: ActividadTipo[];
+  rutaId: number;
+  miPerfilId: string | null;
 };
 
-export function EditarRutaForm({
-  rutaId,
-  initialNombre,
-  initialDescripcion,
-  initialActividades,
-}: EditarRutaFormProps) {
+export function EditarRutaForm({ rutaId, miPerfilId }: EditarRutaFormProps) {
   const router = useRouter();
-  const [nombre, setNombre] = useState(initialNombre);
-  const [descripcion, setDescripcion] = useState(initialDescripcion);
-  const [actividades, setActividades] = useState<ActividadTipo[]>(initialActividades);
-  const [saving, setSaving] = useState(false);
+  const { paquete, estado } = useDatosDeLaApp();
+  const { confirmar, avisar } = useDialogos();
+
+  const [campos, setCampos] = useState<CamposDeLaRuta>(CAMPOS_VACIOS);
+  const [semilla, setSemilla] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleActividad = (tipo: ActividadTipo) => {
-    setActividades((prev) =>
-      prev.includes(tipo) ? prev.filter((a) => a !== tipo) : [...prev, tipo],
+  const ruta = paquete?.rutas.find((cada) => cada.id === rutaId) ?? null;
+
+  // Cuando aparece la ruta guardada, se cargan los campos una sola vez. Va
+  // durante el dibujado y no en un efecto: así el formulario nunca se ve vacío
+  // un instante antes de llenarse.
+  if (ruta && semilla !== ruta.id) {
+    setSemilla(ruta.id);
+    setCampos({
+      nombre: ruta.nombre,
+      descripcion: ruta.descripcion ?? "",
+      actividades: ruta.actividades,
+      dificultadTecnica: ruta.dificultadTecnica,
+      nivelEsfuerzo: ruta.nivelEsfuerzo,
+      equipo: ruta.equipo ?? "",
+      complicaciones: ruta.complicaciones ?? "",
+      comentario: ruta.comentario ?? "",
+    });
+  }
+
+  if (estado === "abriendo") {
+    return (
+      <Card className="py-8 text-center text-base text-texto-suave">
+        Abriendo la ruta…
+      </Card>
     );
-  };
+  }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSaving(true);
+  if (!ruta) {
+    return (
+      <Card franja="rojo" className="space-y-3">
+        <p role="alert" className="text-base leading-6 text-rojo-texto">
+          Esta ruta no está en el celular, así que no se puede editar.
+        </p>
+        <BotonVolver destinoSiNoHayVuelta="/rutas" etiqueta="Volver a las rutas" />
+      </Card>
+    );
+  }
+
+  if (miPerfilId !== ruta.perfilId) {
+    return (
+      <Card franja="ambar" className="space-y-3">
+        <p role="alert" className="text-base leading-6 text-ambar-texto">
+          Esta ruta la subió otra persona, así que no la podés editar.
+        </p>
+        <BotonVolver
+          destinoSiNoHayVuelta={`/rutas/${rutaId}`}
+          etiqueta="Volver a la ruta"
+        />
+      </Card>
+    );
+  }
+
+  const alGuardar = async () => {
     setError(null);
+    setGuardando(true);
 
-    const result = await updateRuta({
-      rutaId,
-      nombre,
-      descripcion: descripcion.trim() || null,
-      actividades,
+    const resultado = await editarRuta(rutaId, {
+      nombre: campos.nombre,
+      descripcion: campos.descripcion || null,
+      comentario: campos.comentario || null,
+      actividades: campos.actividades,
+      dificultadTecnica: campos.dificultadTecnica,
+      nivelEsfuerzo: campos.nivelEsfuerzo,
+      equipo: campos.equipo || null,
+      complicaciones: campos.complicaciones || null,
     });
 
-    if (!result.success) {
-      setError(result.error);
-      setSaving(false);
+    setGuardando(false);
+
+    if (!resultado.ok) {
+      setError(resultado.error);
       return;
     }
 
     router.push(`/rutas/${rutaId}`);
-    router.refresh();
+  };
+
+  const alBorrar = async () => {
+    const seguro = await confirmar({
+      titulo: `¿Borrar «${ruta.nombre}»?`,
+      mensaje:
+        "La ruta deja de verse en la app. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar",
+      destructivo: true,
+    });
+    if (!seguro) return;
+
+    setBorrando(true);
+    const resultado = await borrarRuta(rutaId);
+    setBorrando(false);
+
+    if (!resultado.ok) {
+      await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error });
+      return;
+    }
+
+    router.push("/rutas");
   };
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
-      <Card tono="alta" className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-texto">Editar ruta</h1>
-            <p className="mt-1 text-sm text-texto-suave">
-              Modificá el nombre, la descripción o las actividades.
-            </p>
-          </div>
-          <Link
-            href={`/rutas/${rutaId}`}
-            className="shrink-0 text-sm text-acento-tenue hover:text-verde-texto"
-          >
-            Cancelar
-          </Link>
-        </div>
-
-        <Input
-          label="Nombre"
-          required
-          maxLength={120}
-          value={nombre}
-          onChange={(event) => setNombre(event.target.value)}
-          placeholder="Nombre de la ruta"
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <BotonVolver
+          destinoSiNoHayVuelta={`/rutas/${rutaId}`}
+          etiqueta="Volver a la ruta"
         />
+        <h1 className="text-xl font-semibold text-texto">Editar la ruta</h1>
+      </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="descripcion"
-            className="block text-sm font-medium text-texto-suave"
-          >
-            Descripción (opcional)
-          </label>
-          <textarea
-            id="descripcion"
-            value={descripcion}
-            onChange={(event) => setDescripcion(event.target.value)}
-            rows={4}
-            placeholder="Detalles del recorrido…"
-            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="block text-sm font-medium text-texto-suave">
-            Actividades (opcional)
-          </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {ACTIVIDADES.map((act) => {
-              const selected = actividades.includes(act.tipo);
-              return (
-                <button
-                  key={act.tipo}
-                  type="button"
-                  onClick={() => toggleActividad(act.tipo)}
-                  className={[
-                    "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                    selected
-                      ? "border-acento-borde bg-verde-fondo text-verde-texto"
-                      : "border-borde bg-superficie text-texto-suave hover:border-acento-borde hover:text-texto",
-                  ].join(" ")}
-                >
-                  <span className="text-base leading-none" aria-hidden>
-                    {act.icon}
-                  </span>
-                  {act.label}
-                </button>
-              );
-            })}
+      <Card className="space-y-2">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          Lo que sale del archivo
+        </h2>
+        <p className="text-sm leading-6 text-texto-suave">
+          Estos números no se editan: los sacó la app del recorrido. Para
+          cambiarlos hay que subir la ruta de nuevo con otro archivo.
+        </p>
+        <dl className="grid grid-cols-3 gap-3 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
+          <div>
+            <dt className="text-xs text-texto-suave">Largo</dt>
+            <dd className="mt-0.5 text-lg font-semibold tabular-nums text-dato">
+              {mostrarLargo(ruta.largoKm)}
+            </dd>
           </div>
-        </div>
+          <div>
+            <dt className="text-xs text-texto-suave">Se sube</dt>
+            <dd className="mt-0.5 text-lg font-semibold tabular-nums text-texto">
+              {mostrarDesnivel(ruta.desnivelPositivoM, "positivo")}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-texto-suave">Se baja</dt>
+            <dd className="mt-0.5 text-lg font-semibold tabular-nums text-texto">
+              {mostrarDesnivel(ruta.desnivelNegativoM, "negativo")}
+            </dd>
+          </div>
+        </dl>
       </Card>
 
+      <CamposDeRuta campos={campos} alCambiar={setCampos} />
+
       {error ? (
-        <p
-          role="alert"
-          className="rounded-lg border border-rojo-borde bg-rojo-fondo px-3 py-2 text-sm text-rojo-texto"
-        >
-          {error}
-        </p>
+        <Card franja="rojo">
+          <p role="alert" className="text-sm leading-6 text-rojo-texto">
+            {error}
+          </p>
+        </Card>
       ) : null}
 
-      <Button type="submit" anchoCompleto disabled={saving}>
-        {saving ? "Guardando…" : "Guardar cambios"}
+      <Button
+        anchoCompleto
+        paraNavegacion
+        disabled={guardando}
+        onClick={() => void alGuardar()}
+      >
+        {guardando ? "Guardando…" : "Guardar los cambios"}
       </Button>
-    </form>
+
+      <div className="pb-2">
+        <Button
+          anchoCompleto
+          variante="destructivo"
+          disabled={borrando}
+          onClick={() => void alBorrar()}
+        >
+          {borrando ? "Borrando…" : "Borrar esta ruta"}
+        </Button>
+      </div>
+    </div>
   );
 }

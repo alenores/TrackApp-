@@ -1,161 +1,177 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { saveZona } from "@/app/actions/save-zona";
-import { deleteZona } from "@/app/actions/delete-zona";
-import { PROVINCIAS_ARGENTINA } from "@/lib/zonas/helpers";
-import type { ZonaListItem } from "@/types/database";
+import { useState } from "react";
+import { borrarZona, editarZona } from "@/app/actions/territorio";
+import { useDatosDeLaApp } from "@/app/hooks/useDatosDeLaApp";
+import { CamposDeTerritorio } from "@/components/zonas/campos-de-territorio";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { useDialogos } from "@/components/ui/dialogos";
+import {
+  rectanguloDeLosCampos,
+  territorioDesdeRectangulo,
+  TERRITORIO_VACIO,
+  type CamposDelTerritorio,
+} from "@/lib/territorio/esquinas";
 
 type EditarZonaFormProps = {
-  zona: ZonaListItem;
+  zonaId: number;
+  miPerfilId: string | null;
 };
 
-export function EditarZonaForm({ zona }: EditarZonaFormProps) {
+export function EditarZonaForm({ zonaId, miPerfilId }: EditarZonaFormProps) {
   const router = useRouter();
-  const [provincia, setProvincia] = useState(zona.provincia);
-  const [nombre, setNombre] = useState(zona.nombre);
-  const [descripcion, setDescripcion] = useState(zona.descripcion ?? "");
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { paquete, estado } = useDatosDeLaApp();
+  const { confirmar, avisar } = useDialogos();
+
+  const [campos, setCampos] = useState<CamposDelTerritorio>(TERRITORIO_VACIO);
+  const [semilla, setSemilla] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
+  const sectoresDeLaZona = (paquete?.sectores ?? []).filter(
+    (sector) => sector.zonaId === zonaId,
+  );
+
+  // Cuando aparece la zona guardada, se cargan los campos una sola vez.
+  if (zona && semilla !== zona.id) {
+    setSemilla(zona.id);
+    setCampos(
+      territorioDesdeRectangulo(zona.nombre, zona.descripcion, zona.rectangulo),
+    );
+  }
+
+  if (estado === "abriendo") {
+    return (
+      <Card className="py-8 text-center text-base text-texto-suave">
+        Abriendo la zona…
+      </Card>
+    );
+  }
+
+  if (!zona) {
+    return (
+      <Card franja="rojo" className="space-y-3">
+        <p role="alert" className="text-base leading-6 text-rojo-texto">
+          Esta zona no está en el celular, así que no se puede editar.
+        </p>
+        <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
+      </Card>
+    );
+  }
+
+  if (miPerfilId !== zona.perfilId) {
+    return (
+      <Card franja="ambar" className="space-y-3">
+        <p role="alert" className="text-base leading-6 text-ambar-texto">
+          Esta zona la creó otra persona, así que no la podés editar.
+        </p>
+        <BotonVolver
+          destinoSiNoHayVuelta={`/zonas/${zonaId}`}
+          etiqueta="Volver a la zona"
+        />
+      </Card>
+    );
+  }
+
+  const armado = rectanguloDeLosCampos(campos);
+
+  const alGuardar = async () => {
     setError(null);
 
-    if (!provincia) {
-      setError("Seleccioná una provincia.");
-      return;
-    }
-    if (!nombre.trim()) {
-      setError("El nombre es obligatorio.");
+    if (!armado.ok) {
+      setError(armado.error ?? "Completá las dos esquinas de la zona.");
       return;
     }
 
-    setSaving(true);
-    const result = await saveZona({
-      provincia,
-      nombre,
-      descripcion: descripcion.trim() || null,
+    setGuardando(true);
+    const resultado = await editarZona(zonaId, {
+      nombre: campos.nombre,
+      descripcion: campos.descripcion || null,
+      rectangulo: armado.rectangulo,
     });
+    setGuardando(false);
 
-    if (!result.success) {
-      setError(result.error);
-      setSaving(false);
+    if (!resultado.ok) {
+      setError(resultado.error);
       return;
     }
 
-    // Eliminar la zona original y redirigir a la nueva
-    await deleteZona(zona.id);
-    router.push(`/zonas/${result.zonaId}`);
+    router.push(`/zonas/${zonaId}`);
   };
 
-  const handleDelete = async () => {
-    if (!confirm("¿Seguro que querés eliminar esta zona y todos sus sectores?"))
-      return;
-    setDeleting(true);
-    const result = await deleteZona(zona.id);
-    if (!result.success) {
-      alert(result.error);
-      setDeleting(false);
+  const alBorrar = async () => {
+    const seguro = await confirmar({
+      titulo: `¿Borrar «${zona.nombre}»?`,
+      mensaje:
+        sectoresDeLaZona.length > 0
+          ? `Se van a borrar también sus ${sectoresDeLaZona.length} sectores y las anotaciones que tengan adentro. Si te arrepentís, se puede recuperar.`
+          : "La zona deja de verse en la app. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar",
+      destructivo: true,
+    });
+    if (!seguro) return;
+
+    setBorrando(true);
+    const resultado = await borrarZona(zonaId);
+    setBorrando(false);
+
+    if (!resultado.ok) {
+      await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error });
       return;
     }
+
     router.push("/zonas");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Card tono="alta" className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/zonas/${zona.id}`}
-            className="text-texto-suave hover:text-texto"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-6 w-6"
-              aria-hidden
-            >
-              <path
-                d="M15 18l-6-6 6-6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-          <h1 className="text-xl font-bold text-texto">Editar zona</h1>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
-            Provincia
-          </label>
-          <select
-            value={provincia}
-            onChange={(e) => setProvincia(e.target.value)}
-            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto focus:border-acento-borde focus:outline-none"
-            required
-          >
-            <option value="">Seleccioná una provincia…</option>
-            {PROVINCIAS_ARGENTINA.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Input
-          label="Nombre"
-          type="text"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          placeholder="Ej: Sierra Chica Norte"
-          required
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <BotonVolver
+          destinoSiNoHayVuelta={`/zonas/${zonaId}`}
+          etiqueta="Volver a la zona"
         />
+        <h1 className="text-xl font-semibold text-texto">Editar la zona</h1>
+      </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
-            Descripción{" "}
-            <span className="normal-case font-normal text-texto-suave">
-              (opcional)
-            </span>
-          </label>
-          <textarea
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            rows={3}
-            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto placeholder-slate-500 focus:border-acento-borde focus:outline-none resize-none"
-          />
-        </div>
+      <CamposDeTerritorio
+        queEs="zona"
+        campos={campos}
+        alCambiar={setCampos}
+        rectangulosExistentes={sectoresDeLaZona.map((sector) => sector.rectangulo)}
+      />
 
-        {error ? (
-          <p className="rounded-xl bg-rojo-fondo px-4 py-3 text-sm text-rojo-texto">
+      {error ? (
+        <Card franja="rojo">
+          <p role="alert" className="text-sm leading-6 text-rojo-texto">
             {error}
           </p>
-        ) : null}
+        </Card>
+      ) : null}
 
-        <Button type="submit" anchoCompleto disabled={saving || deleting}>
-          {saving ? "Guardando…" : "Guardar cambios"}
-        </Button>
+      <Button
+        anchoCompleto
+        paraNavegacion
+        disabled={guardando || !armado.ok}
+        onClick={() => void alGuardar()}
+      >
+        {guardando ? "Guardando…" : "Guardar los cambios"}
+      </Button>
 
-        <button
-          type="button"
-          disabled={deleting || saving}
-          onClick={handleDelete}
-          className="w-full rounded-xl border border-rojo-borde px-4 py-3 text-sm font-medium text-rojo hover:bg-rojo-fondo-fuerte"
+      <div className="pb-2">
+        <Button
+          anchoCompleto
+          variante="destructivo"
+          disabled={borrando}
+          onClick={() => void alBorrar()}
         >
-          {deleting ? "Eliminando…" : "Eliminar zona"}
-        </button>
-      </Card>
-    </form>
+          {borrando ? "Borrando…" : "Borrar esta zona"}
+        </Button>
+      </div>
+    </div>
   );
 }

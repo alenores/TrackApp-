@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDelNavegador } from "@/hooks/use-del-navegador";
 import {
   type BeforeInstallPromptEvent,
   dismissInstallPrompt,
@@ -10,6 +11,16 @@ import {
   isMobileBrowser,
   isStandaloneMode,
 } from "@/lib/pwa/standalone";
+
+/**
+ * El cartel que ofrece instalar la app en el celular.
+ *
+ * Casi todo acá **se deduce, no se guarda**: qué celular es, si la app ya está
+ * instalada y si el usuario ya dijo que no son cosas que se leen del navegador.
+ * Lo único que es estado de verdad es lo que pasó mientras la pantalla estaba
+ * abierta: que el navegador ofreció instalar, que el usuario cerró el cartel o
+ * que se cumplió la espera.
+ */
 
 const FALLBACK_DELAY_MS = 2500;
 
@@ -26,91 +37,77 @@ export type UsePwaInstallResult = {
 };
 
 export function usePwaInstall(): UsePwaInstallResult {
-  const [show, setShow] = useState(false);
-  const [isIos, setIsIos] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
-  const [needsManualInstall, setNeedsManualInstall] = useState(false);
+  const isIos = useDelNavegador(isIosDevice, false);
+  const isAndroid = useDelNavegador(isAndroidDevice, false);
+  const esMovil = useDelNavegador(isMobileBrowser, false);
+  const yaEstaInstalada = useDelNavegador(isStandaloneMode, false);
+  const yaDijoQueNo = useDelNavegador(isInstallDismissed, false);
+
+  const [cerradoAhora, setCerradoAhora] = useState(false);
+  const [instaladaAhora, setInstaladaAhora] = useState(false);
+  const [pasoLaEspera, setPasoLaEspera] = useState(false);
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [installing, setInstalling] = useState(false);
 
+  const puedeOfrecerse =
+    !yaEstaInstalada && !yaDijoQueNo && !cerradoAhora && !instaladaAhora;
+
   useEffect(() => {
-    if (isStandaloneMode() || isInstallDismissed()) {
-      return;
-    }
+    if (!puedeOfrecerse || isIos) return;
 
-    const ios = isIosDevice();
-    const android = isAndroidDevice();
-
-    setIsIos(ios);
-    setIsAndroid(android);
-
-    if (ios) {
-      setNeedsManualInstall(true);
-      setShow(true);
-      return;
-    }
-
-    let promptReceived = false;
-
-    const handleBeforeInstall = (event: Event) => {
-      event.preventDefault();
-      promptReceived = true;
-      setInstallEvent(event as BeforeInstallPromptEvent);
-      setNeedsManualInstall(false);
-      setShow(true);
+    const alPoderInstalar = (evento: Event) => {
+      evento.preventDefault();
+      setInstallEvent(evento as BeforeInstallPromptEvent);
     };
 
-    const handleAppInstalled = () => {
+    const alQuedarInstalada = () => {
       dismissInstallPrompt();
-      setShow(false);
+      setInstaladaAhora(true);
       setInstallEvent(null);
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
-    window.addEventListener("appinstalled", handleAppInstalled);
+    window.addEventListener("beforeinstallprompt", alPoderInstalar);
+    window.addEventListener("appinstalled", alQuedarInstalada);
 
-    const fallbackTimer = window.setTimeout(() => {
-      if (
-        promptReceived ||
-        isStandaloneMode() ||
-        isInstallDismissed()
-      ) {
-        return;
-      }
-
-      if (isMobileBrowser()) {
-        setNeedsManualInstall(true);
-        setShow(true);
-      }
-    }, FALLBACK_DELAY_MS);
+    // Algunos navegadores no avisan nunca que se puede instalar. Después de un
+    // rato se ofrece igual, explicando cómo hacerlo a mano.
+    const espera = window.setTimeout(
+      () => setPasoLaEspera(true),
+      FALLBACK_DELAY_MS,
+    );
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
-      window.removeEventListener("appinstalled", handleAppInstalled);
-      window.clearTimeout(fallbackTimer);
+      window.removeEventListener("beforeinstallprompt", alPoderInstalar);
+      window.removeEventListener("appinstalled", alQuedarInstalada);
+      window.clearTimeout(espera);
     };
-  }, []);
+  }, [puedeOfrecerse, isIos]);
+
+  const needsManualInstall =
+    puedeOfrecerse &&
+    installEvent === null &&
+    (isIos || (pasoLaEspera && esMovil));
+
+  const show = puedeOfrecerse && (installEvent !== null || needsManualInstall);
 
   const dismiss = useCallback(() => {
     dismissInstallPrompt();
-    setShow(false);
+    setCerradoAhora(true);
   }, []);
 
   const install = useCallback(async () => {
-    if (!installEvent) {
-      return;
-    }
+    if (!installEvent) return;
 
     setInstalling(true);
 
     try {
       await installEvent.prompt();
-      const choice = await installEvent.userChoice;
+      const eleccion = await installEvent.userChoice;
 
-      if (choice.outcome === "accepted") {
+      if (eleccion.outcome === "accepted") {
         dismissInstallPrompt();
-        setShow(false);
+        setInstaladaAhora(true);
       }
     } finally {
       setInstalling(false);

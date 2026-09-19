@@ -246,6 +246,19 @@ html.pwa-standalone-zoom-lock body {
   stroke: var(--anotacion);
 }
 
+/* El pedazo de mapa que se está definiendo, y los que ya existen. */
+.rectangulo-nuevo {
+  stroke: var(--dato);
+  fill: var(--dato);
+  fill-opacity: 0.14;
+}
+
+.rectangulo-existente {
+  stroke: var(--mapa-linea);
+  fill: var(--mapa-linea);
+  fill-opacity: 0.12;
+}
+
 @keyframes navigation-progress-slide {
   0% {
     transform: translateX(-100%);

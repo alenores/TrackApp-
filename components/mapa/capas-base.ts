@@ -35,3 +35,13 @@ export function elegirFondo(): FondoDisponible {
   // Todavía no hay archivos de mapa. No se inventa un proveedor de terceros.
   return { tipo: "sin-mapa", crearCapa: null };
 }
+
+/**
+ * ¿Ya se pueden descargar mapas?
+ *
+ * Hoy no: los archivos todavía no existen. Se responde desde el mismo lugar que
+ * elige el fondo, así el día que existan **no hay que tocar ninguna pantalla**.
+ */
+export function sePuedenDescargarMapas(): boolean {
+  return elegirFondo().crearCapa !== null;
+}

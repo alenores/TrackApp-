@@ -1,138 +1,25 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getUserDisplayName } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
-import { fetchAvatarUrlsByUserIds } from "@/lib/auth/profiles";
-import { fetchZonaById, fetchSectoresByZonaId } from "@/lib/zonas/queries";
-import { getZonaUploaderLabel } from "@/lib/zonas/labels";
 import { AppReadyMarker } from "@/components/layout/app-ready-marker";
-import { Card } from "@/components/ui/card";
-import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
-import { SectorCard } from "@/components/zonas/sector-card";
+import { ZonaDetalle } from "@/components/zonas/zona-detalle";
 
-type ZonaDetailPageProps = {
+/**
+ * Una zona con sus sectores.
+ *
+ * Dibuja desde lo guardado en el celular, así se abre igual sin señal.
+ */
+
+type Props = {
   params: Promise<{ id: string }>;
 };
 
-export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
+export default async function PaginaDeZona({ params }: Props) {
   const { id } = await params;
-
-  const [user, zona, sectores] = await Promise.all([
-    getAuthUser(),
-    fetchZonaById(id),
-    fetchSectoresByZonaId(id),
-  ]);
-
-  if (!zona) notFound();
-
-  const currentUserId = user?.id ?? null;
-  const currentUserName = getUserDisplayName(user);
-
-  const allUserIds = [
-    zona.user_id,
-    ...sectores.map((s) => s.user_id),
-  ];
-  const avatarByUserId = await fetchAvatarUrlsByUserIds([
-    ...new Set(allUserIds),
-  ]);
-
-  const zonaUploaderLabel = getZonaUploaderLabel(
-    zona,
-    currentUserId,
-    currentUserName,
-  );
+  const usuario = await getAuthUser();
 
   return (
     <>
       <AppReadyMarker />
-      <div className="space-y-4">
-        <Card tono="alta" className="space-y-3">
-          <div className="flex items-start gap-3">
-            <Link
-              href="/zonas"
-              className="mt-1 shrink-0 text-texto-suave hover:text-texto"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="h-6 w-6"
-                aria-hidden
-              >
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-acento-tenue">
-                {zona.provincia}
-              </p>
-              <h1 className="mt-0.5 break-words text-xl font-bold text-texto">
-                {zona.nombre}
-              </h1>
-            </div>
-          </div>
-
-          {zona.descripcion ? (
-            <p className="break-words whitespace-pre-wrap text-sm leading-6 text-texto-suave">
-              {zona.descripcion}
-            </p>
-          ) : null}
-
-          <div className="flex items-center gap-2">
-            <UploaderAvatar
-              avatarUrl={avatarByUserId[zona.user_id]}
-              uploaderLabel={zonaUploaderLabel}
-              size="sm"
-            />
-            <span className="text-xs text-texto-suave">{zonaUploaderLabel}</span>
-          </div>
-        </Card>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-texto">
-              Sectores{" "}
-              <span className="text-texto-suave font-normal">
-                ({sectores.length})
-              </span>
-            </h2>
-            <Link
-              href={`/zonas/${id}/sectores/nueva`}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-acento-borde bg-acento px-4 py-2 text-sm font-semibold text-acento-texto transition-colors hover:bg-acento-hover"
-            >
-              + Nuevo sector
-            </Link>
-          </div>
-
-          {sectores.length === 0 ? (
-            <div className="rounded-2xl border border-borde bg-superficie px-4 py-8 text-center text-texto-suave">
-              <p className="text-sm">No hay sectores en esta zona aún.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sectores.map((sector) => (
-                <SectorCard
-                  key={sector.id}
-                  sector={sector}
-                  zonaId={id}
-                  currentUserId={currentUserId}
-                  uploaderLabel={getZonaUploaderLabel(
-                    sector,
-                    currentUserId,
-                    currentUserName,
-                  )}
-                  uploaderAvatarUrl={avatarByUserId[sector.user_id]}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <ZonaDetalle zonaId={Number(id)} miPerfilId={usuario?.id ?? null} />
     </>
   );
 }

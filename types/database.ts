@@ -135,13 +135,23 @@ export type RutaResumen = {
   actualizadoEn: string;
 };
 
-/** La ruta completa, con la línea del recorrido. */
-export type Ruta = RutaResumen & {
+/**
+ * Todo lo de una ruta menos la línea del recorrido.
+ *
+ * Esto es lo que se guarda en el celular: qué llevar y qué complicaciones tiene
+ * la ruta hay que poder leerlos **en el cerro**, que es justo donde no hay
+ * señal. La línea viaja aparte porque pesa miles de veces más.
+ */
+export type RutaSinRecorrido = RutaResumen & {
   comentario: string | null;
   equipo: string | null;
   complicaciones: string | null;
-  geometria: FeatureCollection;
   archivoUrl: string | null;
+};
+
+/** La ruta completa, con la línea del recorrido. */
+export type Ruta = RutaSinRecorrido & {
+  geometria: FeatureCollection;
 };
 
 export type Anotacion = {

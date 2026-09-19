@@ -31,6 +31,8 @@ export type NumerosDelRecorrido = {
   desnivelPositivoM: number;
   desnivelNegativoM: number;
   rectangulo: Rectangulo;
+  /** Cuántos puntos trae el archivo. Se muestra para confirmar que se leyó. */
+  puntos: number;
 };
 
 function aRadianes(grados: number): number {
@@ -199,10 +201,16 @@ export function calcularNumerosDelRecorrido(
 
   const desnivel = calcularDesnivel(geometria);
 
+  const puntos = lineasDelRecorrido(geometria).reduce(
+    (total, linea) => total + linea.length,
+    0,
+  );
+
   return {
     largoKm: calcularLargoKm(geometria),
     desnivelPositivoM: desnivel.positivoM,
     desnivelNegativoM: desnivel.negativoM,
     rectangulo,
+    puntos,
   };
 }
