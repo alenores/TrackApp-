@@ -1,4 +1,9 @@
 import type { FeatureCollection } from "geojson";
+import {
+  ESTANTES,
+  escribirEnElDeposito,
+  leerDelDeposito,
+} from "@/lib/offline/deposito";
 
 /**
  * Las líneas de las rutas, guardadas aparte del resto del paquete.
@@ -11,59 +16,18 @@ import type { FeatureCollection } from "geojson";
  *
  * Por eso el guardado simple se reserva para lo liviano —los datos de las
  * rutas, las zonas, los sectores y las anotaciones, que dibujan las pantallas al
- * instante— y las líneas van al depósito grande del navegador, que aguanta
- * mucho más.
+ * instante— y las líneas van al depósito grande del navegador (`deposito.ts`),
+ * que aguanta mucho más.
  */
-
-const DEPOSITO = "trackapp-offline";
-const VERSION = 1;
-const ESTANTE = "recorridos";
-
-function abrir(): Promise<IDBDatabase> {
-  return new Promise((resolver, rechazar) => {
-    if (typeof indexedDB === "undefined") {
-      rechazar(new Error("Este navegador no puede guardar recorridos."));
-      return;
-    }
-
-    const pedido = indexedDB.open(DEPOSITO, VERSION);
-
-    pedido.onupgradeneeded = () => {
-      const base = pedido.result;
-      if (!base.objectStoreNames.contains(ESTANTE)) {
-        base.createObjectStore(ESTANTE);
-      }
-    };
-
-    pedido.onsuccess = () => resolver(pedido.result);
-    pedido.onerror = () =>
-      rechazar(pedido.error ?? new Error("No se pudo abrir el depósito."));
-  });
-}
-
-function usar<T>(
-  modo: IDBTransactionMode,
-  operacion: (estante: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> {
-  return abrir().then(
-    (base) =>
-      new Promise<T>((resolver, rechazar) => {
-        const transaccion = base.transaction(ESTANTE, modo);
-        const pedido = operacion(transaccion.objectStore(ESTANTE));
-
-        pedido.onsuccess = () => resolver(pedido.result);
-        transaccion.onerror = () =>
-          rechazar(transaccion.error ?? new Error("Falló el guardado."));
-      }),
-  );
-}
 
 export async function guardarRecorrido(
   rutaId: number,
   recorrido: FeatureCollection,
 ): Promise<boolean> {
   try {
-    await usar("readwrite", (estante) => estante.put(recorrido, rutaId));
+    await escribirEnElDeposito(ESTANTES.recorridos, [
+      (donde) => donde.put(recorrido, rutaId),
+    ]);
     return true;
   } catch {
     return false;
@@ -74,9 +38,9 @@ export async function leerRecorrido(
   rutaId: number,
 ): Promise<FeatureCollection | null> {
   try {
-    const guardado = await usar<FeatureCollection | undefined>(
-      "readonly",
-      (estante) => estante.get(rutaId),
+    const guardado = await leerDelDeposito<FeatureCollection | undefined>(
+      ESTANTES.recorridos,
+      (donde) => donde.get(rutaId),
     );
     return guardado ?? null;
   } catch {
@@ -96,15 +60,19 @@ export async function borrarRecorridosQueSobran(
 ): Promise<void> {
   try {
     const vigentes = new Set(rutasQueSiguenExistiendo);
-    const guardadas = await usar<IDBValidKey[]>("readonly", (estante) =>
-      estante.getAllKeys(),
+    const guardadas = await leerDelDeposito<IDBValidKey[]>(
+      ESTANTES.recorridos,
+      (donde) => donde.getAllKeys(),
     );
 
-    for (const clave of guardadas) {
-      if (typeof clave === "number" && !vigentes.has(clave)) {
-        await usar("readwrite", (estante) => estante.delete(clave));
-      }
-    }
+    const sobran = guardadas.filter(
+      (clave): clave is number => typeof clave === "number" && !vigentes.has(clave),
+    );
+
+    await escribirEnElDeposito(
+      ESTANTES.recorridos,
+      sobran.map((clave) => (donde: IDBObjectStore) => donde.delete(clave)),
+    );
   } catch {
     // Si no se puede limpiar, queda de más. Molesta, pero no rompe nada.
   }
@@ -112,7 +80,7 @@ export async function borrarRecorridosQueSobran(
 
 export async function borrarTodosLosRecorridos(): Promise<void> {
   try {
-    await usar("readwrite", (estante) => estante.clear());
+    await escribirEnElDeposito(ESTANTES.recorridos, [(donde) => donde.clear()]);
   } catch {
     // Ídem.
   }
