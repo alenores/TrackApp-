@@ -90,6 +90,7 @@ export default function PantallaRota({ error, reset }: Props) {
       */}
       <button
         type="button"
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a propósito: la red de rescate no puede usar la navegación interna, que es justo lo que puede estar roto.
         onClick={() => window.location.assign("/rutas")}
         style={{
           minHeight: "56px",

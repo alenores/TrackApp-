@@ -42,6 +42,7 @@ export function FormularioDeIngreso() {
       // de Supabase estén disponibles en el próximo request al servidor.
       // router.push + router.refresh en secuencia compiten y pueden fallar
       // en mobile con red variable.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a propósito: ver el comentario de arriba.
       window.location.href = "/";
       return;
     }
@@ -69,6 +70,7 @@ export function FormularioDeIngreso() {
     }
 
     if (signUpData.session) {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a propósito: ver el comentario de arriba.
       window.location.href = "/";
       return;
     }
