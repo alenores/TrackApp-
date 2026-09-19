@@ -45,3 +45,6 @@ next-env.d.ts
 public/sw.js
 public/workbox-*.js
 public/fallback-*.js
+
+# el motor del mapa se copia en cada compilacion desde la libreria
+/public/motor-del-mapa/

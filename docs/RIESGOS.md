@@ -251,6 +251,42 @@ puede automatizar.
 
 ---
 
+## ✅ R17 — El mapa nunca dibujó nada, y nadie se enteró
+
+**Qué pasaba.** Desde que se cambió el motor del mapa, **ningún mapa de la app
+dibujó nunca nada**: ni el fondo, ni la línea de la ruta, ni el punto del GPS,
+ni los recuadros de los sectores. Se veía un rectángulo del color del fondo y
+listo.
+
+**Por qué.** El motor del mapa reparte su trabajo en dos: una parte dibuja y
+otra, aparte, procesa los datos. La segunda vive en un archivo suelto y el motor
+la busca solo, calculando dónde quedó. **Ese cálculo no funciona con la forma en
+que se empaqueta esta app:** devolvía vacío, el motor terminaba cargando la
+página web en lugar de su propio código, esa parte moría al instante y el mapa
+quedaba esperando para siempre datos que nunca llegaban.
+
+Encima, el control de sesión de la app se comía los archivos del mapa —sus
+íconos, sus letras y el motor mismo— y los mandaba al login.
+
+**Cómo se arregló (2026-09-19).** Los dos archivos del motor se copian adentro
+de la app en cada compilación y se le dice exactamente dónde están. Los archivos
+del mapa ya no pasan por el control de sesión. Y el código que le entrega los
+pedazos guardados le da una copia propia cada vez: le entregaba el mismo bloque
+de memoria dos veces, y el mapa se queda con lo que recibe.
+
+**Por qué tardó tanto en encontrarse, que es lo que más importa.** Se buscó a
+ciegas: leyendo código y pidiéndole a Ale que probara, una suposición por vuelta,
+cinco veces. **Se resolvió en veinte minutos cuando se levantó la app y se la
+miró con un navegador de verdad**, que estaba disponible desde el principio.
+
+**Cómo se evita que vuelva.** Hay prueba automática de que los dos archivos del
+motor estén copiados. Y queda la regla: ante un problema visual que no se
+entiende a la primera, **se abre la app y se mira**, no se adivina leyendo.
+
+**Detectado:** 2026-09-19, probando en producción. **Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

@@ -24,14 +24,19 @@ export const DIRECCION_DE_LAS_TESELAS = `${PROTOCOLO}://{z}/{x}/{y}`;
 
 const VACIO = new Uint8Array(0);
 
+/**
+ * Una copia propia de los bytes, siempre.
+ *
+ * **Nunca se entrega el mismo bloque de memoria dos veces.** El mapa se queda
+ * con lo que se le pasa —deja de estar disponible de este lado— así que el
+ * segundo pedido del mismo pedazo encontraría el bloque vacío y fallaría. Con
+ * el pedazo vacío, que es uno solo compartido por todos los lugares donde no
+ * hay nada dibujado, eso rompía el mapa entero al segundo pedido.
+ *
+ * Copiar cuesta unos bytes; no copiar cuesta el mapa.
+ */
 function comoArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  // Cuando la vista tapa exactamente todo su buffer se pasa el buffer tal cual;
-  // si no, se copia. Pasar un buffer más grande de la cuenta le daría al mapa
-  // bytes de otro pedazo.
-  if (bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength) {
-    return bytes.buffer as ArrayBuffer;
-  }
-  return bytes.slice().buffer;
+  return bytes.slice().buffer as ArrayBuffer;
 }
 
 /**

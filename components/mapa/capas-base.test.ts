@@ -94,6 +94,15 @@ describe("lo que el fondo necesita tener guardado en la app", () => {
     }
   });
 
+  it("el motor que procesa los datos está copiado adentro de la app", () => {
+    // Sin estos dos archivos el mapa no dibuja NADA: ni el fondo, ni la ruta,
+    // ni el punto del GPS. El motor los busca solo y no los encuentra por cómo
+    // se empaqueta esta app, así que se los deja acá y se le dice dónde están.
+    const motor = join(process.cwd(), "public", "motor-del-mapa");
+    expect(existsSync(join(motor, "maplibre-gl-worker.mjs"))).toBe(true);
+    expect(existsSync(join(motor, "maplibre-gl-shared.mjs"))).toBe(true);
+  });
+
   it("los íconos de los dos modos están adentro", () => {
     for (const nombre of ["light", "dark"]) {
       expect(existsSync(join(CARPETA_DE_ICONOS, `${nombre}.json`))).toBe(true);

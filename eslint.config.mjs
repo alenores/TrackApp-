@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "public/sw.js",
     "public/workbox-*.js",
     "public/fallback-*.js",
+    // El motor del mapa: se copia tal cual desde la librería, no es código nuestro.
+    "public/motor-del-mapa/**",
   ]),
 ]);
 

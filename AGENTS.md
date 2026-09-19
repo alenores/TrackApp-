@@ -334,6 +334,11 @@ rompe algo** — hasta que falla en el cerro.
 3. Comparar lo real contra lo esperado.
 4. Recién ahí decidir si el problema es de datos, de lógica o de código.
 
+**Si el problema se ve en pantalla, se abre la app y se mira.** Hay navegador
+disponible: se levanta la app y se la mira con los propios ojos. Leer código y
+mandar a Ale a probar es una suposición por vuelta y le cuesta la tarde. Pasó
+el 2026-09-19: cinco vueltas adivinando, veinte minutos mirando.
+
 **Y antes de arreglar, explicarle a Ale en criollo qué está pasando**, para que
 pueda aportar su mirada. Él conoce el uso real; el agente conoce el código.
 
@@ -402,3 +407,13 @@ Al cerrar una sesión con cambios, actualizar lo que corresponda según la tabla
 
 **Si un documento contradice al código o a la base, mandan el código y la base.**
 El documento está viejo: se corrige, no se respeta.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

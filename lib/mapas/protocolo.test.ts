@@ -98,3 +98,26 @@ describe("registrar el protocolo", () => {
     expect(registrados.has(PROTOCOLO)).toBe(false);
   });
 });
+
+describe("entregar el mismo pedazo dos veces", () => {
+  it("cada pedido recibe su propia copia", async () => {
+    // El mapa se queda con lo que recibe: deja de estar disponible de este
+    // lado. Si se entregara el mismo bloque dos veces, el segundo pedido
+    // encontraría un bloque vacío y el mapa se rompería entero.
+    await guardarTeselas([{ clave: "3/2/5", bytes: new Uint8Array([7, 7]) }]);
+
+    const primero = await servirTeselaGuardada("guardado://3/2/5");
+    const segundo = await servirTeselaGuardada("guardado://3/2/5");
+
+    expect(primero).not.toBe(segundo);
+    expect(new Uint8Array(primero)).toEqual(new Uint8Array(segundo));
+  });
+
+  it("dos pedazos vacíos tampoco comparten el mismo bloque", async () => {
+    const uno = await servirTeselaGuardada("guardado://9/1/1");
+    const otro = await servirTeselaGuardada("guardado://9/2/2");
+
+    expect(uno).not.toBe(otro);
+    expect(uno.byteLength).toBe(0);
+  });
+});

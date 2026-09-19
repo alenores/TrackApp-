@@ -12,6 +12,7 @@ import { coloresDelMapa } from "@/components/mapa/colores";
 import { useModo } from "@/hooks/use-modo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
+import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import type { Anotacion, Rectangulo } from "@/types/database";
@@ -209,7 +210,10 @@ export function Mapa({
   useEffect(() => {
     if (!contenedorRef.current || mapaRef.current) return;
 
-    // Antes que nada: enseñarle al mapa a leer los pedazos del celular.
+    // Antes que nada, las dos cosas sin las cuales el mapa no dibuja nada:
+    // decirle dónde está la parte de su motor que procesa los datos, y
+    // enseñarle a leer los pedazos guardados en el celular.
+    prepararElMotorDelMapa();
     registrarElMapaGuardado();
 
     const mapa = new maplibregl.Map({
