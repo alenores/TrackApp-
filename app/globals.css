@@ -66,7 +66,6 @@
 
   --mapa-fondo: #16202f;
   --mapa-linea: #52b788;
-  --mapa-curvas: rgb(148 163 184 / 0.16);
   /* El punto azul: dónde estoy. */
   --gps: #60a5fa;
   /* Los puntos y trazos dibujados sobre el territorio. */
@@ -118,7 +117,6 @@
 
   --mapa-fondo: #e8eef4;
   --mapa-linea: #1b4332;
-  --mapa-curvas: rgb(71 85 105 / 0.28);
   --gps: #1d4ed8;
   --anotacion: #be185d;
 
@@ -168,7 +166,6 @@
 
   --color-mapa-fondo: var(--mapa-fondo);
   --color-mapa-linea: var(--mapa-linea);
-  --color-mapa-curvas: var(--mapa-curvas);
   --color-gps: var(--gps);
   --color-anotacion: var(--anotacion);
 
@@ -215,48 +212,22 @@ html.pwa-standalone-zoom-lock body {
   touch-action: pan-y;
 }
 
-.leaflet-container {
-  z-index: 0;
-  font-family: inherit;
-  background: var(--mapa-fondo);
-  touch-action: pan-x pan-y pinch-zoom;
-}
-
 /*
- * El mapa lo dibuja Leaflet, que no entiende las clases de Tailwind. Estos
- * colores salen igual de las variables, así el mapa también cambia de modo.
- * La única excepción es una anotación con color elegido a mano: ese color es
- * un dato del usuario, no del diseño, y manda.
+ * El mapa lo dibuja MapLibre, que no entiende las clases de la app.
+ *
+ * El fondo va transparente a propósito: el color lo pone el recuadro que
+ * contiene al mapa, con las variables de siempre, así cambia solo entre modo
+ * sol y modo noche. Los colores de lo que se dibuja encima —la ruta, el punto
+ * del GPS, las anotaciones— se leen de esas mismas variables desde el código.
  */
-.ruta-linea {
-  stroke: var(--mapa-linea);
+.maplibregl-map {
+  font-family: inherit;
+  background: transparent;
 }
 
-.mi-posicion {
-  stroke: var(--superficie);
-  fill: var(--gps);
-}
-
-.anotacion-punto {
-  stroke: var(--superficie);
-  fill: var(--anotacion);
-}
-
-.anotacion-trazo {
-  stroke: var(--anotacion);
-}
-
-/* El pedazo de mapa que se está definiendo, y los que ya existen. */
-.rectangulo-nuevo {
-  stroke: var(--dato);
-  fill: var(--dato);
-  fill-opacity: 0.14;
-}
-
-.rectangulo-existente {
-  stroke: var(--mapa-linea);
-  fill: var(--mapa-linea);
-  fill-opacity: 0.12;
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate,
+.maplibregl-canvas {
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 @keyframes navigation-progress-slide {

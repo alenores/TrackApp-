@@ -1,0 +1,51 @@
+/**
+ * Los colores con los que el mapa dibuja.
+ *
+ * El mapa no entiende las clases de la app: necesita colores de verdad. Así
+ * que se leen las mismas variables que usa todo el resto, y se vuelven a leer
+ * cuando se cambia entre modo sol y modo noche.
+ *
+ * **Nunca escribir un color acá.** Si hace falta uno nuevo, se agrega a las
+ * variables y se lo nombra desde este archivo.
+ */
+
+export type ColoresDelMapa = {
+  linea: string;
+  gps: string;
+  anotacion: string;
+  rectanguloNuevo: string;
+  rectanguloExistente: string;
+  /** El borde de los puntos, para que se despeguen de lo que tengan debajo. */
+  contorno: string;
+};
+
+/** Por si se pregunta antes de que el navegador tenga las variables listas. */
+const DE_RESPALDO: ColoresDelMapa = {
+  linea: "#52b788",
+  gps: "#60a5fa",
+  anotacion: "#f472b6",
+  rectanguloNuevo: "#67e8f9",
+  rectanguloExistente: "#52b788",
+  contorno: "#1e293b",
+};
+
+function leer(nombre: string, deRespaldo: string): string {
+  if (typeof window === "undefined") return deRespaldo;
+
+  const valor = getComputedStyle(document.documentElement)
+    .getPropertyValue(nombre)
+    .trim();
+
+  return valor || deRespaldo;
+}
+
+export function coloresDelMapa(): ColoresDelMapa {
+  return {
+    linea: leer("--mapa-linea", DE_RESPALDO.linea),
+    gps: leer("--gps", DE_RESPALDO.gps),
+    anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
+    rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),
+    rectanguloExistente: leer("--mapa-linea", DE_RESPALDO.rectanguloExistente),
+    contorno: leer("--superficie", DE_RESPALDO.contorno),
+  };
+}

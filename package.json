@@ -17,9 +17,10 @@
     "@tmcw/togeojson": "^7.1.2",
     "@turf/nearest-point-on-line": "^7.3.5",
     "heic-to": "^1.5.2",
-    "leaflet": "^1.9.4",
+    "maplibre-gl": "^6.10.0",
     "next": "16.2.6",
     "next-pwa": "^5.6.0",
+    "pmtiles": "^4.5.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-easy-crop": "^6.2.3"
@@ -27,7 +28,6 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/geojson": "^7946.0.16",
-    "@types/leaflet": "^1.9.21",
     "@types/node": "^22.20.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
