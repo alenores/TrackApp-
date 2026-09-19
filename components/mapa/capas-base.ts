@@ -38,6 +38,23 @@ const ICONOS_DE_SOL = "/iconos-del-mapa/light";
 const ICONOS_DE_NOCHE = "/iconos-del-mapa/dark";
 
 /**
+ * La dirección completa de un archivo de la app.
+ *
+ * **El motor del mapa no acepta atajos.** Un camino que arranca con barra —el
+ * que usa todo el resto de la app— lo rechaza de plano, y ahí el mapa no se
+ * arma: no se dibuja ni el fondo ni la ruta ni el punto del GPS. Hay que
+ * pasarle la dirección entera, con el nombre del sitio adelante.
+ *
+ * Se arma en el momento y no se escribe fija, porque el sitio cambia según
+ * dónde esté corriendo la app: en el celular, en la computadora del que la
+ * programa, o en una dirección de prueba.
+ */
+function direccionCompleta(camino: string): string {
+  if (typeof window === "undefined") return camino;
+  return `${window.location.origin}${camino}`;
+}
+
+/**
  * El estilo con el que arranca el mapa.
  *
  * Trae la fuente de los pedazos guardados pero **ninguna capa de fondo**: esas
@@ -46,13 +63,13 @@ const ICONOS_DE_NOCHE = "/iconos-del-mapa/dark";
  * mapa, con las variables de siempre.
  */
 export function iconosDelFondo(modo: Modo): string {
-  return modo === "sol" ? ICONOS_DE_SOL : ICONOS_DE_NOCHE;
+  return direccionCompleta(modo === "sol" ? ICONOS_DE_SOL : ICONOS_DE_NOCHE);
 }
 
 export function estiloDelMapa(modo: Modo): StyleSpecification {
   return {
     version: 8,
-    glyphs: LETRAS,
+    glyphs: direccionCompleta(LETRAS),
     sprite: iconosDelFondo(modo),
     sources: {
       [FUENTE_DEL_FONDO]: {
