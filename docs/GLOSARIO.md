@@ -72,6 +72,16 @@ Fondo oscuro con texto claro. Para poca luz.
 El área que responde al toque de un botón. Puede ser más grande que el dibujo del
 botón. Nunca baja de 56 píxeles.
 
+**Franja**
+La barra de color al costado izquierdo de una tarjeta, que la marca como aviso.
+Hay tres: verde (está listo), ámbar (falta algo y todavía estás a tiempo) y rojo
+(hay un problema). Una tarjeta sin franja no es un aviso.
+
+**Rayita y borde fuerte**
+Dos bordes distintos, a propósito. La **rayita** separa dos superficies y puede
+ser tenue, porque no se lee. El **borde fuerte** es el contorno de algo que se
+toca —un campo, un botón, el foco— y sí tiene que verse con sol de frente.
+
 ## Usuarios
 
 **Administrador**
@@ -89,9 +99,9 @@ El resto de los usuarios: amigos de amigos y cualquiera que llegue.
 El recorrido subido a la app desde un archivo. Tiene una línea, un nombre, una
 distancia, desnivel, dificultad y comentarios.
 
-**Es la palabra definitiva y la única.** Nunca «ruta», «trayecto» ni
-«recorrido». `TrackApp` sigue siendo el nombre del producto: eso no es el
-concepto y no se renombra.
+**Es la palabra definitiva y la única.** Nunca «track», «trayecto» ni
+«recorrido» para referirse a esto. `TrackApp` sigue siendo el nombre del
+producto: eso no es el concepto y no se renombra.
 
 **Zona**
 Agrupación de sectores, con nombre, descripción y un rectángulo propio de dos
@@ -101,6 +111,22 @@ medir qué parte de su territorio todavía no tiene sector encima.
 **Sector**
 Rectángulo alineado al norte dentro de una zona, definido por **dos puntos**: la
 esquina noroeste y la sudeste. Es la unidad que se descarga.
+
+**Cobertura**
+Cuánto de una ruta cae adentro de algún sector, y de esos sectores cuáles están
+descargados. Tiene tres estados y ninguno queda mudo: está todo listo, falta
+bajar el mapa de un sector, o hay un pedazo de ruta que no cae en ningún sector.
+
+**Hueco**
+El pedazo de una zona que todavía no tiene ningún sector encima. Es la misma
+idea de cobertura mirada desde el otro lado, y sirve para saber qué sectores
+faltan crear antes de que hagan falta.
+
+**Paquete**
+Todo lo liviano que la app guarda en el celular para funcionar sin señal: las
+rutas con sus textos, las zonas, los sectores y las anotaciones. Se actualiza
+solo, sin preguntar nada. **Las líneas de los recorridos no van adentro**: pesan
+demasiado y viajan aparte.
 
 **Desnivel positivo / desnivel negativo**
 Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque

@@ -1,49 +1,59 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-18 (base rehecha desde cero)
+> Última revisión: 2026-09-19 (app reescrita sobre la base nueva)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
 
-## 🔴 R1 — Los mapas descargados nunca se borran
+## 🟡 R1 — Los mapas descargados nunca se borran
 
-**Qué pasa.** Todo lo que se descarga para usar sin conexión se guarda en un
-depósito único y compartido. Nadie lleva la cuenta de qué descarga usa qué. Al
-quitar algo de offline se borra el registro, pero las imágenes quedan guardadas
-para siempre.
+**Qué pasaba.** Todo lo que se descargaba para usar sin conexión iba a un
+depósito único y compartido. Nadie llevaba la cuenta de qué descarga usaba qué,
+así que al quitar algo de offline se borraba el registro pero las imágenes
+quedaban para siempre.
 
-**Consecuencia.** La app ocupa cada vez más espacio en el celular y nunca baja.
-No hay forma de liberarlo desde adentro de la app.
+**Estado hoy (2026-09-19).** Ese código ya no existe: se borró entero junto con
+los mapas de OpenStreetMap. Hoy no se descarga ningún mapa, así que el problema
+no puede pasar.
 
-**Detectado:** 2026-09-17, leyendo el código.
+**Por qué sigue anotado.** Vuelve solo el día que existan los archivos de mapa.
+Queda como requisito de ese trabajo: **lo que se descarga tiene que poder
+borrarse, y el espacio se tiene que liberar de verdad.**
 
----
-
-## 🔴 R2 — Sin señal, el mapa desaparece al acercarse
-
-**Qué pasa.** Se descargan imágenes hasta cierto nivel de acercamiento, pero el
-mapa deja acercarse mucho más allá. Pasado ese punto pide imágenes que no tiene.
-
-**Consecuencia.** Sin señal, la pantalla queda en blanco justo cuando más
-precisión se necesita: al mirar de cerca un desvío del sendero.
-
-**Cómo se arregla.** Decirle al mapa que agrande la última imagen disponible en
-vez de pedir una que no existe. Se ve más borroso pero nunca queda vacío.
-
-**Detectado:** 2026-09-17, leyendo el código.
+**Detectado:** 2026-09-17 · **Neutralizado:** 2026-09-19
 
 ---
 
-## 🔴 R3 — La pantalla de detalle de la ruta ignora lo descargado
+## 🟡 R2 — Sin señal, el mapa desaparece al acercarse
 
-**Qué pasa.** Hay dos mapas en la app. El de navegación sabe leer lo guardado en
-el celular; el del detalle de la ruta siempre va a internet.
+**Qué pasaba.** Se descargaban imágenes hasta cierto nivel de acercamiento, pero
+el mapa dejaba acercarse mucho más allá. Pasado ese punto pedía imágenes que no
+tenía y la pantalla quedaba en blanco.
 
-**Consecuencia.** Se descarga una ruta completa, se llega al cerro, se abre el
-detalle de esa ruta y el mapa está vacío. La descarga solo sirve en una de las
-dos pantallas.
+**Estado hoy (2026-09-19).** Ese código ya no existe. Hoy el mapa va sin fondo y
+la línea de la ruta se dibuja a cualquier acercamiento.
 
-**Detectado:** 2026-09-17, leyendo el código.
+**Por qué sigue anotado.** Vuelve solo cuando existan los archivos de mapa.
+Queda como requisito: **pasado el último nivel descargado se agranda la última
+imagen disponible, nunca se pide una que no está.**
+
+**Detectado:** 2026-09-17 · **Neutralizado:** 2026-09-19
+
+---
+
+## ✅ R3 — La pantalla de detalle de la ruta ignora lo descargado
+
+**Qué pasaba.** Había dos mapas en la app. El de navegación sabía leer lo
+guardado en el celular; el del detalle de la ruta siempre iba a internet. Se
+descargaba una ruta, se llegaba al cerro, se abría su ficha y el mapa estaba
+vacío.
+
+**Resuelto el 2026-09-19.** Hay **un solo mapa** en toda la app y ninguna ficha
+consulta internet: la ruta, sus textos, sus números y su línea salen todos de lo
+guardado en el celular. Ahora además se guardan el «qué llevar» y las
+«complicaciones», que son justo lo que hace falta leer sin señal.
+
+**Detectado:** 2026-09-17 · **Resuelto:** 2026-09-19
 
 ---
 
@@ -151,6 +161,54 @@ código de la app nunca la consulta ni la escribe.
 quien lea la base.
 
 **Detectado:** 2026-09-18, leyendo la base.
+
+---
+
+## 🔴 R11 — Nadie lleva la cuenta de qué mapa está descargado
+
+**Qué pasa.** La app calcula bien qué sectores cruza una ruta y sabe decir si
+falta bajar alguno, pero **la lista de sectores descargados está vacía siempre**,
+porque todavía no hay nada que descargar.
+
+**Consecuencia.** Hoy ninguna: sin archivos de mapa, la respuesta correcta es
+«no hay nada bajado». El riesgo es olvidarse de conectarlo el día que existan y
+que la app diga «está todo listo» sobre algo que no bajó.
+
+**Dónde vive.** En un solo archivo, a propósito, para que el día que haga falta
+se toque un lugar y todas las pantallas se enteren solas.
+
+**Detectado:** 2026-09-19, escribiendo la cobertura.
+
+---
+
+## 🟡 R12 — Sin señal no se sabe quién subió una ruta
+
+**Qué pasa.** Los nombres y las fotos de los usuarios no viajan en el paquete
+offline. Sin señal, la ficha de una ruta muestra «alguien de la app» en vez del
+nombre.
+
+**Consecuencia.** Menor: en el cerro hace falta saber por dónde va la ruta y qué
+llevar, no quién la subió. Ninguna pantalla se rompe ni queda muda.
+
+**Cómo se arregla.** Meter los nombres en el paquete. Pesan nada. No se hizo
+todavía para no agrandar el paquete sin necesidad.
+
+**Detectado:** 2026-09-19, escribiendo la ficha de la ruta.
+
+---
+
+## 🟡 R13 — El modo sol nunca se probó con sol
+
+**Qué pasa.** Los dos modos de color están completos y una prueba automática
+verifica, en cada cambio, que tengan exactamente los mismos colores y que cada
+combinación de texto y fondo llegue al mínimo de contraste.
+
+**Lo que la prueba no puede hacer.** Decir si con sol de frente, a las dos de la
+tarde en el cerro, se lee. Eso lo confirma un ojo afuera.
+
+**Consecuencia.** Podría pasar que cumpla los números y aun así cueste leerlo.
+
+**Detectado:** 2026-09-19.
 
 ---
 

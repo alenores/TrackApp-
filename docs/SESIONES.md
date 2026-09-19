@@ -123,3 +123,81 @@ reglas de producto, diseño, UX u offline.
 2. Probar los valores de diseño al sol, con el celular en la mano.
 3. Cerrar la decisión 003 sobre el modelo offline.
 4. Conseguir acceso a la base para completar `SCHEMA.md`.
+
+---
+
+## Sesión 2026-09-19 — La app se reescribe entera sobre la base nueva
+
+### Estado al inicio
+
+La base de datos ya estaba rehecha desde cero y la mitad del código nuevo
+escrito, pero la app **no compilaba**: quedaban doce pantallas —los formularios
+de carga y edición, y las fichas de ruta y de zona— todavía apuntando al código
+viejo que se había borrado.
+
+Además había un solo juego de colores y ningún botón para cambiarlo, aunque las
+reglas del proyecto piden dos modos desde el primer día.
+
+### Lo que se hizo
+
+**Mockup aprobado.** Se armaron cuatro pantallas de muestra en el lenguaje
+visual actual —mismas tarjetas, mismo verde, mismo fondo— y Ale las aprobó sin
+cambios. El campo donde se pega una coordenada se hizo funcionando de verdad
+sobre el mockup, para poder probar la trampa del link de Google Maps.
+
+**Los dos modos de color, de verdad.** Lo que lo impedía no era el botón: eran
+34 pantallas que escribían los colores a mano. Ahora ninguna lo hace. Las dos
+listas de variables tienen exactamente los mismos nombres, y **una prueba
+automática verifica en cada cambio** que estén completas y que cada combinación
+de texto y fondo llegue al mínimo de contraste, en los dos modos. Esa prueba
+encontró tres colores que no llegaban, el verde del botón principal entre ellos.
+
+**Las doce pantallas que faltaban.** Ninguna consulta la base: todas dibujan
+desde lo guardado en el celular, así que la ficha de una ruta se abre en el
+cerro. Para eso el paquete offline ahora guarda también el «qué llevar» y las
+«complicaciones», que antes solo vivían en la base.
+
+**El bloque de cobertura**, que aparece en la ficha de la ruta y también al
+subirla, con sus tres estados. Como los archivos de mapa todavía no existen, lo
+dice con esas palabras en vez de mostrar un botón que no funciona.
+
+**Lint limpio por primera vez.** Había siete errores de antes. Se arreglaron de
+fondo, no tapándolos.
+
+### Decisiones tomadas
+
+- **Navegar sin mapa: se avisa, no se bloquea** → `decisiones/014` (decidió Ale)
+- **Los dos modos de color y la prueba que los sostiene** → `decisiones/015`
+- El mockup de las pantallas nuevas queda aprobado tal cual.
+- Dos mejoras de detalle que Ale había habilitado: el gris de las etiquetas
+  quedó un punto más claro y el verde del botón principal un punto más oscuro.
+  Los dos estaban por debajo del contraste que pide el propio proyecto.
+
+### Documentos actualizados
+
+`ARQUITECTURA.md` (reescrito entero: el anterior describía el código viejo y ya
+era falso), `RIESGOS.md`, `GLOSARIO.md`, `DISENO_EXTERIOR.md`, más las
+decisiones `014` y `015`.
+
+### Deuda o inconsistencias detectadas
+
+- **`GLOSARIO.md` se contradecía a sí mismo**: decía que la palabra definitiva
+  es «ruta» y en el renglón siguiente prohibía usar «ruta». Era el resto de un
+  renombre automático. Corregido.
+- **`ARQUITECTURA.md` describía el código viejo entero.** Reescrito contra el
+  código real.
+- Riesgos nuevos anotados: nadie lleva todavía la cuenta de qué mapa está
+  bajado (R11), sin señal no se sabe quién subió una ruta (R12), y el modo sol
+  nunca se probó con sol de verdad (R13).
+- Los riesgos R1 y R2 quedaron neutralizados, no resueltos: el código que los
+  causaba se borró, pero vuelven solos el día que existan los archivos de mapa.
+  Quedan anotados como requisitos de ese trabajo.
+
+### Pendientes para la próxima
+
+1. **Los archivos de mapa.** Es lo único grande que falta y lo que desbloquea
+   descargar, borrar lo descargado y ver fondo en el cerro.
+2. Probar el modo sol al sol, con el celular en la mano.
+3. Las anotaciones sobre el mapa: la base y la lógica están, falta la pantalla
+   para dibujarlas.
+4. Empaquetado para Android, al final y si conviene.
