@@ -15,6 +15,7 @@ import {
   getGpsErrorMessage,
   type GpsStatus,
 } from "@/lib/navigation";
+import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
@@ -32,23 +33,18 @@ const SEGUNDOS_PARA_AVISAR_POSICION_VIEJA = 30;
 
 type NavegacionViewProps = {
   rutaId: number;
-  nombre: string;
-  rectangulo: Rectangulo;
-  anotaciones?: Anotacion[];
 };
 
-export function NavegacionView({
-  rutaId,
-  nombre,
-  rectangulo,
-  anotaciones = [],
-}: NavegacionViewProps) {
+export function NavegacionView({ rutaId }: NavegacionViewProps) {
   const salida = `/rutas/${rutaId}`;
   const { open, requestExit, cancelExit, confirmExit } =
     useNavigationExitGuard(salida);
 
   const vigilanciaRef = useRef<number | null>(null);
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
+  const [nombre, setNombre] = useState("Ruta");
+  const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
+  const [anotaciones, setAnotaciones] = useState<Anotacion[]>([]);
   const [cargandoRecorrido, setCargandoRecorrido] = useState(true);
   const [estadoDelGps, setEstadoDelGps] = useState<GpsStatus>("idle");
   const [errorDelGps, setErrorDelGps] = useState<string | null>(null);
@@ -61,13 +57,39 @@ export function NavegacionView({
 
   usePantallaDespierta(estadoDelGps === "active");
 
-  // La línea sale del celular, nunca de internet.
+  // Todo sale del celular, nunca de internet.
   useEffect(() => {
     let vigente = true;
 
     void (async () => {
+      const paquete = leerPaquete();
+      const ruta = paquete?.rutas.find((cada) => cada.id === rutaId) ?? null;
       const guardado = await leerRecorrido(rutaId);
+
       if (!vigente) return;
+
+      if (ruta) {
+        setNombre(ruta.nombre);
+        setRectangulo(ruta.rectangulo);
+
+        // Las anotaciones de los sectores por los que pasa esta ruta.
+        const sectoresQueLaCruzan = (paquete?.sectores ?? [])
+          .filter(
+            (sector) =>
+              ruta.rectangulo.latSur <= sector.rectangulo.latNorte &&
+              ruta.rectangulo.latNorte >= sector.rectangulo.latSur &&
+              ruta.rectangulo.lonOeste <= sector.rectangulo.lonEste &&
+              ruta.rectangulo.lonEste >= sector.rectangulo.lonOeste,
+          )
+          .map((sector) => sector.id);
+
+        setAnotaciones(
+          (paquete?.anotaciones ?? []).filter((anotacion) =>
+            sectoresQueLaCruzan.includes(anotacion.sectorId),
+          ),
+        );
+      }
+
       setRecorrido(guardado);
       setCargandoRecorrido(false);
     })();
