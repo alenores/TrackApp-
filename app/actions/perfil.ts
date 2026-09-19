@@ -7,15 +7,18 @@ import {
   rutaDeLaFoto,
 } from "@/lib/cuenta/fotos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import { traducirErrorDeBase } from "@/lib/datos/resultado";
+import {
+  traducirErrorDeBase,
+  traducirErrorDeLaCuenta,
+} from "@/lib/datos/resultado";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 
 /**
  * Guardar los datos de la cuenta.
  *
- * El nombre y la foto se guardan en la tabla `perfiles`. **Antes esto escribía
- * en `profiles`, que es de la app vieja y no existe**, así que guardar la foto
- * fallaba siempre.
+ * El nombre y la foto se guardan en la tabla `perfiles`, y en ningún otro lado.
+ * **El nombre no se copia a los datos de la cuenta**: sería el mismo dato en dos
+ * lugares, y esa copia de más llegó a romper el guardado entero.
  *
  * La foto llega ya convertida a WebP y comprimida por el módulo compartido de
  * fotos; acá se vuelve a revisar igual, porque una acción del servidor no puede
@@ -67,13 +70,23 @@ export async function editarPerfil(input: {
   const emailDeAhora = (usuario.email ?? "").toLowerCase();
   const cambioElEmail = email !== emailDeAhora;
 
-  const { error: errorDeCuenta } = await supabase.auth.updateUser({
-    ...(cambioElEmail ? { email } : {}),
-    data: { nombre },
-  });
+  /**
+   * Al sistema de cuentas se le habla **solo si cambió el email**.
+   *
+   * Antes se le mandaba además el nombre, que ya vive en la tabla de perfiles y
+   * que **nadie lee nunca** de la cuenta: el mismo dato en dos lugares, y una
+   * escritura de más que, al fallar, frenaba todo el guardado. El usuario veía
+   * un error en inglés y se quedaba sin nombre y sin foto.
+   */
+  if (cambioElEmail) {
+    const { error: errorDeCuenta } = await supabase.auth.updateUser({ email });
 
-  if (errorDeCuenta) {
-    return { success: false, error: errorDeCuenta.message };
+    if (errorDeCuenta) {
+      return {
+        success: false,
+        error: traducirErrorDeLaCuenta(errorDeCuenta.message),
+      };
+    }
   }
 
   let avatarUrl: string | null = null;

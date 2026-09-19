@@ -64,3 +64,35 @@ export function traducirErrorDeBase(mensaje: string): string {
 
   return mensaje;
 }
+
+/**
+ * Traduce el error del sistema de cuentas.
+ *
+ * Es otro sistema que el de la base y habla en inglés. Sus mensajes llegaban
+ * tal cual a la pantalla —«Error updating user»— y no le decían al usuario ni
+ * qué pasó ni qué hacer.
+ *
+ * Cuando el mensaje no se reconoce **viaja adentro igual**: feo, pero es lo
+ * único que después permite arreglarlo.
+ */
+export function traducirErrorDeLaCuenta(mensaje: string): string {
+  const texto = mensaje.toLowerCase();
+
+  if (texto.includes("already been registered") || texto.includes("already exists")) {
+    return "Ese email ya está usado por otra cuenta. Probá con otro.";
+  }
+
+  if (texto.includes("invalid") && texto.includes("email")) {
+    return "Ese email no se entiende. Fijate que esté bien escrito.";
+  }
+
+  if (texto.includes("rate limit") || texto.includes("for security purposes")) {
+    return "Probaste muchas veces seguidas. Esperá un minuto y volvé a intentar.";
+  }
+
+  if (texto.includes("email") && texto.includes("not confirmed")) {
+    return "Todavía no confirmaste el email. Buscá el mensaje que te llegó y tocá el enlace.";
+  }
+
+  return `No se pudo cambiar el email de la cuenta: ${mensaje}. Si sigue pasando, avisale a Ale con este mensaje.`;
+}
