@@ -3,13 +3,26 @@
 import { revalidatePath } from "next/cache";
 import {
   DEPOSITO_DE_FOTOS,
-  rutaDeLaFoto,
   revisarLaFoto,
+  rutaDeLaFoto,
 } from "@/lib/cuenta/fotos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
+import { traducirErrorDeBase } from "@/lib/datos/resultado";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 
-export type UpdateProfileResult =
+/**
+ * Guardar los datos de la cuenta.
+ *
+ * El nombre y la foto se guardan en la tabla `perfiles`. **Antes esto escribía
+ * en `profiles`, que es de la app vieja y no existe**, así que guardar la foto
+ * fallaba siempre.
+ *
+ * La foto llega ya convertida a WebP y comprimida por el módulo compartido de
+ * fotos; acá se vuelve a revisar igual, porque una acción del servidor no puede
+ * confiar en que la pantalla hizo su parte.
+ */
+
+export type ResultadoDeEditarPerfil =
   | { success: true; emailConfirmationRequired: boolean }
   | { success: false; error: string };
 
@@ -17,92 +30,102 @@ export async function editarPerfil(input: {
   nombre: string;
   email: string;
   avatarFile?: File | null;
-}): Promise<UpdateProfileResult> {
-  const trimmedNombre = input.nombre.trim();
-  const trimmedEmail = input.email.trim().toLowerCase();
+}): Promise<ResultadoDeEditarPerfil> {
+  const nombre = input.nombre.trim();
+  const email = input.email.trim().toLowerCase();
 
-  if (!trimmedNombre) {
-    return { success: false, error: "El nombre no puede estar vacío." };
+  if (!nombre) {
+    return { success: false, error: "Escribí tu nombre: no puede quedar vacío." };
   }
 
-  if (trimmedNombre.length > 80) {
-    return { success: false, error: "El nombre es demasiado largo." };
+  if (nombre.length > 80) {
+    return {
+      success: false,
+      error: "El nombre es muy largo. Máximo 80 letras.",
+    };
   }
 
-  if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-    return { success: false, error: "Ingresá un email válido." };
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return {
+      success: false,
+      error: "Ese email no se entiende. Fijate que tenga arroba y punto.",
+    };
   }
 
-  const user = await traerUsuario();
+  const usuario = await traerUsuario();
 
-  if (!user) {
-    return { success: false, error: "Tenés que iniciar sesión." };
+  if (!usuario) {
+    return { success: false, error: "Entrá con tu cuenta para poder editarla." };
   }
 
   if (input.avatarFile) {
-    const avatarError = revisarLaFoto(input.avatarFile);
-    if (avatarError) {
-      return { success: false, error: avatarError };
-    }
+    const problema = revisarLaFoto(input.avatarFile);
+    if (problema) return { success: false, error: problema };
   }
 
   const supabase = await crearClienteEnElServidor();
-  const currentEmail = (user.email ?? "").toLowerCase();
-  const emailChanged = trimmedEmail !== currentEmail;
+  const emailDeAhora = (usuario.email ?? "").toLowerCase();
+  const cambioElEmail = email !== emailDeAhora;
 
-  const { error } = await supabase.auth.updateUser({
-    ...(emailChanged ? { email: trimmedEmail } : {}),
-    data: { nombre: trimmedNombre },
+  const { error: errorDeCuenta } = await supabase.auth.updateUser({
+    ...(cambioElEmail ? { email } : {}),
+    data: { nombre },
   });
 
-  if (error) {
-    return { success: false, error: error.message };
+  if (errorDeCuenta) {
+    return { success: false, error: errorDeCuenta.message };
   }
 
-  if (input.avatarFile) {
-    const storagePath = rutaDeLaFoto(user.id);
-    const fileBuffer = await input.avatarFile.arrayBuffer();
+  let avatarUrl: string | null = null;
 
-    const { error: uploadError } = await supabase.storage
+  if (input.avatarFile) {
+    const donde = rutaDeLaFoto(usuario.id);
+    const bytes = await input.avatarFile.arrayBuffer();
+
+    const { error: errorAlSubir } = await supabase.storage
       .from(DEPOSITO_DE_FOTOS)
-      .upload(storagePath, fileBuffer, {
+      .upload(donde, bytes, {
         contentType: input.avatarFile.type,
         upsert: true,
       });
 
-    if (uploadError) {
+    if (errorAlSubir) {
       return {
         success: false,
-        error: `No se pudo subir la foto: ${uploadError.message}`,
+        error: `No se pudo subir la foto: ${errorAlSubir.message}`,
       };
     }
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(storagePath);
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
 
-    const avatarUrl = `${publicUrl}?v=${Date.now()}`;
+    // El agregado del final obliga al navegador a bajar la foto nueva: la
+    // dirección es siempre la misma y si no, sigue mostrando la anterior.
+    avatarUrl = `${publicUrl}?v=${Date.now()}`;
+  }
 
-    const { error: profileError } = await supabase.from("profiles").upsert(
-      {
-        id: user.id,
-        nombre: trimmedNombre,
-        avatar_url: avatarUrl,
-      },
-      { onConflict: "id" },
-    );
+  const { error: errorDelPerfil } = await supabase
+    .from("perfiles")
+    .update({
+      nombre,
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+    })
+    .eq("id", usuario.id)
+    .is("eliminado_en", null);
 
-    if (profileError) {
-      return {
-        success: false,
-        error: "La foto se subió pero no se pudo guardar en el perfil.",
-      };
-    }
+  if (errorDelPerfil) {
+    return {
+      success: false,
+      error: avatarUrl
+        ? `La foto se subió pero no se pudo guardar en tu perfil: ${traducirErrorDeBase(errorDelPerfil.message)}`
+        : traducirErrorDeBase(errorDelPerfil.message),
+    };
   }
 
   revalidatePath("/", "layout");
   revalidatePath("/perfiles");
   revalidatePath("/perfil");
 
-  return { success: true, emailConfirmationRequired: emailChanged };
+  return { success: true, emailConfirmationRequired: cambioElEmail };
 }

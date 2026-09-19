@@ -19,6 +19,12 @@ programar. Nada de nombres de archivos ni de líneas en las explicaciones.
 **Ante ambigüedad, se pregunta.** Una pregunta corta ahorra medio día. No
 avanzar sobre suposiciones.
 
+**Los datos que hay en la base no son datos.** Las filas que puedan quedar de
+rutas, zonas, sectores o usuarios son restos de la app vieja. **La app arranca
+de cero.** No se toman como ejemplo, no se migran, no se conservan y no se usan
+para deducir nada. Si un agente necesita saber cómo es un dato, mira el esquema,
+no las filas.
+
 ---
 
 ## Regla de producto (manda sobre todas las demás)
@@ -166,6 +172,29 @@ espera.** Si algo tiene que esperar, muestra el contenido y tapa después, nunca
 al revés.
 
 ---
+
+## Fotos
+
+**Toda foto que se sube pasa por el módulo compartido de fotos. Sin excepción.**
+Hoy la usa la foto de perfil; mañana las fotos de una salida. El día que haya un
+lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
+
+- **Solo WebP, y nunca más de 2 MB.** No es gusto: cada foto que alguien mira
+  paga su peso en datos del celular, y en el cerro los datos y la batería son el
+  recurso escaso. La base lo exige por su cuenta, que es la defensa de verdad.
+- **Prohibido guardar JPG o PNG.** Sería cargarle peso a la base al pedo.
+- **El usuario elige la foto como la tiene** —de la galería, del iPhone, como
+  venga— y la app la convierte antes de que salga del teléfono. Que el formato
+  sea uno solo es problema de la app, no del usuario.
+- **La foto se lee del celular una sola vez**, al elegirla. La galería la presta,
+  no la entrega: leerla de nuevo al guardar falla aunque la primera vez saliera
+  bien.
+- **La vista previa es exactamente lo que se va a subir**, no una aproximación.
+- **El tope de peso está garantizado, no intentado**: si con bajar la calidad no
+  entra, se bajan las medidas hasta que entre.
+- **Recortar es parte de elegir.** La forma la decide el destino, no la persona:
+  donde la pantalla muestra un círculo, se recorta en círculo.
+- Se puede hacer zoom con dos dedos, **pero siempre hay además botones grandes**.
 
 ## Pantallas emergentes
 

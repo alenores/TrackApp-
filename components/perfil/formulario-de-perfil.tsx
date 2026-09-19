@@ -2,10 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
-  useEffect,
-  useRef,
   useState,
-  type ChangeEvent,
   type FormEvent,
 } from "react";
 import { editarPerfil } from "@/app/actions/perfil";
@@ -13,7 +10,9 @@ import { Boton } from "@/components/ui/boton";
 import { CLASE_DEL_CIRCULO } from "@/components/ui/flecha-redonda";
 import { CruzRedonda } from "@/components/ui/cruz-redonda";
 import { Campo } from "@/components/ui/campo";
-import { FORMATO_DE_FOTO } from "@/lib/cuenta/fotos";
+import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
+import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
+import { useFoto } from "@/hooks/use-foto";
 import { Avatar } from "@/components/ui/avatar";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { vibrarAlTocar } from "@/lib/vibracion";
@@ -29,19 +28,6 @@ type PerfilFormProps = {
 const PROFILE_FIELD_CLASS =
   "border-borde bg-superficie text-texto placeholder:text-texto-suave";
 
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
-      <path
-        d="M4 8h3l1.5-2h7L17 8h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="13" r="3.25" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
 
 function PencilIcon() {
   return (
@@ -95,13 +81,14 @@ export function FormularioDePerfil({
   avatarUrl,
 }: PerfilFormProps) {
   const router = useRouter();
-  const avatarInputRef = useRef<HTMLInputElement>(null);
+  // La foto pasa por el módulo compartido: se lee una sola vez, se recorta, se
+  // convierte a WebP y se comprime por debajo del tope. La vista previa es
+  // exactamente lo que se va a subir.
+  const foto = useFoto("avatar", FORMAS_DE_RECORTE.avatar);
   const [editing, setEditing] = useState(false);
   const [nombre, setNombre] = useState(initialNombre || displayNombre);
   const [emailValue, setEmailValue] = useState(email);
   const [loQueLlego, setLoQueLlego] = useState({ initialNombre, displayNombre, email });
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -118,23 +105,8 @@ export function FormularioDePerfil({
     setEmailValue(email);
   }
 
-  useEffect(() => {
-    return () => {
-      if (avatarPreviewUrl) {
-        URL.revokeObjectURL(avatarPreviewUrl);
-      }
-    };
-  }, [avatarPreviewUrl]);
-
   const clearAvatarSelection = () => {
-    if (avatarPreviewUrl) {
-      URL.revokeObjectURL(avatarPreviewUrl);
-    }
-    setAvatarFile(null);
-    setAvatarPreviewUrl(null);
-    if (avatarInputRef.current) {
-      avatarInputRef.current.value = "";
-    }
+    foto.quitar();
   };
 
   const resetForm = () => {
@@ -164,7 +136,7 @@ export function FormularioDePerfil({
     const result = await editarPerfil({
       nombre,
       email: emailValue,
-      avatarFile,
+      avatarFile: foto.archivo,
     });
 
     if (!result.success) {
@@ -189,26 +161,6 @@ export function FormularioDePerfil({
   };
 
   const viewNombre = initialNombre || displayNombre;
-  const editingAvatarSrc = avatarPreviewUrl ?? avatarUrl;
-
-  const handleAvatarPick = () => {
-    avatarInputRef.current?.click();
-  };
-
-  const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    if (avatarPreviewUrl) {
-      URL.revokeObjectURL(avatarPreviewUrl);
-    }
-
-    setAvatarFile(file);
-    setAvatarPreviewUrl(URL.createObjectURL(file));
-    setError(null);
-  };
 
   return (
     <Tarjeta className="relative flex flex-col gap-4">
@@ -233,43 +185,14 @@ export function FormularioDePerfil({
           onSubmit={(event) => void handleSubmit(event)}
           className="space-y-4"
         >
-          <div className="flex flex-col items-center gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={handleAvatarPick}
-              onPointerDown={() => vibrarAlTocar()}
-              className={[
-                CLASE_DE_RESPUESTA_AL_TOQUE,
-                "group relative rounded-full",
-              ].join(" ")}
-              aria-label="Cambiar foto de perfil"
-            >
-              <Avatar
-                src={editingAvatarSrc}
-                name={viewNombre}
-                size="lg"
-                className="ring-2 ring-acento-borde ring-offset-2 ring-offset-superficie transition-[box-shadow] group-active:ring-acento-borde"
-              />
-              {/* Se ve chico, pero la zona que responde al toque no baja de 56. */}
-              <span className="absolute -bottom-2 -right-2 flex h-14 w-14 items-center justify-center rounded-full">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-acento-borde bg-acento text-acento-texto shadow-md">
-                  <CameraIcon />
-                </span>
-              </span>
-            </button>
-            <p className="text-center text-sm font-semibold text-verde-texto">
-              Cambiar foto
-            </p>
-            <p className="max-w-[16rem] text-center text-xs leading-5 text-texto-suave">
-              Galería o cámara del celular
-            </p>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept={FORMATO_DE_FOTO}
-              capture="user"
-              className="sr-only"
-              onChange={handleAvatarChange}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
+            <SelectorDeFoto
+              foto={foto}
+              deshabilitado={loading}
+              etiqueta="Elegir tu foto"
+              fotoActual={avatarUrl}
+              vistaPreviaRedonda
             />
           </div>
 

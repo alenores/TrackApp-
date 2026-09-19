@@ -16,11 +16,13 @@
     "@supabase/supabase-js": "^2.105.4",
     "@tmcw/togeojson": "^7.1.2",
     "@turf/nearest-point-on-line": "^7.3.5",
+    "heic-to": "^1.5.2",
     "leaflet": "^1.9.4",
     "next": "16.2.6",
     "next-pwa": "^5.6.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-easy-crop": "^6.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
