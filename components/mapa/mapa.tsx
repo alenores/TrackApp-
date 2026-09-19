@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { FeatureCollection } from "geojson";
 import L from "leaflet";
-import { elegirFondo, FONDO_SIN_MAPA } from "@/components/mapa/capas-base";
+import { elegirFondo } from "@/components/mapa/capas-base";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import "leaflet/dist/leaflet.css";
 
@@ -16,11 +16,13 @@ import "leaflet/dist/leaflet.css";
  * Ver docs/decisiones/008-tres-modos-de-uso-y-permisos.md
  */
 
-const COLOR_DE_LA_RUTA = "#40916c";
-const COLOR_DE_MI_POSICION = "#2563eb";
-
+/**
+ * Los colores no se escriben acá: salen de las variables, con una clase de
+ * CSS. Leaflet no entiende las clases de Tailwind, pero sí pinta lo que le
+ * diga una clase común, y así el mapa cambia junto con el modo sol o noche.
+ */
 const ESTILO_DE_LA_RUTA: L.PathOptions = {
-  color: COLOR_DE_LA_RUTA,
+  className: "ruta-linea",
   weight: 5,
   opacity: 0.95,
   lineCap: "round",
@@ -130,12 +132,12 @@ export function Mapa({
 
     for (const anotacion of anotaciones) {
       if (anotacion.tipo === "trazo" && anotacion.geometria.type === "LineString") {
+        // Un color elegido a mano es un dato del usuario y manda sobre el
+        // color del modo.
         L.geoJSON(anotacion.geometria, {
-          style: {
-            color: anotacion.color ?? "#e0399b",
-            weight: 3,
-            opacity: 0.95,
-          },
+          style: anotacion.color
+            ? { color: anotacion.color, weight: 3, opacity: 0.95 }
+            : { className: "anotacion-trazo", weight: 3, opacity: 0.95 },
         }).addTo(capa);
         continue;
       }
@@ -144,10 +146,11 @@ export function Mapa({
         const [lon, lat] = anotacion.geometria.coordinates;
         const marca = L.circleMarker([lat, lon], {
           radius: 7,
-          color: "#ffffff",
           weight: 2,
-          fillColor: "#e0399b",
           fillOpacity: 1,
+          ...(anotacion.color
+            ? { color: "currentColor", fillColor: anotacion.color }
+            : { className: "anotacion-punto" }),
         });
 
         const titulo = [anotacion.icono, anotacion.comentario]
@@ -180,21 +183,19 @@ export function Mapa({
 
     marcaDePosicionRef.current = L.circleMarker(donde, {
       radius: 10,
-      color: "#ffffff",
       weight: 3,
-      fillColor: COLOR_DE_MI_POSICION,
       fillOpacity: 1,
+      className: "mi-posicion",
     }).addTo(mapa);
   }, [miPosicion]);
 
   return (
     <div
       ref={contenedorRef}
-      style={{ background: FONDO_SIN_MAPA }}
       className={[
         pantallaCompleta
           ? "h-full w-full"
-          : "h-64 w-full overflow-hidden rounded-xl border border-border sm:h-80",
+          : "h-64 w-full overflow-hidden rounded-xl border border-borde sm:h-80",
         className,
       ]
         .filter(Boolean)

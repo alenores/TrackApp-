@@ -46,11 +46,11 @@ export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
     <>
       <AppReadyMarker />
       <div className="space-y-4">
-        <Card tone="light" className="space-y-3">
+        <Card tono="alta" className="space-y-3">
           <div className="flex items-start gap-3">
             <Link
               href="/zonas"
-              className="mt-1 shrink-0 text-slate-400 hover:text-foreground"
+              className="mt-1 shrink-0 text-texto-suave hover:text-texto"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -68,17 +68,17 @@ export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
               </svg>
             </Link>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-acento-tenue">
                 {zona.provincia}
               </p>
-              <h1 className="mt-0.5 break-words text-xl font-bold text-foreground">
+              <h1 className="mt-0.5 break-words text-xl font-bold text-texto">
                 {zona.nombre}
               </h1>
             </div>
           </div>
 
           {zona.descripcion ? (
-            <p className="break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
+            <p className="break-words whitespace-pre-wrap text-sm leading-6 text-texto-suave">
               {zona.descripcion}
             </p>
           ) : null}
@@ -89,28 +89,28 @@ export default async function ZonaDetailPage({ params }: ZonaDetailPageProps) {
               uploaderLabel={zonaUploaderLabel}
               size="sm"
             />
-            <span className="text-xs text-slate-500">{zonaUploaderLabel}</span>
+            <span className="text-xs text-texto-suave">{zonaUploaderLabel}</span>
           </div>
         </Card>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-foreground">
+            <h2 className="text-base font-bold text-texto">
               Sectores{" "}
-              <span className="text-slate-500 font-normal">
+              <span className="text-texto-suave font-normal">
                 ({sectores.length})
               </span>
             </h2>
             <Link
               href={`/zonas/${id}/sectores/nueva`}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700/50 bg-accent-light px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent"
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-acento-borde bg-acento px-4 py-2 text-sm font-semibold text-acento-texto transition-colors hover:bg-acento-hover"
             >
               + Nuevo sector
             </Link>
           </div>
 
           {sectores.length === 0 ? (
-            <div className="rounded-2xl border border-border bg-surface px-4 py-8 text-center text-slate-400">
+            <div className="rounded-2xl border border-borde bg-superficie px-4 py-8 text-center text-texto-suave">
               <p className="text-sm">No hay sectores en esta zona aún.</p>
             </div>
           ) : (

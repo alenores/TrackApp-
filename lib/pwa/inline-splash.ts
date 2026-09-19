@@ -9,7 +9,7 @@ export const INLINE_SPLASH_STYLES = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #0f172a;
+    background: var(--fondo, #0f172a);
     opacity: 1;
     transition: opacity 300ms ease;
     pointer-events: none;
@@ -31,7 +31,7 @@ export const INLINE_SPLASH_STYLES = `
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0.025em;
-    color: rgb(209 250 229 / 0.9);
+    color: var(--texto-suave, #aab8c9);
     font-family: system-ui, -apple-system, sans-serif;
   }
 `;

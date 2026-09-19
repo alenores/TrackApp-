@@ -44,8 +44,8 @@ function NavigationProgressBar({ active }: { active: boolean }) {
         active ? "opacity-100" : "opacity-0",
       ].join(" ")}
     >
-      <div className="relative h-full w-full bg-emerald-950/80">
-        <div className="navigation-progress-indeterminate absolute inset-y-0 left-0 w-2/5 bg-emerald-400" />
+      <div className="relative h-full w-full bg-verde-fondo">
+        <div className="navigation-progress-indeterminate absolute inset-y-0 left-0 w-2/5 bg-acento-tenue" />
       </div>
     </div>
   );

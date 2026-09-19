@@ -17,7 +17,7 @@ const MapaEnElNavegador = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-64 w-full items-center justify-center rounded-xl border border-border bg-surface text-sm text-muted sm:h-80">
+      <div className="flex h-64 w-full items-center justify-center rounded-xl border border-borde bg-superficie text-sm text-texto-suave sm:h-80">
         Abriendo el mapa…
       </div>
     ),

@@ -9,7 +9,7 @@ export function PerfilesSkeleton() {
         <Skeleton className="h-4 w-56" />
       </div>
 
-      <Card tone="light" className="space-y-4">
+      <Card tono="alta" className="space-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="h-20 w-20 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-3">
@@ -47,7 +47,7 @@ export function PerfilSkeleton() {
 export function NuevaRutaSkeleton() {
   return (
     <div className="space-y-4">
-      <Card accent className="space-y-4">
+      <Card className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-7 w-36" />
@@ -67,7 +67,7 @@ export function NuevaRutaSkeleton() {
 export function EditarRutaSkeleton() {
   return (
     <div className="space-y-4">
-      <Card tone="light" className="space-y-4">
+      <Card tono="alta" className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-7 w-32" />

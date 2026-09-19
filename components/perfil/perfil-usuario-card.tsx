@@ -13,13 +13,13 @@ export function PerfilUsuarioCard({
 }: PerfilUsuarioCardProps) {
   return (
     <Card
-      accent={isCurrentUser}
+      franja={isCurrentUser ? "verde" : undefined}
       className="flex flex-col gap-4"
     >
       <div className="space-y-1">
-        <p className="text-lg font-semibold text-foreground">{user.nombre}</p>
+        <p className="text-lg font-semibold text-texto">{user.nombre}</p>
         {isCurrentUser ? (
-          <p className="text-xs font-medium text-emerald-300/90">Tu perfil</p>
+          <p className="text-xs font-medium text-acento-tenue">Tu perfil</p>
         ) : null}
       </div>
 

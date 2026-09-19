@@ -24,8 +24,8 @@ export function PerfilesView({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-foreground">Perfiles</h1>
-        <p className="mt-1 text-sm text-muted">
+        <h1 className="text-xl font-bold text-texto">Perfiles</h1>
+        <p className="mt-1 text-sm text-texto-suave">
           Usuarios de TrackApp y tu cuenta.
         </p>
       </div>
@@ -39,7 +39,7 @@ export function PerfilesView({
 
       {otherUsers.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-texto-suave">
             Todos los usuarios
           </h2>
           <ul className="space-y-3">

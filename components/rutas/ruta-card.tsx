@@ -86,17 +86,17 @@ export function RutaCard({
     <>
       <div className="relative">
         <TapLink href={`/rutas/${ruta.id}`} className="block">
-          <Card interactive className="space-y-3">
+          <Card interactiva className="space-y-3">
             <div className="space-y-1 pr-14">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="min-w-0 flex-1 text-lg font-semibold text-foreground">
+                <h2 className="min-w-0 flex-1 text-lg font-semibold text-texto">
                   {ruta.nombre}
                 </h2>
                 <ChevronCircle direction="right" className="-mt-0.5 shrink-0" />
               </div>
 
               {ruta.descripcion ? (
-                <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-slate-400">
+                <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-texto-suave">
                   {ruta.descripcion}
                 </p>
               ) : null}
@@ -137,7 +137,7 @@ export function RutaCard({
             type="button"
             aria-label={`Opciones de ${ruta.nombre}`}
             onClick={() => setAccionesAbiertas(true)}
-            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-muted hover:bg-surface-elevated hover:text-foreground"
+            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <circle cx="12" cy="5" r="1.75" fill="currentColor" />

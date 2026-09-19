@@ -48,9 +48,9 @@ export function NuevaZonaForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Card tone="light" className="space-y-4">
+      <Card tono="alta" className="space-y-4">
         <div className="flex items-center gap-3">
-          <Link href="/zonas" className="text-slate-400 hover:text-foreground">
+          <Link href="/zonas" className="text-texto-suave hover:text-texto">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -66,17 +66,17 @@ export function NuevaZonaForm() {
               />
             </svg>
           </Link>
-          <h1 className="text-xl font-bold text-foreground">Nueva zona</h1>
+          <h1 className="text-xl font-bold text-texto">Nueva zona</h1>
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
             Provincia
           </label>
           <select
             value={provincia}
             onChange={(e) => setProvincia(e.target.value)}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground focus:border-emerald-600 focus:outline-none"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto focus:border-acento-borde focus:outline-none"
             required
           >
             <option value="">Seleccioná una provincia…</option>
@@ -98,9 +98,9 @@ export function NuevaZonaForm() {
         />
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
             Descripción{" "}
-            <span className="normal-case font-normal text-slate-500">
+            <span className="normal-case font-normal text-texto-suave">
               (opcional)
             </span>
           </label>
@@ -109,12 +109,12 @@ export function NuevaZonaForm() {
             onChange={(e) => setDescripcion(e.target.value)}
             rows={3}
             placeholder="Describí la zona, cómo llegar, características generales…"
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder-slate-500 focus:border-emerald-600 focus:outline-none resize-none"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto placeholder-slate-500 focus:border-acento-borde focus:outline-none resize-none"
           />
         </div>
 
         {error ? (
-          <p className="rounded-xl bg-red-950/40 px-4 py-3 text-sm text-red-300">
+          <p className="rounded-xl bg-rojo-fondo px-4 py-3 text-sm text-rojo-texto">
             {error}
           </p>
         ) : null}

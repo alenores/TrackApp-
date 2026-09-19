@@ -43,17 +43,17 @@ export function AppShell({
 
   return (
     <NavigationProgressProvider>
-    <div className="flex h-full min-h-0 bg-[#0f172a]">
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface/80 lg:block">
+    <div className="flex h-full min-h-0 bg-fondo">
+      <aside className="hidden w-64 shrink-0 border-r border-borde bg-superficie/80 lg:block">
         <div className="flex h-full min-h-0 flex-col">
-          <div className="border-b border-border px-4 py-5">
+          <div className="border-b border-borde px-4 py-5">
             <Link href="/" className="block">
-              <p className="text-lg font-bold text-foreground">TrackApp</p>
+              <p className="text-lg font-bold text-texto">TrackApp</p>
             </Link>
-            <p className="mt-1 truncate text-sm font-medium text-foreground">
+            <p className="mt-1 truncate text-sm font-medium text-texto">
               {userName}
             </p>
-            <p className="truncate text-xs text-muted">{userEmail}</p>
+            <p className="truncate text-xs text-texto-suave">{userEmail}</p>
           </div>
           <Sidebar onLogout={logoutHandler} loggingOut={loggingOut} />
         </div>
@@ -64,17 +64,17 @@ export function AppShell({
           <button
             type="button"
             aria-label="Cerrar menú"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-velo"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="relative z-50 h-full w-[min(18rem,85vw)] border-r border-border bg-surface shadow-xl">
+          <aside className="relative z-50 h-full w-[min(18rem,85vw)] border-r border-borde bg-superficie shadow-xl">
             <div className="flex h-full min-h-0 flex-col">
-              <div className="border-b border-border px-4 py-4">
-                <p className="text-lg font-bold text-foreground">TrackApp</p>
-                <p className="mt-1 truncate text-sm font-medium text-foreground">
+              <div className="border-b border-borde px-4 py-4">
+                <p className="text-lg font-bold text-texto">TrackApp</p>
+                <p className="mt-1 truncate text-sm font-medium text-texto">
                   {userName}
                 </p>
-                <p className="truncate text-xs text-muted">{userEmail}</p>
+                <p className="truncate text-xs text-texto-suave">{userEmail}</p>
               </div>
               <Sidebar
                 onNavigate={() => setSidebarOpen(false)}

@@ -60,17 +60,17 @@ export function EditarRutaForm({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
-      <Card tone="light" className="space-y-4">
+      <Card tono="alta" className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Editar ruta</h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <h1 className="text-xl font-bold text-texto">Editar ruta</h1>
+            <p className="mt-1 text-sm text-texto-suave">
               Modificá el nombre, la descripción o las actividades.
             </p>
           </div>
           <Link
             href={`/rutas/${rutaId}`}
-            className="shrink-0 text-sm text-emerald-300 hover:text-emerald-200"
+            className="shrink-0 text-sm text-acento-tenue hover:text-verde-texto"
           >
             Cancelar
           </Link>
@@ -88,7 +88,7 @@ export function EditarRutaForm({
         <div className="space-y-2">
           <label
             htmlFor="descripcion"
-            className="block text-sm font-medium text-slate-300"
+            className="block text-sm font-medium text-texto-suave"
           >
             Descripción (opcional)
           </label>
@@ -98,12 +98,12 @@ export function EditarRutaForm({
             onChange={(event) => setDescripcion(event.target.value)}
             rows={4}
             placeholder="Detalles del recorrido…"
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
           />
         </div>
 
         <div className="space-y-2">
-          <p className="block text-sm font-medium text-slate-300">
+          <p className="block text-sm font-medium text-texto-suave">
             Actividades (opcional)
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
@@ -117,8 +117,8 @@ export function EditarRutaForm({
                   className={[
                     "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
                     selected
-                      ? "border-emerald-600/70 bg-emerald-900/60 text-emerald-200"
-                      : "border-border bg-surface text-slate-400 hover:border-emerald-700/50 hover:text-slate-300",
+                      ? "border-acento-borde bg-verde-fondo text-verde-texto"
+                      : "border-borde bg-superficie text-texto-suave hover:border-acento-borde hover:text-texto",
                   ].join(" ")}
                 >
                   <span className="text-base leading-none" aria-hidden>
@@ -135,7 +135,7 @@ export function EditarRutaForm({
       {error ? (
         <p
           role="alert"
-          className="rounded-lg border border-red-800/50 bg-red-950/40 px-3 py-2 text-sm text-red-300"
+          className="rounded-lg border border-rojo-borde bg-rojo-fondo px-3 py-2 text-sm text-rojo-texto"
         >
           {error}
         </p>

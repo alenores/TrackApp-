@@ -35,6 +35,3 @@ export function elegirFondo(): FondoDisponible {
   // Todavía no hay archivos de mapa. No se inventa un proveedor de terceros.
   return { tipo: "sin-mapa", crearCapa: null };
 }
-
-/** El color de fondo cuando no hay mapa debajo. */
-export const FONDO_SIN_MAPA = "#0b1220";

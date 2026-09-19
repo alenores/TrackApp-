@@ -112,11 +112,11 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Card tone="light" className="space-y-4">
+      <Card tono="alta" className="space-y-4">
         <div className="flex items-center gap-3">
           <Link
             href={`/zonas/${sector.zona_id}`}
-            className="text-slate-400 hover:text-foreground"
+            className="text-texto-suave hover:text-texto"
           >
             <svg
               viewBox="0 0 24 24"
@@ -134,10 +134,10 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
             </svg>
           </Link>
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-emerald-400 font-semibold">
+            <p className="text-[11px] uppercase tracking-wider text-acento-tenue font-semibold">
               {zonaNombre}
             </p>
-            <h1 className="text-xl font-bold text-foreground">Editar sector</h1>
+            <h1 className="text-xl font-bold text-texto">Editar sector</h1>
           </div>
         </div>
 
@@ -150,9 +150,9 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
         />
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
             Descripción{" "}
-            <span className="normal-case font-normal text-slate-500">
+            <span className="normal-case font-normal text-texto-suave">
               (opcional)
             </span>
           </label>
@@ -160,12 +160,12 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             rows={3}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder-slate-500 focus:border-emerald-600 focus:outline-none resize-none"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto placeholder-slate-500 focus:border-acento-borde focus:outline-none resize-none"
           />
         </div>
 
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
             Coordenadas de los extremos
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -177,9 +177,9 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
             ].map(({ label, state, set }) => (
               <div
                 key={label}
-                className="rounded-xl border border-border bg-surface/50 p-3 space-y-2"
+                className="rounded-xl border border-borde bg-superficie/50 p-3 space-y-2"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-acento-tenue">
                   {label}
                 </p>
                 <input
@@ -188,7 +188,7 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
                   value={state.lat}
                   onChange={(e) => set((c) => ({ ...c, lat: e.target.value }))}
                   placeholder="Latitud"
-                  className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-xs text-foreground placeholder-slate-600 focus:border-emerald-600 focus:outline-none"
+                  className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-xs text-texto placeholder-slate-600 focus:border-acento-borde focus:outline-none"
                 />
                 <input
                   type="number"
@@ -196,7 +196,7 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
                   value={state.lon}
                   onChange={(e) => set((c) => ({ ...c, lon: e.target.value }))}
                   placeholder="Longitud"
-                  className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-xs text-foreground placeholder-slate-600 focus:border-emerald-600 focus:outline-none"
+                  className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-xs text-texto placeholder-slate-600 focus:border-acento-borde focus:outline-none"
                 />
               </div>
             ))}
@@ -204,7 +204,7 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
             Zoom mínimo recomendado
           </label>
           <input
@@ -213,12 +213,12 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
             max={18}
             value={zoomMinimo}
             onChange={(e) => setZoomMinimo(e.target.value)}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground focus:border-emerald-600 focus:outline-none"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto focus:border-acento-borde focus:outline-none"
           />
         </div>
 
         {error ? (
-          <p className="rounded-xl bg-red-950/40 px-4 py-3 text-sm text-red-300">
+          <p className="rounded-xl bg-rojo-fondo px-4 py-3 text-sm text-rojo-texto">
             {error}
           </p>
         ) : null}
@@ -231,7 +231,7 @@ export function EditarSectorForm({ sector, zonaNombre }: EditarSectorFormProps) 
           type="button"
           disabled={deleting || saving}
           onClick={handleDelete}
-          className="w-full rounded-xl border border-red-900/40 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-950/40"
+          className="w-full rounded-xl border border-rojo-borde px-4 py-3 text-sm font-medium text-rojo hover:bg-rojo-fondo-fuerte"
         >
           {deleting ? "Eliminando…" : "Eliminar sector"}
         </button>

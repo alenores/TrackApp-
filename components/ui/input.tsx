@@ -1,27 +1,47 @@
 import type { InputHTMLAttributes } from "react";
 
+/**
+ * Un campo de texto.
+ *
+ * El contorno usa el borde fuerte, no la rayita de separar: el usuario tiene
+ * que ver dónde escribir, también con sol de frente.
+ */
+
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
+  /** Qué pasó y qué hacer. Nunca «dato inválido» a secas. */
   error?: string;
+  /** Una línea de ayuda debajo del campo. */
+  ayuda?: string;
 };
 
-export function Input({ label, error, id, className = "", ...props }: InputProps) {
+export function Input({
+  label,
+  error,
+  ayuda,
+  id,
+  className = "",
+  ...props
+}: InputProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, "-");
+  const ayudaId = `${inputId}-ayuda`;
 
   return (
     <div className="space-y-2">
       <label
         htmlFor={inputId}
-        className="block text-sm font-medium text-slate-300"
+        className="block text-sm font-medium text-texto-suave"
       >
         {label}
       </label>
       <input
         id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error || ayuda ? ayudaId : undefined}
         className={[
-          "w-full min-h-12 rounded-xl border border-border bg-surface px-4 py-3 text-base text-foreground",
-          "placeholder:text-muted focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30",
-          error ? "border-red-500/70 focus:border-red-500 focus:ring-red-500/30" : "",
+          "min-h-14 w-full rounded-xl border bg-fondo px-4 py-3 text-base text-texto",
+          "placeholder:text-texto-suave focus:outline-none focus:ring-2 focus:ring-acento-borde",
+          error ? "border-rojo-borde" : "border-borde-fuerte focus:border-acento-borde",
           className,
         ]
           .filter(Boolean)
@@ -29,8 +49,12 @@ export function Input({ label, error, id, className = "", ...props }: InputProps
         {...props}
       />
       {error ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p id={ayudaId} role="alert" className="text-sm leading-6 text-rojo-texto">
           {error}
+        </p>
+      ) : ayuda ? (
+        <p id={ayudaId} className="text-sm leading-6 text-texto-suave">
+          {ayuda}
         </p>
       ) : null}
     </div>

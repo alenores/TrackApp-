@@ -36,7 +36,7 @@ export function UserAvatar({
   return (
     <span
       className={[
-        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-emerald-800/40 bg-emerald-950/50 font-semibold text-emerald-100",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-acento-borde bg-acento font-semibold text-acento-texto",
         SIZE_CLASSES[size],
         className,
       ]

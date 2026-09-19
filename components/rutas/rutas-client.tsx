@@ -72,11 +72,11 @@ export function RutasClient({ miPerfilId }: RutasClientProps) {
 
   if (estado === "sin_datos") {
     return (
-      <Card accent className="space-y-2">
-        <p className="text-base font-medium text-foreground">
+      <Card franja="ambar" className="space-y-2">
+        <p className="text-base font-medium text-texto">
           Todavía no hay nada guardado en este celular.
         </p>
-        <p className="text-sm leading-6 text-slate-400">
+        <p className="text-sm leading-6 text-texto-suave">
           {aviso ??
             "Conectate a internet una vez y las rutas quedan guardadas para usarlas sin señal."}
         </p>
@@ -88,15 +88,15 @@ export function RutasClient({ miPerfilId }: RutasClientProps) {
     <div className="space-y-4">
       {estado === "sin_senal" ? (
         <Card>
-          <p className="text-sm font-medium text-slate-300">
+          <p className="text-sm font-medium text-texto-suave">
             Sin señal. Estás viendo lo último que quedó guardado en el celular.
           </p>
         </Card>
       ) : null}
 
       {estado === "incompleto" && aviso ? (
-        <Card accent>
-          <p role="alert" className="text-sm leading-6 text-amber-200">
+        <Card franja="ambar">
+          <p role="alert" className="text-sm leading-6 text-ambar-texto">
             No se pudo poner todo al día: {aviso} Lo que ves es lo último
             completo que había guardado.
           </p>

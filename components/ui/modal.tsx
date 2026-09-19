@@ -72,7 +72,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 flex items-end justify-center bg-black/70 p-4 sm:items-center"
+      className="fixed inset-0 flex items-end justify-center bg-velo p-4 sm:items-center"
       style={{ zIndex: nivel }}
       onClick={alCerrar}
       role="presentation"
@@ -83,15 +83,15 @@ export function Modal({
         aria-label={titulo}
         onClick={(evento) => evento.stopPropagation()}
         className={[
-          "flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-xl",
+          "flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-2xl border border-borde bg-superficie shadow-xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
         ].join(" ")}
       >
-        <div className="flex items-start gap-3 border-b border-border px-4 py-4">
+        <div className="flex items-start gap-3 border-b border-borde px-4 py-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-foreground">{titulo}</h2>
+            <h2 className="text-base font-bold text-texto">{titulo}</h2>
             {descripcion ? (
-              <p className="mt-1 text-sm text-muted">{descripcion}</p>
+              <p className="mt-1 text-sm text-texto-suave">{descripcion}</p>
             ) : null}
           </div>
 
@@ -99,7 +99,7 @@ export function Modal({
             type="button"
             onClick={alCerrar}
             aria-label="Cerrar"
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-muted hover:bg-surface-elevated hover:text-foreground"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             ×
           </button>
@@ -112,7 +112,7 @@ export function Modal({
         ) : null}
 
         {acciones ? (
-          <div className="flex gap-3 border-t border-border px-4 py-4">
+          <div className="flex gap-3 border-t border-borde px-4 py-4">
             {acciones}
           </div>
         ) : null}

@@ -1,42 +1,184 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --surface: #1e293b;
-  --surface-elevated: #334155;
-  --border: #334155;
-  --accent: #1b4332;
-  --accent-light: #2d6a4f;
-  --accent-foreground: #d8f3dc;
-  --muted: #94a3b8;
+/*
+ * Los colores de TrackApp.
+ *
+ * **Ninguna pantalla escribe un color a mano. Todos salen de acá.**
+ *
+ * Hay dos modos y se cambian a mano, con un botón:
+ *
+ *   - Modo sol   = fondo claro, texto oscuro. Con sol fuerte el modo oscuro se
+ *                  ve PEOR, porque la pantalla no le gana en brillo al sol.
+ *   - Modo noche = fondo oscuro, texto claro.
+ *
+ * El automático del sistema va por horario, no por si está pegando el sol, así
+ * que no se usa: manda el botón. Ver docs/DISENO_EXTERIOR.md.
+ *
+ * Los dos modos tienen exactamente los mismos nombres de color. Si uno define
+ * un color que el otro no tiene, en ese modo queda letra clara sobre fondo
+ * claro. Por eso las dos listas de abajo son iguales, línea por línea.
+ *
+ * Los contrastes cumplen los mínimos de AGENTS.md: 7:1 para texto normal y
+ * 4.5:1 para texto grande, íconos y bordes, en los dos modos.
+ */
 
-  /* Un solo rojo de borrar en toda la app. Nunca escribir otro a mano. */
+:root,
+:root[data-modo="noche"] {
+  --fondo: #0f172a;
+  --superficie: #1e293b;
+  --superficie-alta: #334155;
+  /* Rayita entre dos superficies: separa, no se lee. */
+  --borde: #334155;
+  /* Contorno de algo que se toca: un campo, un botón, el foco. Se tiene que ver. */
+  --borde-fuerte: #8795ab;
+  --borde-suave: rgb(100 116 139 / 0.25);
+
+  --texto: #f1f5f9;
+  --texto-suave: #aab8c9;
+
+  --acento: #1b4332;
+  --acento-hover: #14532d;
+  --acento-texto: #d8f3dc;
+  --acento-borde: #047857;
+  --acento-tenue: #8fd9b0;
+
+  /* El número que se lee de un vistazo: el largo de la ruta. */
+  --dato: #67e8f9;
+
+  /* Un solo rojo de borrar en toda la app. No escribir otro a mano. */
   --rojo: #f87171;
   --rojo-texto: #fca5a5;
-  --rojo-fondo: rgb(69 10 10 / 0.6);
-  --rojo-fondo-fuerte: rgb(127 29 29 / 0.6);
-  --rojo-borde: rgb(153 27 27 / 0.5);
+  --rojo-fondo: #351620;
+  --rojo-fondo-fuerte: #4a1b22;
+  --rojo-borde: #991b1b;
+
+  /* Falta algo, pero todavía estás a tiempo de resolverlo. */
+  --ambar-icono: #fbbf24;
+  --ambar-texto: #fde68a;
+  --ambar-fondo: #33250f;
+  --ambar-borde: #b45309;
+
+  /* Está listo. */
+  --verde-icono: #6ee7b7;
+  --verde-texto: #6ee7b7;
+  --verde-fondo: #0d3b2e;
+  --verde-borde: #059669;
+
+  --mapa-fondo: #16202f;
+  --mapa-linea: #52b788;
+  --mapa-curvas: rgb(148 163 184 / 0.16);
+  /* El punto azul: dónde estoy. */
+  --gps: #60a5fa;
+  /* Los puntos y trazos dibujados sobre el territorio. */
+  --anotacion: #f472b6;
+
+  /* El velo que tapa la app cuando hay una emergente abierta. */
+  --velo: rgb(0 0 0 / 0.72);
+
+  --sombra: 0 1px 2px rgb(0 0 0 / 0.4);
+  --sombra-alta: 0 4px 12px rgb(0 0 0 / 0.45);
+
+  color-scheme: dark;
+}
+
+:root[data-modo="sol"] {
+  --fondo: #f8fafc;
+  --superficie: #ffffff;
+  --superficie-alta: #e2e8f0;
+  --borde: #cbd5e1;
+  --borde-fuerte: #64748b;
+  --borde-suave: rgb(100 116 139 / 0.35);
+
+  --texto: #0f172a;
+  --texto-suave: #475569;
+
+  --acento: #1b4332;
+  --acento-hover: #14532d;
+  --acento-texto: #d8f3dc;
+  --acento-borde: #14532d;
+  --acento-tenue: #065f46;
+
+  --dato: #0c4a6e;
+
+  --rojo: #b91c1c;
+  --rojo-texto: #6b1616;
+  --rojo-fondo: #fee2e2;
+  --rojo-fondo-fuerte: #fecaca;
+  --rojo-borde: #b91c1c;
+
+  --ambar-icono: #92400e;
+  --ambar-texto: #78350f;
+  --ambar-fondo: #fef3c7;
+  --ambar-borde: #b45309;
+
+  --verde-icono: #047857;
+  --verde-texto: #064e3b;
+  --verde-fondo: #d1fae5;
+  --verde-borde: #047857;
+
+  --mapa-fondo: #e8eef4;
+  --mapa-linea: #1b4332;
+  --mapa-curvas: rgb(71 85 105 / 0.28);
+  --gps: #1d4ed8;
+  --anotacion: #be185d;
+
+  --velo: rgb(15 23 42 / 0.55);
+
+  --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
+  --sombra-alta: 0 4px 12px rgb(15 23 42 / 0.16);
+
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-alta: var(--superficie-alta);
+  --color-borde: var(--borde);
+  --color-borde-fuerte: var(--borde-fuerte);
+  --color-velo: var(--velo);
+  --color-borde-suave: var(--borde-suave);
+
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+
+  --color-acento: var(--acento);
+  --color-acento-hover: var(--acento-hover);
+  --color-acento-texto: var(--acento-texto);
+  --color-acento-borde: var(--acento-borde);
+  --color-acento-tenue: var(--acento-tenue);
+
+  --color-dato: var(--dato);
+
   --color-rojo: var(--rojo);
+  --color-rojo-texto: var(--rojo-texto);
+  --color-rojo-fondo: var(--rojo-fondo);
+  --color-rojo-fondo-fuerte: var(--rojo-fondo-fuerte);
+  --color-rojo-borde: var(--rojo-borde);
+
+  --color-ambar-icono: var(--ambar-icono);
+  --color-ambar-texto: var(--ambar-texto);
+  --color-ambar-fondo: var(--ambar-fondo);
+  --color-ambar-borde: var(--ambar-borde);
+
+  --color-verde-icono: var(--verde-icono);
+  --color-verde-texto: var(--verde-texto);
+  --color-verde-fondo: var(--verde-fondo);
+  --color-verde-borde: var(--verde-borde);
+
+  --color-mapa-fondo: var(--mapa-fondo);
+  --color-mapa-linea: var(--mapa-linea);
+  --color-mapa-curvas: var(--mapa-curvas);
+  --color-gps: var(--gps);
+  --color-anotacion: var(--anotacion);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--fondo);
+  color: var(--texto);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   overscroll-behavior: none;
 }
@@ -76,7 +218,32 @@ html.pwa-standalone-zoom-lock body {
 .leaflet-container {
   z-index: 0;
   font-family: inherit;
+  background: var(--mapa-fondo);
   touch-action: pan-x pan-y pinch-zoom;
+}
+
+/*
+ * El mapa lo dibuja Leaflet, que no entiende las clases de Tailwind. Estos
+ * colores salen igual de las variables, así el mapa también cambia de modo.
+ * La única excepción es una anotación con color elegido a mano: ese color es
+ * un dato del usuario, no del diseño, y manda.
+ */
+.ruta-linea {
+  stroke: var(--mapa-linea);
+}
+
+.mi-posicion {
+  stroke: var(--superficie);
+  fill: var(--gps);
+}
+
+.anotacion-punto {
+  stroke: var(--superficie);
+  fill: var(--anotacion);
+}
+
+.anotacion-trazo {
+  stroke: var(--anotacion);
 }
 
 @keyframes navigation-progress-slide {

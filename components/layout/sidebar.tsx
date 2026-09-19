@@ -79,7 +79,7 @@ export function Sidebar({ onNavigate, onLogout, loggingOut = false }: SidebarPro
       aria-label="Navegación principal"
       className="flex h-full min-h-0 flex-col gap-1 p-3"
     >
-      <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
+      <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-texto-suave">
         Menú
       </p>
       <div className="flex flex-col gap-1">
@@ -94,8 +94,8 @@ export function Sidebar({ onNavigate, onLogout, loggingOut = false }: SidebarPro
               className={[
                 "flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-medium transition-colors",
                 isActive
-                  ? "bg-emerald-950/60 text-emerald-200 ring-1 ring-emerald-800/50"
-                  : "text-slate-300 hover:bg-surface-elevated hover:text-foreground",
+                  ? "bg-verde-fondo text-verde-texto ring-1 ring-acento-borde"
+                  : "text-texto-suave hover:bg-superficie-alta hover:text-texto",
               ].join(" ")}
             >
               {item.icon}
@@ -106,14 +106,14 @@ export function Sidebar({ onNavigate, onLogout, loggingOut = false }: SidebarPro
       </div>
 
       {onLogout ? (
-        <div className="mt-auto border-t border-border pt-3">
+        <div className="mt-auto border-t border-borde pt-3">
           <Button
             type="button"
             variante="fantasma"
             anchoCompleto
             disabled={loggingOut}
             onClick={onLogout}
-            className="justify-start px-3 text-left text-red-300 hover:bg-red-950/40 hover:text-red-200"
+            className="justify-start px-3 text-left text-rojo-texto hover:bg-rojo-fondo-fuerte hover:text-rojo-texto"
           >
             {loggingOut ? "Saliendo…" : "Salir"}
           </Button>

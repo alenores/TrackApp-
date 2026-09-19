@@ -132,8 +132,8 @@ export function RutaList({
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-            <p className="text-sm text-muted">{summaryText}</p>
+            <h2 className="text-lg font-semibold text-texto">{title}</h2>
+            <p className="text-sm text-texto-suave">{summaryText}</p>
           </div>
 
           {rutas.length > 0 ? (
@@ -146,8 +146,8 @@ export function RutaList({
               className={[
                 "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors",
                 searchOpen
-                  ? "border-emerald-700/50 bg-emerald-950/50 text-emerald-200"
-                  : "border-border bg-surface text-muted hover:bg-surface-elevated hover:text-foreground",
+                  ? "border-acento-borde bg-verde-fondo text-verde-texto"
+                  : "border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
               ].join(" ")}
             >
               <SearchIcon />
@@ -167,15 +167,15 @@ export function RutaList({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar por nombre…"
-              className="w-full min-h-12 rounded-xl border border-border bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+              className="w-full min-h-12 rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
             />
           </div>
         ) : null}
       </div>
 
       {avisoDeListaIncompleta ? (
-        <Card accent>
-          <p role="alert" className="text-sm leading-6 text-amber-200">
+        <Card franja="ambar">
+          <p role="alert" className="text-sm leading-6 text-ambar-texto">
             La lista de rutas quedó incompleta: {avisoDeListaIncompleta}. Lo que
             ves acá abajo puede no ser todo. Recargá la pantalla para intentar de
             nuevo.
@@ -185,7 +185,7 @@ export function RutaList({
 
       {rutas.length === 0 ? (
         <Card>
-          <p className="text-sm leading-6 text-slate-400">
+          <p className="text-sm leading-6 text-texto-suave">
             {showNewRouteFab
               ? "Todavía no hay rutas. Subí la primera con el botón de abajo a la derecha."
               : "Todavía no hay rutas cargadas."}
@@ -193,7 +193,7 @@ export function RutaList({
         </Card>
       ) : filteredRutas.length === 0 ? (
         <Card>
-          <p className="text-sm leading-6 text-slate-400">
+          <p className="text-sm leading-6 text-texto-suave">
             No hay rutas que coincidan con &quot;{query.trim()}&quot;.
           </p>
         </Card>

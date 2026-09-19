@@ -23,14 +23,14 @@ export type VarianteDeBoton =
 
 const CLASES_POR_VARIANTE: Record<VarianteDeBoton, string> = {
   principal:
-    "bg-accent-light text-accent-foreground hover:bg-accent border border-emerald-700/50",
+    "bg-acento text-acento-texto hover:bg-acento-hover border border-acento-borde",
   secundario:
-    "bg-surface-elevated text-foreground hover:bg-slate-600 border border-border",
+    "bg-superficie-alta text-texto hover:bg-superficie border border-borde-fuerte",
   // Un solo rojo de borrar en toda la app. No escribir otro a mano.
   destructivo:
-    "bg-[var(--rojo-fondo)] text-[var(--rojo-texto)] hover:bg-[var(--rojo-fondo-fuerte)] border border-[var(--rojo-borde)]",
+    "bg-rojo-fondo text-rojo-texto hover:bg-rojo-fondo-fuerte border border-rojo-borde",
   fantasma:
-    "bg-transparent text-muted hover:bg-surface-elevated hover:text-foreground",
+    "bg-transparent text-texto-suave hover:bg-superficie-alta hover:text-texto",
 };
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -64,10 +64,8 @@ export function Button({
       className={[
         TAP_FEEDBACK_CLASS,
         "inline-flex items-center justify-center rounded-xl px-5 font-semibold transition-colors",
-        paraNavegacion
-          ? "min-h-16 py-4 text-lg"
-          : "min-h-14 py-3 text-base",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60",
+        paraNavegacion ? "min-h-16 py-4 text-lg" : "min-h-14 py-3 text-base",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
         "disabled:cursor-not-allowed disabled:opacity-50",
         anchoCompleto ? "w-full" : "",
         CLASES_POR_VARIANTE[variante],

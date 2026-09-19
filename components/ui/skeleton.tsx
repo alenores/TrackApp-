@@ -2,14 +2,14 @@ type SkeletonProps = {
   className?: string;
 };
 
+/** El bloque gris que se ve mientras algo carga. */
 export function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       aria-hidden
-      className={[
-        "animate-pulse rounded-xl bg-surface-elevated/70",
-        className,
-      ].join(" ")}
+      className={["animate-pulse rounded-xl bg-superficie-alta", className]
+        .filter(Boolean)
+        .join(" ")}
     />
   );
 }

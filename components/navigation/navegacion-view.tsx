@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { NavigationExitModal } from "@/components/navigation/navigation-exit-modal";
+import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigationExitGuard } from "@/hooks/use-navigation-exit-guard";
@@ -173,7 +174,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
 
   if (cargandoRecorrido) {
     return (
-      <Card className="py-8 text-center text-base text-muted">
+      <Card className="py-8 text-center text-base text-texto-suave">
         Abriendo la ruta…
       </Card>
     );
@@ -181,12 +182,12 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
 
   if (!recorrido) {
     return (
-      <Card accent className="space-y-3">
-        <p role="alert" className="text-base leading-6 text-red-300">
+      <Card franja="rojo" className="space-y-3">
+        <p role="alert" className="text-base leading-6 text-rojo-texto">
           Esta ruta no está guardada en el celular, así que no se puede navegar
           sin señal.
         </p>
-        <p className="text-sm leading-6 text-slate-400">
+        <p className="text-sm leading-6 text-texto-suave">
           Abrila una vez con conexión desde tu casa y queda guardada sola.
         </p>
         <Button variante="secundario" anchoCompleto onClick={() => requestExit()}>
@@ -201,10 +202,10 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
       <div className="flex h-[calc(100dvh-8rem)] min-h-[420px] flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold text-foreground">
+            <h1 className="truncate text-lg font-bold text-texto">
               {nombre}
             </h1>
-            <p className="text-sm text-muted">Navegando sin conexión</p>
+            <p className="text-sm text-texto-suave">Navegando sin conexión</p>
           </div>
 
           <button
@@ -212,13 +213,13 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
             onClick={() => requestExit()}
             onPointerDown={() => triggerTapHaptic()}
             aria-label="Salir de la navegación"
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-2xl text-muted hover:bg-surface-elevated hover:text-foreground"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-2xl text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             ×
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border">
+        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-borde">
           <CargadorDeMapa
             recorrido={recorrido}
             anotaciones={anotaciones}
@@ -231,7 +232,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         {estoyFueraDeRuta ? (
           <div
             role="alert"
-            className="rounded-xl bg-red-950/70 px-3 py-3 text-center text-lg font-bold text-red-200 ring-1 ring-red-800/60"
+            className="rounded-xl bg-rojo-fondo px-3 py-3 text-center text-lg font-bold text-rojo-texto ring-1 ring-rojo-borde"
           >
             Fuera de ruta
           </div>
@@ -240,7 +241,7 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
         {posicionVieja ? (
           <div
             role="alert"
-            className="rounded-xl border border-amber-600/40 bg-amber-950/30 px-3 py-2 text-center text-sm text-amber-200"
+            className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-sm text-ambar-texto"
           >
             Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
             punto puede estar desactualizado.
@@ -260,18 +261,29 @@ export function NavegacionView({ rutaId }: NavegacionViewProps) {
           ) : null}
 
           {errorDelGps ? (
-            <p role="alert" className="text-base leading-6 text-red-400">
+            <p role="alert" className="text-base leading-6 text-rojo">
               {errorDelGps}
             </p>
           ) : null}
 
-          {estadoDelGps === "active" && metrosDeDesvio !== null ? (
-            <p className="text-center text-base text-muted">
-              {metrosDeDesvio <= DEVIATION_THRESHOLD_METERS
-                ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
-                : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
-            </p>
-          ) : null}
+          {/*
+            El cambio de modo vive acá abajo, al alcance del pulgar: si el sol
+            gira y la pantalla deja de leerse, no se puede pedir que el usuario
+            entre a un menú con guantes puestos.
+          */}
+          <div className="flex items-center gap-3">
+            <BotonDeModo paraNavegacion />
+
+            {estadoDelGps === "active" && metrosDeDesvio !== null ? (
+              <p className="flex-1 text-center text-lg font-medium text-texto-suave">
+                {metrosDeDesvio <= DEVIATION_THRESHOLD_METERS
+                  ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
+                  : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
+              </p>
+            ) : (
+              <span className="flex-1" />
+            )}
+          </div>
         </div>
       </div>
 

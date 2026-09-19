@@ -81,15 +81,15 @@ export function AuthForm() {
   return (
     <Card className="space-y-5">
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold text-foreground">TrackApp</h1>
-        <p className="text-sm text-muted">
+        <h1 className="text-2xl font-bold text-texto">TrackApp</h1>
+        <p className="text-sm text-texto-suave">
           {mode === "login"
             ? "Ingresá para acceder a tus rutas"
             : "Creá tu cuenta para empezar"}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-xl bg-background p-1">
+      <div className="grid grid-cols-2 gap-2 rounded-xl bg-fondo p-1">
         <button
           type="button"
           onClick={() => {
@@ -100,8 +100,8 @@ export function AuthForm() {
           className={[
             "min-h-11 rounded-lg text-sm font-semibold transition-colors",
             mode === "login"
-              ? "bg-surface-elevated text-foreground"
-              : "text-muted hover:text-foreground",
+              ? "bg-superficie-alta text-texto"
+              : "text-texto-suave hover:text-texto",
           ].join(" ")}
         >
           Iniciar sesión
@@ -116,8 +116,8 @@ export function AuthForm() {
           className={[
             "min-h-11 rounded-lg text-sm font-semibold transition-colors",
             mode === "register"
-              ? "bg-surface-elevated text-foreground"
-              : "text-muted hover:text-foreground",
+              ? "bg-superficie-alta text-texto"
+              : "text-texto-suave hover:text-texto",
           ].join(" ")}
         >
           Registrarse
@@ -158,13 +158,13 @@ export function AuthForm() {
         />
 
         {error ? (
-          <p role="alert" className="rounded-lg border border-red-800/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">
+          <p role="alert" className="rounded-lg border border-rojo-borde bg-rojo-fondo px-3 py-2 text-sm text-rojo-texto">
             {error}
           </p>
         ) : null}
 
         {message ? (
-          <p className="rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+          <p className="rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
             {message}
           </p>
         ) : null}
@@ -178,7 +178,7 @@ export function AuthForm() {
         </Button>
       </form>
 
-      <p className="text-center text-[10px] font-mono text-slate-500/60 pt-2">
+      <p className="text-center text-[10px] font-mono text-texto-suave pt-2">
         {DEPLOY_SHA}
       </p>
     </Card>

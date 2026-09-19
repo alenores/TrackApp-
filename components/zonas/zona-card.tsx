@@ -62,15 +62,15 @@ export function ZonaCard({
     <>
       <div className="relative">
         <TapLink href={`/zonas/${zona.id}`} className="block">
-          <Card interactive className="space-y-2">
+          <Card interactiva className="space-y-2">
             <div className="flex items-start justify-between gap-3 pr-14">
               <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-semibold text-foreground">
+                <h2 className="truncate text-lg font-semibold text-texto">
                   {zona.nombre}
                 </h2>
 
                 {zona.descripcion ? (
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-400">
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-texto-suave">
                     {zona.descripcion}
                   </p>
                 ) : null}
@@ -80,7 +80,7 @@ export function ZonaCard({
             </div>
 
             {cantidadDeSectores !== undefined ? (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-texto-suave">
                 {cantidadDeSectores === 0
                   ? "Todavía no tiene sectores"
                   : cantidadDeSectores === 1
@@ -96,7 +96,7 @@ export function ZonaCard({
             type="button"
             aria-label={`Opciones de ${zona.nombre}`}
             onClick={() => setOpcionesAbiertas(true)}
-            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-muted hover:bg-surface-elevated hover:text-foreground"
+            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <circle cx="12" cy="5" r="1.75" fill="currentColor" />

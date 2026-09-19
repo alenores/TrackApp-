@@ -29,7 +29,7 @@ export function NavigationExitModal({
       <button
         type="button"
         aria-label="Cerrar"
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-velo"
         onClick={onCancel}
       />
 
@@ -37,11 +37,11 @@ export function NavigationExitModal({
         <div className="space-y-2">
           <h2
             id="navigation-exit-title"
-            className="text-lg font-bold text-foreground"
+            className="text-lg font-bold text-texto"
           >
             ¿Salir de la navegación?
           </h2>
-          <p id="navigation-exit-description" className="text-sm leading-6 text-muted">
+          <p id="navigation-exit-description" className="text-sm leading-6 text-texto-suave">
             Tu posición GPS se desactivará
           </p>
         </div>

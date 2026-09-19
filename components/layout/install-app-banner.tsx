@@ -8,7 +8,7 @@ function ShareIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className="inline-block h-5 w-5 align-[-0.125em] text-emerald-400"
+      className="inline-block h-5 w-5 align-[-0.125em] text-acento-tenue"
       aria-hidden
     >
       <path
@@ -34,7 +34,7 @@ function MountainIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className="h-6 w-6 text-emerald-400"
+      className="h-6 w-6 text-acento-tenue"
       aria-hidden
     >
       <path
@@ -66,11 +66,11 @@ export function InstallAppBanner() {
   return (
     <section
       aria-label="Instalar TrackApp"
-      className="mb-4 rounded-2xl border border-emerald-800/40 bg-surface p-4 shadow-sm"
+      className="mb-4 rounded-2xl border border-verde-borde bg-superficie p-4 shadow-sm"
     >
       <div className="flex items-start gap-3">
         <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-800/40 bg-emerald-950/40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-verde-borde bg-verde-fondo"
           aria-hidden
         >
           <MountainIcon />
@@ -78,16 +78,16 @@ export function InstallAppBanner() {
 
         <div className="min-w-0 flex-1 space-y-2">
           <div>
-            <p className="text-base font-semibold text-foreground">
+            <p className="text-base font-semibold text-texto">
               Instalá TrackApp en tu celular
             </p>
-            <p className="mt-1 text-sm leading-6 text-muted">{hintText}</p>
+            <p className="mt-1 text-sm leading-6 text-texto-suave">{hintText}</p>
           </div>
 
           {isIos ? (
-            <ol className="space-y-2 text-sm text-foreground">
+            <ol className="space-y-2 text-sm text-texto">
               <li className="flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-950/60 text-xs font-semibold text-emerald-300">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verde-fondo text-xs font-semibold text-acento-tenue">
                   1
                 </span>
                 <span>
@@ -95,13 +95,13 @@ export function InstallAppBanner() {
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-950/60 text-xs font-semibold text-emerald-300">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verde-fondo text-xs font-semibold text-acento-tenue">
                   2
                 </span>
                 <span>Elegí “Agregar a pantalla de inicio”</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-950/60 text-xs font-semibold text-emerald-300">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-verde-fondo text-xs font-semibold text-acento-tenue">
                   3
                 </span>
                 <span>Abrí TrackApp desde el ícono en tu menú</span>
@@ -123,7 +123,7 @@ export function InstallAppBanner() {
             <button
               type="button"
               onClick={dismiss}
-              className="min-h-10 px-3 text-sm text-muted transition-colors hover:text-foreground"
+              className="min-h-10 px-3 text-sm text-texto-suave transition-colors hover:text-texto"
             >
               Ahora no
             </button>

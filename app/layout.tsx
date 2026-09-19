@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { PreventViewportZoom } from "@/components/prevent-viewport-zoom";
 import { PwaSplash } from "@/components/layout/pwa-splash";
 import { ServiceWorkerRegister } from "./sw-register";
+import { GUION_DE_ARRANQUE } from "@/lib/modo";
 import {
   INLINE_SPLASH_ID,
   INLINE_SPLASH_MARKUP,
@@ -51,7 +52,8 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased dark`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased`}
     >
       <head>
         <meta name="application-name" content="TrackApp" />
@@ -61,6 +63,12 @@ export default function RootLayout({
         <meta name="theme-color" content="#0f172a" />
         <style dangerouslySetInnerHTML={{ __html: INLINE_SPLASH_STYLES }} />
         <meta name="trackapp-build" content={process.env.NEXT_PUBLIC_DEPLOY_SHA ?? "local"} />
+        {/*
+          Deja puesto el modo antes de que se dibuje nada. Sin esto la app
+          aparece en un modo y salta al otro, que con sol de frente es un
+          parpadeo blanco en la cara.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: GUION_DE_ARRANQUE }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{if(window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true){document.documentElement.classList.add("pwa-standalone");localStorage.setItem("pwa-installed-v1","1");localStorage.setItem("pwa-ever-standalone-v1","1");}}catch(e){}})();`,

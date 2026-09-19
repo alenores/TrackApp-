@@ -100,12 +100,12 @@ export function NuevaRutaForm() {
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
-      <Card accent className="space-y-4">
+      <Card franja="ambar" className="space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <h1 className="text-xl font-bold text-foreground">Nueva ruta</h1>
+          <h1 className="text-xl font-bold text-texto">Nueva ruta</h1>
           <Link
             href="/rutas"
-            className="shrink-0 text-sm text-emerald-300 hover:text-emerald-200"
+            className="shrink-0 text-sm text-acento-tenue hover:text-verde-texto"
           >
             Cancelar
           </Link>
@@ -122,7 +122,7 @@ export function NuevaRutaForm() {
         <div className="space-y-2">
           <label
             htmlFor="descripcion"
-            className="block text-sm font-medium text-slate-300"
+            className="block text-sm font-medium text-texto-suave"
           >
             Descripción (opcional)
           </label>
@@ -132,12 +132,12 @@ export function NuevaRutaForm() {
             onChange={(event) => setDescripcion(event.target.value)}
             rows={3}
             placeholder="Detalles del recorrido, dificultad, acceso…"
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+            className="w-full rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
           />
         </div>
 
         <div className="space-y-2">
-          <p className="block text-sm font-medium text-slate-300">
+          <p className="block text-sm font-medium text-texto-suave">
             Actividades (opcional)
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
@@ -151,8 +151,8 @@ export function NuevaRutaForm() {
                   className={[
                     "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
                     selected
-                      ? "border-emerald-600/70 bg-emerald-900/60 text-emerald-200"
-                      : "border-border bg-surface text-slate-400 hover:border-emerald-700/50 hover:text-slate-300",
+                      ? "border-acento-borde bg-verde-fondo text-verde-texto"
+                      : "border-borde bg-superficie text-texto-suave hover:border-acento-borde hover:text-texto",
                   ].join(" ")}
                 >
                   <span className="text-base leading-none" aria-hidden>
@@ -168,7 +168,7 @@ export function NuevaRutaForm() {
         <div className="space-y-2">
           <label
             htmlFor="gpx-file"
-            className="block text-sm font-medium text-slate-300"
+            className="block text-sm font-medium text-texto-suave"
           >
             Archivo GPX o KML
           </label>
@@ -178,10 +178,10 @@ export function NuevaRutaForm() {
             type="file"
             accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml"
             onChange={(event) => void handleFileChange(event)}
-            className="block w-full min-h-12 cursor-pointer rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-900/50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-emerald-100"
+            className="block w-full min-h-12 cursor-pointer rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-texto file:mr-3 file:rounded-lg file:border-0 file:bg-verde-fondo file:px-3 file:py-2 file:text-sm file:font-medium file:text-verde-texto"
           />
           {parsing ? (
-            <p className="text-sm text-muted">Procesando archivo…</p>
+            <p className="text-sm text-texto-suave">Procesando archivo…</p>
           ) : null}
         </div>
       </Card>
@@ -189,10 +189,10 @@ export function NuevaRutaForm() {
       {parsedGpx ? (
         <Card className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-texto-suave">
               Vista previa
             </h2>
-            <p className="text-sm font-medium text-emerald-200">
+            <p className="text-sm font-medium text-verde-texto">
               {formatDistanceKm(parsedGpx.distanceKm)}
             </p>
           </div>
@@ -203,7 +203,7 @@ export function NuevaRutaForm() {
       {error ? (
         <p
           role="alert"
-          className="rounded-lg border border-red-800/50 bg-red-950/40 px-3 py-2 text-sm text-red-300"
+          className="rounded-lg border border-rojo-borde bg-rojo-fondo px-3 py-2 text-sm text-rojo-texto"
         >
           {error}
         </p>

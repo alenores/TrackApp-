@@ -26,7 +26,7 @@ type PerfilFormProps = {
 };
 
 const PROFILE_FIELD_CLASS =
-  "border-slate-500/35 bg-slate-800/40 text-slate-200 placeholder:text-slate-500/80";
+  "border-borde bg-superficie text-texto placeholder:text-texto-suave";
 
 function CameraIcon() {
   return (
@@ -202,9 +202,9 @@ export function PerfilForm({
   };
 
   return (
-    <Card accent className="relative flex flex-col gap-4">
+    <Card className="relative flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-bold text-foreground">Tu cuenta</h2>
+        <h2 className="text-lg font-bold text-texto">Tu cuenta</h2>
 
         {editing ? (
           <CircleIconButton ariaLabel="Cerrar edición" onClick={cancelEditing}>
@@ -239,16 +239,16 @@ export function PerfilForm({
                 src={editingAvatarSrc}
                 name={viewNombre}
                 size="lg"
-                className="ring-2 ring-emerald-500/45 ring-offset-2 ring-offset-surface transition-[box-shadow] group-active:ring-emerald-400/70"
+                className="ring-2 ring-acento-borde ring-offset-2 ring-offset-superficie transition-[box-shadow] group-active:ring-acento-borde"
               />
-              <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full border border-emerald-700/70 bg-emerald-600 text-white shadow-md">
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full border border-acento-borde bg-acento text-acento-texto shadow-md">
                 <CameraIcon />
               </span>
             </button>
-            <p className="text-center text-sm font-semibold text-emerald-200/95">
+            <p className="text-center text-sm font-semibold text-verde-texto">
               Cambiar foto
             </p>
-            <p className="max-w-[16rem] text-center text-xs leading-5 text-muted">
+            <p className="max-w-[16rem] text-center text-xs leading-5 text-texto-suave">
               Galería o cámara del celular
             </p>
             <input
@@ -293,8 +293,8 @@ export function PerfilForm({
       ) : (
         <>
           <div className="space-y-1">
-            <p className="text-lg font-semibold text-foreground">{viewNombre}</p>
-            <p className="text-sm text-muted">{email || "—"}</p>
+            <p className="text-lg font-semibold text-texto">{viewNombre}</p>
+            <p className="text-sm text-texto-suave">{email || "—"}</p>
           </div>
 
           <div className="flex justify-center pt-1">
@@ -304,7 +304,7 @@ export function PerfilForm({
       )}
 
       {message ? (
-        <p className="rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+        <p className="rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
           {message}
         </p>
       ) : null}

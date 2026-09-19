@@ -69,20 +69,20 @@ export function SectorCard({ sector, soyAdministrador }: SectorCardProps) {
   return (
     <>
       <div className="relative">
-        <Card tone="light" className="space-y-2">
+        <Card tono="alta" className="space-y-2">
           <div className="pr-14">
-            <h3 className="truncate text-base font-semibold text-foreground">
+            <h3 className="truncate text-base font-semibold text-texto">
               {sector.nombre}
             </h3>
 
             {sector.descripcion ? (
-              <p className="mt-1 line-clamp-2 text-sm text-slate-400">
+              <p className="mt-1 line-clamp-2 text-sm text-texto-suave">
                 {sector.descripcion}
               </p>
             ) : null}
           </div>
 
-          <p className="text-xs text-slate-500">{tamanoAproximado(sector)}</p>
+          <p className="text-xs text-texto-suave">{tamanoAproximado(sector)}</p>
         </Card>
 
         {soyAdministrador ? (
@@ -90,7 +90,7 @@ export function SectorCard({ sector, soyAdministrador }: SectorCardProps) {
             type="button"
             aria-label={`Opciones de ${sector.nombre}`}
             onClick={() => setOpcionesAbiertas(true)}
-            className="absolute right-2 top-2 flex h-14 w-14 items-center justify-center rounded-full text-muted hover:bg-surface-elevated hover:text-foreground"
+            className="absolute right-2 top-2 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <circle cx="12" cy="5" r="1.75" fill="currentColor" />

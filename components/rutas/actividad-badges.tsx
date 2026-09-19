@@ -28,8 +28,8 @@ export function ActividadBadges({ actividades, tamano = "chico" }: Props) {
             key={tipo}
             className={
               mediano
-                ? "inline-flex items-center gap-1.5 rounded-full border border-emerald-700/40 bg-emerald-950/60 px-3 py-1 text-sm font-medium text-emerald-200"
-                : "inline-flex items-center gap-1 rounded-full border border-emerald-700/30 bg-emerald-950/50 px-2 py-0.5 text-xs font-medium text-emerald-300"
+                ? "inline-flex items-center gap-1.5 rounded-full border border-acento-borde bg-verde-fondo px-3 py-1 text-sm font-medium text-verde-texto"
+                : "inline-flex items-center gap-1 rounded-full border border-acento-borde bg-verde-fondo px-2 py-0.5 text-xs font-medium text-acento-tenue"
             }
           >
             <svg

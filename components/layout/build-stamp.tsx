@@ -13,7 +13,7 @@ export function BuildStamp() {
 
   return (
     <p
-      className="mt-8 pb-2 text-center text-[10px] font-mono leading-none text-slate-400/70"
+      className="mt-8 pb-2 text-center text-[10px] font-mono leading-none text-texto-suave"
       aria-hidden
     >
       {DEPLOY_SHA}
