@@ -361,9 +361,13 @@ Convenciones fijas de Ale (ver el skill `stack-tecnico-fijo`):
 - **Borrado lógico siempre** (`eliminado_en`), nunca borrado físico.
 - `creado_en` y `actualizado_en` en toda tabla.
 - **RLS activo desde que se crea la tabla**, sin excepción.
+- **Y el permiso de leer y escribir para el usuario logueado, en la misma
+  tanda.** Seguridad por fila **no** es permiso: sin el permiso la base contesta
+  «permiso denegado», la app no trae nada y la pantalla queda en el cartel de
+  error. Pasó en producción el 2026-09-19: las tablas tenían la seguridad puesta
+  y ningún permiso de leer, y la app no mostraba ni una ruta.
 
-**TrackApp hoy NO cumple ninguna de estas cuatro.** Está registrado en
-`docs/RIESGOS.md`. Toda tabla nueva sí las cumple.
+**La base nueva cumple las cinco.** Toda tabla que se agregue también.
 
 **Nunca asumir nombres de columnas.** Verificar contra la base antes de escribir
 una consulta.
