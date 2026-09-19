@@ -179,6 +179,16 @@ export function Mapa({
    */
   /** Qué salió mal con el fondo, si algo salió mal. Se muestra: no se traga. */
   const [avisoDelFondo, setAvisoDelFondo] = useState<string | null>(null);
+  /**
+   * Si el mapa terminó de armarse.
+   *
+   * **Un mapa que no termina de armarse no se distingue de uno vacío**: los dos
+   * son un rectángulo del color del fondo. Sin esto, el usuario no sabe si está
+   * esperando o si se rompió algo, y quien tiene que arreglarlo tampoco.
+   */
+  const [armado, setArmado] = useState(false);
+  /** Cuántas cosas hay dibujadas encima del fondo. */
+  const [dibujado, setDibujado] = useState(0);
   const modoRef = useRef(modo);
   useEffect(() => {
     modoRef.current = modo;
@@ -304,6 +314,7 @@ export function Mapa({
 
       // Lo de la app ya está: de acá en adelante todo lo pendiente se dibuja,
       // pase lo que pase con el fondo.
+      setArmado(true);
       listoRef.current = true;
       for (const dibujar of esperandoRef.current) dibujar();
       esperandoRef.current = [];
@@ -413,6 +424,7 @@ export function Mapa({
         type: "FeatureCollection",
         features,
       });
+      setDibujado(features.length);
 
       if (rectangulo) {
         mapa.fitBounds(limitesDe(rectangulo), { padding: 36, animate: false });
@@ -476,10 +488,18 @@ export function Mapa({
         saberlo: si no, ve un mapa vacío y no sabe si es que no bajó nada o si
         se rompió algo.
       */}
-      {avisoDelFondo ? (
+      {!armado ? (
+        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
+          Armando el mapa…
+        </p>
+      ) : avisoDelFondo ? (
         <p className="absolute inset-x-3 bottom-3 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
-          El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves
-          —la ruta, tu posición y los recuadros— sigue siendo correcto.
+          El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
+          ruta, tu posición y los recuadros— sigue siendo correcto.
+        </p>
+      ) : dibujado === 0 && !recorrido ? (
+        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
+          El mapa está armado pero no hay nada que dibujar todavía.
         </p>
       ) : null}
 
