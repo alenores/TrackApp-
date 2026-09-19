@@ -28,9 +28,8 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
   const { paquete, estado } = useDatosDeLaApp();
 
   const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
-  const sectores = (paquete?.sectores ?? []).filter(
-    (sector) => sector.zonaId === zonaId,
-  );
+  const todosLosSectores = paquete?.sectores ?? [];
+  const sectores = todosLosSectores.filter((sector) => sector.zonaId === zonaId);
 
   if (estado === "abriendo") {
     return (
@@ -158,6 +157,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
             <TarjetaDeSector
               key={sector.id}
               sector={sector}
+              todosLosSectores={todosLosSectores}
               soyAdministrador={miPerfilId === sector.perfilId}
             />
           ))

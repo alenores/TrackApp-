@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { borrarSector } from "@/app/actions/territorio";
+import { MapaDelSector } from "@/components/mapa/mapa-del-sector";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
@@ -12,17 +13,23 @@ import type { Sector } from "@/types/database";
 /**
  * Un sector en la lista de una zona.
  *
- * El sector es la unidad que se descarga. El botón de bajar el mapa todavía no
- * está: los archivos de mapa no existen (ver la decisión 007). Cuando existan,
- * el botón entra acá.
+ * **El sector es la unidad que se descarga**, así que su mapa se baja y se saca
+ * desde acá mismo: es donde el usuario lo está mirando, y no hay que ir a
+ * buscarlo a ninguna otra pantalla.
  */
 
 type SectorCardProps = {
   sector: Sector;
+  /** Todos los sectores: los vecinos comparten pedazos de mapa. */
+  todosLosSectores: Sector[];
   soyAdministrador: boolean;
 };
 
-export function TarjetaDeSector({ sector, soyAdministrador }: SectorCardProps) {
+export function TarjetaDeSector({
+  sector,
+  todosLosSectores,
+  soyAdministrador,
+}: SectorCardProps) {
   const router = useRouter();
   const { confirmar, avisar } = useDialogos();
   const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
@@ -69,6 +76,8 @@ export function TarjetaDeSector({ sector, soyAdministrador }: SectorCardProps) {
           </div>
 
           <p className="text-xs text-texto-suave">{mostrarTamano(sector.rectangulo)}</p>
+
+          <MapaDelSector sector={sector} todosLosSectores={todosLosSectores} />
         </Tarjeta>
 
         {soyAdministrador ? (

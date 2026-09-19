@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { sePuedenDescargarMapas } from "@/components/mapa/capas-base";
+import { BajarLosMapasQueFaltan } from "@/components/rutas/bajar-los-mapas-que-faltan";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { coberturaCompleta, type Cobertura } from "@/lib/cobertura";
 
@@ -30,11 +30,13 @@ export function BloqueDeCobertura({
   zonaParaCrearSector = null,
 }: BloqueDeCoberturaProps) {
   const hayHueco = cobertura.metrosSinCobertura > 0;
-  const faltanBajar = cobertura.sectores.filter(
-    (cada) => cada.estado === "falta_descargar",
-  );
+  const faltanBajar = cobertura.sectores
+    .filter((cada) => cada.estado === "falta_descargar")
+    .map((cada) => cada.sector);
+  const yaBajados = cobertura.sectores
+    .filter((cada) => cada.estado === "descargado")
+    .map((cada) => cada.sector);
   const listo = coberturaCompleta(cobertura);
-  const sePuedeBajar = sePuedenDescargarMapas();
 
   const franja = hayHueco ? "rojo" : listo ? "verde" : "ambar";
   const metrosCubiertos = Math.max(
@@ -111,29 +113,22 @@ export function BloqueDeCobertura({
         </div>
       ) : null}
 
-      {cobertura.sectores.length > 0 ? (
+      {yaBajados.length > 0 ? (
         <ul className="space-y-1.5">
-          {cobertura.sectores.map(({ sector, estado }) => (
+          {yaBajados.map((sector) => (
             <li
               key={sector.id}
               className="flex items-center gap-2 rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm text-texto"
             >
-              {estado === "descargado" ? <TildeChico /> : <RelojChico />}
+              <TildeChico />
               <span className="min-w-0 flex-1 truncate">{sector.nombre}</span>
-              <span className="shrink-0 text-xs text-texto-suave">
-                {estado === "descargado" ? "en el celular" : "falta bajarlo"}
-              </span>
+              <span className="shrink-0 text-xs text-texto-suave">en el celular</span>
             </li>
           ))}
         </ul>
       ) : null}
 
-      {faltanBajar.length > 0 && !sePuedeBajar ? (
-        <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm leading-6 text-texto-suave">
-          Los mapas todavía no se pueden bajar: los archivos no están cargados en
-          la app. Hasta que estén, la ruta se navega sin fondo de mapa.
-        </p>
-      ) : null}
+      <BajarLosMapasQueFaltan sectoresQueFaltan={faltanBajar} />
 
       {hayHueco && zonaParaCrearSector !== null ? (
         <Link
@@ -220,20 +215,3 @@ function TildeChico() {
   );
 }
 
-function RelojChico() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4 shrink-0 text-ambar-icono"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7.5V12l3 2" />
-    </svg>
-  );
-}

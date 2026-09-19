@@ -18,7 +18,7 @@ import {
 } from "@/lib/navegacion/desvio";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
-import { sectoresConMapaBajado } from "@/lib/offline/mapas";
+import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import type { Anotacion, Rectangulo } from "@/types/database";
@@ -45,6 +45,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     useSalidaDeNavegacion(salida);
 
   const vigilanciaRef = useRef<number | null>(null);
+  const sectoresBajados = useSectoresConMapaBajado();
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
   const [nombre, setNombre] = useState("Ruta");
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
@@ -98,7 +99,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             avisoPorFaltaDeMapa(
               guardado,
               sectoresQueLaCruzan,
-              sectoresConMapaBajado(),
+              sectoresBajados,
             ),
           );
         }
@@ -111,7 +112,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     return () => {
       vigente = false;
     };
-  }, [rutaId]);
+  }, [rutaId, sectoresBajados]);
 
   // Un reloj lento, solo para saber si la posición envejeció.
   useEffect(() => {

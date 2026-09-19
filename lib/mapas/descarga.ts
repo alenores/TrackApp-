@@ -7,6 +7,7 @@ import {
 import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
+  cuantasTeselas,
   teselasDelRectangulo,
   type Tesela,
 } from "@/lib/mapas/teselas";
@@ -312,4 +313,36 @@ export async function borrarElMapaDelSector(
 export async function borrarTodosLosMapasDelCelular(): Promise<void> {
   olvidarTodosLosMapas();
   await borrarTodasLasTeselas();
+}
+
+/**
+ * Cuánto pesa, más o menos, el mapa de un rectángulo.
+ *
+ * **Es una estimación, no una promesa**, y se dice así en pantalla. Sale de
+ * medir un sector de sierra de verdad contra el archivo del mundo: 84 pedazos
+ * pesaron 1027 KB, unos 12 KB cada uno. Una zona con ciudad adentro pesa más,
+ * porque hay más dibujado.
+ */
+export const PESO_APROXIMADO_DE_UN_PEDAZO = 12 * 1024;
+
+export function pesoAproximadoDelMapa(
+  rectangulo: Sector["rectangulo"],
+  acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+): number {
+  return cuantasTeselas(rectangulo, acercamientoMaximo) * PESO_APROXIMADO_DE_UN_PEDAZO;
+}
+
+/**
+ * El peso escrito como lo lee una persona.
+ *
+ * Nunca en bytes sueltos: «1.048.576» no le dice nada a nadie.
+ */
+export function mostrarPeso(bytes: number): string {
+  if (bytes < 1024) return `${Math.max(bytes, 0)} B`;
+
+  const enKb = bytes / 1024;
+  if (enKb < 1000) return `${Math.round(enKb)} KB`;
+
+  const enMb = enKb / 1024;
+  return `${enMb.toFixed(1).replace(".", ",")} MB`;
 }
