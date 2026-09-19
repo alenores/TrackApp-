@@ -21,7 +21,10 @@ type EditarZonaFormProps = {
   miPerfilId: string | null;
 };
 
-export function FormularioDeEditarZona({ zonaId, miPerfilId }: EditarZonaFormProps) {
+export function FormularioDeEditarZona({
+  zonaId,
+  miPerfilId,
+}: EditarZonaFormProps) {
   const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
   const { confirmar, avisar } = useDialogos();
@@ -59,7 +62,10 @@ export function FormularioDeEditarZona({ zonaId, miPerfilId }: EditarZonaFormPro
         <p role="alert" className="text-base leading-6 text-rojo-texto">
           Esta zona no está en el celular, así que no se puede editar.
         </p>
-        <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
+        <BotonVolver
+          destinoSiNoHayVuelta="/zonas"
+          etiqueta="Volver a las zonas"
+        />
       </Tarjeta>
     );
   }
@@ -142,36 +148,41 @@ export function FormularioDeEditarZona({ zonaId, miPerfilId }: EditarZonaFormPro
         queEs="zona"
         campos={campos}
         alCambiar={setCampos}
-        rectangulosExistentes={sectoresDeLaZona.map((sector) => sector.rectangulo)}
+        rectangulosExistentes={sectoresDeLaZona.map(
+          (sector) => sector.rectangulo,
+        )}
+        pie={
+          <>
+            {error ? (
+              <Tarjeta franja="rojo">
+                <p role="alert" className="text-sm leading-6 text-rojo-texto">
+                  {error}
+                </p>
+              </Tarjeta>
+            ) : null}
+
+            <Boton
+              anchoCompleto
+              paraNavegacion
+              disabled={guardando || !armado.ok}
+              onClick={() => void alGuardar()}
+            >
+              {guardando ? "Guardando…" : "Guardar los cambios"}
+            </Boton>
+
+            <div className="pb-2">
+              <Boton
+                anchoCompleto
+                variante="destructivo"
+                disabled={borrando}
+                onClick={() => void alBorrar()}
+              >
+                {borrando ? "Borrando…" : "Borrar esta zona"}
+              </Boton>
+            </div>
+          </>
+        }
       />
-
-      {error ? (
-        <Tarjeta franja="rojo">
-          <p role="alert" className="text-sm leading-6 text-rojo-texto">
-            {error}
-          </p>
-        </Tarjeta>
-      ) : null}
-
-      <Boton
-        anchoCompleto
-        paraNavegacion
-        disabled={guardando || !armado.ok}
-        onClick={() => void alGuardar()}
-      >
-        {guardando ? "Guardando…" : "Guardar los cambios"}
-      </Boton>
-
-      <div className="pb-2">
-        <Boton
-          anchoCompleto
-          variante="destructivo"
-          disabled={borrando}
-          onClick={() => void alBorrar()}
-        >
-          {borrando ? "Borrando…" : "Borrar esta zona"}
-        </Boton>
-      </div>
     </div>
   );
 }

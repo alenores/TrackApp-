@@ -159,35 +159,38 @@ export function FormularioDeEditarSector({
         campos={campos}
         alCambiar={setCampos}
         rectangulosExistentes={hermanos.map((cada) => cada.rectangulo)}
+        pie={
+          <>
+            {error ? (
+              <Tarjeta franja="rojo">
+                <p role="alert" className="text-sm leading-6 text-rojo-texto">
+                  {error}
+                </p>
+              </Tarjeta>
+            ) : null}
+
+            <Boton
+              anchoCompleto
+              paraNavegacion
+              disabled={guardando || !armado.ok}
+              onClick={() => void alGuardar()}
+            >
+              {guardando ? "Guardando…" : "Guardar los cambios"}
+            </Boton>
+
+            <div className="pb-2">
+              <Boton
+                anchoCompleto
+                variante="destructivo"
+                disabled={borrando}
+                onClick={() => void alBorrar()}
+              >
+                {borrando ? "Borrando…" : "Borrar este sector"}
+              </Boton>
+            </div>
+          </>
+        }
       />
-
-      {error ? (
-        <Tarjeta franja="rojo">
-          <p role="alert" className="text-sm leading-6 text-rojo-texto">
-            {error}
-          </p>
-        </Tarjeta>
-      ) : null}
-
-      <Boton
-        anchoCompleto
-        paraNavegacion
-        disabled={guardando || !armado.ok}
-        onClick={() => void alGuardar()}
-      >
-        {guardando ? "Guardando…" : "Guardar los cambios"}
-      </Boton>
-
-      <div className="pb-2">
-        <Boton
-          anchoCompleto
-          variante="destructivo"
-          disabled={borrando}
-          onClick={() => void alBorrar()}
-        >
-          {borrando ? "Borrando…" : "Borrar este sector"}
-        </Boton>
-      </div>
     </div>
   );
 }

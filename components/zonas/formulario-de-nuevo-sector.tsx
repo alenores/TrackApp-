@@ -87,7 +87,10 @@ export function FormularioDeNuevoSector({ zonaId }: NuevaSectorFormProps) {
         <p className="text-sm leading-6 text-texto-suave">
           Con conexión, volvé a la lista de zonas y se pone al día sola.
         </p>
-        <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
+        <BotonVolver
+          destinoSiNoHayVuelta="/zonas"
+          etiqueta="Volver a las zonas"
+        />
       </Tarjeta>
     );
   }
@@ -110,26 +113,29 @@ export function FormularioDeNuevoSector({ zonaId }: NuevaSectorFormProps) {
         campos={campos}
         alCambiar={setCampos}
         rectangulosExistentes={hermanos.map((sector) => sector.rectangulo)}
+        pie={
+          <>
+            {error ? (
+              <Tarjeta franja="rojo">
+                <p role="alert" className="text-sm leading-6 text-rojo-texto">
+                  {error}
+                </p>
+              </Tarjeta>
+            ) : null}
+
+            <div className="pb-2">
+              <Boton
+                anchoCompleto
+                paraNavegacion
+                disabled={guardando || !armado.ok}
+                onClick={() => void alGuardar()}
+              >
+                {guardando ? "Guardando…" : "Guardar el sector"}
+              </Boton>
+            </div>
+          </>
+        }
       />
-
-      {error ? (
-        <Tarjeta franja="rojo">
-          <p role="alert" className="text-sm leading-6 text-rojo-texto">
-            {error}
-          </p>
-        </Tarjeta>
-      ) : null}
-
-      <div className="pb-2">
-        <Boton
-          anchoCompleto
-          paraNavegacion
-          disabled={guardando || !armado.ok}
-          onClick={() => void alGuardar()}
-        >
-          {guardando ? "Guardando…" : "Guardar el sector"}
-        </Boton>
-      </div>
     </div>
   );
 }

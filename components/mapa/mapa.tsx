@@ -98,6 +98,13 @@ type MapaProps = {
   /** `true` en la pantalla de navegación, que va a pantalla completa. */
   pantallaCompleta?: boolean;
   /**
+   * `true` cuando el mapa es lo principal de la pantalla y hay lugar.
+   *
+   * En el celular queda igual de alto que siempre; en la computadora se estira
+   * hasta ocupar casi toda la altura, que es donde se necesita ver.
+   */
+  grande?: boolean;
+  /**
    * `true` para traer el fondo en vivo en vez de leerlo de lo guardado.
    *
    * **Solo al definir el rectángulo de una zona o un sector**, que se hace en
@@ -107,7 +114,10 @@ type MapaProps = {
   className?: string;
 };
 
-function comoPoligono(rectangulo: Rectangulo, nuevo: boolean): Feature<Polygon> {
+function comoPoligono(
+  rectangulo: Rectangulo,
+  nuevo: boolean,
+): Feature<Polygon> {
   const { latNorte, latSur, lonEste, lonOeste } = rectangulo;
 
   return {
@@ -144,7 +154,9 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
       properties: {
         // Un color elegido a mano es un dato del usuario y manda sobre el del modo.
         color: anotacion.color ?? null,
-        titulo: [anotacion.icono, anotacion.comentario].filter(Boolean).join(" · "),
+        titulo: [anotacion.icono, anotacion.comentario]
+          .filter(Boolean)
+          .join(" · "),
       },
       geometry: anotacion.geometria,
     })),
@@ -170,6 +182,7 @@ export function Mapa({
   rectangulo = null,
   rectangulosExistentes = [],
   pantallaCompleta = false,
+  grande = false,
   enVivo = false,
   className = "",
 }: MapaProps) {
@@ -367,8 +380,16 @@ export function Mapa({
 
       mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
-      mapa.setPaintProperty("mi-posicion-punto", "circle-stroke-color", colores.contorno);
-      mapa.setPaintProperty("anotaciones-punto", "circle-stroke-color", colores.contorno);
+      mapa.setPaintProperty(
+        "mi-posicion-punto",
+        "circle-stroke-color",
+        colores.contorno,
+      );
+      mapa.setPaintProperty(
+        "anotaciones-punto",
+        "circle-stroke-color",
+        colores.contorno,
+      );
       mapa.setPaintProperty("anotaciones-punto", "circle-color", [
         "coalesce",
         ["get", "color"],
@@ -489,7 +510,9 @@ export function Mapa({
         "relative overflow-hidden bg-mapa-fondo",
         pantallaCompleta
           ? "h-full w-full"
-          : "h-64 w-full rounded-xl border border-borde sm:h-80",
+          : grande
+            ? "h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
+            : "h-64 w-full rounded-xl border border-borde sm:h-80",
         className,
       ]
         .filter(Boolean)

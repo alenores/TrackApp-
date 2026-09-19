@@ -52,7 +52,10 @@ export function FormularioDeNuevaZona() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver a las zonas" />
+        <BotonVolver
+          destinoSiNoHayVuelta="/zonas"
+          etiqueta="Volver a las zonas"
+        />
         <h1 className="text-xl font-semibold text-texto">Nueva zona</h1>
       </div>
 
@@ -60,27 +63,32 @@ export function FormularioDeNuevaZona() {
         queEs="zona"
         campos={campos}
         alCambiar={setCampos}
-        rectangulosExistentes={(paquete?.zonas ?? []).map((zona) => zona.rectangulo)}
+        rectangulosExistentes={(paquete?.zonas ?? []).map(
+          (zona) => zona.rectangulo,
+        )}
+        pie={
+          <>
+            {error ? (
+              <Tarjeta franja="rojo">
+                <p role="alert" className="text-sm leading-6 text-rojo-texto">
+                  {error}
+                </p>
+              </Tarjeta>
+            ) : null}
+
+            <div className="pb-2">
+              <Boton
+                anchoCompleto
+                paraNavegacion
+                disabled={guardando || !armado.ok}
+                onClick={() => void alGuardar()}
+              >
+                {guardando ? "Guardando…" : "Guardar la zona"}
+              </Boton>
+            </div>
+          </>
+        }
       />
-
-      {error ? (
-        <Tarjeta franja="rojo">
-          <p role="alert" className="text-sm leading-6 text-rojo-texto">
-            {error}
-          </p>
-        </Tarjeta>
-      ) : null}
-
-      <div className="pb-2">
-        <Boton
-          anchoCompleto
-          paraNavegacion
-          disabled={guardando || !armado.ok}
-          onClick={() => void alGuardar()}
-        >
-          {guardando ? "Guardando…" : "Guardar la zona"}
-        </Boton>
-      </div>
     </div>
   );
 }

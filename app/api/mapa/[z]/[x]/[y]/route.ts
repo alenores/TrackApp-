@@ -33,12 +33,26 @@ export async function GET(
   _pedido: Request,
   { params }: { params: Promise<{ z: string; x: string; y: string }> },
 ) {
-  const supabase = await crearClienteEnElServidor();
-  const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) {
+  // Envuelto a propósito: armar el cliente puede tirar —falta una clave, la
+  // sesión está rota— y sin esto la pantalla recibía un error pelado del
+  // servidor, sin un solo motivo adentro.
+  try {
+    const supabase = await crearClienteEnElServidor();
+    const { data } = await supabase.auth.getClaims();
+    if (!data?.claims) {
+      return NextResponse.json(
+        { error: "Entrá con tu cuenta para bajar mapas." },
+        { status: 401 },
+      );
+    }
+  } catch (error) {
     return NextResponse.json(
-      { error: "Entrá con tu cuenta para bajar mapas." },
-      { status: 401 },
+      {
+        error: `No se pudo verificar tu sesión: ${
+          error instanceof Error && error.message ? error.message : "el servidor no contestó"
+        }`,
+      },
+      { status: 500 },
     );
   }
 
