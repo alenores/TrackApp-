@@ -1,6 +1,5 @@
 import { nombreParaMostrar, nombreGuardado } from "@/lib/cuenta/nombre";
-import { fetchAllDirectoryUsers } from "@/lib/cuenta/directorio";
-import { traerMiPerfil } from "@/lib/perfiles/datos";
+import { traerMiPerfil, traerTodosLosPerfiles } from "@/lib/perfiles/datos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { PantallaDePerfiles } from "@/components/perfil/pantalla-de-perfiles";
 
@@ -13,8 +12,8 @@ export default async function PerfilesPage() {
     return null;
   }
 
-  const [users, avatarUrl] = await Promise.all([
-    fetchAllDirectoryUsers(),
+  const [perfiles, avatarUrl] = await Promise.all([
+    traerTodosLosPerfiles(),
     traerMiPerfil().then((perfil) => perfil?.avatarUrl ?? null),
   ]);
 
@@ -25,7 +24,8 @@ export default async function PerfilesPage() {
       displayNombre={nombreParaMostrar(user)}
       email={user.email ?? ""}
       avatarUrl={avatarUrl}
-      users={users}
+      perfiles={perfiles.filas}
+      avisoDeListaIncompleta={perfiles.completa ? null : perfiles.motivo}
     />
   );
 }

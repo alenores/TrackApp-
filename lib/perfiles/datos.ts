@@ -1,5 +1,10 @@
 import { cache } from "react";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
+import {
+  mapearResultado,
+  traerTodasLasFilas,
+  type ResultadoLista,
+} from "@/lib/supabase/listas";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import type { CategoriaUsuario, Perfil } from "@/types/database";
 
@@ -79,4 +84,26 @@ export async function traerPerfiles(ids: string[]): Promise<Map<string, Perfil>>
   return new Map(
     (data as unknown as Fila[]).map((fila) => [fila.id, leer(fila)]),
   );
+}
+
+/**
+ * Todos los perfiles de la app.
+ *
+ * Va por tandas y avisa si la lista quedó cortada: la base devuelve como máximo
+ * 1000 filas por respuesta y no lo dice.
+ */
+export async function traerTodosLosPerfiles(): Promise<ResultadoLista<Perfil>> {
+  const supabase = await crearClienteEnElServidor();
+
+  const resultado = await traerTodasLasFilas<Fila>((desde, hasta) =>
+    supabase
+      .from("perfiles")
+      .select(COLUMNAS)
+      .is("eliminado_en", null)
+      .order("nombre", { ascending: true, nullsFirst: false })
+      .order("id", { ascending: true })
+      .range(desde, hasta),
+  );
+
+  return mapearResultado(resultado, leer);
 }

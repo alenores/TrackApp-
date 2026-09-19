@@ -13,6 +13,7 @@ import { Boton } from "@/components/ui/boton";
 import { CLASE_DEL_CIRCULO } from "@/components/ui/flecha-redonda";
 import { CruzRedonda } from "@/components/ui/cruz-redonda";
 import { Campo } from "@/components/ui/campo";
+import { FORMATO_DE_FOTO } from "@/lib/cuenta/fotos";
 import { Avatar } from "@/components/ui/avatar";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { vibrarAlTocar } from "@/lib/vibracion";
@@ -265,7 +266,7 @@ export function FormularioDePerfil({
             <input
               ref={avatarInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={FORMATO_DE_FOTO}
               capture="user"
               className="sr-only"
               onChange={handleAvatarChange}

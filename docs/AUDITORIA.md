@@ -1,8 +1,8 @@
 # Auditoría del trabajo hecho — 2026-09-19
 
-> **Estado: arreglada.** Todo lo que sigue quedó corregido el mismo día, salvo
-> los dos puntos marcados `PENDIENTE`, que esperan una comprobación contra la
-> base que solo puede hacer Ale.
+> **Estado: cerrada.** Todo lo que sigue quedó corregido el mismo día. Los dos
+> puntos que esperaban una comprobación contra la base se verificaron el
+> 2026-09-19 con Ale: los dos eran ciertos, y uno era peor de lo anotado.
 >
 > Durante los arreglos aparecieron **tres hallazgos más** que la primera pasada
 > no había visto: están al final, como G6, G7 y G8.
@@ -73,9 +73,14 @@ cae a un respaldo que consulta **la tabla `profiles` y las columnas `user_id` y
 Si nada de eso existe, la consulta falla, el respaldo devuelve lista vacía y la
 pantalla muestra «no hay usuarios» sin decir que hubo un error.
 
-**Estado: PENDIENTE DE VERIFICACIÓN.** No tengo acceso en tiempo real a la base
-de TrackApp por MCP (solo veo la de Vías de Escalada). **No lo doy por cierto
-hasta que Ale corra la consulta de comprobación.**
+**Verificado contra la base el 2026-09-19.** La tabla `profiles` no existe y las
+columnas `user_id` y `subido_por_nombre` tampoco. La función `list_app_users` sí
+existe, pero lee `profiles`, que no está.
+
+**Arreglado.** Se borró el módulo viejo entero. La pantalla ahora lee la tabla
+`perfiles`, que es la que existe, por tandas y avisando si la lista queda corta.
+De paso muestra la categoría de cada usuario, que antes no se veía, y dice algo
+cuando sos el único usuario en vez de no mostrar nada.
 
 **De quién es.** Del código viejo. Pero lo dejé en pie sin mirarlo, que es
 exactamente lo que se me pidió no hacer.
@@ -217,12 +222,25 @@ es el botón, un aviso hecho con ese botón tampoco se dibuja.
 
 ## G7 — Subir la foto de perfil escribe en un depósito que no existe
 
-**Qué pasa.** El código guarda las fotos en un depósito llamado `avatars`. El que
-se creó con la base nueva se llama `avatares`.
+**Verificado contra la base el 2026-09-19, y era peor de lo anotado.** Hay tres
+diferencias, no una:
 
-Si son distintos, subir una foto de perfil falla siempre.
+| | El código decía | La base dice |
+|---|---|---|
+| Depósito | `avatars` | `avatares` |
+| Peso máximo | 3 MB | 2 MB |
+| Formatos | JPG, PNG y WebP | solo WebP |
 
-**Estado: PENDIENTE DE VERIFICACIÓN**, junto con G2.
+O sea: subir una foto de perfil fallaba siempre por el nombre del depósito; y
+aunque eso se arreglara, la app seguía aceptando fotos que la base iba a
+rechazar. El usuario se enteraba después de esperar la subida, con un error que
+no dice nada.
+
+**Arreglado.** Los tres valores ahora coinciden con la base, el selector de
+archivos ofrece solo WebP, y los mensajes dicen qué pasó y qué hacer («la foto
+pesa 2,5 MB y el máximo son 2 MB»). **Y tiene prueba**, porque ya hubo dos
+errores del mismo tipo acá: el código decía una cosa y la base otra, y eso no
+falla al escribir código ni al abrir la app.
 
 **De quién es.** Del código viejo, y mío por no haberlo revisado al rehacer la
 base.
@@ -269,12 +287,12 @@ para decidir:
 | | Hallazgo | Estado |
 |---|---|---|
 | G1 | Carteles del sistema operativo | ✅ arreglado |
-| G2 | Pantalla de Perfiles contra la base vieja | ⏳ pendiente de comprobación |
+| G2 | Pantalla de Perfiles contra la base vieja | ✅ arreglado (verificado) |
 | G3 | Desvío sin prueba | ✅ 23 pruebas |
 | G4 | Listas por tandas sin prueba | ✅ 11 pruebas |
 | G5 | Lectura de archivos sin prueba | ✅ 10 pruebas |
 | G6 | No existía la red de rescate | ✅ arreglado |
-| G7 | Depósito de fotos equivocado | ⏳ pendiente de comprobación |
+| G7 | Foto de perfil: depósito, peso y formato | ✅ arreglado (verificado) · 8 pruebas |
 | G8 | Cerrar sesión no borraba nada | ✅ arreglado |
 | M6 | Media app en inglés | ✅ todo en español |
 | M7 | La fórmula de distancia repetida | ✅ una sola, y ahora no se puede confundir el orden |
@@ -285,7 +303,7 @@ para decidir:
 Además, sin estar en la lista: la librería que lee los GPX era la vieja y
 arrastraba cuatro vulnerabilidades críticas. Se cambió por la mantenida.
 
-De 119 pruebas se pasó a **164**.
+De 119 pruebas se pasó a **172**.
 
 ---
 
@@ -297,14 +315,21 @@ chequeo de tipos, del chequeo de estilo y de las pruebas.
 
 **Inferido (no verificado):** nada.
 
-**Pendiente de verificación:**
-- **G2.** Si en la base de TrackApp existen la función `list_app_users`, la tabla
-  `profiles` y las columnas `rutas.user_id` y `rutas.subido_por_nombre`.
-- **G7.** Cómo se llama el depósito de fotos de perfil: `avatars` o `avatares`.
+**Verificado con Ale contra la base de TrackApp (2026-09-19):** las tablas del
+proyecto, la existencia de `profiles`, `list_app_users` y las columnas viejas de
+`rutas`, y la lista completa de depósitos con su peso y formatos admitidos.
 
-No tengo acceso en tiempo real a esa base por MCP —solo veo la de Vías de
-Escalada— así que los dos quedan como sospecha fundada y no como hecho hasta que
-Ale corra las consultas.
+**Pendiente de verificación:** nada.
 
-**Este documento no está listo para compartirse externamente hasta resolver G2 y
-G7.**
+## Lo que quedó para que decida Ale
+
+En la base quedaron **dos depósitos de la app vieja**: `avatars` y `gpx-files`.
+Ya no los usa nadie, pero **pueden tener archivos adentro**, así que no se tocan
+sin que Ale diga. Borrar un depósito no se deshace.
+
+## Qué se hace distinto de ahora en adelante
+
+Dos veces en esta sesión se corrió una consulta en el proyecto equivocado y por
+poco se saca una conclusión falsa de ahí. **Todo script que se le pase a Ale
+para correr en la base tiene que devolver, como primera columna, en qué proyecto
+se está corriendo.** Si no, no se manda.

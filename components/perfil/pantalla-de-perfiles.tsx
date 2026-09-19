@@ -1,4 +1,5 @@
-import type { DirectoryUser } from "@/lib/cuenta/directorio";
+import { Tarjeta } from "@/components/ui/tarjeta";
+import type { Perfil } from "@/types/database";
 import { FormularioDePerfil } from "@/components/perfil/formulario-de-perfil";
 import { TarjetaDePerfil } from "@/components/perfil/tarjeta-de-perfil";
 
@@ -8,7 +9,9 @@ type PerfilesViewProps = {
   displayNombre: string;
   email: string;
   avatarUrl?: string | null;
-  users: DirectoryUser[];
+  perfiles: Perfil[];
+  /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
+  avisoDeListaIncompleta?: string | null;
 };
 
 export function PantallaDePerfiles({
@@ -17,9 +20,10 @@ export function PantallaDePerfiles({
   displayNombre,
   email,
   avatarUrl,
-  users,
+  perfiles,
+  avisoDeListaIncompleta = null,
 }: PerfilesViewProps) {
-  const otherUsers = users.filter((user) => user.id !== currentUserId);
+  const losDemas = perfiles.filter((perfil) => perfil.id !== currentUserId);
 
   return (
     <div className="space-y-4">
@@ -37,20 +41,38 @@ export function PantallaDePerfiles({
         avatarUrl={avatarUrl}
       />
 
-      {otherUsers.length > 0 ? (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-texto-suave">
-            Todos los usuarios
-          </h2>
+      {avisoDeListaIncompleta ? (
+        <Tarjeta franja="ambar">
+          <p role="alert" className="text-sm leading-6 text-ambar-texto">
+            La lista de usuarios quedó incompleta: {avisoDeListaIncompleta}. Lo
+            que ves acá abajo puede no ser todo.
+          </p>
+        </Tarjeta>
+      ) : null}
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-texto-suave">
+          {losDemas.length === 0
+            ? "Los demás usuarios"
+            : `Los demás usuarios (${losDemas.length})`}
+        </h2>
+
+        {losDemas.length === 0 ? (
+          <Tarjeta>
+            <p className="text-sm leading-6 text-texto-suave">
+              Por ahora sos el único usuario de la app.
+            </p>
+          </Tarjeta>
+        ) : (
           <ul className="space-y-3">
-            {otherUsers.map((user) => (
-              <li key={user.id}>
-                <TarjetaDePerfil user={user} />
+            {losDemas.map((perfil) => (
+              <li key={perfil.id}>
+                <TarjetaDePerfil perfil={perfil} />
               </li>
             ))}
           </ul>
-        </section>
-      ) : null}
+        )}
+      </section>
     </div>
   );
 }
