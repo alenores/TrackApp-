@@ -1,75 +1,79 @@
 "use client";
 
-import Link from "next/link";
-import type { ZonaListItem } from "@/types/database";
-import { getZonaUploaderLabel } from "@/lib/zonas/labels";
 import { ZonaCard } from "@/components/zonas/zona-card";
+import { Card } from "@/components/ui/card";
+import { TapLink } from "@/components/ui/tap-link";
+import type { Zona } from "@/types/database";
+
+/**
+ * La lista de zonas.
+ *
+ * Crear zonas es tarea exclusiva del administrador, así que el botón de crear
+ * solo aparece para él.
+ */
 
 type ZonaListProps = {
-  zonas: ZonaListItem[];
-  currentUserId: string | null;
-  currentUserName: string | null;
-  avatarByUserId?: Record<string, string | null>;
+  zonas: Zona[];
+  soyAdministrador: boolean;
+  sectoresPorZona?: Record<number, number>;
+  /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
+  avisoDeListaIncompleta?: string | null;
 };
 
 export function ZonaList({
   zonas,
-  currentUserId,
-  currentUserName,
-  avatarByUserId = {},
+  soyAdministrador,
+  sectoresPorZona = {},
+  avisoDeListaIncompleta = null,
 }: ZonaListProps) {
-  const byProvincia = zonas.reduce<Record<string, ZonaListItem[]>>((acc, zona) => {
-    if (!acc[zona.provincia]) acc[zona.provincia] = [];
-    acc[zona.provincia].push(zona);
-    return acc;
-  }, {});
-
-  const provincias = Object.keys(byProvincia).sort();
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-foreground">Zonas</h1>
-        <Link
-          href="/zonas/nueva"
-          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700/50 bg-accent-light px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent"
-        >
-          + Nueva
-        </Link>
+
+        {soyAdministrador ? (
+          <TapLink
+            href="/zonas/nueva"
+            className="inline-flex min-h-14 items-center justify-center rounded-xl border border-emerald-700/50 bg-accent-light px-5 py-3 text-base font-semibold text-accent-foreground transition-colors hover:bg-accent"
+          >
+            Nueva zona
+          </TapLink>
+        ) : null}
       </div>
 
-      {zonas.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface px-4 py-10 text-center text-slate-400">
-          <p className="text-base font-medium">No hay zonas cargadas aún.</p>
-          <p className="mt-1 text-sm">
-            Creá la primera zona para organizar los sectores de escalada.
+      {avisoDeListaIncompleta ? (
+        <Card accent>
+          <p role="alert" className="text-sm leading-6 text-amber-200">
+            La lista de zonas quedó incompleta: {avisoDeListaIncompleta}. Lo que
+            ves acá abajo puede no ser todo. Recargá la pantalla para intentar de
+            nuevo.
           </p>
-        </div>
+        </Card>
+      ) : null}
+
+      {zonas.length === 0 ? (
+        <Card>
+          <p className="text-base font-medium text-slate-300">
+            Todavía no hay zonas.
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-400">
+            {soyAdministrador
+              ? "Creá la primera zona para empezar a armar los sectores que después se descargan."
+              : "Cuando Ale cargue la primera zona, va a aparecer acá."}
+          </p>
+        </Card>
       ) : (
-        <div className="space-y-8">
-          {provincias.map((provincia) => (
-            <div key={provincia} className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-400">
-                {provincia}
-              </h2>
-              <div className="space-y-3">
-                {byProvincia[provincia].map((zona) => (
-                  <ZonaCard
-                    key={zona.id}
-                    zona={zona}
-                    currentUserId={currentUserId}
-                    uploaderLabel={getZonaUploaderLabel(
-                      zona,
-                      currentUserId,
-                      currentUserName,
-                    )}
-                    uploaderAvatarUrl={avatarByUserId[zona.user_id]}
-                  />
-                ))}
-              </div>
-            </div>
+        <ul className="space-y-3">
+          {zonas.map((zona) => (
+            <li key={zona.id}>
+              <ZonaCard
+                zona={zona}
+                soyAdministrador={soyAdministrador}
+                cantidadDeSectores={sectoresPorZona[zona.id]}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

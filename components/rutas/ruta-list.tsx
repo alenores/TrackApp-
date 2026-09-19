@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { RutaListItem } from "@/types/database";
-import { getUploaderLabel } from "@/lib/rutas/helpers";
+import type { Perfil, RutaResumen } from "@/types/database";
 import { RutaCard } from "@/components/rutas/ruta-card";
 import { Card } from "@/components/ui/card";
 
 type RutaListProps = {
-  rutas: RutaListItem[];
-  currentUserId: string | null;
-  currentUserName: string | null;
-  avatarByUserId?: Record<string, string | null>;
+  rutas: RutaResumen[];
+  miPerfilId: string | null;
+  perfiles: Record<string, Perfil>;
   title?: string;
   showNewRouteFab?: boolean;
+  /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
+  avisoDeListaIncompleta?: string | null;
 };
 
 function SearchIcon() {
@@ -31,11 +31,11 @@ function SearchIcon() {
 
 export function RutaList({
   rutas,
-  currentUserId,
-  currentUserName,
-  avatarByUserId = {},
+  miPerfilId,
+  perfiles,
   title = "Rutas disponibles",
   showNewRouteFab = false,
+  avisoDeListaIncompleta = null,
 }: RutaListProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchInputWrapRef = useRef<HTMLDivElement>(null);
@@ -173,12 +173,22 @@ export function RutaList({
         ) : null}
       </div>
 
+      {avisoDeListaIncompleta ? (
+        <Card accent>
+          <p role="alert" className="text-sm leading-6 text-amber-200">
+            La lista de rutas quedó incompleta: {avisoDeListaIncompleta}. Lo que
+            ves acá abajo puede no ser todo. Recargá la pantalla para intentar de
+            nuevo.
+          </p>
+        </Card>
+      ) : null}
+
       {rutas.length === 0 ? (
         <Card>
           <p className="text-sm leading-6 text-slate-400">
             {showNewRouteFab
-              ? "Sé el primero en subir una ruta GPX. Tocá el botón + abajo a la derecha."
-              : "Sé el primero en subir una ruta GPX para compartirla con otros usuarios."}
+              ? "Todavía no hay rutas. Subí la primera con el botón de abajo a la derecha."
+              : "Todavía no hay rutas cargadas."}
           </p>
         </Card>
       ) : filteredRutas.length === 0 ? (
@@ -193,13 +203,13 @@ export function RutaList({
             <li key={ruta.id}>
               <RutaCard
                 ruta={ruta}
-                isOwner={currentUserId === ruta.user_id}
-                uploaderLabel={getUploaderLabel(
-                  ruta,
-                  currentUserId,
-                  currentUserName,
-                )}
-                uploaderAvatarUrl={avatarByUserId[ruta.user_id] ?? null}
+                soyElAutor={miPerfilId === ruta.perfilId}
+                autor={
+                  miPerfilId === ruta.perfilId
+                    ? "Vos"
+                    : (perfiles[ruta.perfilId]?.nombre ?? "Alguien")
+                }
+                avatarDelAutor={perfiles[ruta.perfilId]?.avatarUrl ?? null}
               />
             </li>
           ))}

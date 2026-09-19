@@ -1,142 +1,137 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteZona } from "@/app/actions/delete-zona";
-import { triggerTapHaptic } from "@/lib/haptics";
-import type { ZonaListItem } from "@/types/database";
+import { useState } from "react";
+import { borrarZona } from "@/app/actions/territorio";
 import { Card } from "@/components/ui/card";
-import { UploaderAvatar } from "@/components/rutas/uploader-avatar";
+import { ChevronCircle } from "@/components/ui/chevron-circle";
+import { useDialogos } from "@/components/ui/dialogos";
+import { Modal, BotonDeModal } from "@/components/ui/modal";
+import { TapLink } from "@/components/ui/tap-link";
+import type { Zona } from "@/types/database";
 
-const LONG_PRESS_MS = 500;
+/**
+ * Una zona en la lista.
+ *
+ * Crear, editar y borrar zonas es tarea exclusiva del administrador, así que el
+ * botón de opciones solo aparece para él. La base lo verifica igual por su
+ * cuenta: esconder el botón es para no ofrecer algo que después va a fallar.
+ */
 
 type ZonaCardProps = {
-  zona: ZonaListItem;
-  currentUserId: string | null;
-  uploaderLabel: string;
-  uploaderAvatarUrl?: string | null;
+  zona: Zona;
+  soyAdministrador: boolean;
+  cantidadDeSectores?: number;
 };
 
 export function ZonaCard({
   zona,
-  currentUserId,
-  uploaderLabel,
-  uploaderAvatarUrl,
+  soyAdministrador,
+  cantidadDeSectores,
 }: ZonaCardProps) {
   const router = useRouter();
-  const isOwner = currentUserId === zona.user_id;
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { confirmar, avisar } = useDialogos();
+  const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
+  const [borrando, setBorrando] = useState(false);
 
-  const handlePress = useCallback(() => {
-    longPressTimer.current = setTimeout(() => {
-      if (isOwner) {
-        triggerTapHaptic();
-        setMenuOpen(true);
-      }
-    }, LONG_PRESS_MS);
-  }, [isOwner]);
+  const alBorrar = async () => {
+    const seguro = await confirmar({
+      titulo: `¿Borrar la zona «${zona.nombre}»?`,
+      mensaje:
+        "Se van también sus sectores y las anotaciones de cada uno. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar",
+      destructivo: true,
+    });
 
-  const handleRelease = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+    if (!seguro) return;
+
+    setBorrando(true);
+    const resultado = await borrarZona(zona.id);
+    setBorrando(false);
+
+    if (!resultado.ok) {
+      await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error });
+      return;
     }
-  }, []);
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    const result = await deleteZona(zona.id);
-    if (!result.success) {
-      alert(result.error);
-      setDeleting(false);
-    }
+    setOpcionesAbiertas(false);
+    router.refresh();
   };
 
   return (
     <>
-      <Link
-        href={`/zonas/${zona.id}`}
-        onMouseDown={handlePress}
-        onMouseUp={handleRelease}
-        onTouchStart={handlePress}
-        onTouchEnd={handleRelease}
-        className="block"
-      >
-        <Card interactive>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
-                {zona.provincia}
-              </p>
-              <h3 className="mt-0.5 truncate text-base font-semibold text-foreground">
-                {zona.nombre}
-              </h3>
-              {zona.descripcion ? (
-                <p className="mt-1 line-clamp-2 text-sm text-slate-400">
-                  {zona.descripcion}
-                </p>
-              ) : null}
-            </div>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="mt-1 h-5 w-5 shrink-0 text-slate-500"
-              aria-hidden
-            >
-              <path
-                d="M9 18l6-6-6-6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <UploaderAvatar
-              avatarUrl={uploaderAvatarUrl}
-              uploaderLabel={uploaderLabel}
-              size="sm"
-            />
-            <span className="text-xs text-slate-500">{uploaderLabel}</span>
-          </div>
-        </Card>
-      </Link>
+      <div className="relative">
+        <TapLink href={`/zonas/${zona.id}`} className="block">
+          <Card interactive className="space-y-2">
+            <div className="flex items-start justify-between gap-3 pr-14">
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-lg font-semibold text-foreground">
+                  {zona.nombre}
+                </h2>
 
-      {menuOpen && isOwner ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4"
-          onClick={() => setMenuOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl bg-slate-800 p-4 space-y-2"
-            onClick={(e) => e.stopPropagation()}
+                {zona.descripcion ? (
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-400">
+                    {zona.descripcion}
+                  </p>
+                ) : null}
+              </div>
+
+              <ChevronCircle direction="right" className="-mt-0.5 shrink-0" />
+            </div>
+
+            {cantidadDeSectores !== undefined ? (
+              <p className="text-xs text-slate-500">
+                {cantidadDeSectores === 0
+                  ? "Todavía no tiene sectores"
+                  : cantidadDeSectores === 1
+                    ? "1 sector"
+                    : `${cantidadDeSectores} sectores`}
+              </p>
+            ) : null}
+          </Card>
+        </TapLink>
+
+        {soyAdministrador ? (
+          <button
+            type="button"
+            aria-label={`Opciones de ${zona.nombre}`}
+            onClick={() => setOpcionesAbiertas(true)}
+            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-muted hover:bg-surface-elevated hover:text-foreground"
           >
-            <p className="text-center text-sm font-medium text-slate-300 pb-2 border-b border-slate-700">
-              {zona.nombre}
-            </p>
-            <button
-              className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 hover:bg-slate-700"
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+              <circle cx="12" cy="5" r="1.75" fill="currentColor" />
+              <circle cx="12" cy="12" r="1.75" fill="currentColor" />
+              <circle cx="12" cy="19" r="1.75" fill="currentColor" />
+            </svg>
+          </button>
+        ) : null}
+      </div>
+
+      <Modal
+        abierto={opcionesAbiertas}
+        alCerrar={() => setOpcionesAbiertas(false)}
+        titulo={zona.nombre}
+        acciones={
+          <>
+            <BotonDeModal
+              variante="secundario"
               onClick={() => {
-                setMenuOpen(false);
+                setOpcionesAbiertas(false);
                 router.push(`/zonas/${zona.id}/editar`);
               }}
             >
-              Editar zona
-            </button>
-            <button
-              className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-red-400 hover:bg-red-950/40"
-              disabled={deleting}
-              onClick={handleDelete}
+              Editar
+            </BotonDeModal>
+            <BotonDeModal
+              variante="destructivo"
+              disabled={borrando}
+              onClick={() => void alBorrar()}
             >
-              {deleting ? "Eliminando…" : "Eliminar zona"}
-            </button>
-          </div>
-        </div>
-      ) : null}
+              {borrando ? "Borrando…" : "Borrar"}
+            </BotonDeModal>
+          </>
+        }
+      />
     </>
   );
 }
