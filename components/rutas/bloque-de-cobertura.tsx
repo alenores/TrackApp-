@@ -4,7 +4,7 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { coberturaCompleta, type Cobertura } from "@/lib/cobertura";
 import { sectoresConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import type { MapaDeSector } from "@/lib/offline/mapas";
-import type { Anotacion } from "@/types/database";
+import type { Anotacion, Zona } from "@/types/database";
 
 /**
  * El mapa de una ruta: qué sectores cruza y si están en el celular.
@@ -24,6 +24,8 @@ type BloqueDeCoberturaProps = {
   anotaciones: Anotacion[];
   /** Los mapas bajados, con la lista de qué fotos trajo cada uno. */
   mapasBajados: MapaDeSector[];
+  /** Las zonas que la ruta toca. Puede no tocar ninguna, o tocar cinco. */
+  zonas: Zona[];
   /** El id de zona al que mandar para crear el sector que falta, si se sabe. */
   zonaParaCrearSector?: number | null;
 };
@@ -36,6 +38,7 @@ export function BloqueDeCobertura({
   cobertura,
   anotaciones,
   mapasBajados,
+  zonas,
   zonaParaCrearSector = null,
 }: BloqueDeCoberturaProps) {
   const hayHueco = cobertura.metrosSinCobertura > 0;
@@ -150,6 +153,34 @@ export function BloqueDeCobertura({
         </div>
       ) : null}
 
+      {/*
+        Las zonas son información, no veredicto: dicen si el territorio por
+        donde pasa la ruta ya está organizado. Una ruta puede no tocar ninguna,
+        o tocar cinco.
+      */}
+      <div className="space-y-1.5">
+        {zonas.length === 0 ? (
+          <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm leading-6 text-texto-suave">
+            Esta ruta no cae en ninguna zona tuya. Podés hacerla igual: la zona
+            es para organizarte, no para salir.
+          </p>
+        ) : (
+          zonas.map((zona) => (
+            <div
+              key={zona.id}
+              className="flex items-center gap-2 rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm text-texto"
+            >
+              <span
+                aria-hidden
+                className="h-3.5 w-5 shrink-0 rounded-[2px] border-2 border-dashed border-borde-fuerte"
+              />
+              <span className="min-w-0 flex-1 truncate">{zona.nombre}</span>
+              <span className="shrink-0 text-xs text-texto-suave">zona</span>
+            </div>
+          ))
+        )}
+      </div>
+
       {yaBajados.length > 0 ? (
         <ul className="space-y-1.5">
           {yaBajados.map((sector) => (
@@ -177,6 +208,16 @@ export function BloqueDeCobertura({
           className="flex min-h-14 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-5 text-base font-semibold text-texto transition-colors hover:bg-superficie"
         >
           Crear un sector que lo cubra
+        </Link>
+      ) : null}
+
+      {/* Sin zona no hay dónde crear el sector: primero va la zona. */}
+      {hayHueco && zonaParaCrearSector === null ? (
+        <Link
+          href="/zonas/nueva"
+          className="flex min-h-14 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-5 text-base font-semibold text-texto transition-colors hover:bg-superficie"
+        >
+          Crear una zona acá
         </Link>
       ) : null}
     </Tarjeta>

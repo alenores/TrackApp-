@@ -8,6 +8,7 @@ import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { calcularHuecoDeZona } from "@/lib/cobertura";
+import { comoSectores } from "@/lib/mapas/rectangulos";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 
 /**
@@ -204,8 +205,11 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         <CargadorDeMapa
           enVivo
           grande
-          rectangulo={zona.rectangulo}
-          rectangulosExistentes={sectores.map((sector) => sector.rectangulo)}
+          encuadre={zona.rectangulo}
+          rectangulos={[
+            { rectangulo: zona.rectangulo, clase: "zona" },
+            ...comoSectores(sectores.map((sector) => sector.rectangulo)),
+          ]}
         />
         <p className="text-sm leading-6 text-texto-suave">
           {sectores.length === 0

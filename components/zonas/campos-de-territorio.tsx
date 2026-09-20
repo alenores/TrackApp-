@@ -21,6 +21,10 @@ import {
 } from "@/lib/territorio/esquinas";
 import { estaAdentroDe } from "@/lib/datos/rectangulo";
 import { mostrarTamano } from "@/lib/territorio/tamano";
+import {
+  comoSectores,
+  type RectanguloEnElMapa,
+} from "@/lib/mapas/rectangulos";
 import type { Rectangulo } from "@/types/database";
 
 /**
@@ -94,9 +98,12 @@ export function CamposDeTerritorio({
   const armado = rectanguloDeLosCampos(campos);
 
   /** El territorio que contiene a este se dibuja junto con los hermanos. */
-  const rectangulosDeReferencia = contexto
-    ? [contexto.rectangulo, ...rectangulosExistentes]
-    : rectangulosExistentes;
+  const rectangulosDeReferencia: RectanguloEnElMapa[] = [
+    ...(contexto
+      ? [{ rectangulo: contexto.rectangulo, clase: "zona" as const }]
+      : []),
+    ...comoSectores(rectangulosExistentes),
+  ];
 
   const seSale =
     contexto !== null &&
@@ -231,7 +238,7 @@ export function CamposDeTerritorio({
             alDibujar={alDibujar}
             rectangulo={armado.ok ? armado.rectangulo : null}
             encuadre={contexto?.rectangulo ?? null}
-            rectangulosExistentes={rectangulosDeReferencia}
+            rectangulos={rectangulosDeReferencia}
           />
 
           {dibujando ? (

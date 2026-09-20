@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { Boton } from "@/components/ui/boton";
+import { NIVEL_DE_LAS_EMERGENTES } from "@/lib/capas";
 
 /**
  * **La única pieza que dibuja pantallas emergentes en toda la app.**
@@ -27,9 +28,6 @@ import { Boton } from "@/components/ui/boton";
  * queda arriba. Un número escrito a mano es justo lo que termina tapando un
  * aviso que nadie ve.
  */
-
-/** Por encima de cualquier cosa de la app. Uno solo, para todas. */
-const NIVEL_DE_LAS_EMERGENTES = 10_000;
 
 type PropiedadesDeEmergente = {
   abierto: boolean;

@@ -51,10 +51,21 @@ la que se veía: **la app no guardaba nada**, porque uno de los tres archivos de
 motor offline se iba a la pantalla de entrar y el motor se caía al arrancar, en
 silencio. Con señal se veía perfecta. Ver R21 y R22.
 
+**La ruta, dibujada sobre su zona y sus sectores.** Con el mapa de internet
+atrás, los tres niveles se leen de un vistazo: la zona punteada, el sector
+bajado en verde, el que falta en ámbar. Los números pasaron a ser información al
+costado y no un veredicto: un kilómetro sin mapa adentro de un pueblo no es lo
+mismo que uno en el filo, y eso se ve, no se lee. Aparece también al **subir**
+una ruta, que es cuando mirás un archivo que te pasaron. Y **todo mapa de la app
+se abre en grande** con un botón, porque en el celular un recuadro chico no
+alcanza.
+
 ### Decisiones tomadas
 
 - `019` — La foto de la anotación viaja con el mapa del sector, no con el
   paquete: lo que pesa lo elige el usuario.
+- `020` — La ruta se mira sobre su zona y sus sectores; los números son
+  informativos. Todo mapa se abre en grande.
 
 ### Riesgos
 
@@ -73,6 +84,8 @@ silencio. Con señal se veía perfecta. Ver R21 y R22.
 - Probar en **modo avión** con el celular.
 - Las **curvas de nivel** desde el modelo de elevación de 5 metros de IDECOR.
 - El **satelital para bajar**: hoy solo baja el mapa simple.
+- Que el aviso de fondo del mapa no tape el selector de dibujo/foto cuando el
+  mapa queda muy bajo.
 
 ---
 

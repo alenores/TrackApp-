@@ -377,7 +377,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           enVivo
           grande
           encuadre={sector.rectangulo}
-          rectangulosExistentes={[sector.rectangulo]}
+          rectangulos={[{ rectangulo: sector.rectangulo, clase: "sector" }]}
           anotaciones={
             editando && editando.id === null
               ? [

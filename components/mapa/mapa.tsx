@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import {
@@ -12,6 +12,9 @@ import {
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
 import { coloresDelMapa } from "@/components/mapa/colores";
+import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
+import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
+import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 import { useModo } from "@/hooks/use-modo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
@@ -101,8 +104,21 @@ type MapaProps = {
   encuadre?: Rectangulo | null;
   /** El pedazo de mapa que se está definiendo ahora. */
   rectangulo?: Rectangulo | null;
-  /** Los pedazos que ya existen, para ver dónde cae el nuevo. */
-  rectangulosExistentes?: Rectangulo[];
+  /**
+   * Los rectángulos dibujados, cada uno con su clase.
+   *
+   * La clase decide el color y el trazo: la zona va gris y punteada porque es
+   * una referencia; el sector bajado en verde y el que falta en ámbar, que es
+   * lo que le importa a quien mira si puede salir.
+   */
+  rectangulos?: RectanguloEnElMapa[];
+  /**
+   * Lo que explica los colores del mapa.
+   *
+   * Va adentro del mapa y no al lado, así viaja con él cuando se abre en
+   * grande: sin la referencia los recuadros son manchas.
+   */
+  referencia?: ReactNode;
   /** `true` en la pantalla de navegación, que va a pantalla completa. */
   pantallaCompleta?: boolean;
   /**
@@ -146,13 +162,13 @@ type MapaProps = {
 
 function comoPoligono(
   rectangulo: Rectangulo,
-  nuevo: boolean,
+  clase: string,
 ): Feature<Polygon> {
   const { latNorte, latSur, lonEste, lonOeste } = rectangulo;
 
   return {
     type: "Feature",
-    properties: { nuevo },
+    properties: { clase },
     geometry: {
       type: "Polygon",
       coordinates: [
@@ -212,7 +228,8 @@ export function Mapa({
   miPosicion = null,
   encuadre = null,
   rectangulo = null,
-  rectangulosExistentes = [],
+  rectangulos = [],
+  referencia = null,
   pantallaCompleta = false,
   grande = false,
   dibujando = false,
@@ -248,6 +265,36 @@ export function Mapa({
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno. La foto solo existe con internet. */
   const [tipoDeFondo, setTipoDeFondo] = useState<TipoDeFondo>("dibujo");
+  const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
+  /**
+   * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
+   *
+   * Solo se usa cuando la pantalla no dijo a qué encuadrar: en las de armar
+   * zonas y sectores, donde el usuario anda buscando el lugar a mano.
+   */
+  const loQueSeMirabaRef = useRef<maplibregl.LngLatBoundsLike | null>(null);
+
+  const anotarLoQueSeMira = () => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    const limites = mapa.getBounds();
+    loQueSeMirabaRef.current = [
+      [limites.getWest(), limites.getSouth()],
+      [limites.getEast(), limites.getNorth()],
+    ];
+  };
+
+  const cerrarLoGrande = useCallback(() => {
+    const mapa = mapaRef.current;
+    if (mapa) {
+      const limites = mapa.getBounds();
+      loQueSeMirabaRef.current = [
+        [limites.getWest(), limites.getSouth()],
+        [limites.getEast(), limites.getNorth()],
+      ];
+    }
+    setAPantallaCompleta(false);
+  }, []);
   /** Cuántas cosas hay dibujadas encima del fondo. */
   const [dibujado, setDibujado] = useState(0);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
@@ -266,8 +313,10 @@ export function Mapa({
    * el sector está donde tiene que estar.
    */
   const hayEncuadreRef = useRef(encuadre !== null);
+  const encuadreRef = useRef<maplibregl.LngLatBoundsLike | null>(null);
   useEffect(() => {
     hayEncuadreRef.current = encuadre !== null;
+    encuadreRef.current = encuadre ? limitesDe(encuadre) : null;
   }, [encuadre]);
   const modoRef = useRef(modo);
   useEffect(() => {
@@ -320,14 +369,34 @@ export function Mapa({
         id: "rectangulos-relleno",
         type: "fill",
         source: FUENTE_RECTANGULOS,
+        // La zona no se rellena: es el territorio de referencia, y un relleno
+        // grande taparía el terreno que justamente se quiere mirar.
+        filter: ["!=", ["get", "clase"], "zona"],
         paint: {
           "fill-color": [
-            "case",
-            ["get", "nuevo"],
-            colores.rectanguloNuevo,
+            "match",
+            ["get", "clase"],
+            "nuevo", colores.rectanguloNuevo,
+            "zona", colores.rectanguloZona,
+            "sector_bajado", colores.rectanguloBajado,
+            "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
           "fill-opacity": 0.14,
+        },
+      });
+
+      // El borde de la zona va punteado, y el punteado no se puede decidir por
+      // rectángulo dentro de una misma capa. Por eso son dos.
+      mapa.addLayer({
+        id: "rectangulos-borde-zona",
+        type: "line",
+        source: FUENTE_RECTANGULOS,
+        filter: ["==", ["get", "clase"], "zona"],
+        paint: {
+          "line-color": colores.rectanguloZona,
+          "line-width": 2,
+          "line-dasharray": [3, 2.2],
         },
       });
 
@@ -335,14 +404,18 @@ export function Mapa({
         id: "rectangulos-borde",
         type: "line",
         source: FUENTE_RECTANGULOS,
+        filter: ["!=", ["get", "clase"], "zona"],
         paint: {
           "line-color": [
-            "case",
-            ["get", "nuevo"],
-            colores.rectanguloNuevo,
+            "match",
+            ["get", "clase"],
+            "nuevo", colores.rectanguloNuevo,
+            "zona", colores.rectanguloZona,
+            "sector_bajado", colores.rectanguloBajado,
+            "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
-          "line-width": ["case", ["get", "nuevo"], 3, 2],
+          "line-width": ["case", ["==", ["get", "clase"], "nuevo"], 3, 2.4],
         },
       });
 
@@ -457,17 +530,28 @@ export function Mapa({
         colores.anotacion,
       ]);
       mapa.setPaintProperty("rectangulos-relleno", "fill-color", [
-        "case",
-        ["get", "nuevo"],
-        colores.rectanguloNuevo,
-        colores.rectanguloExistente,
-      ]);
+            "match",
+            ["get", "clase"],
+            "nuevo", colores.rectanguloNuevo,
+            "zona", colores.rectanguloZona,
+            "sector_bajado", colores.rectanguloBajado,
+            "sector_sin_bajar", colores.rectanguloSinBajar,
+            colores.rectanguloExistente,
+          ]);
       mapa.setPaintProperty("rectangulos-borde", "line-color", [
-        "case",
-        ["get", "nuevo"],
-        colores.rectanguloNuevo,
-        colores.rectanguloExistente,
-      ]);
+            "match",
+            ["get", "clase"],
+            "nuevo", colores.rectanguloNuevo,
+            "zona", colores.rectanguloZona,
+            "sector_bajado", colores.rectanguloBajado,
+            "sector_sin_bajar", colores.rectanguloSinBajar,
+            colores.rectanguloExistente,
+          ]);
+      mapa.setPaintProperty(
+        "rectangulos-borde-zona",
+        "line-color",
+        colores.rectanguloZona,
+      );
     };
 
     cuandoEsteListo(pintar);
@@ -633,8 +717,8 @@ export function Mapa({
 
     const poner = () => {
       const features = [
-        ...rectangulosExistentes.map((cada) => comoPoligono(cada, false)),
-        ...(rectangulo ? [comoPoligono(rectangulo, true)] : []),
+        ...rectangulos.map((cada) => comoPoligono(cada.rectangulo, cada.clase)),
+        ...(rectangulo ? [comoPoligono(rectangulo, "nuevo")] : []),
       ];
 
       ponerDatos(mapa, FUENTE_RECTANGULOS, {
@@ -668,7 +752,7 @@ export function Mapa({
     };
 
     cuandoEsteListo(poner);
-  }, [rectangulo, rectangulosExistentes]);
+  }, [rectangulo, rectangulos]);
 
   // Dónde estoy.
   useEffect(() => {
@@ -699,6 +783,44 @@ export function Mapa({
     cuandoEsteListo(poner);
   }, [miPosicion]);
 
+  /**
+   * El mapa abierto en grande, tapando la pantalla.
+   *
+   * En el celular cualquier mapa es chico, y mirar si la ruta queda adentro de
+   * un sector con un recuadro de siete centímetros no se puede. Cierra con la
+   * cruz y también con el botón físico de atrás, como toda pantalla que tapa.
+   */
+  const enGrande = aPantallaCompleta && !pantallaCompleta;
+
+  useCerrarConAtras(enGrande, cerrarLoGrande);
+
+  /**
+   * El mapa mide su lienzo al armarse: si cambia de tamaño hay que avisarle.
+   *
+   * Y hay que **volver a encuadrar lo que se estaba mirando**: con solo
+   * avisarle del tamaño nuevo, el mapa conserva el acercamiento y lo que
+   * ocupaba todo el recuadro chico queda como una estampilla en el medio de la
+   * pantalla grande, que es justo lo contrario de para qué se agranda.
+   */
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+
+    const cuandoSeAcomode = window.setTimeout(() => {
+      mapa.resize();
+
+      // Se vuelve a encuadrar lo que hay que mirar, no lo que se estaba
+      // mirando: un recuadro ancho y bajo metido en una pantalla alta deja la
+      // ruta chiquita en el medio, que es lo contrario de agrandar.
+      const aQueVolver = encuadreRef.current ?? loQueSeMirabaRef.current;
+      if (aQueVolver) {
+        mapa.fitBounds(aQueVolver, { padding: 36, animate: false });
+      }
+    }, 60);
+
+    return () => window.clearTimeout(cuandoSeAcomode);
+  }, [enGrande]);
+
   const acercar = (cuanto: number) => {
     const mapa = mapaRef.current;
     if (!mapa) return;
@@ -707,18 +829,26 @@ export function Mapa({
 
   return (
     <div
+      style={enGrande ? { zIndex: NIVEL_DEL_MAPA_EN_GRANDE } : undefined}
       className={[
-        "relative overflow-hidden bg-mapa-fondo",
-        pantallaCompleta
-          ? "h-full w-full"
-          : grande
-            ? "h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
-            : "h-64 w-full rounded-xl border border-borde sm:h-80",
+        "flex flex-col overflow-hidden bg-mapa-fondo",
+        enGrande
+          ? "fixed inset-0 h-dvh w-screen"
+          : pantallaCompleta
+            ? "relative h-full w-full"
+            : grande
+              ? "relative h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
+              : // La referencia se come alto: si no se lo devolvemos, el mapa
+                // queda una franja donde no se ve si la ruta cae adentro.
+                referencia
+                ? "relative h-[21rem] w-full rounded-xl border border-borde sm:h-[25rem]"
+                : "relative h-64 w-full rounded-xl border border-borde sm:h-80",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
+      <div className="relative min-h-0 flex-1">
       <div ref={contenedorRef} className="h-full w-full" />
 
       {/*
@@ -727,16 +857,16 @@ export function Mapa({
         se rompió algo.
       */}
       {!armado ? (
-        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
+        <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           Armando el mapa…
         </p>
       ) : avisoDelFondo ? (
-        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
+        <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
           El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
           ruta, tu posición y los recuadros— sigue siendo correcto.
         </p>
       ) : dibujado === 0 && !recorrido ? (
-        <p className="absolute inset-x-3 bottom-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
+        <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           El mapa está armado pero no hay nada que dibujar todavía.
         </p>
       ) : null}
@@ -785,19 +915,61 @@ export function Mapa({
       <div className="absolute right-3 top-3 flex flex-col gap-2">
         <BotonDelMapa
           etiqueta="Acercar el mapa"
-          grande={pantallaCompleta}
+          grande={pantallaCompleta || enGrande}
           alTocar={() => acercar(1)}
         >
           <path d="M12 5v14M5 12h14" />
         </BotonDelMapa>
         <BotonDelMapa
           etiqueta="Alejar el mapa"
-          grande={pantallaCompleta}
+          grande={pantallaCompleta || enGrande}
           alTocar={() => acercar(-1)}
         >
           <path d="M5 12h14" />
         </BotonDelMapa>
       </div>
+
+      {/*
+        Abrir el mapa en grande. Va abajo a la derecha, al alcance del pulgar, y
+        en TODOS los mapas: en el celular cualquier recuadro es chico, y mirar
+        si la ruta queda adentro de un sector en siete centímetros no se puede.
+
+        La pantalla de navegar no lo lleva: ya está en grande.
+      */}
+      {!pantallaCompleta ? (
+        <div className="absolute bottom-3 right-3">
+          <BotonDelMapa
+            etiqueta={enGrande ? "Cerrar el mapa grande" : "Ver el mapa en grande"}
+            grande={enGrande}
+            alTocar={() => {
+              anotarLoQueSeMira();
+              setAPantallaCompleta(!enGrande);
+            }}
+          >
+            {enGrande ? (
+              <path d="M6 6l12 12M18 6L6 18" />
+            ) : (
+              <>
+                <path d="M9 4H4v5" />
+                <path d="M15 4h5v5" />
+                <path d="M15 20h5v-5" />
+                <path d="M9 20H4v-5" />
+              </>
+            )}
+          </BotonDelMapa>
+        </div>
+      ) : null}
+      </div>
+
+      {/*
+        La referencia de colores. Va adentro del mapa, así cuando se abre en
+        grande viaja con él: sin ella los recuadros son manchas de colores.
+      */}
+      {referencia ? (
+        <div className="shrink-0 border-t border-borde bg-superficie px-3 py-2">
+          {referencia}
+        </div>
+      ) : null}
     </div>
   );
 }

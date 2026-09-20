@@ -5,6 +5,8 @@ import { useRef, useState } from "react";
 import { crearRuta } from "@/app/actions/rutas";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
+import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import { ReferenciaDelMapa } from "@/components/mapa/referencia-del-mapa";
 import {
   CamposDeRuta,
   CAMPOS_VACIOS,
@@ -14,7 +16,11 @@ import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { calcularCobertura } from "@/lib/cobertura";
-import { seSuperponen } from "@/lib/datos/rectangulo";
+import {
+  clasesDibujadas,
+  rectangulosDeLaRuta,
+  zonasQueCruza,
+} from "@/lib/mapas/rectangulos";
 import {
   useMapasBajados,
   useSectoresConMapaBajado,
@@ -118,11 +124,15 @@ export function FormularioDeNuevaRuta() {
     ? calcularCobertura(recorrido.geometria, sectores, sectoresBajados)
     : null;
 
-  const zonaDeLaRuta = recorrido
-    ? (paquete?.zonas ?? []).find((zona) =>
-        seSuperponen(zona.rectangulo, recorrido.rectangulo),
-      ) ?? null
-    : null;
+  const zonas = recorrido
+    ? zonasQueCruza(recorrido.rectangulo, paquete?.zonas ?? [])
+    : [];
+  const zonaDeLaRuta = zonas[0] ?? null;
+
+  const rectangulos =
+    cobertura && recorrido
+      ? rectangulosDeLaRuta(cobertura, zonas, recorrido.rectangulo)
+      : [];
 
   return (
     <div className="space-y-3">
@@ -212,6 +222,23 @@ export function FormularioDeNuevaRuta() {
             </dl>
           </div>
         ) : null}
+
+        {/*
+          El recorrido, dibujado, antes de guardar nada. Es el momento en que
+          se mira un archivo que te pasaron y se ve si cae adentro de lo que
+          tenés organizado.
+        */}
+        {recorrido ? (
+          <CargadorDeMapa
+            recorrido={recorrido.geometria}
+            encuadre={recorrido.rectangulo}
+            rectangulos={rectangulos}
+            enVivo
+            referencia={
+              <ReferenciaDelMapa ruta clases={clasesDibujadas(rectangulos)} />
+            }
+          />
+        ) : null}
       </Tarjeta>
 
       {cobertura ? (
@@ -219,6 +246,7 @@ export function FormularioDeNuevaRuta() {
           cobertura={cobertura}
           anotaciones={paquete?.anotaciones ?? []}
           mapasBajados={mapasBajados}
+          zonas={zonas}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />
       ) : null}

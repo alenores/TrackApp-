@@ -97,6 +97,10 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 ### Mapa
 
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
+- **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
+  celular un mapa chico no alcanza para ver si la ruta queda adentro de un
+  sector. Al agrandarse y al cerrarse se vuelve a encuadrar lo que hay que
+  mirar, no lo que se estaba mirando.
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **La pantalla no se apaga mientras se está navegando.**

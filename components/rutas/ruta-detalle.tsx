@@ -13,8 +13,13 @@ import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Avatar } from "@/components/ui/avatar";
+import { ReferenciaDelMapa } from "@/components/mapa/referencia-del-mapa";
 import { calcularCobertura, type Cobertura } from "@/lib/cobertura";
-import { seSuperponen } from "@/lib/datos/rectangulo";
+import {
+  clasesDibujadas,
+  rectangulosDeLaRuta,
+  zonasQueCruza,
+} from "@/lib/mapas/rectangulos";
 import {
   useMapasBajados,
   useSectoresConMapaBajado,
@@ -127,10 +132,13 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
     : null;
 
   // Para ofrecer «crear un sector acá», hace falta saber en qué zona cae.
-  const zonaDeLaRuta =
-    (paquete?.zonas ?? []).find((zona) =>
-      seSuperponen(zona.rectangulo, ruta.rectangulo),
-    ) ?? null;
+  const zonas = zonasQueCruza(ruta.rectangulo, paquete?.zonas ?? []);
+  const zonaDeLaRuta = zonas[0] ?? null;
+
+  // Lo que se dibuja encima de la ruta: sus zonas abajo, sus sectores arriba.
+  const rectangulos = cobertura
+    ? rectangulosDeLaRuta(cobertura, zonas, ruta.rectangulo)
+    : [];
 
   const alBorrar = async () => {
     const seguro = await confirmar({
@@ -258,7 +266,15 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           El recorrido
         </h2>
         {recorrido ? (
-          <CargadorDeMapa recorrido={recorrido} encuadre={ruta.rectangulo} />
+          <CargadorDeMapa
+            recorrido={recorrido}
+            encuadre={ruta.rectangulo}
+            rectangulos={rectangulos}
+            enVivo
+            referencia={
+              <ReferenciaDelMapa ruta clases={clasesDibujadas(rectangulos)} />
+            }
+          />
         ) : (
           <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-6 text-center text-sm leading-6 text-texto-suave">
             La línea de esta ruta todavía no está guardada en el celular. Abrí la
@@ -272,6 +288,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           cobertura={cobertura}
           anotaciones={paquete?.anotaciones ?? []}
           mapasBajados={mapasBajados}
+          zonas={zonas}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />
       ) : null}
