@@ -7,6 +7,11 @@ import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import { escribirRectangulo } from "@/lib/datos/rectangulo";
 import { exito, falla, traducirErrorDeBase, type Resultado } from "@/lib/datos/resultado";
 import { calcularNumerosDelRecorrido } from "@/lib/rutas/recorrido";
+import {
+  claseDelArchivoDeRuta,
+  CLASE_DE_RESPALDO,
+  loRechazoPorLaClase,
+} from "@/lib/rutas/archivo";
 import type { ActividadRuta, NivelEsfuerzo } from "@/types/database";
 
 const DEPOSITO = "archivos-ruta";
@@ -122,13 +127,24 @@ async function guardarArchivo(
 ): Promise<Resultado> {
   const supabase = await crearClienteEnElServidor();
   const ruta = rutaDelArchivo(perfilId, rutaId, archivo.name);
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
 
-  const { error: errorDeSubida } = await supabase.storage
-    .from(DEPOSITO)
-    .upload(ruta, await archivo.arrayBuffer(), {
-      contentType: archivo.type || "application/gpx+xml",
-      upsert: true,
-    });
+  // Se manda una copia en cada intento: el que sube se queda con la que recibe.
+  const subir = async (clase: string) => {
+    const { error } = await supabase.storage
+      .from(DEPOSITO)
+      .upload(ruta, bytes.slice(), { contentType: clase, upsert: true });
+    return error;
+  };
+
+  const clase = claseDelArchivoDeRuta(archivo.name);
+  let errorDeSubida = await subir(clase);
+
+  // Si la base no acepta la clase específica, se reintenta declarándolo como el
+  // XML que en el fondo es. Son dos intentos y ninguno más.
+  if (errorDeSubida && loRechazoPorLaClase(errorDeSubida.message)) {
+    errorDeSubida = await subir(CLASE_DE_RESPALDO);
+  }
 
   if (errorDeSubida) {
     return falla(

@@ -35,6 +35,37 @@ function reconocerFormato(nombre: string): Formato | null {
 }
 
 /**
+ * Qué clase de archivo decirle a la base que se está guardando.
+ *
+ * **Sale del nombre del archivo, no de lo que dice el navegador.** Windows no
+ * conoce el `.gpx`, así que el navegador lo entrega como «un archivo cualquiera»
+ * y la base lo rechaza, porque solo acepta las clases que declaró. El usuario
+ * veía «no se pudo subir» sobre un archivo perfecto. Pasó en producción el
+ * 2026-09-20.
+ *
+ * Que la clase sea la correcta es problema de la app, no del usuario.
+ */
+export function claseDelArchivoDeRuta(nombre: string): string {
+  const formato = reconocerFormato(nombre);
+  if (formato === "gpx") return "application/gpx+xml";
+  if (formato === "kml") return "application/vnd.google-earth.kml+xml";
+  return CLASE_DE_RESPALDO;
+}
+
+/**
+ * La clase de respaldo, por si la base no acepta la específica.
+ *
+ * Un `.gpx` y un `.kml` son, los dos, XML: declararlos así es cierto, no un
+ * truco. Se usa solo si el primer intento fue rechazado por la clase.
+ */
+export const CLASE_DE_RESPALDO = "application/xml";
+
+/** ¿La base rechazó el archivo por su clase, y no por otra cosa? */
+export function loRechazoPorLaClase(motivo: string): boolean {
+  return motivo.toLowerCase().includes("mime type");
+}
+
+/**
  * Lee un archivo de recorrido y devuelve la línea más sus números.
  *
  * Nunca lanza: cuando algo no cierra devuelve qué pasó y qué hacer, porque la

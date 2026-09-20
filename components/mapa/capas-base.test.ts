@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -24,6 +24,18 @@ import {
 
 const CARPETA_DE_LETRAS = join(process.cwd(), "public", "fuentes-del-mapa");
 const CARPETA_DE_ICONOS = join(process.cwd(), "public", "iconos-del-mapa");
+
+type MedidasDeIcono = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  pixelRatio: number;
+};
+
+function leerReceta(archivo: string): Record<string, MedidasDeIcono> {
+  return JSON.parse(readFileSync(join(CARPETA_DE_ICONOS, archivo), "utf8"));
+}
 
 /** Las pilas de letras que el fondo va a pedir, leídas de las capas de verdad. */
 function pilasDeLetras(): Set<string> {
@@ -144,10 +156,37 @@ describe("lo que el fondo necesita tener guardado en la app", () => {
     expect(existsSync(join(motor, "maplibre-gl-shared.mjs"))).toBe(true);
   });
 
-  it("los íconos de los dos modos están adentro", () => {
+  it("los íconos de los dos modos están adentro, en los dos tamaños", () => {
+    // El motor pide los íconos en dos tamaños: el común en una computadora y
+    // el del doble en la pantalla de un celular moderno. Si falta uno de los
+    // cuatro archivos de un modo, **el fondo del mapa no se dibuja en el
+    // celular** aunque en la computadora se vea perfecto. Pasó en producción el
+    // 2026-09-20: faltaba la receta del doble y nadie lo veía desde la compu.
     for (const nombre of ["light", "dark"]) {
-      expect(existsSync(join(CARPETA_DE_ICONOS, `${nombre}.json`))).toBe(true);
-      expect(existsSync(join(CARPETA_DE_ICONOS, `${nombre}.png`))).toBe(true);
+      for (const tamano of ["", "@2x"]) {
+        expect(existsSync(join(CARPETA_DE_ICONOS, `${nombre}${tamano}.json`))).toBe(true);
+        expect(existsSync(join(CARPETA_DE_ICONOS, `${nombre}${tamano}.png`))).toBe(true);
+      }
+    }
+  });
+
+  it("la receta del doble mide el doble que la común", () => {
+    // Si no, los íconos salen recortados o en el lugar equivocado.
+    for (const nombre of ["light", "dark"]) {
+      const comun = leerReceta(`${nombre}.json`);
+      const alDoble = leerReceta(`${nombre}@2x.json`);
+
+      expect(Object.keys(alDoble)).toEqual(Object.keys(comun));
+
+      for (const [icono, medidas] of Object.entries(comun)) {
+        expect(alDoble[icono]).toMatchObject({
+          x: medidas.x * 2,
+          y: medidas.y * 2,
+          width: medidas.width * 2,
+          height: medidas.height * 2,
+          pixelRatio: 2,
+        });
+      }
     }
   });
 });

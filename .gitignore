@@ -48,3 +48,6 @@ public/fallback-*.js
 
 # el motor del mapa se copia en cada compilacion desde la libreria
 /public/motor-del-mapa/
+
+# la receta de los iconos para pantalla de alta densidad se arma en cada compilacion
+/public/iconos-del-mapa/*@2x.json

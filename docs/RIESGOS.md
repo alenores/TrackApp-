@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-20 (fotos de anotación sin señal)
+> Última revisión: 2026-09-20 (dos fallas que solo se veían en el celular)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -323,6 +323,53 @@ mapa.
 
 ---
 
+## ✅ R19 — El fondo del mapa no se dibujaba en el celular, y en la compu sí
+
+**Qué pasaba.** El motor del mapa pide los íconos en dos tamaños: el común para
+una computadora, y **uno al doble para la pantalla de un celular moderno**. La
+hoja de íconos al doble estaba, pero su receta —el archivo que dice dónde está
+cada ícono adentro de la hoja— no. El celular la pedía, no existía, y el fondo
+del mapa entero no se dibujaba: aparecía el cartel ámbar sobre el mapa.
+
+**Por qué costaba verlo.** En la computadora andaba perfecto. Solo fallaba en
+pantallas de alta densidad, que son todas las de celular.
+
+**Cómo quedó (2026-09-20).** La receta del doble se arma sola en cada
+compilación, a partir de la común: se comprobó midiendo que la hoja al doble es
+la misma grilla al doble de tamaño —recortando cada ícono de las dos hojas y
+comparándolos— así que las medidas se multiplican por dos. Al generarse, no
+puede quedar desactualizada el día que los íconos se cambien. Dos pruebas
+automáticas lo sostienen: que estén los cuatro archivos de cada modo, y que la
+receta del doble mida el doble.
+
+**Detectado:** 2026-09-20, por Ale, abriendo una zona en el celular.
+**Resuelto:** el mismo día.
+
+---
+
+## ✅ R20 — No se podía subir un archivo de ruta desde Windows
+
+**Qué pasaba.** Al subir una ruta, la app le decía a la base qué clase de
+archivo era **copiando lo que le decía el navegador**. Windows no conoce el
+`.gpx`, así que el navegador lo entregaba como «un archivo cualquiera», y la
+base —que solo acepta las clases que declaró— lo rechazaba. El usuario veía «no
+se pudo subir» sobre un archivo perfectamente bueno, y la ruta se deshacía.
+
+**Cómo quedó (2026-09-20).** La clase sale del nombre del archivo, no de lo que
+diga el navegador: un `.gpx` es un GPX y un `.kml` es un KML, en Windows, en
+Android y en donde sea. Si aun así la base rechazara la clase, se reintenta una
+sola vez declarándolo como el XML que en el fondo es. Cuatro pruebas automáticas
+lo cubren.
+
+**Lo que queda por confirmar.** Qué clases acepta exactamente el depósito de
+archivos de ruta no se pudo leer en el momento de arreglarlo. El arreglo cubre
+las dos configuraciones posibles, pero conviene verificarlo contra la base.
+
+**Detectado:** 2026-09-20, por Ale, subiendo una ruta desde la computadora.
+**Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión
@@ -396,3 +443,8 @@ La regla ya está en `AGENTS.md` y sigue valiendo su peso.
 prueba-zona`). Servía para mirar el diseño de una zona en pantalla grande y se
 coló en un commit. No filtraba nada —dibuja desde lo guardado en el celular—
 pero era código muerto al alcance de cualquiera.
+
+**Se agregaron y se cerraron R19 y R20**, los dos encontrados por Ale probando
+en producción. Tienen la misma forma: **una falla que no se ve desde donde se
+desarrolla**. R19 solo pasaba en pantalla de celular; R20 solo con Windows. Las
+dos quedaron con prueba automática que las habría atajado.

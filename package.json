@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run copiar:motor-del-mapa && next dev --webpack",
-    "build": "npm run generate:icons && npm run copiar:motor-del-mapa && next build --webpack",
+    "dev": "npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && next dev --webpack",
+    "build": "npm run generate:icons && npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "generate:icons": "node scripts/generate-brand-icons.mjs",
-    "test": "npm run copiar:motor-del-mapa && vitest run",
+    "test": "npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && vitest run",
     "test:watch": "vitest",
-    "copiar:motor-del-mapa": "node scripts/copiar-motor-del-mapa.mjs"
+    "copiar:motor-del-mapa": "node scripts/copiar-motor-del-mapa.mjs",
+    "armar:iconos-del-mapa": "node scripts/armar-iconos-del-mapa.mjs"
   },
   "dependencies": {
     "@protomaps/basemaps": "^5.7.2",

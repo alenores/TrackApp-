@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { leerArchivoDeRuta } from "@/lib/rutas/archivo";
+import {
+  claseDelArchivoDeRuta,
+  CLASE_DE_RESPALDO,
+  leerArchivoDeRuta,
+  loRechazoPorLaClase,
+} from "@/lib/rutas/archivo";
 
 /**
  * Las pruebas de la lectura de archivos.
@@ -154,5 +159,32 @@ describe("cuando el archivo no sirve, dice qué pasó y qué hacer", () => {
   it("reconoce la extensión sin importar mayúsculas", async () => {
     const lectura = await leerArchivoDeRuta(archivo("RUTA.GPX", GPX));
     expect(lectura.ok).toBe(true);
+  });
+});
+
+describe("qué clase de archivo se le declara a la base", () => {
+  it("sale del nombre, nunca de lo que dice el navegador", () => {
+    // Windows no conoce el .gpx y el navegador lo entrega como «un archivo
+    // cualquiera». Si se le creyera, la base lo rechaza y el usuario ve «no se
+    // pudo subir» sobre un archivo perfecto. Pasó en producción el 2026-09-20.
+    expect(claseDelArchivoDeRuta("Champaqui.gpx")).toBe("application/gpx+xml");
+    expect(claseDelArchivoDeRuta("Champaqui.kml")).toBe(
+      "application/vnd.google-earth.kml+xml",
+    );
+  });
+
+  it("no le importan las mayúsculas", () => {
+    expect(claseDelArchivoDeRuta("RUTA.GPX")).toBe("application/gpx+xml");
+  });
+
+  it("lo que no reconoce va como XML, que es lo que en el fondo es", () => {
+    expect(claseDelArchivoDeRuta("ruta.raro")).toBe(CLASE_DE_RESPALDO);
+    expect(claseDelArchivoDeRuta("sin-extension")).toBe(CLASE_DE_RESPALDO);
+  });
+
+  it("distingue el rechazo por clase de cualquier otra falla", () => {
+    expect(loRechazoPorLaClase("mime type application/octet-stream is not supported")).toBe(true);
+    expect(loRechazoPorLaClase("The object exceeded the maximum allowed size")).toBe(false);
+    expect(loRechazoPorLaClase("new row violates row-level security policy")).toBe(false);
   });
 });
