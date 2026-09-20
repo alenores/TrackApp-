@@ -15,6 +15,7 @@ import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
+import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -105,6 +106,16 @@ type MapaProps = {
    */
   grande?: boolean;
   /**
+   * `true` mientras el usuario está marcando el rectángulo sobre el mapa.
+   *
+   * Arrastrar deja de mover el mapa y pasa a dibujar. Es para la computadora,
+   * que es donde se arman las zonas y los sectores: sentado, con conexión y con
+   * mouse. En el cerro esto no existe.
+   */
+  dibujando?: boolean;
+  /** Se llama con el rectángulo mientras se lo marca y al soltarlo. */
+  alDibujar?: (rectangulo: Rectangulo) => void;
+  /**
    * `true` para traer el fondo en vivo en vez de leerlo de lo guardado.
    *
    * **Solo al definir el rectángulo de una zona o un sector**, que se hace en
@@ -183,6 +194,8 @@ export function Mapa({
   rectangulosExistentes = [],
   pantallaCompleta = false,
   grande = false,
+  dibujando = false,
+  alDibujar,
   enVivo = false,
   className = "",
 }: MapaProps) {
@@ -213,6 +226,8 @@ export function Mapa({
   const [dibujado, setDibujado] = useState(0);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
+  /** Mientras se dibuja, el mapa no se reencuadra: pelearía con el mouse. */
+  const dibujandoRef = useRef(dibujando);
   const modoRef = useRef(modo);
   useEffect(() => {
     modoRef.current = modo;
@@ -444,6 +459,72 @@ export function Mapa({
     cuandoEsteListo(poner);
   }, [anotaciones]);
 
+  /**
+   * Marcar el rectángulo arrastrando sobre el mapa.
+   *
+   * **Mientras el modo está prendido, arrastrar deja de mover el mapa.** Es a
+   * propósito: si hiciera las dos cosas a la vez, nunca se sabría cuál de las
+   * dos va a pasar. Para mover el mapa se apaga el modo.
+   *
+   * Va avisando el rectángulo **mientras** se arrastra, no solo al soltar, así
+   * se ve crecer y los números de tamaño y peso acompañan.
+   */
+  useEffect(() => {
+    dibujandoRef.current = dibujando;
+
+    const mapa = mapaRef.current;
+    if (!mapa || !dibujando || !alDibujar) return;
+
+    mapa.dragPan.disable();
+    mapa.doubleClickZoom.disable();
+    mapa.getCanvas().style.cursor = "crosshair";
+
+    let desde: maplibregl.LngLat | null = null;
+
+    const armar = (hasta: maplibregl.LngLat): Rectangulo | null => {
+      if (!desde) return null;
+      return rectanguloQueAbarca([
+        [desde.lng, desde.lat],
+        [hasta.lng, hasta.lat],
+      ]);
+    };
+
+    const empezar = (evento: { lngLat: maplibregl.LngLat }) => {
+      desde = evento.lngLat;
+    };
+
+    const mover = (evento: { lngLat: maplibregl.LngLat }) => {
+      const armado = armar(evento.lngLat);
+      if (armado) alDibujar(armado);
+    };
+
+    const soltar = (evento: { lngLat: maplibregl.LngLat }) => {
+      const armado = armar(evento.lngLat);
+      if (armado) alDibujar(armado);
+      desde = null;
+    };
+
+    mapa.on("mousedown", empezar);
+    mapa.on("mousemove", mover);
+    mapa.on("mouseup", soltar);
+    mapa.on("touchstart", empezar);
+    mapa.on("touchmove", mover);
+    mapa.on("touchend", soltar);
+
+    return () => {
+      mapa.off("mousedown", empezar);
+      mapa.off("mousemove", mover);
+      mapa.off("mouseup", soltar);
+      mapa.off("touchstart", empezar);
+      mapa.off("touchmove", mover);
+      mapa.off("touchend", soltar);
+      mapa.dragPan.enable();
+      mapa.doubleClickZoom.enable();
+      mapa.getCanvas().style.cursor = "";
+      dibujandoRef.current = false;
+    };
+  }, [dibujando, alDibujar]);
+
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -461,8 +542,27 @@ export function Mapa({
       });
       setDibujado(features.length);
 
+      /**
+       * El mapa se reencuadra **solo si hace falta**.
+       *
+       * Si el rectángulo ya se ve, la cámara no se toca: reencuadrar en cada
+       * cambio le saca al usuario lo que estaba mirando. Al marcar sobre el
+       * mapa eso sería peor todavía, porque al soltar perdería de vista la zona
+       * entera y se quedaría sin la referencia que necesita.
+       *
+       * Si en cambio el rectángulo quedó fuera de la vista —pasa al pegar unas
+       * coordenadas de otro lado— el mapa va hasta ahí, porque si no el usuario
+       * no vería nada y creería que se rompió.
+       */
       if (rectangulo) {
-        mapa.fitBounds(limitesDe(rectangulo), { padding: 36, animate: false });
+        const centro = {
+          lng: (rectangulo.lonOeste + rectangulo.lonEste) / 2,
+          lat: (rectangulo.latNorte + rectangulo.latSur) / 2,
+        };
+
+        if (!mapa.getBounds().contains(centro)) {
+          mapa.fitBounds(limitesDe(rectangulo), { padding: 36, animate: false });
+        }
       }
     };
 

@@ -84,3 +84,19 @@ export function rectanguloQueAbarca(
 
   return { latNorte, latSur, lonEste, lonOeste };
 }
+
+/**
+ * ¿El rectángulo chico entra entero adentro del grande?
+ *
+ * Sirve para avisarle al usuario cuando un sector se sale de su zona. **Es un
+ * aviso, no una traba:** la zona es una referencia para organizarse, no una
+ * jaula, y puede haber un sector que a propósito se pase del borde.
+ */
+export function estaAdentroDe(chico: Rectangulo, grande: Rectangulo): boolean {
+  return (
+    chico.latNorte <= grande.latNorte &&
+    chico.latSur >= grande.latSur &&
+    chico.lonOeste >= grande.lonOeste &&
+    chico.lonEste <= grande.lonEste
+  );
+}

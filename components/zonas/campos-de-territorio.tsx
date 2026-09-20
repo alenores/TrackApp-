@@ -1,7 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { CampoDeCoordenada } from "@/components/ui/campo-de-coordenada";
+import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Campo } from "@/components/ui/campo";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
@@ -12,6 +19,7 @@ import {
   rectanguloDeLosCampos,
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
+import { estaAdentroDe } from "@/lib/datos/rectangulo";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Rectangulo } from "@/types/database";
 
@@ -31,6 +39,13 @@ type CamposDeTerritorioProps = {
   /** Los pedazos que ya existen, para ver dónde cae el nuevo. */
   rectangulosExistentes?: Rectangulo[];
   /**
+   * El territorio que contiene a este: la zona, cuando se arma un sector.
+   *
+   * Sirve para dos cosas: el mapa arranca mostrándolo, así se ve el hueco que
+   * se está por llenar, y se avisa si el sector se sale de él.
+   */
+  contexto?: { rectangulo: Rectangulo; nombre: string } | null;
+  /**
    * Lo que va al final de la columna de los campos: el aviso de error y el
    * botón de guardar.
    *
@@ -46,14 +61,47 @@ export function CamposDeTerritorio({
   campos,
   alCambiar,
   rectangulosExistentes = [],
+  contexto = null,
   pie,
 }: CamposDeTerritorioProps) {
+  const [dibujando, setDibujando] = useState(false);
+
+  /**
+   * Lo último que hay en los campos, para poder marcarlos desde el mapa.
+   *
+   * Va por referencia y no por dependencia: el mapa avisa el rectángulo en cada
+   * movimiento del mouse, y si la función cambiara en cada aviso el mapa se
+   * desengancharía a mitad del arrastre y el dibujo se cortaría.
+   */
+  const ultimo = useRef({ campos, alCambiar });
+  useEffect(() => {
+    ultimo.current = { campos, alCambiar };
+  }, [campos, alCambiar]);
+
+  const alDibujar = useCallback((rectangulo: Rectangulo) => {
+    const { campos: actuales, alCambiar: avisar } = ultimo.current;
+    avisar({
+      ...actuales,
+      noroeste: `${rectangulo.latNorte.toFixed(5)}, ${rectangulo.lonOeste.toFixed(5)}`,
+      sudeste: `${rectangulo.latSur.toFixed(5)}, ${rectangulo.lonEste.toFixed(5)}`,
+    });
+  }, []);
   const cambiar = (parcial: Partial<CamposDelTerritorio>) =>
     alCambiar({ ...campos, ...parcial });
 
   const lecturaNoroeste: LecturaDeCoordenada = leerCoordenada(campos.noroeste);
   const lecturaSudeste: LecturaDeCoordenada = leerCoordenada(campos.sudeste);
   const armado = rectanguloDeLosCampos(campos);
+
+  /** El territorio que contiene a este se dibuja junto con los hermanos. */
+  const rectangulosDeReferencia = contexto
+    ? [contexto.rectangulo, ...rectangulosExistentes]
+    : rectangulosExistentes;
+
+  const seSale =
+    contexto !== null &&
+    armado.ok &&
+    !estaAdentroDe(armado.rectangulo, contexto.rectangulo);
 
   return (
     /*
@@ -162,20 +210,50 @@ export function CamposDeTerritorio({
         {pie}
       </div>
 
-      {armado.ok ? (
+      {armado.ok || contexto ? (
         <Tarjeta className="space-y-2 lg:sticky lg:top-0">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-            Dónde queda
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+              Dónde queda
+            </h2>
+            <Boton
+              variante={dibujando ? "principal" : "secundario"}
+              onClick={() => setDibujando(!dibujando)}
+            >
+              {dibujando ? "Listo, ya lo marqué" : "Marcar en el mapa"}
+            </Boton>
+          </div>
+
           <CargadorDeMapa
             enVivo
             grande
-            rectangulo={armado.rectangulo}
-            rectangulosExistentes={rectangulosExistentes}
+            dibujando={dibujando}
+            alDibujar={alDibujar}
+            rectangulo={armado.ok ? armado.rectangulo : null}
+            encuadre={armado.ok ? null : (contexto?.rectangulo ?? null)}
+            rectangulosExistentes={rectangulosDeReferencia}
           />
-          <p className="text-sm leading-6 text-texto-suave">
-            Mirá que el recuadro caiga donde querés antes de guardar.
-          </p>
+
+          {dibujando ? (
+            <p className="rounded-xl bg-superficie-alta px-3 py-2 text-sm leading-6 text-texto">
+              Arrastrá sobre el mapa de una esquina a la otra. Mientras marcás,
+              el mapa no se mueve. Cuando termines, tocá «Listo».
+            </p>
+          ) : (
+            <p className="text-sm leading-6 text-texto-suave">
+              {contexto
+                ? `Marcá el rectángulo sobre el mapa, o pegá las coordenadas. El recuadro grande es ${contexto.nombre}.`
+                : "Mirá que el recuadro caiga donde querés antes de guardar."}
+            </p>
+          )}
+
+          {seSale ? (
+            <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
+              Este sector se sale de {contexto?.nombre}. Lo podés guardar igual
+              —la zona es una referencia, no un límite— pero fijate que sea a
+              propósito.
+            </p>
+          ) : null}
         </Tarjeta>
       ) : null}
     </div>

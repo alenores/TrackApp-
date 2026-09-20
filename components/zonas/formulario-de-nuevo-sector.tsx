@@ -113,6 +113,7 @@ export function FormularioDeNuevoSector({ zonaId }: NuevaSectorFormProps) {
         campos={campos}
         alCambiar={setCampos}
         rectangulosExistentes={hermanos.map((sector) => sector.rectangulo)}
+        contexto={{ rectangulo: zona.rectangulo, nombre: zona.nombre }}
         pie={
           <>
             {error ? (

@@ -38,6 +38,7 @@ export function FormularioDeEditarSector({
   const [error, setError] = useState<string | null>(null);
 
   const sector = paquete?.sectores.find((cada) => cada.id === sectorId) ?? null;
+  const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
   const hermanos = (paquete?.sectores ?? []).filter(
     (cada) => cada.zonaId === zonaId && cada.id !== sectorId,
   );
@@ -159,6 +160,9 @@ export function FormularioDeEditarSector({
         campos={campos}
         alCambiar={setCampos}
         rectangulosExistentes={hermanos.map((cada) => cada.rectangulo)}
+        contexto={
+          zona ? { rectangulo: zona.rectangulo, nombre: zona.nombre } : null
+        }
         pie={
           <>
             {error ? (
