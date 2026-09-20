@@ -228,6 +228,17 @@ export function Mapa({
   const enVivoRef = useRef(enVivo);
   /** Mientras se dibuja, el mapa no se reencuadra: pelearía con el mouse. */
   const dibujandoRef = useRef(dibujando);
+  /**
+   * Si la pantalla dijo a qué encuadrar, el rectángulo no la contradice.
+   *
+   * Al editar un sector, encuadrar al sector lo deja llenando la pantalla y
+   * deja la zona afuera: el usuario pierde la única referencia que le dice si
+   * el sector está donde tiene que estar.
+   */
+  const hayEncuadreRef = useRef(encuadre !== null);
+  useEffect(() => {
+    hayEncuadreRef.current = encuadre !== null;
+  }, [encuadre]);
   const modoRef = useRef(modo);
   useEffect(() => {
     modoRef.current = modo;
@@ -554,7 +565,7 @@ export function Mapa({
        * coordenadas de otro lado— el mapa va hasta ahí, porque si no el usuario
        * no vería nada y creería que se rompió.
        */
-      if (rectangulo) {
+      if (rectangulo && !hayEncuadreRef.current) {
         const centro = {
           lng: (rectangulo.lonOeste + rectangulo.lonEste) / 2,
           lat: (rectangulo.latNorte + rectangulo.latSur) / 2,

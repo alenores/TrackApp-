@@ -230,7 +230,7 @@ export function CamposDeTerritorio({
             dibujando={dibujando}
             alDibujar={alDibujar}
             rectangulo={armado.ok ? armado.rectangulo : null}
-            encuadre={armado.ok ? null : (contexto?.rectangulo ?? null)}
+            encuadre={contexto?.rectangulo ?? null}
             rectangulosExistentes={rectangulosDeReferencia}
           />
 

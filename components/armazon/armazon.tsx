@@ -42,7 +42,7 @@ export function Armazon({
    * saber si el rectángulo cae donde uno quiere.
    */
   const pantallaAncha =
-    /^\/zonas\/(nueva|\d+\/(editar|sectores\/(nueva|\d+\/editar)))$/.test(
+    /^\/zonas\/(nueva|\d+(\/(editar|sectores\/(nueva|\d+\/editar)))?)$/.test(
       pathname,
     );
 
