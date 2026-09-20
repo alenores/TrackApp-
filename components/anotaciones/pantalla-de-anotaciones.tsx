@@ -17,6 +17,7 @@ import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database";
 
 /**
@@ -29,20 +30,6 @@ import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database"
  * Se arma en la computadora, con conexión, mirando el terreno de verdad. Lo
  * marcado viaja después con el paquete y se mira en el cerro sin señal.
  */
-
-const COMO_SE_LLAMA: Record<IconoPunto, string> = {
-  refugio: "Refugio",
-  arroyo: "Arroyo",
-  cumbre: "Cumbre",
-  puente: "Puente",
-  pueblo: "Pueblo",
-  cartel: "Cartel",
-  fuente: "Fuente",
-  iglesia: "Iglesia",
-  cruce: "Cruce",
-  mirador: "Mirador",
-  cascada: "Cascada",
-};
 
 type Props = {
   zonaId: number;

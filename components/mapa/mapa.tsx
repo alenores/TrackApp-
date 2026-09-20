@@ -131,6 +131,8 @@ type MapaProps = {
   marcandoPunto?: boolean;
   /** Se llama con el lugar tocado. */
   alMarcarPunto?: (lon: number, lat: number) => void;
+  /** Se llama con el número de la anotación que el usuario tocó. */
+  alTocarAnotacion?: (anotacionId: number) => void;
   /**
    * `true` para traer el fondo en vivo.
    *
@@ -180,6 +182,8 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
     features: anotaciones.map((anotacion) => ({
       type: "Feature" as const,
       properties: {
+        // El número, para poder abrir la anotación al tocarla en el mapa.
+        id: anotacion.id,
         // Un color elegido a mano es un dato del usuario y manda sobre el del modo.
         color: anotacion.color ?? null,
         titulo: [anotacion.icono, anotacion.comentario]
@@ -215,6 +219,7 @@ export function Mapa({
   alDibujar,
   marcandoPunto = false,
   alMarcarPunto,
+  alTocarAnotacion,
   enVivo = false,
   className = "",
 }: MapaProps) {
@@ -584,6 +589,42 @@ export function Mapa({
       mapa.getCanvas().style.cursor = "";
     };
   }, [marcandoPunto, alMarcarPunto]);
+
+  /**
+   * Abrir una anotación tocándola en el mapa.
+   *
+   * **No se busca el toque exacto sobre el puntito**, sino en un cuadrado
+   * grande alrededor del dedo. El punto se dibuja chico para no tapar el mapa,
+   * pero se toca caminando y con guantes: si hubiera que acertarle a siete
+   * píxeles, nadie lo abriría nunca.
+   */
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !alTocarAnotacion || marcandoPunto) return;
+
+    const MITAD_DEL_DEDO = 22;
+
+    const tocar = (evento: maplibregl.MapMouseEvent) => {
+      if (!mapa.getLayer("anotaciones-punto")) return;
+
+      const { x, y } = evento.point;
+      const encontradas = mapa.queryRenderedFeatures(
+        [
+          [x - MITAD_DEL_DEDO, y - MITAD_DEL_DEDO],
+          [x + MITAD_DEL_DEDO, y + MITAD_DEL_DEDO],
+        ],
+        { layers: ["anotaciones-punto"] },
+      );
+
+      const id = encontradas[0]?.properties?.id;
+      if (typeof id === "number") alTocarAnotacion(id);
+    };
+
+    mapa.on("click", tocar);
+    return () => {
+      mapa.off("click", tocar);
+    };
+  }, [alTocarAnotacion, marcandoPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {

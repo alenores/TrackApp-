@@ -1,4 +1,12 @@
 import {
+  bajarLasFotosDeLasAnotaciones,
+  type AvanceDeFotos,
+} from "@/lib/anotaciones/descarga";
+import {
+  borrarFotosQueSobran,
+  borrarTodasLasFotos,
+} from "@/lib/anotaciones/deposito";
+import {
   borrarTeselasQueSobran,
   borrarTodasLasTeselas,
   cualesEstanGuardadas,
@@ -18,7 +26,7 @@ import {
   olvidarTodosLosMapas,
   type TipoDeMapa,
 } from "@/lib/offline/mapas";
-import type { Sector } from "@/types/database";
+import type { Anotacion, Sector } from "@/types/database";
 
 /**
  * Bajar el mapa de un sector, y borrarlo.
@@ -39,6 +47,11 @@ import type { Sector } from "@/types/database";
  * 2. **Si se corta a la mitad, queda lo que había.** Los pedazos que sí
  *    entraron se conservan —la próxima vez no se vuelven a bajar— pero el
  *    sector no queda anotado.
+ *
+ * Con el mapa bajan también **las fotos de las anotaciones de ese sector**, que
+ * es lo único pesado que llevan. Esas van por otro camino: si una foto no
+ * entra, el mapa se anota igual y se dice cuántas faltan. Trabar el mapa por
+ * una foto sería cambiar un problema chico por uno grave.
  */
 
 export type FuenteDeTeselas = {
@@ -61,7 +74,7 @@ export type AvanceDeDescarga = {
 };
 
 export type ResultadoDeDescarga =
-  | { estado: "listo"; pedazos: number; bytes: number }
+  | { estado: "listo"; pedazos: number; bytes: number; fotos: AvanceDeFotos }
   | { estado: "cancelada" }
   | { estado: "incompleta"; motivo: string; resueltos: number; total: number };
 
@@ -109,6 +122,8 @@ export type PedidoDeDescarga = {
   sector: Sector;
   tipo: TipoDeMapa;
   fuente: FuenteDeTeselas;
+  /** Las anotaciones de este sector: sus fotos bajan junto con el mapa. */
+  anotaciones?: Anotacion[];
   acercamientoMaximo?: number;
   avisarAvance?: (avance: AvanceDeDescarga) => void;
   senal?: AbortSignal;
@@ -118,6 +133,7 @@ export async function bajarElMapaDelSector({
   sector,
   tipo,
   fuente,
+  anotaciones = [],
   acercamientoMaximo = ACERCAMIENTO_MAXIMO,
   avisarAvance,
   senal = new AbortController().signal,
@@ -233,12 +249,20 @@ export async function bajarElMapaDelSector({
     };
   }
 
+  // El mapa ya está completo. Las fotos van después y por su cuenta: son el
+  // extra, no la promesa.
+  const fotos = await bajarLasFotosDeLasAnotaciones({
+    anotaciones: anotaciones.filter((cada) => cada.sectorId === sector.id),
+    senal,
+  });
+
   const anotado = anotarMapaBajado({
     sectorId: sector.id,
     tipo,
     bytes,
     bajadoEn: new Date().toISOString(),
     acercamientoMaximo,
+    fotos: fotos.direcciones,
   });
 
   if (!anotado) {
@@ -251,7 +275,9 @@ export async function bajarElMapaDelSector({
     };
   }
 
-  return { estado: "listo", pedazos: total, bytes };
+  if (senal.aborted) return { estado: "cancelada" };
+
+  return { estado: "listo", pedazos: total, bytes, fotos };
 }
 
 /**
@@ -279,6 +305,21 @@ function clavesQueSiguenHaciendoFalta(sectores: Sector[]): Set<string> {
   return claves;
 }
 
+/**
+ * Las fotos que siguen haciendo falta después de sacar un sector.
+ *
+ * Sale de lo anotado, no de las anotaciones: cada mapa bajado se acuerda de qué
+ * fotos trajo. Así sacar un sector no se lleva puesta la foto de otro que la
+ * comparte, y una foto reemplazada deja de ocupar lugar sola.
+ */
+function fotosQueSiguenHaciendoFalta(): Set<string> {
+  const direcciones = new Set<string>();
+  for (const mapa of mapasBajados()) {
+    for (const direccion of mapa.fotos) direcciones.add(direccion);
+  }
+  return direcciones;
+}
+
 export type ResultadoDeBorrado = { ok: true } | { ok: false; motivo: string };
 
 /**
@@ -297,6 +338,7 @@ export async function borrarElMapaDelSector(
 
   try {
     await borrarTeselasQueSobran(clavesQueSiguenHaciendoFalta(todosLosSectores));
+    await borrarFotosQueSobran(fotosQueSiguenHaciendoFalta());
     return { ok: true };
   } catch (error) {
     return {
@@ -313,6 +355,7 @@ export async function borrarElMapaDelSector(
 export async function borrarTodosLosMapasDelCelular(): Promise<void> {
   olvidarTodosLosMapas();
   await borrarTodasLasTeselas();
+  await borrarTodasLasFotos();
 }
 
 /**

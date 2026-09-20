@@ -23,7 +23,7 @@ De ahí salen tres capas y no se mezclan:
 
 ## Lo que la app guarda en el celular
 
-Dos depósitos, por una razón de tamaño:
+Dos guardados, separados por una razón de tamaño:
 
 - **El paquete.** Todo lo liviano: las rutas con sus textos y sus números, las
   zonas, los sectores y las anotaciones. Es texto y coordenadas: pesa nada.
@@ -31,6 +31,9 @@ Dos depósitos, por una razón de tamaño:
   navegador. Una sola ruta puede traer miles de puntos; unas decenas de rutas
   desbordan el guardado simple, y cuando eso pasa **la app no puede guardar nada
   más**, ni siquiera lo liviano.
+- **Los pedazos de mapa y las fotos de las anotaciones.** También en el depósito
+  grande, y también por peso. A diferencia de lo anterior, **estos los elige el
+  usuario**: bajan cuando pide el mapa de un sector, y se van cuando lo saca.
 
 La puesta al día es **automática y muda**: sin cartel de «hay novedades», sin
 botón de actualizar, sin preguntar nada. Dos límites la protegen:

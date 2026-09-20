@@ -7,7 +7,8 @@ import { useDialogos } from "@/components/ui/dialogos";
 import { useMapaDelSector } from "@/hooks/use-mapa-del-sector";
 import { fechaEnPalabras } from "@/lib/fechas";
 import { mostrarPeso, pesoAproximadoDelMapa } from "@/lib/mapas/descarga";
-import type { Sector } from "@/types/database";
+import { sectoresConFotosSinBajar } from "@/lib/anotaciones/descarga";
+import type { Anotacion, Sector } from "@/types/database";
 
 /**
  * El mapa de un sector: bajarlo, verlo y sacarlo.
@@ -29,13 +30,19 @@ type PropiedadesDelMapaDelSector = {
    * Los sectores vecinos comparten pedazos.
    */
   todosLosSectores: Sector[];
+  /** Todas las anotaciones: sus fotos bajan junto con el mapa del sector. */
+  anotaciones: Anotacion[];
 };
 
 export function MapaDelSector({
   sector,
   todosLosSectores,
+  anotaciones,
 }: PropiedadesDelMapaDelSector) {
-  const { mapa, paso, bajar, cancelar, sacar } = useMapaDelSector(sector);
+  const { mapa, paso, fallaDeFotos, bajar, cancelar, sacar } = useMapaDelSector(
+    sector,
+    anotaciones,
+  );
   const { confirmar, avisar } = useDialogos();
   const [sacando, setSacando] = useState(false);
 
@@ -117,17 +124,59 @@ export function MapaDelSector({
   }
 
   if (mapa) {
+    // El mapa puede estar bajado y aun así faltar una foto que se agregó
+    // después. Se dice acá, con señal, no en el cerro.
+    const fotosQueFaltan =
+      sectoresConFotosSinBajar([sector], anotaciones, [mapa])[0]?.cuantas ?? 0;
+
     return (
-      <Tarjeta tono="alta" franja="verde" className="space-y-3">
+      <Tarjeta
+        tono="alta"
+        franja={fotosQueFaltan > 0 ? "ambar" : "verde"}
+        className="space-y-3"
+      >
         <div className="flex items-start gap-3">
-          <IconoListo />
+          {fotosQueFaltan > 0 ? <IconoAviso /> : <IconoListo />}
           <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-texto">Podés salir sin señal</p>
-            <p className="mt-1 text-sm leading-6 text-texto-suave">
-              El mapa simple de este sector está en este celular.
-            </p>
+            {fotosQueFaltan > 0 ? (
+              <>
+                <p className="text-base font-semibold text-ambar-texto">
+                  {fotosQueFaltan === 1
+                    ? "Falta bajar una foto de anotación"
+                    : `Faltan bajar ${fotosQueFaltan} fotos de anotación`}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-texto-suave">
+                  El mapa está en el celular, pero esas fotos se agregaron
+                  después. Sin señal no las vas a poder ver.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-semibold text-texto">
+                  Podés salir sin señal
+                </p>
+                <p className="mt-1 text-sm leading-6 text-texto-suave">
+                  El mapa simple de este sector está en este celular.
+                </p>
+              </>
+            )}
           </div>
         </div>
+
+        {fallaDeFotos ? (
+          <p
+            role="alert"
+            className="rounded-xl bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto"
+          >
+            {fallaDeFotos}
+          </p>
+        ) : null}
+
+        {fotosQueFaltan > 0 ? (
+          <Boton anchoCompleto onClick={() => void bajar("simple")}>
+            Bajar las fotos que faltan
+          </Boton>
+        ) : null}
 
         <dl className="grid grid-cols-2 gap-2 border-t border-borde pt-3">
           <div>
@@ -197,6 +246,25 @@ function IconoListo() {
     >
       <circle cx="12" cy="12" r="9" />
       <path d="m8 12.5 2.5 2.5 5-5.5" />
+    </svg>
+  );
+}
+
+function IconoAviso() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="mt-0.5 h-6 w-6 shrink-0 text-ambar-icono"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.1}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 3.5 21 19H3Z" />
+      <path d="M12 10v4" />
+      <path d="M12 17.2v.1" />
     </svg>
   );
 }

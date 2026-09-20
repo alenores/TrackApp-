@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  abrirEnElHistorial,
+  cerrarEnElHistorial,
+  seguirDeLargoSiSobra,
+} from "@/lib/emergentes/historial";
 
 /**
  * Hace que el botón físico de atrás cierre una pantalla emergente en vez de
@@ -15,19 +20,31 @@ import { useEffect } from "react";
  * El estado del historial va **sin dirección**: si cambiara la dirección,
  * abrir un cartel dispararía un pedido a internet, y sin señal eso termina en
  * pantalla en blanco.
+ *
+ * Las cuentas del historial no están acá sino en `lib/emergentes/historial.ts`,
+ * que es donde se explica por qué cerrar con un botón **no** vuelve atrás.
  */
+
+let escuchando = false;
+
+function noHacerApretarDosVeces(): void {
+  if (escuchando || typeof window === "undefined") return;
+  escuchando = true;
+  window.addEventListener("popstate", () => {
+    seguirDeLargoSiSobra();
+  });
+}
+
 export function useCerrarConAtras(abierto: boolean, cerrar: () => void): void {
   useEffect(() => {
     if (!abierto) return;
 
-    window.history.pushState({ emergenteAbierta: true }, "");
+    noHacerApretarDosVeces();
+    abrirEnElHistorial();
 
     const alVolver = () => cerrar();
     const alPresionarEscape = (evento: KeyboardEvent) => {
-      if (evento.key === "Escape") {
-        // Vuelve atrás para no dejar el estado que se agregó al historial.
-        window.history.back();
-      }
+      if (evento.key === "Escape") cerrar();
     };
 
     window.addEventListener("popstate", alVolver);
@@ -36,12 +53,7 @@ export function useCerrarConAtras(abierto: boolean, cerrar: () => void): void {
     return () => {
       window.removeEventListener("popstate", alVolver);
       window.removeEventListener("keydown", alPresionarEscape);
-
-      // Si la emergente se cerró con la X o con un botón, hay que sacar el
-      // estado que quedó puesto, si no el próximo atrás no hace nada visible.
-      if (window.history.state?.emergenteAbierta) {
-        window.history.back();
-      }
+      cerrarEnElHistorial();
     };
   }, [abierto, cerrar]);
 }

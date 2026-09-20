@@ -147,6 +147,12 @@ pedazos al archivo del mundo y se los pasa. Existe porque ese archivo no le
 entrega pedazos a un navegador. Ver `decisiones/017`.
 
 **Depósito**
-Donde el celular guarda lo pesado: las líneas de los recorridos y los pedazos de
-mapa. Es distinto del **paquete**, que es lo liviano y dibuja las pantallas al
-instante.
+Donde el celular guarda lo pesado: las líneas de los recorridos, los pedazos de
+mapa y las fotos de las anotaciones. Es distinto del **paquete**, que es lo
+liviano y dibuja las pantallas al instante.
+
+**Foto de anotación**
+La foto del lugar que marca una anotación: para lo que el mapa no puede mostrar
+—si el vado se cruza, cuál de los dos senderos es el bueno—. **Baja con el mapa
+del sector**, no con el paquete, porque pesa. En el cerro se lee del celular,
+nunca de internet. Ver `decisiones/019`.

@@ -4,6 +4,60 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-20 — La foto de la anotación, en el cerro
+
+### Estado al inicio
+
+Ya se podían marcar anotaciones con foto desde la computadora: elegir el punto
+sobre la foto satelital, ponerle ícono, comentario y foto. Pero la foto se
+mostraba desde internet, así que **en el cerro no se veía**, que es justo el
+único lugar donde sirve.
+
+### Lo que se hizo
+
+**La foto baja con el mapa del sector.** Cuando el usuario baja el mapa de un
+sector bajan también las fotos de las anotaciones de ese sector, y quedan en el
+celular. En la navegación se tocan los puntos del mapa y se abre la ficha con la
+foto y el comentario. La foto se lee del celular: nunca de internet.
+
+**Una foto que falla no traba el mapa.** Sector en verde quiere decir que se
+puede navegar con fondo, y eso no se toca. Si una foto no entra, el sector queda
+bajado igual y se dice cuántas faltan y por qué.
+
+**Una foto agregada después también se sabe en casa.** Cada mapa bajado se
+acuerda de qué fotos trajo. Si a un sector ya bajado le agregan una foto, la
+ruta y el sector lo dicen con un botón para bajarla. En el cerro no hay
+sorpresas.
+
+**Se encontró y se arregló un bug que afectaba a toda la app.** Cerrar cualquier
+cartel con la X le pedía al navegador volver atrás, y eso rearma la pantalla
+entera: el mapa se destruía y **el toque siguiente se perdía**. Se encontró
+abriendo la app en un navegador de verdad y tocando dos anotaciones seguidas.
+Ver R18.
+
+**Se borró una pantalla de prueba que había quedado publicada.**
+
+### Decisiones tomadas
+
+- `019` — La foto de la anotación viaja con el mapa del sector, no con el
+  paquete: lo que pesa lo elige el usuario.
+
+### Riesgos
+
+- **R18 nuevo y resuelto:** cerrar un cartel rompía el mapa y se perdía el toque
+  siguiente. Segundo caso, después de R17, de un problema que ninguna prueba
+  automática veía y que se encontró **abriendo la app y mirando**.
+
+### Lo que queda
+
+- El **mapa trucho**: el rompecabezas de fotos de Google Earth georreferenciadas
+  para ver el terreno con detalle de verdad. Decidido que se hace.
+- Probar en **modo avión** con el celular.
+- Las **curvas de nivel** desde el modelo de elevación de 5 metros de IDECOR.
+- El **satelital para bajar**: hoy solo baja el mapa simple.
+
+---
+
 ## Sesión 2026-09-19 — Los mapas se bajan de verdad
 
 ### Estado al inicio

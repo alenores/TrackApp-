@@ -29,6 +29,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
 
   const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
   const todosLosSectores = paquete?.sectores ?? [];
+  const anotaciones = paquete?.anotaciones ?? [];
   const sectores = todosLosSectores.filter(
     (sector) => sector.zonaId === zonaId,
   );
@@ -168,6 +169,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
                 key={sector.id}
                 sector={sector}
                 todosLosSectores={todosLosSectores}
+                anotaciones={anotaciones}
                 soyAdministrador={miPerfilId === sector.perfilId}
               />
             ))

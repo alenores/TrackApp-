@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-19 (descarga de mapas y actualización de librerías)
+> Última revisión: 2026-09-20 (fotos de anotación sin señal)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -287,6 +287,42 @@ entiende a la primera, **se abre la app y se mira**, no se adivina leyendo.
 
 ---
 
+## ✅ R18 — Cerrar un cartel rompía el mapa, y el toque siguiente se perdía
+
+**Qué pasaba.** Toda pantalla emergente de la app —confirmar, avisar, la ficha
+de una anotación— agregaba una entrada al historial del navegador para que el
+botón físico de atrás la cerrara. Hasta ahí, bien. El problema era al cerrarla
+con la X: la app le pedía al navegador **volver atrás** para sacar esa entrada.
+
+Volver atrás, aunque la dirección no cambie, hace que la app **rearme la
+pantalla entera desde cero**. En la pantalla de navegación eso significa que el
+mapa se destruye y vuelve a nacer: desaparece, dice «Abriendo el mapa…» y
+durante ese rato **el toque siguiente cae en el vacío**. En el cerro es tocar
+una anotación, que no pase nada, y no entender por qué.
+
+**Cómo se encontró.** Abriendo la app en un navegador de verdad y tocando dos
+anotaciones seguidas. Ninguna prueba automática lo habría visto: no había error,
+no había cartel rojo, simplemente el segundo toque no hacía nada. Se midió
+contando cuántas veces se armaba el mapa, y ahí quedó claro.
+
+**Cómo quedó (2026-09-20).** Cerrar con un botón ya no vuelve atrás: solo le
+saca la marca a la entrada, sin moverse. Queda una entrada de sobra, y de eso se
+ocupan dos cosas: la próxima emergente la reusa en vez de agregar otra, y si el
+usuario aprieta atrás estando esa entrada de sobra, la app sigue de largo para
+que no tenga que apretar dos veces. Ocho pruebas automáticas lo sostienen, entre
+ellas que abrir y cerrar diez veces deje **una** entrada y no diez.
+
+**Lo que no cambió.** Cerrar con el botón físico de atrás **sí** rearma la
+pantalla: eso es cómo funciona el framework y no se puede evitar desde la app.
+Es el camino menos usado —el botón de cerrar es grande y está al alcance del
+pulgar— pero conviene saberlo: en la navegación, apretar atrás hace parpadear el
+mapa.
+
+**Detectado:** 2026-09-20, probando las anotaciones con foto en el navegador.
+**Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión
@@ -346,3 +382,17 @@ entre ellas dos de ejecución de código a distancia sin necesidad de estar
 logueado y una de salteo del control de acceso. También se actualizó la
 librería de imágenes. De trece alertas quedaron cinco, todas en la cadena de
 `next-pwa`, que es **R14**.
+
+---
+
+## Nota de cierre — 2026-09-20
+
+**Se agregó y se cerró R18**, encontrado probando las anotaciones con foto en un
+navegador de verdad. Es el segundo caso —después de R17— en que un problema que
+ninguna prueba automática podía ver se encontró **abriendo la app y mirando**.
+La regla ya está en `AGENTS.md` y sigue valiendo su peso.
+
+**Se borró una pantalla de prueba que había quedado publicada** (`/offline/
+prueba-zona`). Servía para mirar el diseño de una zona en pantalla grande y se
+coló en un commit. No filtraba nada —dibuja desde lo guardado en el celular—
+pero era código muerto al alcance de cualquiera.

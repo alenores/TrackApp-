@@ -8,7 +8,7 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { mostrarTamano } from "@/lib/territorio/tamano";
-import type { Sector } from "@/types/database";
+import type { Anotacion, Sector } from "@/types/database";
 
 /**
  * Un sector en la lista de una zona.
@@ -22,12 +22,15 @@ type SectorCardProps = {
   sector: Sector;
   /** Todos los sectores: los vecinos comparten pedazos de mapa. */
   todosLosSectores: Sector[];
+  /** Todas las anotaciones: sus fotos bajan junto con el mapa del sector. */
+  anotaciones: Anotacion[];
   soyAdministrador: boolean;
 };
 
 export function TarjetaDeSector({
   sector,
   todosLosSectores,
+  anotaciones,
   soyAdministrador,
 }: SectorCardProps) {
   const router = useRouter();
@@ -77,7 +80,11 @@ export function TarjetaDeSector({
 
           <p className="text-xs text-texto-suave">{mostrarTamano(sector.rectangulo)}</p>
 
-          <MapaDelSector sector={sector} todosLosSectores={todosLosSectores} />
+          <MapaDelSector
+            sector={sector}
+            todosLosSectores={todosLosSectores}
+            anotaciones={anotaciones}
+          />
         </Tarjeta>
 
         {soyAdministrador ? (

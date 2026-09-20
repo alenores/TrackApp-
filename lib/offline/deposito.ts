@@ -2,11 +2,11 @@
  * El depósito grande del navegador.
  *
  * **Una sola base para todo lo pesado del celular**: las líneas de los
- * recorridos y, ahora, los pedazos de mapa. Están juntas a propósito. El
- * navegador numera cada base por versión y se niega a abrir una versión vieja:
- * si cada módulo abriera la suya con su propio número, el día que uno agregue
- * un estante el otro deja de abrir y la app se queda sin nada guardado, sin un
- * solo cartel.
+ * recorridos, los pedazos de mapa y las fotos de las anotaciones. Están juntas
+ * a propósito. El navegador numera cada base por versión y se niega a abrir una
+ * versión vieja: si cada módulo abriera la suya con su propio número, el día
+ * que uno agregue un estante el otro deja de abrir y la app se queda sin nada
+ * guardado, sin un solo cartel.
  *
  * Acá vive **toda** la conversación con el depósito. Ningún otro archivo llama
  * a `indexedDB` por su cuenta.
@@ -20,14 +20,16 @@ const NOMBRE = "trackapp-offline";
 /**
  * Sube de número cada vez que se agrega un estante.
  *
- * La 1 tenía solo los recorridos. La 2 suma los pedazos de mapa.
+ * La 1 tenía solo los recorridos. La 2 sumó los pedazos de mapa. La 3 suma las
+ * fotos de las anotaciones.
  */
-const VERSION = 2;
+const VERSION = 3;
 
 export const ESTANTES = {
   recorridos: "recorridos",
   teselas: "teselas",
   mapasDeSector: "mapas-de-sector",
+  fotosDeAnotacion: "fotos-de-anotacion",
 } as const;
 
 export type Estante = (typeof ESTANTES)[keyof typeof ESTANTES];

@@ -32,6 +32,16 @@ export type MapaDeSector = {
   bajadoEn: string;
   /** Hasta qué acercamiento se bajó, para poder rehacer la lista de pedazos. */
   acercamientoMaximo: number;
+  /**
+   * Las fotos de anotación que entraron con este mapa, por su dirección.
+   *
+   * Está acá y no en el depósito grande para poder responder **al instante**,
+   * con señal y en casa, la única pregunta que importa: ¿le falta bajar alguna
+   * foto a este sector? Si hubiera que ir a preguntarle al depósito, la
+   * pantalla diría «está todo» por un momento y esa es justo la mentira que
+   * después se descubre en el cerro.
+   */
+  fotos: string[];
 };
 
 function hayDondeGuardar(): boolean {
@@ -74,6 +84,11 @@ function leerDelCelular(): MapaDeSector[] {
               bajadoEn: typeof cada.bajadoEn === "string" ? cada.bajadoEn : "",
               acercamientoMaximo:
                 typeof cada.acercamientoMaximo === "number" ? cada.acercamientoMaximo : 0,
+              // Los mapas bajados antes de que existieran las fotos no tienen
+              // la lista. Quedan como «sin ninguna foto», que es la verdad.
+              fotos: Array.isArray(cada.fotos)
+                ? cada.fotos.filter((cual): cual is string => typeof cual === "string")
+                : [],
             },
           ]
         : [],

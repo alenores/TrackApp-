@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Boton } from "@/components/ui/boton";
@@ -60,8 +61,18 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const [ahora, setAhora] = useState(() => Date.now());
   const [metrosDeDesvio, setMetrosDeDesvio] = useState<number | null>(null);
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
+  const [anotacionTocada, setAnotacionTocada] = useState<number | null>(null);
 
   usePantallaDespierta(estadoDelGps === "andando");
+
+  // Abrir la ficha de una anotación es un toque en el mapa. Se pasa una función
+  // que no cambia entre dibujados: el mapa la engancha una sola vez.
+  const abrirLaAnotacion = useCallback((anotacionId: number) => {
+    vibrarAlTocar();
+    setAnotacionTocada(anotacionId);
+  }, []);
+
+  const cerrarLaAnotacion = useCallback(() => setAnotacionTocada(null), []);
 
   // Todo sale del celular, nunca de internet.
   useEffect(() => {
@@ -263,6 +274,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             miPosicion={posicion ? { lat: posicion.lat, lon: posicion.lon } : null}
             encuadre={rectangulo}
             pantallaCompleta
+            alTocarAnotacion={abrirLaAnotacion}
           />
         </div>
 
@@ -323,6 +335,13 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
           </div>
         </div>
       </div>
+
+      <FichaDeAnotacion
+        anotacion={
+          anotaciones.find((cada) => cada.id === anotacionTocada) ?? null
+        }
+        alCerrar={cerrarLaAnotacion}
+      />
 
       <ModalDeSalida
         open={open}

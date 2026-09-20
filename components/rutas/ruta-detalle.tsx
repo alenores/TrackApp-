@@ -15,7 +15,10 @@ import { useDialogos } from "@/components/ui/dialogos";
 import { Avatar } from "@/components/ui/avatar";
 import { calcularCobertura, type Cobertura } from "@/lib/cobertura";
 import { seSuperponen } from "@/lib/datos/rectangulo";
-import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+import {
+  useMapasBajados,
+  useSectoresConMapaBajado,
+} from "@/hooks/use-mapa-del-sector";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import { traerPerfilesPorId } from "@/lib/perfiles/cliente";
 import {
@@ -61,6 +64,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const { paquete, estado } = useDatosDeLaApp();
   const { confirmar, avisar } = useDialogos();
   const sectoresBajados = useSectoresConMapaBajado();
+  const mapasBajados = useMapasBajados();
 
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
   const [buscandoRecorrido, setBuscandoRecorrido] = useState(true);
@@ -266,6 +270,8 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       {cobertura ? (
         <BloqueDeCobertura
           cobertura={cobertura}
+          anotaciones={paquete?.anotaciones ?? []}
+          mapasBajados={mapasBajados}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />
       ) : null}

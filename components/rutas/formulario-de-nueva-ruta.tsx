@@ -15,7 +15,10 @@ import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { calcularCobertura } from "@/lib/cobertura";
 import { seSuperponen } from "@/lib/datos/rectangulo";
-import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+import {
+  useMapasBajados,
+  useSectoresConMapaBajado,
+} from "@/hooks/use-mapa-del-sector";
 import {
   FORMATOS_ACEPTADOS,
   leerArchivoDeRuta,
@@ -109,6 +112,7 @@ export function FormularioDeNuevaRuta() {
   };
 
   const sectoresBajados = useSectoresConMapaBajado();
+  const mapasBajados = useMapasBajados();
   const sectores = paquete?.sectores ?? [];
   const cobertura = recorrido
     ? calcularCobertura(recorrido.geometria, sectores, sectoresBajados)
@@ -213,6 +217,8 @@ export function FormularioDeNuevaRuta() {
       {cobertura ? (
         <BloqueDeCobertura
           cobertura={cobertura}
+          anotaciones={paquete?.anotaciones ?? []}
+          mapasBajados={mapasBajados}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />
       ) : null}

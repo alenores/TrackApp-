@@ -19,7 +19,7 @@ import {
   type MapaDeSector,
   type TipoDeMapa,
 } from "@/lib/offline/mapas";
-import type { Sector } from "@/types/database";
+import type { Anotacion, Sector } from "@/types/database";
 
 /**
  * El mapa de un sector, visto desde una pantalla.
@@ -57,11 +57,18 @@ export function useSectoresConMapaBajado(): Set<number> {
   return useMemo(() => new Set(bajados.map((cada) => cada.sectorId)), [bajados]);
 }
 
-export function useMapaDelSector(sector: Sector) {
+export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
   const bajados = useMapasBajados();
   const mapa = bajados.find((cada) => cada.sectorId === sector.id) ?? null;
 
   const [paso, setPaso] = useState<PasoDeLaDescarga>({ paso: "quieto" });
+  /**
+   * Qué pasó con las fotos de las anotaciones, cuando algo pasó.
+   *
+   * Va aparte del paso porque el mapa sí entró: el sector queda bajado y se
+   * puede salir. Lo que no entró son las fotos, y eso **se dice igual**.
+   */
+  const [fallaDeFotos, setFallaDeFotos] = useState<string | null>(null);
   const canceladorRef = useRef<AbortController | null>(null);
   const montadoRef = useRef(true);
 
@@ -82,11 +89,13 @@ export function useMapaDelSector(sector: Sector) {
       canceladorRef.current = cancelador;
 
       setPaso({ paso: "bajando", resueltos: 0, total: 0 });
+      setFallaDeFotos(null);
 
       const resultado = await bajarElMapaDelSector({
         sector,
         tipo,
         fuente: fuenteDelServidor(),
+        anotaciones,
         senal: cancelador.signal,
         avisarAvance: ({ resueltos, total }) => {
           if (montadoRef.current) setPaso({ paso: "bajando", resueltos, total });
@@ -105,9 +114,17 @@ export function useMapaDelSector(sector: Sector) {
         return;
       }
 
+      if (resultado.estado === "listo" && resultado.fotos.motivo) {
+        setFallaDeFotos(
+          `Quedaron ${resultado.fotos.total - resultado.fotos.bajadas} de ${
+            resultado.fotos.total
+          } fotos sin bajar: ${resultado.fotos.motivo} Probá de nuevo con mejor señal.`,
+        );
+      }
+
       setPaso({ paso: "quieto" });
     },
-    [sector],
+    [sector, anotaciones],
   );
 
   const cancelar = useCallback(() => {
@@ -130,5 +147,5 @@ export function useMapaDelSector(sector: Sector) {
     [sector],
   );
 
-  return { mapa, paso, bajar, cancelar, sacar };
+  return { mapa, paso, fallaDeFotos, bajar, cancelar, sacar };
 }
