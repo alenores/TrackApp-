@@ -116,10 +116,11 @@ type MapaProps = {
   /** Se llama con el rectángulo mientras se lo marca y al soltarlo. */
   alDibujar?: (rectangulo: Rectangulo) => void;
   /**
-   * `true` para traer el fondo en vivo en vez de leerlo de lo guardado.
+   * `true` para traer el fondo en vivo.
    *
-   * **Solo al definir el rectángulo de una zona o un sector**, que se hace en
-   * casa y con señal. Nunca navegando.
+   * Va en las pantallas de administrar: zonas, sectores y rutas. **Esas se usan
+   * sentado en la computadora, con conexión**, y no tienen ningún sentido sin
+   * ella. La única pantalla que trabaja sin señal es la de navegar.
    */
   enVivo?: boolean;
   className?: string;

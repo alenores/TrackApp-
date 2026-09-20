@@ -200,6 +200,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
           Dónde queda
         </h2>
         <CargadorDeMapa
+          enVivo
           grande
           rectangulo={zona.rectangulo}
           rectangulosExistentes={sectores.map((sector) => sector.rectangulo)}

@@ -1,4 +1,4 @@
-# 018 — El mapa en vivo al definir un rectángulo
+# 018 — El mapa en vivo en las pantallas de administrar
 
 **Fecha:** 2026-09-19 · **Estado:** vigente
 
@@ -27,22 +27,19 @@ iba a tener uno.
 - **No descarga nada**: es para mirar, ahí, en ese momento.
 - Es **la única pantalla** de toda la app que hace esto.
 
-## Por qué no contradice la regla del offline
+## Esto no es una excepción: es lo normal
 
-La regla dice: *«Las pantallas leen de lo guardado en el celular, nunca de
-internet.»* Su motivo es que la app tiene que servir en el cerro.
+**Administrar se hace sentado en la computadora, con conexión.** Crear y editar
+zonas, sectores y rutas, marcar rectángulos, mirar dónde cae cada cosa. Sin
+conexión esas pantallas no sirven para nada aunque el mapa estuviera guardado,
+porque las coordenadas se pegan desde Google Maps, que también necesita
+internet.
 
-Definir un rectángulo **no se hace en el cerro**. Se hace en casa, con señal,
-pegando direcciones de Google Maps que también necesitan internet. Sin señal esa
-pantalla no sirve para nada aunque el mapa estuviera guardado, porque las
-direcciones que se pegan vienen de internet.
+**La única pantalla que trabaja sin señal es la de navegar**, y esa sigue
+leyendo solo lo guardado. Eso no se toca ni se discute.
 
-**Navegar no cambia en nada.** La navegación sigue leyendo solo lo guardado, y
-eso no se toca ni se discute.
+Alcanza con las pantallas donde el mapa se mira: armar una zona, armar un
+sector, y el detalle de una zona con sus sectores encima.
 
-## Lo que sí se mantiene
-
-- Si no hay señal al definir un rectángulo, **el rectángulo se dibuja igual**
-  sobre fondo liso, y el mapa dice que el fondo no se pudo traer. Nunca queda
-  una pantalla muda.
-- Ninguna otra pantalla pide nada a internet para dibujarse.
+**Prohibido a los agentes volver a plantear el tema.** No hay que diseñar
+respaldos, modos degradados ni avisos pensando en un administrador sin señal.

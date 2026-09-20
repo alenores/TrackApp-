@@ -119,6 +119,25 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
   está descargado, se avisa antes de salir, no en el cerro.
 - El GPS no es internet: funciona sin señal. Esta regla no lo afecta.
 
+### Qué se usa sin señal: solo navegar. Tema cerrado.
+
+**Lo único que se usa en el cerro es ver el recorrido sobre el mapa
+descargado.** Nada más.
+
+Administrar —crear y editar zonas, sectores y rutas, marcar rectángulos, subir
+archivos— **se hace sentado en la computadora, con conexión.** Esas pantallas
+piden el mapa a internet porque es lo correcto, no porque sea una excepción a
+tolerar. Sin conexión no tienen sentido: las coordenadas se pegan desde Google
+Maps, que también necesita internet.
+
+- **Prohibido a los agentes volver a plantear este tema.** Nada de «¿y si el
+  administrador no tiene señal al crear un sector?». Ya está respondido: no
+  pasa, y si pasara no importa.
+- **Prohibido agregar respaldos, modos degradados o avisos** pensando en usar
+  una pantalla de administración sin conexión.
+- Al tocar una pantalla, la única pregunta válida es: **¿esto es navegar?** Si
+  no lo es, no hay nada que pensar sobre el offline.
+
 ### El usuario descarga en su casa. Tema cerrado.
 
 **Descargar el mapa requiere internet. Todos los usuarios lo saben y lo dan por
@@ -138,13 +157,8 @@ entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
 
 ### El resto
 
-- **Las pantallas leen de lo guardado en el celular, nunca de internet.** Internet
-  sirve para actualizar lo guardado, no para dibujar una pantalla.
-  **Una sola excepción, y está cerrada:** al definir el rectángulo de una zona o
-  un sector el mapa se trae en vivo, porque eso se hace en casa pegando
-  direcciones de Google Maps y sin mapa abajo la pantalla no sirve. Ver
-  `docs/decisiones/018-el-mapa-en-vivo-al-definir-un-rectangulo.md`. **Ninguna
-  otra pantalla, y jamás navegando.**
+- **La pantalla de navegar lee de lo guardado en el celular, nunca de internet.**
+  Internet sirve para actualizar lo guardado, no para dibujar esa pantalla.
 - **Lo que se descarga tiene que poder borrarse.** Si el usuario quita algo de
   offline, el espacio se libera de verdad.
 - **Nunca decir «listo» sobre una descarga incompleta.** Si faltó algo, se avisa.
