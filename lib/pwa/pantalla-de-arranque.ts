@@ -1,5 +1,16 @@
 export const ID_DE_LA_PANTALLA_DE_ARRANQUE = "trackapp-inline-splash";
 
+/**
+ * Cuánto se banca tapando antes de destaparse igual.
+ *
+ * **Es una red de rescate, no un tiempo de carga.** Cuando la app arranca bien
+ * se destapa en menos de un segundo, apenas la pantalla avisa que está lista, y
+ * este número no entra en juego. Existe para el día que una pantalla no llega a
+ * dibujarse: sin él, la tapa se queda para siempre y el usuario ve un
+ * rectángulo negro con el ícono, sin un solo cartel que leer.
+ */
+export const TOPE_DE_ESPERA_MS = 5000;
+
 export const ESTILOS_DE_LA_PANTALLA_DE_ARRANQUE = `
   #${ID_DE_LA_PANTALLA_DE_ARRANQUE} {
     display: none;

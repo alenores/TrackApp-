@@ -1,5 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  esRutaDeEntrar,
+  esRutaPublica,
+  esRutaQueAndaSinSenal,
+} from "@/lib/supabase/rutas-publicas";
 
 export async function refrescarSesion(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,31 +43,11 @@ export async function refrescarSesion(request: NextRequest) {
   const user = session?.user ?? null;
 
   const { pathname } = request.nextUrl;
-  const isAuthRoute = pathname.startsWith("/login");
-  const isPublicRoute =
-    pathname.startsWith("/offline") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname === "/manifest.webmanifest" ||
-    pathname.endsWith(".png") ||
-    pathname.endsWith(".ico") ||
-    pathname === "/sw.js" ||
-    pathname.startsWith("/workbox-") ||
-    // Los archivos del mapa: el motor, sus íconos y sus letras. **No pasan por
-    // el control de sesión**: son archivos sueltos de la app, no pantallas.
-    // Pasando por acá la app los mandaba al login, y el mapa recibía una página
-    // web donde esperaba código o un dibujo. Con el motor eso era fatal: sin él
-    // el mapa no dibuja absolutamente nada.
-    pathname.startsWith("/motor-del-mapa/") ||
-    pathname.startsWith("/iconos-del-mapa/") ||
-    pathname.startsWith("/fuentes-del-mapa/");
+  const isAuthRoute = esRutaDeEntrar(pathname);
+  const isPublicRoute = esRutaPublica(pathname);
+  const isOfflineFriendlyRoute = esRutaQueAndaSinSenal(pathname);
 
-  // Rutas accesibles sin sesión si el usuario tiene datos en caché local.
   // La galletita trackapp-tiene-paquete=1 la pone lib/offline/paquete.ts al guardar.
-  const isOfflineFriendlyRoute =
-    pathname === "/" ||
-    /^\/rutas\/[^/]+$/.test(pathname);
-
   const hasOfflineCache =
     request.cookies.get("trackapp-tiene-paquete")?.value === "1";
 

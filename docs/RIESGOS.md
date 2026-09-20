@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-20 (dos fallas que solo se veían en el celular)
+> Última revisión: 2026-09-20 (la pantalla negra del cerro)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -373,6 +373,59 @@ poder subir nada y que siga andando. Los tipos quedaron escritos en `SCHEMA.md`.
 
 ---
 
+## ✅ R21 — La app no guardaba nada, y se veía perfecta con señal
+
+**Qué pasaba.** El motor offline se arma con tres archivos. Uno de ellos —el
+que sabe qué mostrar cuando una pantalla no está guardada— **no estaba en la
+lista de archivos que no pasan por el control de sesión**. Así que cuando el
+navegador lo pedía sin una sesión válida, el control se lo mandaba a la pantalla
+de entrar, el motor recibía una página web donde esperaba código, y **se caía
+entero al arrancar, en silencio.**
+
+Consecuencia: la app **no guardaba una sola pantalla**. Con señal andaba
+perfecto y nada delataba el problema. Sin señal no había nada.
+
+**Cómo se encontró.** Compilando la app de verdad, abriéndola en un navegador y
+escuchando los errores del motor offline. Ahí apareció el mensaje: no podía
+cargar ese archivo. Un pedido directo confirmó que respondía con una redirección
+a la pantalla de entrar. Antes del arreglo, la app tenía **cero** depósitos
+guardados; después, cuatro.
+
+**Cómo quedó (2026-09-20).** Las reglas de qué pasa por el control de sesión se
+sacaron a su propio lugar, con siete pruebas automáticas. Una de ellas no se
+acuerda de los nombres: **mira los archivos que el compilador dejó escritos** y
+comprueba uno por uno, porque el del rescate lleva un código distinto en cada
+compilación y a mano se olvida.
+
+**Detectado:** 2026-09-20. **Resuelto:** el mismo día.
+
+---
+
+## ✅ R22 — La tapa del arranque no se destapaba nunca
+
+**Qué pasaba.** La app instalada tapa el arranque con una pantalla negra con el
+ícono. Esa tapa se iba solo cuando una pantalla avisaba que estaba lista, o
+cuando la dirección era la de entrar o la de «sin señal». **Si la pantalla no
+llegaba a dibujarse, la tapa se quedaba para siempre.**
+
+En el cerro, sin señal, al abrir el detalle de una zona que no estaba guardada:
+pantalla negra con el ícono en el medio, sin poder hacer nada. Y abajo, tapado,
+estaba el aviso que el usuario necesitaba leer.
+
+**Cómo quedó (2026-09-20).** Tres cosas. La tapa tiene **tope de tiempo**: pase
+lo que pase se destapa a los cinco segundos. La pantalla de rescate **avisa que
+está lista** apenas se dibuja, así se destapa al instante. Y esa pantalla ahora
+dice qué pasó, qué se puede hacer y tiene un botón para volver al inicio, que sí
+anda sin señal.
+
+La regla quedó escrita en `AGENTS.md`: **todo lo que tape la pantalla se tiene
+que destapar solo, sí o sí.**
+
+**Detectado:** 2026-09-20, por Ale, en el celular sin señal.
+**Resuelto:** el mismo día, reproduciendo la pantalla negra en el navegador.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión
@@ -451,3 +504,17 @@ pero era código muerto al alcance de cualquiera.
 en producción. Tienen la misma forma: **una falla que no se ve desde donde se
 desarrolla**. R19 solo pasaba en pantalla de celular; R20 solo con Windows. Las
 dos quedaron con prueba automática que las habría atajado.
+
+---
+
+## Nota de cierre — 2026-09-20 (tarde)
+
+**R21 y R22 salieron de un mismo aviso de Ale**: sin señal, el detalle de una
+zona quedaba en pantalla negra con el ícono. Reproducirlo en el navegador
+—compilando la app de verdad y simulando el celular instalado sin señal— mostró
+que eran dos fallas distintas encadenadas, y que la más grave no era la que se
+veía: **la app no estaba guardando nada desde hacía tiempo.**
+
+Las tres fallas del día (R19, R20, R21) tienen la misma raíz de método: **no se
+ven desde la computadora del que programa.** Las tres quedaron con prueba
+automática.

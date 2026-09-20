@@ -175,6 +175,10 @@ blanco**.
 
 - **Todo link entre pantallas usa la pieza compartida de navegación**, nunca un
   link pelado. Sin eso, la app queda en blanco en modo avión.
+  - **Una sola excepción, a propósito:** el botón «Ir al inicio» de la pantalla
+    de rescate. Ahí lo que está dibujado no corresponde a la dirección que se
+    pidió, así que la navegación interna no tiene de dónde agarrarse; un pedido
+    nuevo, en cambio, lo contesta lo guardado en el celular.
 - **Con señal no cambia nada.** El único costo, sin señal, es perder la animación.
 - **Nunca borrar en masa lo que el navegador tiene guardado.** Si una pantalla
   tiene que salir siempre fresca, se configura así de entrada; no se limpia todo
@@ -189,6 +193,17 @@ no tiene ni un cartel que leer. Esa red **no se borra ni se vacía nunca**.
 **Ningún componente que envuelva la app puede quedarse en blanco mientras
 espera.** Si algo tiene que esperar, muestra el contenido y tapa después, nunca
 al revés.
+
+**Todo lo que tape la pantalla tiene que destaparse solo, sí o sí.** La tapa del
+arranque se quedaba puesta cuando una pantalla no llegaba a dibujarse: quedaba
+un rectángulo negro con el ícono y, abajo, el aviso que el usuario necesitaba
+leer. Cualquier cosa que tape lleva tope de tiempo, y vencido el tope se
+destapa aunque no haya llegado lo que esperaba.
+
+**Los archivos del motor offline no pasan por el control de sesión.** Si alguno
+se manda al login, el motor se cae al arrancar, en silencio, y la app deja de
+guardar **todo**: anda con señal como si nada y sin señal no hay nada. Pasó el
+2026-09-20 con la pieza que decide qué mostrar cuando falta una pantalla.
 
 ---
 

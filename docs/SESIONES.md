@@ -44,6 +44,13 @@ podía subir un archivo de ruta, porque la app le creía al navegador cuando dec
 que un `.gpx` era «un archivo cualquiera». Ver R19 y R20. Las dos tienen la
 misma forma: **no se ven desde donde se desarrolla.**
 
+**La pantalla negra del cerro.** Ale avisó que, sin señal, abrir el detalle de
+una zona dejaba la app en negro con el ícono en el medio, sin poder hacer nada.
+Reproducido en el navegador, eran dos fallas encadenadas y la más grave no era
+la que se veía: **la app no guardaba nada**, porque uno de los tres archivos del
+motor offline se iba a la pantalla de entrar y el motor se caía al arrancar, en
+silencio. Con señal se veía perfecta. Ver R21 y R22.
+
 ### Decisiones tomadas
 
 - `019` — La foto de la anotación viaja con el mapa del sector, no con el
@@ -56,6 +63,8 @@ misma forma: **no se ven desde donde se desarrolla.**
   automática veía y que se encontró **abriendo la app y mirando**.
 - **R19 y R20 nuevos y resueltos:** el fondo del mapa no se dibujaba en el
   celular, y desde Windows no se podía subir un archivo de ruta.
+- **R21 y R22 nuevos y resueltos:** la app no guardaba nada para usar sin señal,
+  y la tapa del arranque no se destapaba nunca cuando una pantalla fallaba.
 
 ### Lo que queda
 
