@@ -7,6 +7,9 @@ import {
   capasDelFondo,
   estiloDelMapa,
   iconosDelFondo,
+  QUIEN_HIZO_LA_FOTO,
+  todasLasCapasDelFondo,
+  type TipoDeFondo,
 } from "@/components/mapa/capas-base";
 import { coloresDelMapa } from "@/components/mapa/colores";
 import { useModo } from "@/hooks/use-modo";
@@ -57,9 +60,13 @@ const PRIMERA_CAPA_DE_LA_APP = "rectangulos-relleno";
  * lo que de verdad hace falta para no perderse, y el fondo es un lujo. Por eso
  * esto va aparte, envuelto, y devuelve el motivo en vez de tirar.
  */
-function ponerElFondo(mapa: maplibregl.Map, modo: Modo): string | null {
+function ponerElFondo(
+  mapa: maplibregl.Map,
+  modo: Modo,
+  tipo: TipoDeFondo,
+): string | null {
   try {
-    for (const vieja of capasDelFondo(modo)) {
+    for (const vieja of todasLasCapasDelFondo(modo)) {
       if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
     }
 
@@ -67,7 +74,7 @@ function ponerElFondo(mapa: maplibregl.Map, modo: Modo): string | null {
       ? PRIMERA_CAPA_DE_LA_APP
       : undefined;
 
-    for (const capa of capasDelFondo(modo)) mapa.addLayer(capa, debajoDe);
+    for (const capa of capasDelFondo(modo, tipo)) mapa.addLayer(capa, debajoDe);
 
     mapa.setSprite(iconosDelFondo(modo));
     return null;
@@ -223,10 +230,16 @@ export function Mapa({
    * esperando o si se rompió algo, y quien tiene que arreglarlo tampoco.
    */
   const [armado, setArmado] = useState(false);
+  /** Dibujo o foto del terreno. La foto solo existe con internet. */
+  const [tipoDeFondo, setTipoDeFondo] = useState<TipoDeFondo>("dibujo");
   /** Cuántas cosas hay dibujadas encima del fondo. */
   const [dibujado, setDibujado] = useState(0);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
+  const tipoDeFondoRef = useRef<TipoDeFondo>("dibujo");
+  useEffect(() => {
+    tipoDeFondoRef.current = tipoDeFondo;
+  }, [tipoDeFondo]);
   /** Mientras se dibuja, el mapa no se reencuadra: pelearía con el mouse. */
   const dibujandoRef = useRef(dibujando);
   /**
@@ -373,7 +386,7 @@ export function Mapa({
       for (const dibujar of esperandoRef.current) dibujar();
       esperandoRef.current = [];
 
-      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current));
+      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current));
     });
 
     // Un fondo que no carga no puede quedarse callado.
@@ -403,7 +416,7 @@ export function Mapa({
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
-      setAvisoDelFondo(ponerElFondo(mapa, modo));
+      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo));
 
       mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
@@ -442,7 +455,7 @@ export function Mapa({
     };
 
     cuandoEsteListo(pintar);
-  }, [modo]);
+  }, [modo, tipoDeFondo]);
 
   // La línea de la ruta.
   useEffect(() => {
@@ -649,6 +662,43 @@ export function Mapa({
       ) : dibujado === 0 && !recorrido ? (
         <p className="absolute inset-x-3 bottom-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           El mapa está armado pero no hay nada que dibujar todavía.
+        </p>
+      ) : null}
+
+      {/*
+        Dibujo o foto del terreno. Solo aparece con el mapa en vivo: la foto no
+        se descarga nunca, así que sin internet no hay nada que elegir.
+      */}
+      {enVivo ? (
+        <div className="absolute left-3 top-3 flex overflow-hidden rounded-xl border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+          {(
+            [
+              ["dibujo", "Dibujo"],
+              ["satelital", "Foto"],
+            ] as const
+          ).map(([cual, etiqueta]) => (
+            <button
+              key={cual}
+              type="button"
+              onClick={() => setTipoDeFondo(cual)}
+              aria-pressed={tipoDeFondo === cual}
+              className={[
+                "min-h-14 px-4 text-base font-semibold transition-colors",
+                tipoDeFondo === cual
+                  ? "bg-acento text-acento-texto"
+                  : "text-texto-suave hover:bg-superficie-alta hover:text-texto",
+              ].join(" ")}
+            >
+              {etiqueta}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
+      {enVivo && tipoDeFondo === "satelital" ? (
+        <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
+          {QUIEN_HIZO_LA_FOTO}
         </p>
       ) : null}
 

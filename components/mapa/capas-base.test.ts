@@ -6,7 +6,10 @@ import {
   capasDelFondo,
   estiloDelMapa,
   FUENTE_DEL_FONDO,
+  FUENTE_SATELITAL,
   iconosDelFondo,
+  QUIEN_HIZO_LA_FOTO,
+  todasLasCapasDelFondo,
 } from "@/components/mapa/capas-base";
 
 /**
@@ -80,6 +83,44 @@ describe("la receta del fondo", () => {
     const deSol = capasDelFondo("sol").map((capa) => capa.id);
     const deNoche = capasDelFondo("noche").map((capa) => capa.id);
     expect(deSol).toEqual(deNoche);
+  });
+});
+
+describe("la foto del terreno", () => {
+  it("solo existe con el mapa en vivo, nunca en lo que se descarga", () => {
+    // Si estuviera en el estilo de lo guardado, navegando el mapa saldría a
+    // pedirla a internet, que es lo único que esta app no puede hacer.
+    expect(Object.keys(estiloDelMapa("noche", false).sources)).toEqual([
+      FUENTE_DEL_FONDO,
+    ]);
+    expect(Object.keys(estiloDelMapa("noche", true).sources)).toContain(
+      FUENTE_SATELITAL,
+    );
+  });
+
+  it("sobre la foto van solo los nombres, no el dibujo entero", () => {
+    // El relleno y los caminos taparían el terreno, que es justo lo que se
+    // quiere mirar al marcar un rectángulo.
+    const capas = capasDelFondo("sol", "satelital");
+
+    expect(capas[0].type).toBe("raster");
+    expect(capas.slice(1).every((capa) => capa.type === "symbol")).toBe(true);
+    expect(capas.length).toBeLessThan(capasDelFondo("sol", "dibujo").length);
+  });
+
+  it("se puede sacar todo el fondo al cambiar de tipo", () => {
+    // Si una capa quedara sin sacar, el dibujo y la foto se encimarían.
+    const todas = todasLasCapasDelFondo("sol").map((capa) => capa.id);
+
+    for (const tipo of ["dibujo", "satelital"] as const) {
+      for (const capa of capasDelFondo("sol", tipo)) {
+        expect(todas).toContain(capa.id);
+      }
+    }
+  });
+
+  it("se dice quién hizo la foto, que su licencia lo exige", () => {
+    expect(QUIEN_HIZO_LA_FOTO).toMatch(/EOX/);
   });
 });
 

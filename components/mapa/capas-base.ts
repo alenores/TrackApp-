@@ -22,7 +22,26 @@ import type { Modo } from "@/lib/modo";
  * docs/decisiones/007-de-donde-salen-los-mapas.md
  */
 
-export type TipoDeFondo = "sin-mapa" | "simple" | "satelital";
+export type TipoDeFondo = "dibujo" | "satelital";
+
+/** El nombre con el que el mapa conoce a la foto satelital. */
+export const FUENTE_SATELITAL = "satelital";
+
+/**
+ * De dónde sale la foto del terreno, **solo con internet**.
+ *
+ * Es Sentinel-2 sin nubes, de Europa. Diez metros por píxel: se ven los
+ * bosques, el agua, los claros y la forma del terreno. **No se ve un sendero ni
+ * un refugio.** Es lo mejor gratis que hay para la sierra.
+ *
+ * No se descarga nunca: su licencia no lo permitiría y además no hace falta.
+ * Sirve para marcar rectángulos mirando el terreno de verdad.
+ */
+const FOTO_DEL_TERRENO =
+  "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg";
+
+/** Quién hizo la foto. Su licencia obliga a decirlo, y corresponde. */
+export const QUIEN_HIZO_LA_FOTO = "Sentinel-2 cloudless por EOX · Copernicus";
 
 /** El nombre con el que el mapa conoce a los pedazos guardados. */
 export const FUENTE_DEL_FONDO = "fondo";
@@ -85,6 +104,18 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
     glyphs: direccionCompleta(LETRAS),
     sprite: iconosDelFondo(modo),
     sources: {
+      // La foto solo existe con internet: nunca se baja.
+      ...(enVivo
+        ? {
+            [FUENTE_SATELITAL]: {
+              type: "raster" as const,
+              tiles: [FOTO_DEL_TERRENO],
+              tileSize: 256,
+              maxzoom: 17,
+              attribution: QUIEN_HIZO_LA_FOTO,
+            },
+          }
+        : {}),
       [FUENTE_DEL_FONDO]: {
         type: "vector",
         tiles: [enVivo ? direccionCompleta(EN_VIVO) : DIRECCION_DE_LAS_TESELAS],
@@ -107,10 +138,36 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
  * el del recuadro y quedaría fijo en los dos modos. La tierra, el agua, los
  * caminos y los nombres sí vienen todos.
  */
-export function capasDelFondo(modo: Modo): LayerSpecification[] {
-  return layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
-    lang: "es",
-  }).filter((capa) => capa.type !== "background");
+export function capasDelFondo(
+  modo: Modo,
+  tipo: TipoDeFondo = "dibujo",
+): LayerSpecification[] {
+  const dibujo = layers(
+    FUENTE_DEL_FONDO,
+    namedFlavor(modo === "sol" ? "light" : "dark"),
+    { lang: "es" },
+  ).filter((capa) => capa.type !== "background");
+
+  if (tipo === "dibujo") return dibujo;
+
+  /*
+    Sobre la foto van solo los nombres. Los caminos y el relleno del dibujo
+    taparían el terreno, que es justo lo que se quiere mirar; los nombres, en
+    cambio, son lo que permite reconocer dónde está uno.
+  */
+  return [
+    {
+      id: "foto-del-terreno",
+      type: "raster",
+      source: FUENTE_SATELITAL,
+    },
+    ...dibujo.filter((capa) => capa.type === "symbol"),
+  ];
+}
+
+/** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */
+export function todasLasCapasDelFondo(modo: Modo): LayerSpecification[] {
+  return [...capasDelFondo(modo, "dibujo"), ...capasDelFondo(modo, "satelital")];
 }
 
 /**
