@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import type { LineString, Point } from "geojson";
 import { traerUsuario } from "@/lib/cuenta/sesion";
+import {
+  DEPOSITO_DE_FOTOS_DE_ANOTACION,
+  revisarLaFotoDeAnotacion,
+  rutaDeLaFotoDeAnotacion,
+} from "@/lib/anotaciones/fotos";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
   escribirRectangulo,
@@ -250,6 +255,10 @@ export type DatosDeAnotacion = {
   color: string | null;
   comentario: string | null;
   geometria: Point | LineString;
+  /** La foto nueva, cuando el usuario eligió una. */
+  foto?: File | null;
+  /** `true` cuando el usuario sacó la foto que tenía. */
+  quitarLaFoto?: boolean;
 };
 
 function revisarAnotacion(datos: DatosDeAnotacion): string | null {
@@ -271,6 +280,42 @@ function revisarAnotacion(datos: DatosDeAnotacion): string | null {
   }
 
   return null;
+}
+
+/**
+ * Sube la foto de una anotación y devuelve su dirección.
+ *
+ * **La foto va después de crear la anotación**, porque el archivo se llama con
+ * su número. Si esto falla, la anotación ya quedó guardada: se avisa que la
+ * foto no entró, pero no se pierde lo que el usuario escribió.
+ */
+async function guardarLaFoto(
+  anotacionId: number,
+  perfilId: string,
+  foto: File,
+): Promise<Resultado<{ fotoUrl: string }>> {
+  const problema = revisarLaFotoDeAnotacion(foto);
+  if (problema) return falla(problema);
+
+  const supabase = await crearClienteEnElServidor();
+  const donde = rutaDeLaFotoDeAnotacion(perfilId, anotacionId);
+
+  const { error } = await supabase.storage
+    .from(DEPOSITO_DE_FOTOS_DE_ANOTACION)
+    .upload(donde, await foto.arrayBuffer(), {
+      contentType: foto.type,
+      upsert: true,
+    });
+
+  if (error) return falla(`No se pudo subir la foto: ${error.message}`);
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(DEPOSITO_DE_FOTOS_DE_ANOTACION).getPublicUrl(donde);
+
+  // El agregado del final obliga al navegador a bajar la foto nueva: la
+  // dirección es siempre la misma y si no, sigue mostrando la anterior.
+  return exito({ fotoUrl: `${publicUrl}?v=${Date.now()}` });
 }
 
 export async function crearAnotacion(
@@ -303,8 +348,26 @@ export async function crearAnotacion(
     );
   }
 
+  const anotacionId = (data as { id: number }).id;
+
+  if (datos.foto) {
+    const subida = await guardarLaFoto(anotacionId, usuario.id, datos.foto);
+    if (!subida.ok) return falla(subida.error);
+
+    const { error: errorDeFoto } = await supabase
+      .from("anotaciones")
+      .update({ foto_url: subida.datos.fotoUrl })
+      .eq("id", anotacionId);
+
+    if (errorDeFoto) {
+      return falla(
+        `La anotación quedó guardada pero la foto no: ${traducirErrorDeBase(errorDeFoto.message)}`,
+      );
+    }
+  }
+
   revalidatePath("/zonas");
-  return exito({ anotacionId: (data as { id: number }).id });
+  return exito({ anotacionId });
 }
 
 export async function editarAnotacion(
@@ -318,6 +381,22 @@ export async function editarAnotacion(
   if (problema) return falla(problema);
 
   const supabase = await crearClienteEnElServidor();
+
+  let fotoUrl: string | null | undefined;
+
+  if (datos.foto) {
+    const subida = await guardarLaFoto(anotacionId, usuario.id, datos.foto);
+    if (!subida.ok) return falla(subida.error);
+    fotoUrl = subida.datos.fotoUrl;
+  } else if (datos.quitarLaFoto) {
+    // Se saca la dirección y también el archivo: lo que se quita tiene que
+    // liberar el espacio de verdad.
+    await supabase.storage
+      .from(DEPOSITO_DE_FOTOS_DE_ANOTACION)
+      .remove([rutaDeLaFotoDeAnotacion(usuario.id, anotacionId)]);
+    fotoUrl = null;
+  }
+
   const { error } = await supabase
     .from("anotaciones")
     .update({
@@ -326,6 +405,7 @@ export async function editarAnotacion(
       color: datos.tipo === "trazo" ? datos.color : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,
+      ...(fotoUrl !== undefined ? { foto_url: fotoUrl } : {}),
     })
     .eq("id", anotacionId)
     .is("eliminado_en", null);

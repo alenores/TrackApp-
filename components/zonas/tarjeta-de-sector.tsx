@@ -107,6 +107,17 @@ export function TarjetaDeSector({
               onClick={() => {
                 setOpcionesAbiertas(false);
                 router.push(
+                  `/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`,
+                );
+              }}
+            >
+              Anotaciones
+            </BotonDeEmergente>
+            <BotonDeEmergente
+              variante="secundario"
+              onClick={() => {
+                setOpcionesAbiertas(false);
+                router.push(
                   `/zonas/${sector.zonaId}/sectores/${sector.id}/editar`,
                 );
               }}

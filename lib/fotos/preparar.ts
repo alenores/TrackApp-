@@ -51,6 +51,13 @@ type Ajuste = {
 export const AJUSTES_POR_DESTINO = {
   /** La foto de perfil se ve siempre chica y en un círculo. */
   avatar: { ladoLargo: 500, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
+  /**
+   * La foto de una anotación se mira para decidir algo en el cerro: si el vado
+   * se cruza, si el desvío existe. Necesita más detalle que un avatar, así que
+   * va más grande — pero sigue entrando en el tope, porque cada una se baja con
+   * el paquete y los datos en el cerro son el recurso escaso.
+   */
+  anotacion: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
 } as const satisfies Record<string, Ajuste>;
 
 export type DestinoDeFoto = keyof typeof AJUSTES_POR_DESTINO;

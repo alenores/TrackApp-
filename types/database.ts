@@ -164,6 +164,13 @@ export type Anotacion = {
   /** Solo cuando `tipo` es `trazo`. */
   color: string | null;
   comentario: string | null;
+  /**
+   * La foto del lugar, cuando la hay.
+   *
+   * Sirve para lo que un mapa no puede mostrar: si el vado se cruza, si el
+   * desvío existe, cómo es el cruce de verdad. Viaja con el paquete offline.
+   */
+  fotoUrl: string | null;
   geometria: Point | LineString;
   creadoEn: string;
   actualizadoEn: string;

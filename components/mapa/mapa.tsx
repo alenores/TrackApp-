@@ -123,6 +123,15 @@ type MapaProps = {
   /** Se llama con el rectángulo mientras se lo marca y al soltarlo. */
   alDibujar?: (rectangulo: Rectangulo) => void;
   /**
+   * `true` mientras el usuario está eligiendo un punto sobre el mapa.
+   *
+   * Un toque y listo. Es para marcar dónde está un vado, un cruce o un
+   * refugio, en la computadora.
+   */
+  marcandoPunto?: boolean;
+  /** Se llama con el lugar tocado. */
+  alMarcarPunto?: (lon: number, lat: number) => void;
+  /**
    * `true` para traer el fondo en vivo.
    *
    * Va en las pantallas de administrar: zonas, sectores y rutas. **Esas se usan
@@ -204,6 +213,8 @@ export function Mapa({
   grande = false,
   dibujando = false,
   alDibujar,
+  marcandoPunto = false,
+  alMarcarPunto,
   enVivo = false,
   className = "",
 }: MapaProps) {
@@ -549,6 +560,30 @@ export function Mapa({
       dibujandoRef.current = false;
     };
   }, [dibujando, alDibujar]);
+
+  /**
+   * Elegir un punto tocando el mapa.
+   *
+   * Un solo toque, sin arrastrar: marcar dónde está algo no necesita más, y
+   * cualquier gesto de más es una forma de equivocarse.
+   */
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !marcandoPunto || !alMarcarPunto) return;
+
+    mapa.getCanvas().style.cursor = "crosshair";
+
+    const tocar = (evento: { lngLat: maplibregl.LngLat }) => {
+      alMarcarPunto(evento.lngLat.lng, evento.lngLat.lat);
+    };
+
+    mapa.on("click", tocar);
+
+    return () => {
+      mapa.off("click", tocar);
+      mapa.getCanvas().style.cursor = "";
+    };
+  }, [marcandoPunto, alMarcarPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {

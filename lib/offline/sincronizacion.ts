@@ -217,6 +217,7 @@ async function bajarAnotaciones(): Promise<{
     icono: (fila.icono as Anotacion["icono"]) ?? null,
     color: (fila.color as string | null) ?? null,
     comentario: (fila.comentario as string | null) ?? null,
+    fotoUrl: (fila.foto_url as string | null) ?? null,
     geometria: fila.geometria as Anotacion["geometria"],
     creadoEn: String(fila.creado_en),
     actualizadoEn: String(fila.actualizado_en),
