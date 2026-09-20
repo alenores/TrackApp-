@@ -126,7 +126,16 @@ tiene guardada contra la de la base. **No hay tabla de novedades.**
 | Depósito | Público | Límite | Tipos permitidos |
 |---|---|---|---|
 | `avatares` | sí | 2 MB | solo webp |
-| `archivos-ruta` | sí | 10 MB | gpx, kml, kmz y xml |
+| `fotos-anotaciones` | sí | 2 MB | solo webp |
+| `archivos-ruta` | sí | 10 MB | gpx, kml, kmz, xml y text/xml |
+
+Los tipos exactos que acepta `archivos-ruta`, leídos de la base el 2026-09-20:
+`application/gpx+xml`, `application/vnd.google-earth.kml+xml`,
+`application/vnd.google-earth.kmz`, `application/xml` y `text/xml`.
+
+**La clase que la app declara al subir tiene que ser una de esas.** Copiar la
+que dice el navegador no sirve: Windows no conoce el `.gpx` y lo entrega como
+«un archivo cualquiera», que la base rechaza. Ver R20 en `RIESGOS.md`.
 
 ---
 
@@ -134,3 +143,8 @@ tiene guardada contra la de la base. **No hay tabla de novedades.**
 
 **Escrito el 2026-09-18** a partir del script ejecutado contra la base, que se
 verificó devolviendo el perfil administrador correctamente.
+
+**Actualizado el 2026-09-20.** Los tipos que acepta `archivos-ruta` se leyeron
+de la base ese día (`storage.buckets`) y reemplazan lo que decía antes, que era
+un resumen y le faltaba `text/xml`. El depósito `fotos-anotaciones` se agregó el
+mismo día, al crear las anotaciones con foto.

@@ -361,9 +361,12 @@ Android y en donde sea. Si aun así la base rechazara la clase, se reintenta una
 sola vez declarándolo como el XML que en el fondo es. Cuatro pruebas automáticas
 lo cubren.
 
-**Lo que queda por confirmar.** Qué clases acepta exactamente el depósito de
-archivos de ruta no se pudo leer en el momento de arreglarlo. El arreglo cubre
-las dos configuraciones posibles, pero conviene verificarlo contra la base.
+**Confirmado contra la base el mismo día.** El depósito acepta
+`application/gpx+xml`, `application/vnd.google-earth.kml+xml`,
+`application/vnd.google-earth.kmz`, `application/xml` y `text/xml`. Es decir que
+el primer intento ya acierta y el reintento no hace falta. **Se deja igual**: si
+alguna vez se toca la configuración del depósito, la diferencia es entre no
+poder subir nada y que siga andando. Los tipos quedaron escritos en `SCHEMA.md`.
 
 **Detectado:** 2026-09-20, por Ale, subiendo una ruta desde la computadora.
 **Resuelto:** el mismo día.

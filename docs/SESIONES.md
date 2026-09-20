@@ -62,8 +62,6 @@ misma forma: **no se ven desde donde se desarrolla.**
 - El **mapa trucho**: el rompecabezas de fotos de Google Earth georreferenciadas
   para ver el terreno con detalle de verdad. Decidido que se hace.
 - Probar en **modo avión** con el celular.
-- **Confirmar contra la base** qué clases de archivo acepta el depósito de rutas
-  (R20): el arreglo cubre las dos configuraciones posibles, pero no se pudo leer.
 - Las **curvas de nivel** desde el modelo de elevación de 5 metros de IDECOR.
 - El **satelital para bajar**: hoy solo baja el mapa simple.
 
