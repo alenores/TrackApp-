@@ -7,6 +7,9 @@
  * nadie veía.
  */
 
+/** Los botones que flotan sobre el contenido, como el de subir una ruta. */
+export const NIVEL_DE_LOS_BOTONES_FLOTANTES = 80;
+
 /** El mapa abierto en grande: tapa la pantalla, pero no los carteles. */
 export const NIVEL_DEL_MAPA_EN_GRANDE = 9_000;
 

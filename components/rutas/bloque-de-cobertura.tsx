@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { BajarLosMapasQueFaltan } from "@/components/rutas/bajar-los-mapas-que-faltan";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { coberturaCompleta, type Cobertura } from "@/lib/cobertura";
 import { sectoresConFotosSinBajar } from "@/lib/anotaciones/descarga";
+import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { MapaDeSector } from "@/lib/offline/mapas";
 import type { Anotacion, Zona } from "@/types/database";
 
@@ -41,6 +44,9 @@ export function BloqueDeCobertura({
   zonas,
   zonaParaCrearSector = null,
 }: BloqueDeCoberturaProps) {
+  // Crear una zona o un sector escribe en la base: sin señal esos botones no
+  // existen. El aviso de que falta mapa sí queda: eso es información.
+  const haySenal = useHaySenal();
   const hayHueco = cobertura.metrosSinCobertura > 0;
   const faltanBajar = cobertura.sectores
     .filter((cada) => cada.estado === "falta_descargar")
@@ -202,7 +208,7 @@ export function BloqueDeCobertura({
         fotosPendientes={fotosPendientes}
       />
 
-      {hayHueco && zonaParaCrearSector !== null ? (
+      {haySenal && hayHueco && zonaParaCrearSector !== null ? (
         <Link
           href={`/zonas/${zonaParaCrearSector}/sectores/nueva`}
           className="flex min-h-14 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-5 text-base font-semibold text-texto transition-colors hover:bg-superficie"
@@ -212,7 +218,7 @@ export function BloqueDeCobertura({
       ) : null}
 
       {/* Sin zona no hay dónde crear el sector: primero va la zona. */}
-      {hayHueco && zonaParaCrearSector === null ? (
+      {haySenal && hayHueco && zonaParaCrearSector === null ? (
         <Link
           href="/zonas/nueva"
           className="flex min-h-14 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-5 text-base font-semibold text-texto transition-colors hover:bg-superficie"

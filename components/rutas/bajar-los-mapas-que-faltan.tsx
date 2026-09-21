@@ -8,6 +8,7 @@ import {
   pesoAproximadoDelMapa,
 } from "@/lib/mapas/descarga";
 import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
+import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { SectorConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import type { Anotacion, Sector } from "@/types/database";
 
@@ -47,6 +48,7 @@ export function BajarLosMapasQueFaltan({
   const [fotosQueNoEntraron, setFotosQueNoEntraron] = useState<string | null>(null);
   const canceladorRef = useRef<AbortController | null>(null);
   const montadoRef = useRef(true);
+  const haySenal = useHaySenal();
 
   useEffect(() => {
     montadoRef.current = true;
@@ -56,6 +58,9 @@ export function BajarLosMapasQueFaltan({
     };
   }, []);
 
+  // Sin señal no hay nada que bajar: los botones se van. Lo que falta lo sigue
+  // diciendo el bloque de arriba, que es información y esa no se esconde nunca.
+  if (!haySenal) return null;
   if (sectoresQueFaltan.length === 0 && fotosPendientes.length === 0) return null;
 
   const pesoDeTodos = sectoresQueFaltan.reduce(

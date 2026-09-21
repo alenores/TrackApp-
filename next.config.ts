@@ -2,6 +2,12 @@ import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
 import withPWAInit from "next-pwa";
 import cachePresets from "next-pwa/cache";
+import {
+  PANTALLAS_DE_ENTRADA,
+  PANTALLAS_DE_ENTRADA_INTERNO,
+  PANTALLAS_DEL_CERRO,
+  PANTALLAS_DEL_CERRO_INTERNO,
+} from "./lib/offline/depositos";
 
 /**
  * Cómo la app funciona sin señal.
@@ -144,7 +150,7 @@ const withPWA = withPWAInit({
        */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
-        (/\/(?:nueva|editar)\/?$/.test(url.pathname) ||
+        (/\/(?:nueva|editar|anotaciones)\/?$/.test(url.pathname) ||
           /^\/perfil(?:es)?(?:\/|$)/.test(url.pathname)),
       handler: "NetworkOnly",
       options: {},
@@ -163,7 +169,7 @@ const withPWA = withPWAInit({
         /^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname),
       handler: "CacheFirst",
       options: {
-        cacheName: "pantallas-del-cerro-interno",
+        cacheName: PANTALLAS_DEL_CERRO_INTERNO,
         expiration: {
           maxEntries: 256,
           maxAgeSeconds: OFFLINE_MEDIA_MAX_AGE_SECONDS,
@@ -178,7 +184,7 @@ const withPWA = withPWAInit({
         sameOrigin && /^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname),
       handler: "CacheFirst",
       options: {
-        cacheName: "pantallas-del-cerro",
+        cacheName: PANTALLAS_DEL_CERRO,
         expiration: {
           maxEntries: 256,
           maxAgeSeconds: OFFLINE_MEDIA_MAX_AGE_SECONDS,
@@ -210,7 +216,7 @@ const withPWA = withPWAInit({
         (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "NetworkFirst",
       options: {
-        cacheName: "pantallas-de-entrada-interno",
+        cacheName: PANTALLAS_DE_ENTRADA_INTERNO,
         networkTimeoutSeconds: SEGUNDOS_DE_ESPERA,
         expiration: {
           maxEntries: 256,
@@ -227,7 +233,7 @@ const withPWA = withPWAInit({
         (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "NetworkFirst",
       options: {
-        cacheName: "pantallas-de-entrada",
+        cacheName: PANTALLAS_DE_ENTRADA,
         networkTimeoutSeconds: SEGUNDOS_DE_ESPERA,
         expiration: {
           maxEntries: 256,

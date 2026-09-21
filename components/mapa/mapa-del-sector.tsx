@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
+import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useMapaDelSector } from "@/hooks/use-mapa-del-sector";
 import { fechaEnPalabras } from "@/lib/fechas";
 import { mostrarPeso, pesoAproximadoDelMapa } from "@/lib/mapas/descarga";
@@ -43,6 +44,8 @@ export function MapaDelSector({
     sector,
     anotaciones,
   );
+  // Bajar necesita señal. Sacar no: el espacio se libera acá mismo.
+  const haySenal = useHaySenal();
   const { confirmar, avisar } = useDialogos();
   const [sacando, setSacando] = useState(false);
 
@@ -116,9 +119,11 @@ export function MapaDelSector({
           próxima vez tarda menos.
         </p>
 
-        <Boton anchoCompleto onClick={() => void bajar("simple")}>
-          Intentar de nuevo
-        </Boton>
+        {haySenal ? (
+          <Boton anchoCompleto onClick={() => void bajar("simple")}>
+            Intentar de nuevo
+          </Boton>
+        ) : null}
       </Tarjeta>
     );
   }
@@ -172,7 +177,7 @@ export function MapaDelSector({
           </p>
         ) : null}
 
-        {fotosQueFaltan > 0 ? (
+        {fotosQueFaltan > 0 && haySenal ? (
           <Boton anchoCompleto onClick={() => void bajar("simple")}>
             Bajar las fotos que faltan
           </Boton>
@@ -217,9 +222,11 @@ export function MapaDelSector({
         más o menos.
       </p>
 
-      <Boton anchoCompleto onClick={() => void bajar("simple")}>
-        Bajar el mapa
-      </Boton>
+      {haySenal ? (
+        <Boton anchoCompleto onClick={() => void bajar("simple")}>
+          Bajar el mapa
+        </Boton>
+      ) : null}
     </Tarjeta>
   );
 }

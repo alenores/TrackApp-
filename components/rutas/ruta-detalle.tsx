@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FeatureCollection } from "geojson";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { borrarRuta } from "@/app/actions/rutas";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
@@ -67,6 +68,7 @@ const VALOR = "mt-0.5 text-lg font-semibold tabular-nums text-texto";
 export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
+  const puedeAdministrar = usePuedeAdministrar(miPerfilId !== null);
   const { confirmar, avisar } = useDialogos();
   const sectoresBajados = useSectoresConMapaBajado();
   const mapasBajados = useMapasBajados();
@@ -124,7 +126,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
     );
   }
 
-  const soyElAutor = miPerfilId !== null && miPerfilId === ruta.perfilId;
+  const soyElAutor = puedeAdministrar && miPerfilId === ruta.perfilId;
 
   const sectores = paquete?.sectores ?? [];
   const cobertura: Cobertura | null = recorrido

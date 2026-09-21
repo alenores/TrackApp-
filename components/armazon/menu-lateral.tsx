@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boton } from "@/components/ui/boton";
+import { useHaySenal } from "@/hooks/use-hay-senal";
 
 type NavItem = {
   href: string;
   label: string;
   icon: React.ReactNode;
+  /** `true` cuando la pantalla no sirve de nada sin señal. */
+  necesitaSenal?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -51,6 +54,9 @@ const navItems: NavItem[] = [
   {
     href: "/perfiles",
     label: "Perfiles",
+    // Los datos de los demás no se guardan en el celular, y no tiene sentido
+    // que se guarden: sin señal esta pantalla no tiene nada que mostrar.
+    necesitaSenal: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
         <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
@@ -72,6 +78,7 @@ type SidebarProps = {
 };
 
 export function MenuLateral({ onNavigate, onLogout, loggingOut = false }: SidebarProps) {
+  const haySenal = useHaySenal();
   const pathname = usePathname();
 
   return (
@@ -83,7 +90,9 @@ export function MenuLateral({ onNavigate, onLogout, loggingOut = false }: Sideba
         Menú
       </p>
       <div className="flex flex-col gap-1">
-        {navItems.map((item) => {
+        {navItems
+          .filter((item) => haySenal || !item.necesitaSenal)
+          .map((item) => {
           const isActive = pathname.startsWith(item.href);
 
           return (

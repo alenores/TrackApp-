@@ -7,6 +7,7 @@ import {
   type Paquete,
 } from "@/lib/offline/paquete";
 import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
+import { calentarLasPantallas } from "@/lib/offline/calentar";
 
 /**
  * Los datos de la app en el celular.
@@ -51,6 +52,7 @@ export function useDatosDeLaApp(): DatosDeLaApp {
 
   useEffect(() => {
     let vigente = true;
+    const cancelador = new AbortController();
 
     void (async () => {
       const resultado = await sincronizarPaquete();
@@ -67,10 +69,22 @@ export function useDatosDeLaApp(): DatosDeLaApp {
       }
 
       setPuesta({ clase: "al_dia" });
+
+      /**
+       * Con el paquete al día se dejan listas las pantallas para el cerro.
+       *
+       * **El usuario no tiene que ir a visitarlas una por una.** Va sin esperar
+       * a nadie: la pantalla ya está dibujada y esto pasa por detrás.
+       */
+      const alDia = resultado.paquete;
+      if (alDia) {
+        void calentarLasPantallas({ paquete: alDia, senal: cancelador.signal });
+      }
     })();
 
     return () => {
       vigente = false;
+      cancelador.abort();
     };
   }, []);
 

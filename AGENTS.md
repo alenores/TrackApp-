@@ -159,6 +159,35 @@ entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
   mapa no está descargado, porque el usuario nunca se queda sin saber qué pasa.
   Decirlo, sí. Diseñar alrededor de eso, no.
 
+### Sin señal no se muestra lo que no funciona
+
+**Un botón que al tocarlo falla es información basura.** Sin señal desaparece:
+crear, editar y borrar zonas, sectores y rutas; bajar mapas; la pantalla de
+perfiles, que muestra datos de los demás y esos no se guardan en el celular.
+
+- **Lo que se esconde es la acción, nunca la información.** «Te falta bajar el
+  mapa de este sector» se sigue diciendo sin señal; lo que no está es el botón
+  de bajarlo.
+- **La app se entera al instante de que la señal se fue**, sin recargar nada:
+  alguien abre la app en el pueblo y sube al cerro, y la pantalla se acomoda
+  sola. Preguntar una sola vez al abrir no alcanza.
+- **Mientras no se sabe si hay señal, se responde que no hay.** Un botón que
+  aparece tarde no molesta; uno que aparece y falla, sí.
+
+### Las pantallas se dejan listas solas
+
+**El usuario no visita las pantallas una por una para que queden guardadas.**
+Apenas el paquete queda al día, con señal, la app recorre y deja listas todas
+las que van a hacer falta sin señal: el inicio, las listas, cada zona, y de cada
+ruta su ficha y su navegación. Sin eso, una zona que nunca se abrió con señal no
+existe en el cerro.
+
+- De cada pantalla se guardan **dos cosas**: el documento y el pedido interno
+  que hace la app al pasar de una pantalla a otra. Una sola de las dos deja la
+  app abriendo bien y quedándose en blanco al tocar cualquier cosa.
+- **Las de crear y editar no se calientan.** Escriben en la base: guardarlas
+  sería guardar un formulario que al tocarlo falla.
+
 ### El resto
 
 - **La pantalla de navegar lee de lo guardado en el celular, nunca de internet.**

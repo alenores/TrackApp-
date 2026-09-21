@@ -60,6 +60,19 @@ una ruta, que es cuando mirás un archivo que te pasaron. Y **todo mapa de la ap
 se abre en grande** con un botón, porque en el celular un recuadro chico no
 alcanza.
 
+**Sin señal, lo que no funciona no se muestra.** Probando en modo avión apareció
+que los botones de crear, editar y bajar seguían ahí, y que «Perfiles» seguía en
+el menú aunque esa pantalla no se guarda nunca. Ahora desaparecen, y la app se
+entera al instante de que la señal se fue: no hace falta recargar.
+
+**Y las pantallas se dejan listas solas.** Apenas el paquete queda al día, la
+app recorre y guarda todas las que van a hacer falta sin señal —cada zona, y de
+cada ruta su ficha y su navegación— en vez de esperar a que el usuario las
+visite una por una. Es lo mismo que hace Vías de Escalada, que se miró para
+copiar el método, incluido el detalle medido allá de no marcar el pedido interno
+como precarga: con esa marca el servidor contesta un resumen que no alcanza para
+dibujar la pantalla.
+
 ### Decisiones tomadas
 
 - `019` — La foto de la anotación viaja con el mapa del sector, no con el

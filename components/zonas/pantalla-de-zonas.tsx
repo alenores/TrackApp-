@@ -1,6 +1,7 @@
 "use client";
 
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { ListaDeZonas } from "@/components/zonas/lista-de-zonas";
 import { Tarjeta } from "@/components/ui/tarjeta";
 
@@ -16,6 +17,7 @@ type ZonasClientProps = {
 };
 
 export function PantallaDeZonas({ soyAdministrador }: ZonasClientProps) {
+  const puedeAdministrar = usePuedeAdministrar(soyAdministrador);
   const { paquete, estado, aviso } = useDatosDeLaApp();
 
   const zonas = paquete?.zonas ?? [];
@@ -60,7 +62,7 @@ export function PantallaDeZonas({ soyAdministrador }: ZonasClientProps) {
 
       <ListaDeZonas
         zonas={zonas}
-        soyAdministrador={soyAdministrador}
+        soyAdministrador={puedeAdministrar}
         sectoresPorZona={sectoresPorZona}
         avisoDeListaIncompleta={estado === "incompleto" ? aviso : null}
       />

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { TarjetaDeSector } from "@/components/zonas/tarjeta-de-sector";
 import { BotonVolver } from "@/components/ui/boton-volver";
@@ -27,6 +28,7 @@ type ZonaDetalleProps = {
 export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
   const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
+  const puedeAdministrar = usePuedeAdministrar(miPerfilId !== null);
 
   const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
   const todosLosSectores = paquete?.sectores ?? [];
@@ -58,7 +60,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
     );
   }
 
-  const soyElAutor = miPerfilId !== null && miPerfilId === zona.perfilId;
+  const soyElAutor = puedeAdministrar && miPerfilId === zona.perfilId;
   const hueco = calcularHuecoDeZona(zona.rectangulo, sectores);
   const porcentajeSinCubrir = Math.round(hueco.proporcionSinCubrir * 100);
   const todoCubierto = porcentajeSinCubrir === 0;
@@ -171,7 +173,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
                 sector={sector}
                 todosLosSectores={todosLosSectores}
                 anotaciones={anotaciones}
-                soyAdministrador={miPerfilId === sector.perfilId}
+                soyAdministrador={puedeAdministrar && miPerfilId === sector.perfilId}
               />
             ))
           )}
