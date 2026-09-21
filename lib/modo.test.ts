@@ -15,7 +15,11 @@ import { describe, expect, it } from "vitest";
  *      pide AGENTS.md, en los dos modos.
  */
 
-const CSS = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8");
+/* En Windows, Git deja los archivos con fin de línea propio; se leen igual. */
+const CSS = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8").replace(
+  /\r\n/g,
+  "\n",
+);
 
 function bloque(selector: string): string {
   const desde = CSS.indexOf(selector);
