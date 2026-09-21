@@ -49,5 +49,12 @@ public/fallback-*.js
 # el motor del mapa se copia en cada compilacion desde la libreria
 /public/motor-del-mapa/
 
-# la receta de los iconos para pantalla de alta densidad se arma en cada compilacion
-/public/iconos-del-mapa/*@2x.json
+# la hoja de iconos del mapa se arma en cada compilacion: la de protomaps mas los propios
+/public/iconos-del-mapa/light.json
+/public/iconos-del-mapa/light.png
+/public/iconos-del-mapa/light@2x.json
+/public/iconos-del-mapa/light@2x.png
+/public/iconos-del-mapa/dark.json
+/public/iconos-del-mapa/dark.png
+/public/iconos-del-mapa/dark@2x.json
+/public/iconos-del-mapa/dark@2x.png

@@ -26,9 +26,12 @@ import type { ColoresDelMapa } from "@/components/mapa/colores";
 /** Toda capa que dibuje algo del terreno. La única sin filtro es el fondo liso. */
 export type CapaConFiltro = Exclude<LayerSpecification, BackgroundLayerSpecification>;
 
+type ColorDeTexto = NonNullable<SymbolLayerSpecification["paint"]>["text-color"];
+
 const CAPA_DE_CAMINOS = "roads";
 
 /** Los ids con los que Protomaps nombra las capas que se corrigen. */
+const PUNTOS = "pois";
 const OTROS_CAMINOS = "roads_other";
 const NOMBRES_DE_CAMINOS_MENORES = "roads_labels_minor";
 const ARROYOS = "water_stream";
@@ -43,6 +46,27 @@ export const ARROYOS_DESDE = 12;
 
 /** Desde qué acercamiento se escribe el nombre de un sendero. */
 export const NOMBRES_DE_SENDEROS_DESDE = 13;
+
+/**
+ * Lo que Protomaps trae en el archivo pero no dibuja, porque su lista de
+ * puntos es de ciudad. Cada uno tiene su ícono propio en la hoja del mapa.
+ */
+export const PUNTOS_DE_MONTANA = [
+  "alpine_hut",
+  "wilderness_hut",
+  "camp_site",
+  "viewpoint",
+  "cave_entrance",
+] as const;
+
+/** Va con los de agua, no con los naturales: comparte paleta con la canilla. */
+export const MANANTIAL = "spring";
+
+/**
+ * Cuánto antes que lo que dice el dato se muestran los puntos de montaña.
+ * Un refugio viene marcado para el 15 y en el 14 ya está en el archivo.
+ */
+const PUNTOS_DE_MONTANA_ANTES = 1;
 
 const LETRA = ["Noto Sans Regular"];
 
@@ -59,6 +83,50 @@ function sinSenderos(filtro: unknown): unknown {
     return filtro.filter((cada) => cada !== "path");
   }
   return filtro.map(sinSenderos);
+}
+
+/**
+ * Suma nombres a toda lista que ya contenga al testigo, esté donde esté.
+ *
+ * Protomaps escribe sus listas de puntos como `["literal", [...]]`, adentro
+ * del filtro y adentro de la regla de color del texto. Buscar por un nombre
+ * que ya está en la lista es lo que hace que los nuevos caigan en la familia
+ * correcta —los refugios junto a la cumbre, el manantial junto a la canilla—
+ * sin conocer cómo está armada la expresión.
+ */
+function sumarALaListaQueTiene(expresion: unknown, testigo: string, nuevos: readonly string[]): unknown {
+  if (!Array.isArray(expresion)) return expresion;
+  if (expresion[0] === "literal" && Array.isArray(expresion[1]) && expresion[1].includes(testigo)) {
+    return ["literal", [...expresion[1], ...nuevos]];
+  }
+  return expresion.map((parte) => sumarALaListaQueTiene(parte, testigo, nuevos));
+}
+
+/**
+ * La condición de acercamiento de los puntos, adelantada para los de montaña.
+ *
+ * Protomaps escribe `zoom >= min_zoom + 0`. Se reemplaza el `+ 0` por una
+ * resta que solo aplica a los de montaña; el resto queda igual que estaba.
+ */
+function adelantarPuntosDeMontana(filtro: unknown): unknown {
+  if (!Array.isArray(filtro)) return filtro;
+  const esLaCondicionDeZoom =
+    filtro[0] === ">=" &&
+    JSON.stringify(filtro[1]) === JSON.stringify(["zoom"]) &&
+    Array.isArray(filtro[2]) &&
+    filtro[2][0] === "+";
+  if (esLaCondicionDeZoom) {
+    return [
+      ">=",
+      ["zoom"],
+      [
+        "-",
+        ["get", "min_zoom"],
+        ["case", ["in", ["get", "kind"], ["literal", [...PUNTOS_DE_MONTANA, MANANTIAL]]], PUNTOS_DE_MONTANA_ANTES, 0],
+      ],
+    ];
+  }
+  return filtro.map(adelantarPuntosDeMontana);
 }
 
 function capaDeSenderos(fuente: string, colores: ColoresDelMapa): LineLayerSpecification {
@@ -123,6 +191,29 @@ export function ajustarParaLaMontana(
       (capa.id === OTROS_CAMINOS || capa.id === NOMBRES_DE_CAMINOS_MENORES)
     ) {
       capa.filter = sinSenderos(capa.filter) as FilterSpecification;
+    }
+
+    if (capa.id === PUNTOS && capa.type === "symbol") {
+      const conMontana = sumarALaListaQueTiene(capa.filter, "peak", PUNTOS_DE_MONTANA);
+      capa.filter = adelantarPuntosDeMontana(
+        sumarALaListaQueTiene(conMontana, "drinking_water", [MANANTIAL]),
+      ) as FilterSpecification;
+
+      const color = capa.paint?.["text-color"];
+      capa.paint = {
+        ...capa.paint,
+        "text-color": sumarALaListaQueTiene(
+          sumarALaListaQueTiene(color, "peak", PUNTOS_DE_MONTANA),
+          "drinking_water",
+          [MANANTIAL],
+        ) as ColorDeTexto,
+      };
+
+      /* Un paso más grande que el de ciudad: se lee al sol, sin tapar el mapa. */
+      capa.layout = {
+        ...capa.layout,
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 11, 15, 13, 17, 14, 19, 16],
+      };
     }
 
     if (capa.id === ARROYOS && capa.type === "line") {

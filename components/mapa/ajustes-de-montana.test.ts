@@ -6,7 +6,9 @@ import {
   ajustarParaLaMontana,
   ARROYOS_DESDE,
   type CapaConFiltro,
+  MANANTIAL,
   NOMBRES_DE_SENDEROS,
+  PUNTOS_DE_MONTANA,
   SENDEROS,
 } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa } from "@/components/mapa/colores";
@@ -77,6 +79,37 @@ describe("el agua se ve", () => {
   it.each(["water_stream", "water_river"])("%s va del color del agua", (id) => {
     const capa = buscar(ajustadas("dark"), id) as { paint: Record<string, unknown> };
     expect(capa.paint["line-color"]).toBe(colores.agua);
+  });
+});
+
+describe("los puntos de montaña se dibujan", () => {
+  const todos = [...PUNTOS_DE_MONTANA, MANANTIAL];
+
+  it.each(todos)("%s pasa el filtro de los puntos", (punto) => {
+    const antes = buscar(originales("light"), "pois");
+    const despues = buscar(ajustadas("light"), "pois");
+    expect(menciona(antes.filter, punto)).toBe(false);
+    expect(menciona(despues.filter, punto)).toBe(true);
+  });
+
+  it.each(todos)("%s tiene color de texto asignado", (punto) => {
+    const capa = buscar(ajustadas("dark"), "pois") as { paint: Record<string, unknown> };
+    expect(menciona(capa.paint["text-color"], punto)).toBe(true);
+  });
+
+  it("los refugios van con el color de la cumbre y el manantial con el del agua", () => {
+    const capa = buscar(ajustadas("light"), "pois") as { paint: Record<string, unknown> };
+    const regla = capa.paint["text-color"] as unknown[];
+    const listaDe = (testigo: string) =>
+      JSON.stringify(regla.find((parte) => menciona(parte, testigo)));
+    expect(listaDe("peak")).toContain("alpine_hut");
+    expect(listaDe("drinking_water")).toContain(MANANTIAL);
+    expect(listaDe("peak")).not.toContain(MANANTIAL);
+  });
+
+  it("aparecen un paso antes de lo que marca el dato", () => {
+    const capa = buscar(ajustadas("light"), "pois");
+    expect(JSON.stringify(capa.filter)).toContain('["-",["get","min_zoom"]');
   });
 });
 
