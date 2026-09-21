@@ -18,17 +18,29 @@ import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import {
+  claveDelColor,
+  COLOR_DE_TRAZO_POR_DEFECTO,
+  COLORES_DE_TRAZO,
+  type ColorDeTrazo,
+  nombreDelColor,
+  TRAZO,
+} from "@/lib/anotaciones/colores-de-trazo";
 import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database";
 
 /**
- * Las anotaciones de un sector: marcar un punto, escribirle algo y sumarle una
- * foto.
+ * Las anotaciones de un sector: marcar un punto o dibujar un trazo, escribirle
+ * algo y sumarle una foto.
  *
  * **Para lo que un mapa no puede mostrar.** Si el vado se cruza, si el desvío
- * existe, cómo es el cruce de verdad. El mapa dice dónde; la foto dice cómo.
+ * existe, cómo es el cruce de verdad, por dónde va la huella que el mapa no
+ * tiene. El mapa dice dónde; la foto dice cómo; el trazo dice por dónde.
  *
- * Se arma en la computadora, con conexión, mirando el terreno de verdad. Lo
- * marcado viaja después con el paquete y se mira en el cerro sin señal.
+ * **El trazo se dibuja de a toques**, un punto por toque, sin arrastrar nada:
+ * es lo que funciona con el mouse y también con un dedo. Se puede deshacer el
+ * último toque. Se arma en la computadora, con conexión, mirando el terreno de
+ * verdad. Lo marcado viaja después con el paquete y se mira en el cerro sin
+ * señal.
  */
 
 type Props = {
@@ -36,7 +48,8 @@ type Props = {
   sectorId: number;
 };
 
-type EnEdicion = {
+type PuntoEnEdicion = {
+  tipo: "punto";
   id: number | null;
   icono: IconoPunto;
   comentario: string;
@@ -44,6 +57,20 @@ type EnEdicion = {
   lat: number;
   fotoActual: string | null;
 };
+
+type TrazoEnEdicion = {
+  tipo: "trazo";
+  id: number | null;
+  color: ColorDeTrazo;
+  comentario: string;
+  puntos: [number, number][];
+  fotoActual: string | null;
+};
+
+type EnEdicion = PuntoEnEdicion | TrazoEnEdicion;
+
+/** Con menos que esto no hay línea: lo exige también la base. */
+const PUNTOS_MINIMOS_DE_UN_TRAZO = 2;
 
 export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   const router = useRouter();
@@ -83,39 +110,91 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     );
   }
 
-  const empezarUnoNuevo = () => {
-    setEditando(null);
+  const limpiarElFormulario = () => {
     setError(null);
     setQuitarLaFoto(false);
     foto.quitar();
+  };
+
+  const empezarUnPunto = () => {
+    setEditando(null);
+    limpiarElFormulario();
+    setMarcando(true);
+  };
+
+  const empezarUnTrazo = () => {
+    setEditando({
+      tipo: "trazo",
+      id: null,
+      color: COLOR_DE_TRAZO_POR_DEFECTO,
+      comentario: "",
+      puntos: [],
+      fotoActual: null,
+    });
+    limpiarElFormulario();
     setMarcando(true);
   };
 
   const abrirParaEditar = (anotacion: Anotacion) => {
-    if (anotacion.geometria.type !== "Point") return;
-    const [lon, lat] = anotacion.geometria.coordinates;
-
-    setEditando({
-      id: anotacion.id,
-      icono: anotacion.icono ?? "cruce",
-      comentario: anotacion.comentario ?? "",
-      lon,
-      lat,
-      fotoActual: anotacion.fotoUrl,
-    });
-    setError(null);
-    setQuitarLaFoto(false);
-    foto.quitar();
+    if (anotacion.geometria.type === "Point") {
+      const [lon, lat] = anotacion.geometria.coordinates;
+      setEditando({
+        tipo: "punto",
+        id: anotacion.id,
+        icono: anotacion.icono ?? "cruce",
+        comentario: anotacion.comentario ?? "",
+        lon,
+        lat,
+        fotoActual: anotacion.fotoUrl,
+      });
+    } else {
+      setEditando({
+        tipo: "trazo",
+        id: anotacion.id,
+        color: claveDelColor(anotacion.color),
+        comentario: anotacion.comentario ?? "",
+        puntos: anotacion.geometria.coordinates.map(
+          ([lon, lat]) => [lon, lat] as [number, number],
+        ),
+        fotoActual: anotacion.fotoUrl,
+      });
+    }
+    limpiarElFormulario();
     setMarcando(false);
   };
 
   const alMarcarPunto = (lon: number, lat: number) => {
+    if (editando?.tipo === "trazo") {
+      // Un toque más en la línea; se sigue marcando hasta que el usuario diga.
+      setEditando({ ...editando, puntos: [...editando.puntos, [lon, lat]] });
+      return;
+    }
+
     setEditando((anterior) =>
-      anterior
+      anterior?.tipo === "punto"
         ? { ...anterior, lon, lat }
-        : { id: null, icono: "cruce", comentario: "", lon, lat, fotoActual: null },
+        : {
+            tipo: "punto",
+            id: null,
+            icono: "cruce",
+            comentario: "",
+            lon,
+            lat,
+            fotoActual: null,
+          },
     );
     setMarcando(false);
+  };
+
+  const deshacerElUltimoPunto = () => {
+    if (editando?.tipo !== "trazo") return;
+    setEditando({ ...editando, puntos: editando.puntos.slice(0, -1) });
+  };
+
+  const volverADibujar = () => {
+    if (editando?.tipo !== "trazo") return;
+    setEditando({ ...editando, puntos: [] });
+    setMarcando(true);
   };
 
   const alGuardar = async () => {
@@ -124,19 +203,35 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     setGuardando(true);
     setError(null);
 
-    const datos = {
+    const comunes = {
       sectorId,
-      tipo: "punto" as const,
-      icono: editando.icono,
-      color: null,
       comentario: editando.comentario.trim() || null,
-      geometria: {
-        type: "Point" as const,
-        coordinates: [editando.lon, editando.lat],
-      },
       foto: foto.archivo,
       quitarLaFoto,
     };
+
+    const datos =
+      editando.tipo === "punto"
+        ? {
+            ...comunes,
+            tipo: "punto" as const,
+            icono: editando.icono,
+            color: null,
+            geometria: {
+              type: "Point" as const,
+              coordinates: [editando.lon, editando.lat],
+            },
+          }
+        : {
+            ...comunes,
+            tipo: "trazo" as const,
+            icono: null,
+            color: TRAZO[editando.color].color,
+            geometria: {
+              type: "LineString" as const,
+              coordinates: editando.puntos,
+            },
+          };
 
     const resultado = editando.id
       ? await editarAnotacion(editando.id, datos)
@@ -150,6 +245,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     }
 
     setEditando(null);
+    setMarcando(false);
     foto.quitar();
     setQuitarLaFoto(false);
     router.refresh();
@@ -173,9 +269,78 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     router.refresh();
   };
 
-  const puntosDibujados = anotaciones.filter(
-    (cada) => cada.geometria.type === "Point",
-  );
+  const cancelar = () => {
+    setEditando(null);
+    setMarcando(false);
+    foto.quitar();
+  };
+
+  const trazoEnCurso = editando?.tipo === "trazo" ? editando : null;
+  const faltanPuntos =
+    trazoEnCurso !== null && trazoEnCurso.puntos.length < PUNTOS_MINIMOS_DE_UN_TRAZO;
+
+  /**
+   * Lo que se está dibujando, para que el mapa lo muestre antes de guardarlo.
+   *
+   * Un trazo con un solo toque todavía no es una línea: se muestra como punto,
+   * para que se vea dónde arrancó.
+   */
+  const vistaPrevia = (): Anotacion | null => {
+    if (!editando) return null;
+    const base = {
+      id: -1,
+      sectorId,
+      perfilId: "",
+      comentario: editando.comentario,
+      fotoUrl: null,
+      creadoEn: "",
+      actualizadoEn: "",
+    };
+
+    if (editando.tipo === "punto") {
+      if (editando.id !== null) return null;
+      return {
+        ...base,
+        tipo: "punto",
+        icono: editando.icono,
+        color: null,
+        geometria: { type: "Point", coordinates: [editando.lon, editando.lat] },
+      };
+    }
+
+    if (editando.puntos.length === 0) return null;
+    const color = TRAZO[editando.color].color;
+    if (editando.puntos.length === 1) {
+      return {
+        ...base,
+        tipo: "punto",
+        icono: null,
+        color,
+        geometria: { type: "Point", coordinates: editando.puntos[0] },
+      };
+    }
+    return {
+      ...base,
+      tipo: "trazo",
+      icono: null,
+      color,
+      geometria: { type: "LineString", coordinates: editando.puntos },
+    };
+  };
+
+  const enElMapa = (() => {
+    const previa = vistaPrevia();
+    if (!previa) return anotaciones;
+    // Si se está redibujando un trazo guardado, se muestra el nuevo en su lugar.
+    const sinElQueSeEdita = anotaciones.filter((cada) => cada.id !== editando?.id);
+    return [...sinElQueSeEdita, previa];
+  })();
+
+  const queHacerEnElMapa = marcando
+    ? trazoEnCurso
+      ? "Tocá el mapa por donde va el trazo, de a un punto por vez."
+      : "Tocá el mapa donde está el lugar que querés marcar."
+    : "Cambiá a Foto para ver el terreno de verdad antes de marcar.";
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:items-start">
@@ -192,39 +357,74 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           </div>
           <p className="text-sm leading-6 text-texto-suave">
             Marcá los lugares que hay que ver con los propios ojos: un vado, un
-            cruce dudoso, un refugio. La foto muestra lo que el mapa no puede.
+            cruce dudoso, un refugio. Dibujá lo que el mapa no muestra: una
+            huella, un alambrado, un desvío. La foto muestra lo que el mapa no
+            puede.
           </p>
         </Tarjeta>
 
         {editando ? (
           <Tarjeta className="space-y-3">
             <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-              {editando.id ? "Editar la anotación" : "Anotación nueva"}
+              {editando.id
+                ? editando.tipo === "punto"
+                  ? "Editar el punto"
+                  : "Editar el trazo"
+                : editando.tipo === "punto"
+                  ? "Punto nuevo"
+                  : "Trazo nuevo"}
             </h2>
 
-            <div>
-              <p className="mb-1.5 text-sm text-texto-suave">Qué es</p>
-              <div className="flex flex-wrap gap-2">
-                {ICONOS_PUNTO.map((cual) => (
-                  <button
-                    key={cual}
-                    type="button"
-                    onClick={() =>
-                      setEditando({ ...editando, icono: cual })
-                    }
-                    aria-pressed={editando.icono === cual}
-                    className={[
-                      "min-h-14 rounded-xl border px-4 text-base font-semibold transition-colors",
-                      editando.icono === cual
-                        ? "border-acento-borde bg-acento text-acento-texto"
-                        : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
-                    ].join(" ")}
-                  >
-                    {COMO_SE_LLAMA[cual]}
-                  </button>
-                ))}
+            {editando.tipo === "punto" ? (
+              <div>
+                <p className="mb-1.5 text-sm text-texto-suave">Qué es</p>
+                <div className="flex flex-wrap gap-2">
+                  {ICONOS_PUNTO.map((cual) => (
+                    <button
+                      key={cual}
+                      type="button"
+                      onClick={() => setEditando({ ...editando, icono: cual })}
+                      aria-pressed={editando.icono === cual}
+                      className={[
+                        "min-h-14 rounded-xl border px-4 text-base font-semibold transition-colors",
+                        editando.icono === cual
+                          ? "border-acento-borde bg-acento text-acento-texto"
+                          : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
+                      ].join(" ")}
+                    >
+                      {COMO_SE_LLAMA[cual]}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <p className="mb-1.5 text-sm text-texto-suave">De qué color</p>
+                <div className="flex flex-wrap gap-2">
+                  {COLORES_DE_TRAZO.map((cual) => (
+                    <button
+                      key={cual}
+                      type="button"
+                      onClick={() => setEditando({ ...editando, color: cual })}
+                      aria-pressed={editando.color === cual}
+                      className={[
+                        "flex min-h-14 items-center gap-2 rounded-xl border px-4 text-base font-semibold transition-colors",
+                        editando.color === cual
+                          ? "border-acento-borde bg-acento text-acento-texto"
+                          : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
+                      ].join(" ")}
+                    >
+                      <span
+                        aria-hidden
+                        className="h-3 w-6 rounded-full"
+                        style={{ backgroundColor: TRAZO[cual].color }}
+                      />
+                      {TRAZO[cual].nombre}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <AreaDeTexto
               label="Qué hay que saber"
@@ -234,7 +434,11 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
               onChange={(evento) =>
                 setEditando({ ...editando, comentario: evento.target.value })
               }
-              placeholder="Por acá se cruza el arroyo. Por la izquierda no se puede."
+              placeholder={
+                editando.tipo === "punto"
+                  ? "Por acá se cruza el arroyo. Por la izquierda no se puede."
+                  : "Huella que no figura en el mapa. Sigue el alambrado hasta la tranquera."
+              }
             />
 
             <SelectorDeFoto
@@ -255,20 +459,61 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
               </Boton>
             ) : null}
 
-            <div className="rounded-xl border border-borde-suave bg-fondo px-3 py-2">
-              <p className="text-sm text-texto-suave">Dónde está</p>
-              <p className="text-base font-semibold tabular-nums text-texto">
-                {editando.lat.toFixed(5)}, {editando.lon.toFixed(5)}
-              </p>
-            </div>
+            {editando.tipo === "punto" ? (
+              <>
+                <div className="rounded-xl border border-borde-suave bg-fondo px-3 py-2">
+                  <p className="text-sm text-texto-suave">Dónde está</p>
+                  <p className="text-base font-semibold tabular-nums text-texto">
+                    {editando.lat.toFixed(5)}, {editando.lon.toFixed(5)}
+                  </p>
+                </div>
 
-            <Boton
-              variante={marcando ? "principal" : "secundario"}
-              anchoCompleto
-              onClick={() => setMarcando(!marcando)}
-            >
-              {marcando ? "Tocá el mapa…" : "Mover el punto"}
-            </Boton>
+                <Boton
+                  variante={marcando ? "principal" : "secundario"}
+                  anchoCompleto
+                  onClick={() => setMarcando(!marcando)}
+                >
+                  {marcando ? "Tocá el mapa…" : "Mover el punto"}
+                </Boton>
+              </>
+            ) : (
+              <>
+                <div className="rounded-xl border border-borde-suave bg-fondo px-3 py-2">
+                  <p className="text-sm text-texto-suave">Por dónde va</p>
+                  <p className="text-base font-semibold tabular-nums text-texto">
+                    {editando.puntos.length === 0
+                      ? "Todavía sin puntos"
+                      : editando.puntos.length === 1
+                        ? "1 punto: falta al menos uno más"
+                        : `${editando.puntos.length} puntos`}
+                  </p>
+                </div>
+
+                <Boton
+                  variante={marcando ? "principal" : "secundario"}
+                  anchoCompleto
+                  onClick={() => setMarcando(!marcando)}
+                >
+                  {marcando ? "Tocá el mapa… (listo cuando termines)" : "Seguir dibujando"}
+                </Boton>
+
+                <div className="flex gap-2">
+                  <Boton
+                    variante="secundario"
+                    anchoCompleto
+                    disabled={editando.puntos.length === 0}
+                    onClick={deshacerElUltimoPunto}
+                  >
+                    Deshacer el último punto
+                  </Boton>
+                  {editando.id !== null ? (
+                    <Boton variante="secundario" anchoCompleto onClick={volverADibujar}>
+                      Volver a dibujar
+                    </Boton>
+                  ) : null}
+                </div>
+              </>
+            )}
 
             {error ? (
               <p
@@ -282,51 +527,44 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
             <Boton
               anchoCompleto
               paraNavegacion
-              disabled={guardando}
+              disabled={guardando || faltanPuntos}
               onClick={() => void alGuardar()}
             >
-              {guardando ? "Guardando…" : "Guardar la anotación"}
+              {guardando
+                ? "Guardando…"
+                : editando.tipo === "punto"
+                  ? "Guardar el punto"
+                  : "Guardar el trazo"}
             </Boton>
 
-            <Boton
-              variante="fantasma"
-              anchoCompleto
-              disabled={guardando}
-              onClick={() => {
-                setEditando(null);
-                setMarcando(false);
-                foto.quitar();
-              }}
-            >
+            <Boton variante="fantasma" anchoCompleto disabled={guardando} onClick={cancelar}>
               Cancelar
             </Boton>
           </Tarjeta>
         ) : (
-          <Boton
-            anchoCompleto
-            paraNavegacion
-            variante={marcando ? "principal" : "principal"}
-            onClick={empezarUnoNuevo}
-          >
-            {marcando ? "Tocá el mapa para marcar el punto" : "Marcar un lugar"}
-          </Boton>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Boton anchoCompleto paraNavegacion variante="principal" onClick={empezarUnPunto}>
+              {marcando ? "Tocá el mapa para marcar el punto" : "Marcar un lugar"}
+            </Boton>
+            <Boton anchoCompleto paraNavegacion variante="secundario" onClick={empezarUnTrazo}>
+              Dibujar un trazo
+            </Boton>
+          </div>
         )}
 
         <div className="space-y-2">
           <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-            {puntosDibujados.length === 0
-              ? "Anotaciones"
-              : `Anotaciones (${puntosDibujados.length})`}
+            {anotaciones.length === 0 ? "Anotaciones" : `Anotaciones (${anotaciones.length})`}
           </h2>
 
-          {puntosDibujados.length === 0 ? (
+          {anotaciones.length === 0 ? (
             <Tarjeta>
               <p className="text-sm leading-6 text-texto-suave">
                 Este sector todavía no tiene anotaciones.
               </p>
             </Tarjeta>
           ) : (
-            puntosDibujados.map((anotacion) => (
+            anotaciones.map((anotacion) => (
               <Tarjeta key={anotacion.id} tono="alta" className="space-y-2">
                 <div className="flex items-start gap-3">
                   {anotacion.fotoUrl ? (
@@ -338,8 +576,19 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
                     />
                   ) : null}
                   <div className="min-w-0 flex-1">
-                    <p className="text-base font-semibold text-texto">
-                      {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]}
+                    <p className="flex items-center gap-2 text-base font-semibold text-texto">
+                      {anotacion.tipo === "trazo" ? (
+                        <>
+                          <span
+                            aria-hidden
+                            className="h-3 w-6 shrink-0 rounded-full"
+                            style={{ backgroundColor: anotacion.color ?? undefined }}
+                          />
+                          Trazo · {nombreDelColor(anotacion.color)}
+                        </>
+                      ) : (
+                        COMO_SE_LLAMA[anotacion.icono ?? "cruce"]
+                      )}
                     </p>
                     {anotacion.comentario ? (
                       <p className="mt-1 text-sm leading-6 text-texto-suave">
@@ -350,16 +599,10 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
                 </div>
 
                 <div className="flex gap-2">
-                  <Boton
-                    variante="secundario"
-                    onClick={() => abrirParaEditar(anotacion)}
-                  >
+                  <Boton variante="secundario" onClick={() => abrirParaEditar(anotacion)}>
                     Editar
                   </Boton>
-                  <Boton
-                    variante="destructivo"
-                    onClick={() => void alBorrar(anotacion)}
-                  >
+                  <Boton variante="destructivo" onClick={() => void alBorrar(anotacion)}>
                     Borrar
                   </Boton>
                 </div>
@@ -378,39 +621,12 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           grande
           encuadre={sector.rectangulo}
           rectangulos={[{ rectangulo: sector.rectangulo, clase: "sector" }]}
-          anotaciones={
-            editando && editando.id === null
-              ? [
-                  ...anotaciones,
-                  {
-                    id: -1,
-                    sectorId,
-                    perfilId: "",
-                    tipo: "punto" as const,
-                    icono: editando.icono,
-                    color: null,
-                    comentario: editando.comentario,
-                    fotoUrl: null,
-                    geometria: {
-                      type: "Point" as const,
-                      coordinates: [editando.lon, editando.lat],
-                    },
-                    creadoEn: "",
-                    actualizadoEn: "",
-                  },
-                ]
-              : anotaciones
-          }
+          anotaciones={enElMapa}
           marcandoPunto={marcando}
           alMarcarPunto={alMarcarPunto}
         />
-        <p className="text-sm leading-6 text-texto-suave">
-          {marcando
-            ? "Tocá el mapa donde está el lugar que querés marcar."
-            : "Cambiá a Foto para ver el terreno de verdad antes de marcar."}
-        </p>
+        <p className="text-sm leading-6 text-texto-suave">{queHacerEnElMapa}</p>
       </Tarjeta>
-
     </div>
   );
 }
