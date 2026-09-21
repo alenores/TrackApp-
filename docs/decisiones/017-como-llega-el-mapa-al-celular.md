@@ -85,5 +85,5 @@ Una zona entera son 3292 pedazos. **Por eso existen los sectores.**
 - **El satelital todavía no existe.** Cuando exista, entra por el mismo puente y
   aparece el selector entre los dos. No se dibuja hoy una opción que falla al
   tocarla.
-- **Las curvas de nivel** siguen pendientes (decisión 013). El mapa simple hoy
-  trae caminos, agua, relieve de superficie y nombres, pero no curvas.
+- **Las curvas de nivel** entraron el 2026-09-21 por el mismo puente, apuntando
+  a otro archivo: el del relieve. Ver decisión 013.

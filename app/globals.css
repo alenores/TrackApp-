@@ -70,6 +70,8 @@
   --mapa-sendero: #e8a765;
   /* Arroyos y ríos: referencia para ubicarse y para cargar agua. */
   --mapa-agua: #5fc3e4;
+  /* Las curvas de nivel: magenta, que no existe en el terreno (decisión 013). */
+  --mapa-curva: #f0abfc;
   /* El punto azul: dónde estoy. */
   --gps: #60a5fa;
   /* Los puntos y trazos dibujados sobre el territorio. */
@@ -123,6 +125,7 @@
   --mapa-linea: #1b4332;
   --mapa-sendero: #8a4b1a;
   --mapa-agua: #1d6f96;
+  --mapa-curva: #a21caf;
   --gps: #1d4ed8;
   --anotacion: #be185d;
 
@@ -174,6 +177,7 @@
   --color-mapa-linea: var(--mapa-linea);
   --color-mapa-sendero: var(--mapa-sendero);
   --color-mapa-agua: var(--mapa-agua);
+  --color-mapa-curva: var(--mapa-curva);
   --color-gps: var(--gps);
   --color-anotacion: var(--anotacion);
 

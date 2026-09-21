@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  ACERCAMIENTO_DEL_RELIEVE,
   ACERCAMIENTO_MAXIMO,
   ACERCAMIENTO_MINIMO,
+  type Tesela,
   claveDeTesela,
   columnaDeTesela,
   cuantasTeselas,
+  cuantasTeselasDelRelieve,
   filaDeTesela,
   ladoDeLaGrilla,
   teselaDeClave,
   teselasDelRectangulo,
+  teselasDelRelieve,
 } from "@/lib/mapas/teselas";
 import type { Rectangulo } from "@/types/database";
 
@@ -199,5 +203,36 @@ describe("el nombre de una tesela", () => {
     expect(teselaDeClave("14/hola/9702")).toBeNull();
     expect(teselaDeClave("14/-1/9702")).toBeNull();
     expect(teselaDeClave("")).toBeNull();
+  });
+});
+
+describe("el relieve", () => {
+  const sierra = { latNorte: -31.97, latSur: -32.01, lonOeste: -64.96, lonEste: -64.9 };
+
+  it("sus pedazos se nombran aparte y el nombre va y vuelve", () => {
+    const pedazo: Tesela = { z: 12, x: 1309, y: 2436, capa: "relieve" };
+    expect(claveDeTesela(pedazo)).toBe("relieve/12/1309/2436");
+    expect(teselaDeClave("relieve/12/1309/2436")).toEqual(pedazo);
+    expect(teselaDeClave("12/1309/2436")).toEqual({ z: 12, x: 1309, y: 2436 });
+  });
+
+  it("un nombre inventado no se toma por relieve", () => {
+    expect(teselaDeClave("sombra/12/1/2")).toBeNull();
+    expect(teselaDeClave("relieve/12/1")).toBeNull();
+  });
+
+  it("un sector de sierra son un puñado de pedazos, en un solo acercamiento", () => {
+    const pedazos = teselasDelRelieve(sierra);
+    expect(pedazos.length).toBe(cuantasTeselasDelRelieve(sierra));
+    expect(pedazos.length).toBeLessThanOrEqual(4);
+    expect(pedazos.every((pedazo) => pedazo.z === ACERCAMIENTO_DEL_RELIEVE)).toBe(true);
+    expect(pedazos.every((pedazo) => pedazo.capa === "relieve")).toBe(true);
+  });
+
+  it("no comparte nombre con ningún pedazo del dibujo", () => {
+    const delDibujo = new Set(teselasDelRectangulo(sierra).map(claveDeTesela));
+    for (const pedazo of teselasDelRelieve(sierra)) {
+      expect(delDibujo.has(claveDeTesela(pedazo))).toBe(false);
+    }
   });
 });

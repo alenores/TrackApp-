@@ -79,11 +79,35 @@ falta.
 
 ---
 
+## Cómo se construyó (2026-09-21)
+
+**Lo que baja no son las curvas: es el relieve.** Por cada sector baja, junto
+con el mapa, la altura del terreno como imagen —una por pedazo, en un solo
+acercamiento— y las curvas las calcula el celular en el momento de dibujar.
+Pesa mucho menos que bajar las líneas hechas, y el mismo dato sirve mañana para
+otras cosas.
+
+- **De dónde sale el relieve:** de Mapterhorn, que empaqueta el relieve de
+  Copernicus (treinta metros por punto, medido desde satélite) en un archivo
+  único del mismo tipo que el mapa de Protomaps. Verificado sobre el Champaquí:
+  da 2785 m donde el cartel dice 2790. La dirección es fija, no cambia por día.
+- **Entra por el mismo puente que el mapa** (`api/relieve`), pide sesión igual, y
+  se guarda en el mismo depósito con su propio nombre. Borrar un sector se lleva
+  su relieve, salvo el que comparta con un vecino.
+- **Se lee siempre de lo guardado**, con el mismo candado que el mapa. Donde no
+  hay relieve guardado no hay curvas, y eso no es un error.
+- **Medido:** un pedazo de relieve pesa 114 KB. Un sector de sierra de 6 × 6 km
+  son dos o cuatro pedazos, menos de medio mega; uno grande de 30 × 20 km, unos
+  16 pedazos, 1,8 MB. El aviso de peso antes de bajar ya lo cuenta.
+- **Cada cuánto:** cada 50 m mirando de lejos (acercamiento 12), cada 25 m de
+  ahí en adelante, con la gruesa y el número cada 100 m. De más lejos no se
+  dibujan.
+- **El sombreado del terreno se probó y se sacó:** no estaba en esta decisión y
+  complicaba el caso del borde del sector. Si algún día se quiere, es una capa
+  sobre el mismo relieve que ya baja.
+
 ## Pendiente de verificación
 
-- **Cuánto pesan realmente las curvas de un sector de sierra.** No se pudo medir:
-  la red del entorno de trabajo bloquea las fuentes de datos. Lo único afirmable
-  con certeza es el orden de magnitud: la imagen satelital siempre va a ser lo
-  pesado y las curvas van a ser ruido al lado.
-- **Los valores exactos** de opacidad del velo y de grosor de línea. Van con la
-  prueba al sol que ya está pendiente en `DISENO_EXTERIOR.md`.
+- **Los valores exactos** de opacidad del velo sobre la foto satelital y de
+  grosor de línea. Van con la prueba al sol que ya está pendiente en
+  `DISENO_EXTERIOR.md`. El satelital todavía no existe.

@@ -14,7 +14,16 @@ import type { Rectangulo } from "@/types/database";
  * byte, para que el usuario sepa en qué se está metiendo.
  */
 
-export type Tesela = { z: number; x: number; y: number };
+/**
+ * Un pedazo puede ser del dibujo del mapa o del relieve.
+ *
+ * El relieve —la altura del terreno, de donde salen las curvas de nivel— es un
+ * dato aparte del dibujo, pero **baja con el mismo sector y se cuenta igual**:
+ * un pedazo más, con su nombre, en el mismo depósito.
+ */
+export type Capa = "relieve";
+
+export type Tesela = { z: number; x: number; y: number; capa?: Capa };
 
 /**
  * Hasta dónde se puede acercar.
@@ -36,6 +45,16 @@ export const ACERCAMIENTO_MAXIMO = 15;
 export const ACERCAMIENTO_MINIMO = 0;
 
 /**
+ * El único acercamiento en que se baja el relieve.
+ *
+ * El dato de altura mide unos treinta metros por punto, y a este acercamiento
+ * cada punto del pedazo son unos dieciséis metros en la sierra: bajar más cerca
+ * no agrega detalle, solo peso. Para mirar de más lejos o de más cerca el mapa
+ * estira este nivel, que para la altura del terreno es exactamente lo mismo.
+ */
+export const ACERCAMIENTO_DEL_RELIEVE = 12;
+
+/**
  * El límite del mundo en la proyección del mapa.
  *
  * El mapa dibuja el mundo como un cuadrado, y para lograrlo estira los polos al
@@ -47,12 +66,14 @@ function acotar(valor: number, minimo: number, maximo: number): number {
   return Math.min(maximo, Math.max(minimo, valor));
 }
 
-export function claveDeTesela({ z, x, y }: Tesela): string {
-  return `${z}/${x}/${y}`;
+export function claveDeTesela({ z, x, y, capa }: Tesela): string {
+  const grilla = `${z}/${x}/${y}`;
+  return capa ? `${capa}/${grilla}` : grilla;
 }
 
 export function teselaDeClave(clave: string): Tesela | null {
   const partes = clave.split("/");
+  const capa = partes.length === 4 && partes[0] === "relieve" ? partes.shift() : undefined;
   if (partes.length !== 3) return null;
 
   const [z, x, y] = partes.map((parte) => Number(parte));
@@ -60,7 +81,7 @@ export function teselaDeClave(clave: string): Tesela | null {
     return null;
   }
 
-  return { z, x, y };
+  return capa ? { z, x, y, capa: capa as Capa } : { z, x, y };
 }
 
 /** Cuántas teselas de lado tiene la grilla de un acercamiento. */
@@ -137,5 +158,24 @@ export function teselasDelRectangulo(
     }
   }
 
+  return teselas;
+}
+
+/** Cuántos pedazos de relieve hacen falta para un rectángulo. */
+export function cuantasTeselasDelRelieve(rectangulo: Rectangulo): number {
+  const { desdeX, hastaX, desdeY, hastaY } = bordes(rectangulo, ACERCAMIENTO_DEL_RELIEVE);
+  return (hastaX - desdeX + 1) * (hastaY - desdeY + 1);
+}
+
+/** Los pedazos de relieve de un rectángulo: un solo acercamiento, ver arriba. */
+export function teselasDelRelieve(rectangulo: Rectangulo): Tesela[] {
+  const z = ACERCAMIENTO_DEL_RELIEVE;
+  const { desdeX, hastaX, desdeY, hastaY } = bordes(rectangulo, z);
+  const teselas: Tesela[] = [];
+  for (let x = desdeX; x <= hastaX; x += 1) {
+    for (let y = desdeY; y <= hastaY; y += 1) {
+      teselas.push({ z, x, y, capa: "relieve" });
+    }
+  }
   return teselas;
 }

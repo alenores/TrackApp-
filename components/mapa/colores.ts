@@ -27,6 +27,8 @@ export type ColoresDelMapa = {
   sendero: string;
   /** Arroyos y ríos. */
   agua: string;
+  /** Las curvas de nivel y sus números. */
+  curva: string;
 };
 
 /** Por si se pregunta antes de que el navegador tenga las variables listas. */
@@ -42,6 +44,7 @@ const DE_RESPALDO: ColoresDelMapa = {
   contorno: "#1e293b",
   sendero: "#e8a765",
   agua: "#5fc3e4",
+  curva: "#f0abfc",
 };
 
 function leer(nombre: string, deRespaldo: string): string {
@@ -67,5 +70,6 @@ export function coloresDelMapa(): ColoresDelMapa {
     contorno: leer("--superficie", DE_RESPALDO.contorno),
     sendero: leer("--mapa-sendero", DE_RESPALDO.sendero),
     agua: leer("--mapa-agua", DE_RESPALDO.agua),
+    curva: leer("--mapa-curva", DE_RESPALDO.curva),
   };
 }

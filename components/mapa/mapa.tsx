@@ -20,6 +20,15 @@ import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
+import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
+import {
+  ALTURAS,
+  capasDeRelieve,
+  CURVAS_FINAS,
+  CURVAS_GRUESAS,
+  FUENTE_DE_LAS_CURVAS,
+  fuenteDeLasCurvas,
+} from "@/components/mapa/capas-de-relieve";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import type { Anotacion, Rectangulo } from "@/types/database";
@@ -53,7 +62,11 @@ const VACIO: FeatureCollection = { type: "FeatureCollection", features: [] };
  * Las capas del fondo se insertan **antes** de esta, así el mapa queda abajo y
  * la ruta, el GPS y las anotaciones siempre encima.
  */
-const PRIMERA_CAPA_DE_LA_APP = "rectangulos-relleno";
+/**
+ * Las curvas de nivel van entre el fondo y lo de la app, cuando las hay. En el
+ * mapa en vivo no las hay: se leen solo de lo guardado, y ahí no hay nada.
+ */
+const CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA = [CURVAS_FINAS, "rectangulos-relleno"];
 
 /**
  * Pone el fondo del mapa **debajo** de todo lo de la app.
@@ -73,9 +86,7 @@ function ponerElFondo(
       if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
     }
 
-    const debajoDe = mapa.getLayer(PRIMERA_CAPA_DE_LA_APP)
-      ? PRIMERA_CAPA_DE_LA_APP
-      : undefined;
+    const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
     for (const capa of capasDelFondo(modo, tipo)) mapa.addLayer(capa, debajoDe);
 
@@ -343,6 +354,7 @@ export function Mapa({
     // enseñarle a leer los pedazos guardados en el celular.
     prepararElMotorDelMapa();
     registrarElMapaGuardado();
+    registrarElRelieveGuardado();
 
     const mapa = new maplibregl.Map({
       container: contenedorRef.current,
@@ -364,6 +376,13 @@ export function Mapa({
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
+
+      // Las curvas van primero: debajo de todo lo de la app, encima del fondo.
+      // Solo cuando el mapa lee lo guardado: en vivo no hay relieve.
+      if (!enVivoRef.current) {
+        mapa.addSource(FUENTE_DE_LAS_CURVAS, fuenteDeLasCurvas());
+        for (const capa of capasDeRelieve(colores)) mapa.addLayer(capa);
+      }
 
       mapa.addLayer({
         id: "rectangulos-relleno",
@@ -552,6 +571,14 @@ export function Mapa({
         "line-color",
         colores.rectanguloZona,
       );
+
+      if (mapa.getLayer(ALTURAS)) {
+        for (const capa of [CURVAS_FINAS, CURVAS_GRUESAS]) {
+          mapa.setPaintProperty(capa, "line-color", colores.curva);
+        }
+        mapa.setPaintProperty(ALTURAS, "text-color", colores.curva);
+        mapa.setPaintProperty(ALTURAS, "text-halo-color", colores.contorno);
+      }
     };
 
     cuandoEsteListo(pintar);

@@ -6,7 +6,9 @@ import type { Tesela } from "@/lib/mapas/teselas";
  *
  * **El celular no va al mapa del mundo, va a TrackApp.** El lugar donde vive ese
  * mapa le entrega pedazos a otro servidor pero no a un navegador, así que
- * TrackApp los busca y se los pasa. Ver `app/api/mapa`.
+ * TrackApp los busca y se los pasa. Ver `app/api/mapa`. El relieve, de donde
+ * salen las curvas de nivel, viene de otro archivo por el mismo tipo de puente:
+ * ver `app/api/relieve`.
  *
  * Esto solo se usa mientras el usuario está bajando un sector, en casa y con
  * señal. Después el mapa se lee de lo guardado en el teléfono y por acá no pasa
@@ -28,8 +30,9 @@ async function motivoDelServidor(respuesta: Response): Promise<string> {
 export function fuenteDelServidor(): FuenteDeTeselas {
   return {
     nombre: NOMBRE_DE_LA_FUENTE,
-    async pedirTesela({ z, x, y }: Tesela, senal: AbortSignal) {
-      const respuesta = await fetch(`/api/mapa/${z}/${x}/${y}`, { signal: senal });
+    async pedirTesela({ z, x, y, capa }: Tesela, senal: AbortSignal) {
+      const puente = capa === "relieve" ? "relieve" : "mapa";
+      const respuesta = await fetch(`/api/${puente}/${z}/${x}/${y}`, { signal: senal });
 
       // Sin contenido: ahí no hay nada dibujado. Es normal, no es una falla.
       if (respuesta.status === 204) return null;

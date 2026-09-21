@@ -6,12 +6,16 @@ import {
   borrarElMapaDelSector,
   borrarTodosLosMapasDelCelular,
   type FuenteDeTeselas,
+  PESO_APROXIMADO_DE_UN_PEDAZO,
+  PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE,
+  pesoAproximadoDelMapa,
 } from "@/lib/mapas/descarga";
 import { cualesEstanGuardadas, leerTesela } from "@/lib/mapas/deposito";
 import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
   teselasDelRectangulo,
+  teselasDelRelieve,
   type Tesela,
 } from "@/lib/mapas/teselas";
 import { mapaDelSector, sectoresConMapaBajado } from "@/lib/offline/mapas";
@@ -99,8 +103,12 @@ function servidorDeFotos(): void {
   }) as unknown as Response);
 }
 
+/** Todo lo que hace falta para un sector: el dibujo y el relieve. */
 function cuantosPedazos(unSector: Sector): number {
-  return teselasDelRectangulo(unSector.rectangulo).length;
+  return (
+    teselasDelRectangulo(unSector.rectangulo).length +
+    teselasDelRelieve(unSector.rectangulo).length
+  );
 }
 
 beforeEach(async () => {
@@ -285,10 +293,23 @@ describe("borrar el mapa de un sector", () => {
     expect(sectoresConMapaBajado().has(OTRO.id)).toBe(true);
 
     // Todos los pedazos del que queda siguen estando, incluidos los que
-    // compartía con el que se borró.
-    const delQueQueda = teselasDelRectangulo(OTRO.rectangulo).map(claveDeTesela);
+    // compartía con el que se borró, y su relieve también.
+    const delQueQueda = [
+      ...teselasDelRectangulo(OTRO.rectangulo),
+      ...teselasDelRelieve(OTRO.rectangulo),
+    ].map(claveDeTesela);
     const guardados = await cualesEstanGuardadas(delQueQueda);
     expect(guardados.size).toBe(delQueQueda.length);
+  });
+
+  it("borrar el único sector libera también su relieve", async () => {
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+    const relieve = teselasDelRelieve(UNO.rectangulo).map(claveDeTesela);
+    expect((await cualesEstanGuardadas(relieve)).size).toBe(relieve.length);
+
+    await borrarElMapaDelSector(UNO.id, [UNO]);
+
+    expect((await cualesEstanGuardadas(relieve)).size).toBe(0);
   });
 
   it("cerrar sesión no deja mapas de la cuenta anterior", async () => {
@@ -434,5 +455,14 @@ describe("las fotos de las anotaciones viajan con el mapa", () => {
     await borrarTodosLosMapasDelCelular();
 
     expect((await cualesFotosEstanGuardadas(["https://foto/a.webp"])).size).toBe(0);
+  });
+});
+
+describe("el peso que se avisa antes de bajar", () => {
+  it("cuenta el relieve, que pesa mucho más por pedazo pero son pocos", () => {
+    const soloDibujo = teselasDelRectangulo(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO;
+    const relieve = teselasDelRelieve(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE;
+    expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve);
+    expect(relieve).toBeGreaterThan(0);
   });
 });

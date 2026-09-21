@@ -16,7 +16,9 @@ import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
   cuantasTeselas,
+  cuantasTeselasDelRelieve,
   teselasDelRectangulo,
+  teselasDelRelieve,
   type Tesela,
 } from "@/lib/mapas/teselas";
 import {
@@ -57,10 +59,14 @@ import type { Anotacion, Sector } from "@/types/database";
  *    entraron se conservan —la próxima vez no se vuelven a bajar— pero el
  *    sector no queda anotado.
  *
- * Con el mapa bajan también **las fotos de las anotaciones de ese sector**, que
- * es lo único pesado que llevan. Esas van por otro camino: si una foto no
- * entra, el mapa se anota igual y se dice cuántas faltan. Trabar el mapa por
- * una foto sería cambiar un problema chico por uno grave.
+ * Con el mapa baja también **el relieve del sector**, de donde salen las
+ * curvas de nivel: son pedazos más de la misma cuenta, y sin ellos el sector
+ * no está completo. Un mapa de montaña sin desnivel no sirve (decisión 013).
+ *
+ * Y bajan también **las fotos de las anotaciones de ese sector**, que es lo
+ * único pesado que llevan. Esas van por otro camino: si una foto no entra, el
+ * mapa se anota igual y se dice cuántas faltan. Trabar el mapa por una foto
+ * sería cambiar un problema chico por uno grave.
  */
 
 export type FuenteDeTeselas = {
@@ -147,7 +153,10 @@ export async function bajarElMapaDelSector({
   avisarAvance,
   senal = new AbortController().signal,
 }: PedidoDeDescarga): Promise<ResultadoDeDescarga> {
-  const teselas = teselasDelRectangulo(sector.rectangulo, acercamientoMaximo);
+  const teselas = [
+    ...teselasDelRectangulo(sector.rectangulo, acercamientoMaximo),
+    ...teselasDelRelieve(sector.rectangulo),
+  ];
   const claves = teselas.map(claveDeTesela);
   const total = teselas.length;
 
@@ -321,6 +330,9 @@ function clavesQueSiguenHaciendoFalta(sectores: Sector[]): Set<string> {
     )) {
       claves.add(claveDeTesela(tesela));
     }
+    for (const tesela of teselasDelRelieve(sector.rectangulo)) {
+      claves.add(claveDeTesela(tesela));
+    }
   }
 
   return claves;
@@ -405,11 +417,22 @@ export async function borrarTodosLosMapasDelCelular(): Promise<void> {
  */
 export const PESO_APROXIMADO_DE_UN_PEDAZO = 12 * 1024;
 
+/**
+ * Un pedazo de relieve pesa mucho más que uno de dibujo: es una imagen de
+ * 512 × 512 puntos con la altura de cada uno. Medido sobre el Champaquí el
+ * 2026-09-21: 114 KB. A cambio son pocos, porque se bajan en un solo
+ * acercamiento.
+ */
+export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE = 112 * 1024;
+
 export function pesoAproximadoDelMapa(
   rectangulo: Sector["rectangulo"],
   acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
 ): number {
-  return cuantasTeselas(rectangulo, acercamientoMaximo) * PESO_APROXIMADO_DE_UN_PEDAZO;
+  return (
+    cuantasTeselas(rectangulo, acercamientoMaximo) * PESO_APROXIMADO_DE_UN_PEDAZO +
+    cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE
+  );
 }
 
 /**
