@@ -66,6 +66,10 @@
 
   --mapa-fondo: #16202f;
   --mapa-linea: #52b788;
+  /* El sendero a pie: no es un camino de auto y no se dibuja igual. */
+  --mapa-sendero: #e8a765;
+  /* Arroyos y ríos: referencia para ubicarse y para cargar agua. */
+  --mapa-agua: #5fc3e4;
   /* El punto azul: dónde estoy. */
   --gps: #60a5fa;
   /* Los puntos y trazos dibujados sobre el territorio. */
@@ -117,6 +121,8 @@
 
   --mapa-fondo: #e8eef4;
   --mapa-linea: #1b4332;
+  --mapa-sendero: #8a4b1a;
+  --mapa-agua: #1d6f96;
   --gps: #1d4ed8;
   --anotacion: #be185d;
 
@@ -166,6 +172,8 @@
 
   --color-mapa-fondo: var(--mapa-fondo);
   --color-mapa-linea: var(--mapa-linea);
+  --color-mapa-sendero: var(--mapa-sendero);
+  --color-mapa-agua: var(--mapa-agua);
   --color-gps: var(--gps);
   --color-anotacion: var(--anotacion);
 

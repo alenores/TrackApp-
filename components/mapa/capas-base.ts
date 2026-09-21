@@ -1,5 +1,7 @@
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
+import { ajustarParaLaMontana } from "@/components/mapa/ajustes-de-montana";
+import { coloresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LAS_TESELAS } from "@/lib/mapas/protocolo";
 import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
 import type { Modo } from "@/lib/modo";
@@ -136,17 +138,20 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
  *
  * **Sin la capa de fondo liso** que trae el juego original: ese color taparía
  * el del recuadro y quedaría fijo en los dos modos. La tierra, el agua, los
- * caminos y los nombres sí vienen todos.
+ * caminos y los nombres sí vienen todos, **corregidos para la sierra**: el
+ * juego original es de ciudad y esconde senderos y arroyos.
  */
 export function capasDelFondo(
   modo: Modo,
   tipo: TipoDeFondo = "dibujo",
 ): LayerSpecification[] {
-  const dibujo = layers(
+  const dibujo = ajustarParaLaMontana(
+    layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
+      lang: "es",
+    }).filter((capa) => capa.type !== "background"),
     FUENTE_DEL_FONDO,
-    namedFlavor(modo === "sol" ? "light" : "dark"),
-    { lang: "es" },
-  ).filter((capa) => capa.type !== "background");
+    coloresDelMapa(),
+  );
 
   if (tipo === "dibujo") return dibujo;
 

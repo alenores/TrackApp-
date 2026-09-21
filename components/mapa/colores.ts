@@ -23,6 +23,10 @@ export type ColoresDelMapa = {
   rectanguloSinBajar: string;
   /** El borde de los puntos, para que se despeguen de lo que tengan debajo. */
   contorno: string;
+  /** El sendero a pie, distinto del camino de auto. */
+  sendero: string;
+  /** Arroyos y ríos. */
+  agua: string;
 };
 
 /** Por si se pregunta antes de que el navegador tenga las variables listas. */
@@ -36,6 +40,8 @@ const DE_RESPALDO: ColoresDelMapa = {
   rectanguloBajado: "#059669",
   rectanguloSinBajar: "#b45309",
   contorno: "#1e293b",
+  sendero: "#e8a765",
+  agua: "#5fc3e4",
 };
 
 function leer(nombre: string, deRespaldo: string): string {
@@ -59,5 +65,7 @@ export function coloresDelMapa(): ColoresDelMapa {
     rectanguloBajado: leer("--verde-borde", DE_RESPALDO.rectanguloBajado),
     rectanguloSinBajar: leer("--ambar-borde", DE_RESPALDO.rectanguloSinBajar),
     contorno: leer("--superficie", DE_RESPALDO.contorno),
+    sendero: leer("--mapa-sendero", DE_RESPALDO.sendero),
+    agua: leer("--mapa-agua", DE_RESPALDO.agua),
   };
 }
