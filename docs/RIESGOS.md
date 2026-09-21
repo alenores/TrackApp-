@@ -441,11 +441,10 @@ Verificado buscando en los dos repositorios: cero apariciones.
 automáticas cubren los cuatro finales posibles, incluido el navegador que no
 sabe de esto y el que tira al preguntar.
 
-**Lo que no se pudo comprobar desde acá.** Pedirlo no garantiza que lo
-concedan: decide el navegador solo, por señales del aparato. En el navegador de
-pruebas, con un perfil recién creado, responde que no —es lo esperado— así que
-el camino del «sí» solo se puede ver en un teléfono de verdad con la app
-instalada.
+**El pedido puede salir que no, y está bien.** Lo decide el navegador solo, por
+señales del aparato; con la app instalada y usada seguido, dice que sí. Que
+diga que no no se le avisa al usuario: no es una falla, es una probabilidad, y
+no hay nada que él pueda hacer al respecto. Tema cerrado.
 
 **Lo que queda por decidir.** Si el navegador dice que no, hoy el usuario no se
 entera. Es información que le corresponde tener: falta definir dónde decirlo sin
