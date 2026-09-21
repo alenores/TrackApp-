@@ -54,7 +54,8 @@ export type IconoPunto =
   | "iglesia"
   | "cruce"
   | "mirador"
-  | "cascada";
+  | "cascada"
+  | "tranquera";
 
 export const ICONOS_PUNTO: IconoPunto[] = [
   "refugio",
@@ -68,6 +69,7 @@ export const ICONOS_PUNTO: IconoPunto[] = [
   "cruce",
   "mirador",
   "cascada",
+  "tranquera",
 ];
 
 // ---------------------------------------------------------------- geometría

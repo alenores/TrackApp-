@@ -62,6 +62,22 @@ Además de dibujarse en la app, **las anotaciones pueden importarse por la misma
 puerta que las rutas.** Si Ale ya marcó puntos o líneas en Google Earth, los
 exporta y los sube igual que una ruta: es el mismo formato de archivo.
 
+**Hecho el 2026-09-21**, con dos orígenes desde la pantalla de anotaciones del
+sector:
+
+- **Google Earth** (`.kml` o `.kmz`): cada marcador es un punto, cada línea un
+  trazo. El ícono se adivina por el nombre («Refugio…» → refugio, «Cerro…» →
+  cumbre); el color del trazo se toma del que traiga la línea, al más parecido
+  de los cuatro.
+- **OpenStreetMap**: las tranqueras y los alambrados del rectángulo del sector,
+  que el mapa de fondo no trae porque Protomaps los descarta. Tranquera es un
+  ícono de punto nuevo; alambrado, un trazo color «Límite».
+
+Siempre con **vista previa antes de guardar**: se dice cuántas entran, cuántas
+caen fuera del sector (no entran: una anotación pertenece a un sector) y
+cuántas ya estaban (no se repiten). Lo que se agrega se edita o se borra
+después como cualquier anotación.
+
 ## Las anotaciones son siempre para usar sin conexión
 
 **Decidido por Ale, 2026-09-18. No es opcional ni configurable.**

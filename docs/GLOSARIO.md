@@ -71,6 +71,15 @@ elegible. Sirve para marcar lo que el mapa no muestra: un río, una huella, un
 alambrado. Se dibuja de a toques, un punto por toque. No confundir con el
 **sendero**, que es el camino a pie que ya trae el fondo del mapa.
 
+**Traer de afuera**
+Sumar anotaciones a un sector desde otro lado, en vez de dibujarlas: desde un
+archivo de Google Earth, o las tranqueras y alambrados de OpenStreetMap. Con
+vista previa antes de guardar. Ver decisión 010.
+
+**Tranquera**
+Ícono de punto para el portón de un alambrado: marca por dónde se pasa. Las
+trae OpenStreetMap, que las tiene; el mapa de fondo no.
+
 **Cobertura**
 La relación entre una ruta y los sectores que la cruzan. Un tramo puede estar
 cubierto y descargado, cubierto sin descargar, o sin cobertura.

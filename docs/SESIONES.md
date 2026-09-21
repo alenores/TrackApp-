@@ -71,10 +71,20 @@ de la anterior y el calentador las rehace (R27). Y lo que Ale veía como «se
 refresca» al deslizar era la barra de «yendo a otra pantalla», que se prendía
 al apoyar el dedo sobre una tarjeta; ahora se prende al tocar el link (R28).
 
+**Traer de afuera.** Ale pidió las dos cosas que habían quedado pendientes, y
+resultaron ser una sola: sumar anotaciones a un sector desde otro lado. Desde
+un archivo de Google Earth (marcadores → puntos con el ícono adivinado por el
+nombre; líneas → trazos con el color más parecido), y desde OpenStreetMap
+(tranqueras → puntos con ícono nuevo; alambrados → trazos «Límite»), por un
+puente propio a Overpass con sesión. Siempre con vista previa: qué entra, qué
+cae fuera del sector, qué ya estaba. Probado en la app: Los Gigantes tiene una
+tranquera en OpenStreetMap y ningún alambrado.
+
 ### Decisiones tomadas
 
 - No se arman teselas propias desde OpenStreetMap: el dato ya está en Protomaps.
-  Queda afuera lo único que Protomaps no trae: tranqueras y alambrados.
+  Lo único que Protomaps no trae —tranqueras y alambrados— entra como
+  anotaciones, pedidas a OpenStreetMap por sector.
 - Los colores de trazo son cuatro, con nombre, y se guardan como color fijo:
   son un dato del usuario, no una pieza de la interfaz.
 - Las curvas se calculan en el celular desde el relieve; no se bajan hechas.
@@ -86,12 +96,11 @@ al apoyar el dedo sobre una tarjeta; ahora se prende al tocar el link (R28).
 `decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
 pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25 a R28),
 `AGENTS.md` (regla de la versión nueva; sin tirar para recargar),
-`DISENO_EXTERIOR.md` (sin tirar para recargar), este registro.
+`DISENO_EXTERIOR.md` (sin tirar para recargar), `decisiones/010` (traer de
+afuera, hecho), `SCHEMA.md` (ícono tranquera), este registro.
 
 ### Deuda o inconsistencias detectadas
 
-- **Tranqueras y alambrados** no se muestran: Protomaps no los incluye. Son 20
-  en todo el Champaquí. Si se quieren, hay que traerlos aparte de OpenStreetMap.
 - **La altura de las cumbres** no viene en la tesela de Protomaps: el mapa dice
   «Cerro Champaquí» pero no «2790 m». El número lo dan las curvas.
 - **La foto satelital** sigue sin existir; las curvas sobre la foto (velo, botón
@@ -104,8 +113,8 @@ pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25 a R28
 
 - Que Ale mire las curvas en el celular, al sol, y ajuste grosor y color si
   hace falta (perillas en `lib/mapas/relieve.ts` y las variables de color).
-- Importar trazos y puntos desde Google Earth por la misma puerta que las rutas
-  (decisión 010 lo contempla; no está hecho).
+- Volver a tocar «Tranqueras y alambrados» en Los Gigantes: la tranquera se
+  borró por error en las pruebas y OpenStreetMap frenó los pedidos seguidos.
 
 ---
 

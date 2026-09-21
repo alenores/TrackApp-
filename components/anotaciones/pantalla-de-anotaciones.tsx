@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   borrarAnotacion,
   crearAnotacion,
+  crearAnotacionesEnTanda,
   editarAnotacion,
 } from "@/app/actions/territorio";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
@@ -18,6 +19,17 @@ import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import {
+  FORMATOS_DE_GOOGLE_EARTH,
+  leerArchivoDeGoogleEarth,
+} from "@/lib/anotaciones/archivo-de-google-earth";
+import {
+  anotacionesDeGoogleEarth,
+  anotacionesDeOsm,
+  type Importacion,
+  resumenDeImportacion,
+  type RespuestaDeOsm,
+} from "@/lib/anotaciones/importar";
 import {
   claveDelColor,
   COLOR_DE_TRAZO_POR_DEFECTO,
@@ -41,6 +53,10 @@ import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database"
  * último toque. Se arma en la computadora, con conexión, mirando el terreno de
  * verdad. Lo marcado viaja después con el paquete y se mira en el cerro sin
  * señal.
+ *
+ * **También se traen de afuera**: de un archivo de Google Earth, o las
+ * tranqueras y alambrados de OpenStreetMap. Siempre con vista previa antes de
+ * guardar: se dice qué entra, qué queda afuera del sector y qué ya estaba.
  */
 
 type Props = {
@@ -69,6 +85,11 @@ type TrazoEnEdicion = {
 
 type EnEdicion = PuntoEnEdicion | TrazoEnEdicion;
 
+type Trayendo = {
+  deDonde: "Google Earth" | "OpenStreetMap";
+  importacion: Importacion;
+};
+
 /** Con menos que esto no hay línea: lo exige también la base. */
 const PUNTOS_MINIMOS_DE_UN_TRAZO = 2;
 
@@ -83,6 +104,11 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quitarLaFoto, setQuitarLaFoto] = useState(false);
+
+  const [trayendo, setTrayendo] = useState<Trayendo | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const [errorAlTraer, setErrorAlTraer] = useState<string | null>(null);
+  const entradaDeGoogleEarth = useRef<HTMLInputElement>(null);
 
   const sector = paquete?.sectores.find((cada) => cada.id === sectorId) ?? null;
   const anotaciones = (paquete?.anotaciones ?? []).filter(
@@ -275,6 +301,64 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     foto.quitar();
   };
 
+  const alElegirArchivoDeGoogleEarth = async (archivo: File | null) => {
+    if (!archivo) return;
+    setErrorAlTraer(null);
+    setBuscando(true);
+    const lectura = await leerArchivoDeGoogleEarth(archivo);
+    setBuscando(false);
+    if (entradaDeGoogleEarth.current) entradaDeGoogleEarth.current.value = "";
+    if (!lectura.ok) {
+      setErrorAlTraer(lectura.error);
+      return;
+    }
+    setTrayendo({
+      deDonde: "Google Earth",
+      importacion: anotacionesDeGoogleEarth(lectura.figuras, sector.rectangulo, anotaciones),
+    });
+  };
+
+  const traerDeOpenStreetMap = async () => {
+    setErrorAlTraer(null);
+    setBuscando(true);
+    const { latNorte, latSur, lonEste, lonOeste } = sector.rectangulo;
+    const direccion = `/api/osm/barreras?norte=${latNorte}&sur=${latSur}&este=${lonEste}&oeste=${lonOeste}`;
+    try {
+      const respuesta = await fetch(direccion);
+      const cuerpo = (await respuesta.json()) as RespuestaDeOsm & { error?: string };
+      if (!respuesta.ok) {
+        setErrorAlTraer(cuerpo.error ?? `OpenStreetMap contestó ${respuesta.status}.`);
+        return;
+      }
+      setTrayendo({
+        deDonde: "OpenStreetMap",
+        importacion: anotacionesDeOsm(cuerpo, sector.rectangulo, anotaciones),
+      });
+    } catch (error) {
+      setErrorAlTraer(
+        `No se pudo preguntar a OpenStreetMap: ${
+          error instanceof Error && error.message ? error.message : "sin conexión"
+        }`,
+      );
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  const agregarLoTraido = async () => {
+    if (!trayendo) return;
+    setGuardando(true);
+    setErrorAlTraer(null);
+    const resultado = await crearAnotacionesEnTanda(sectorId, trayendo.importacion.dentro);
+    setGuardando(false);
+    if (!resultado.ok) {
+      setErrorAlTraer(resultado.error);
+      return;
+    }
+    setTrayendo(null);
+    router.refresh();
+  };
+
   const trazoEnCurso = editando?.tipo === "trazo" ? editando : null;
   const faltanPuntos =
     trazoEnCurso !== null && trazoEnCurso.puntos.length < PUNTOS_MINIMOS_DE_UN_TRAZO;
@@ -329,6 +413,22 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   };
 
   const enElMapa = (() => {
+    if (trayendo) {
+      // Lo que se va a agregar, dibujado antes de guardarlo. Los números
+      // negativos son de mentira: no existen en la base todavía.
+      return [
+        ...anotaciones,
+        ...trayendo.importacion.dentro.map((cada, indice) => ({
+          ...cada,
+          id: -(indice + 1),
+          sectorId,
+          perfilId: "",
+          fotoUrl: null,
+          creadoEn: "",
+          actualizadoEn: "",
+        })),
+      ];
+    }
     const previa = vistaPrevia();
     if (!previa) return anotaciones;
     // Si se está redibujando un trazo guardado, se muestra el nuevo en su lugar.
@@ -541,15 +641,108 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
               Cancelar
             </Boton>
           </Tarjeta>
+        ) : trayendo ? (
+          <Tarjeta className="space-y-3">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+              Desde {trayendo.deDonde}
+            </h2>
+            <p className="text-base leading-6 text-texto">
+              {resumenDeImportacion(trayendo.importacion)}
+            </p>
+            <p className="text-sm leading-6 text-texto-suave">
+              Ya están dibujadas en el mapa para que las mires. Después de agregarlas
+              se pueden editar o borrar una por una, como cualquier anotación.
+            </p>
+            {errorAlTraer ? (
+              <p
+                role="alert"
+                className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto"
+              >
+                {errorAlTraer}
+              </p>
+            ) : null}
+            <Boton
+              anchoCompleto
+              paraNavegacion
+              disabled={guardando || trayendo.importacion.dentro.length === 0}
+              onClick={() => void agregarLoTraido()}
+            >
+              {guardando
+                ? "Agregando…"
+                : trayendo.importacion.dentro.length === 1
+                  ? "Agregar la anotación"
+                  : "Agregar las anotaciones"}
+            </Boton>
+            <Boton
+              variante="fantasma"
+              anchoCompleto
+              disabled={guardando}
+              onClick={() => {
+                setTrayendo(null);
+                setErrorAlTraer(null);
+              }}
+            >
+              Cancelar
+            </Boton>
+          </Tarjeta>
         ) : (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <Boton anchoCompleto paraNavegacion variante="principal" onClick={empezarUnPunto}>
-              {marcando ? "Tocá el mapa para marcar el punto" : "Marcar un lugar"}
-            </Boton>
-            <Boton anchoCompleto paraNavegacion variante="secundario" onClick={empezarUnTrazo}>
-              Dibujar un trazo
-            </Boton>
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Boton anchoCompleto paraNavegacion variante="principal" onClick={empezarUnPunto}>
+                {marcando ? "Tocá el mapa para marcar el punto" : "Marcar un lugar"}
+              </Boton>
+              <Boton anchoCompleto paraNavegacion variante="secundario" onClick={empezarUnTrazo}>
+                Dibujar un trazo
+              </Boton>
+            </div>
+
+            <Tarjeta className="space-y-2">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+                Traer de afuera
+              </h2>
+              <p className="text-sm leading-6 text-texto-suave">
+                Lo que hayas marcado en Google Earth, o las tranqueras y alambrados
+                que OpenStreetMap tenga en este sector. Antes de guardar se ve qué
+                entra.
+              </p>
+              <input
+                ref={entradaDeGoogleEarth}
+                id="archivo-de-google-earth"
+                type="file"
+                accept={FORMATOS_DE_GOOGLE_EARTH}
+                className="sr-only"
+                onChange={(evento) => {
+                  void alElegirArchivoDeGoogleEarth(evento.target.files?.[0] ?? null);
+                }}
+              />
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Boton
+                  anchoCompleto
+                  variante="secundario"
+                  disabled={buscando}
+                  onClick={() => entradaDeGoogleEarth.current?.click()}
+                >
+                  {buscando ? "Leyendo…" : "Desde Google Earth"}
+                </Boton>
+                <Boton
+                  anchoCompleto
+                  variante="secundario"
+                  disabled={buscando}
+                  onClick={() => void traerDeOpenStreetMap()}
+                >
+                  {buscando ? "Preguntando…" : "Tranqueras y alambrados"}
+                </Boton>
+              </div>
+              {errorAlTraer ? (
+                <p
+                  role="alert"
+                  className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto"
+                >
+                  {errorAlTraer}
+                </p>
+              ) : null}
+            </Tarjeta>
+          </>
         )}
 
         <div className="space-y-2">

@@ -370,6 +370,54 @@ export async function crearAnotacion(
   return exito({ anotacionId });
 }
 
+/**
+ * Crea varias anotaciones de una, sin foto: las que vienen de afuera.
+ *
+ * **Todas o ninguna.** Si una no pasa la revisión, no se guarda ninguna y se
+ * dice cuál: lo que se trae de un archivo o de OpenStreetMap se mira entero
+ * antes, así que una mala es señal de que algo salió mal, no de que hay que
+ * guardar el resto.
+ */
+export async function crearAnotacionesEnTanda(
+  sectorId: number,
+  lista: Array<Omit<DatosDeAnotacion, "sectorId" | "foto" | "quitarLaFoto">>,
+): Promise<Resultado<{ creadas: number }>> {
+  const usuario = await exigirSesion();
+  if (!usuario) return falla(SIN_SESION);
+
+  if (lista.length === 0) return exito({ creadas: 0 });
+
+  for (const [indice, datos] of lista.entries()) {
+    const problema = revisarAnotacion({ ...datos, sectorId });
+    if (problema) return falla(`La anotación ${indice + 1} no se puede guardar: ${problema}`);
+  }
+
+  const supabase = await crearClienteEnElServidor();
+  const { data, error } = await supabase
+    .from("anotaciones")
+    .insert(
+      lista.map((datos) => ({
+        sector_id: sectorId,
+        perfil_id: usuario.id,
+        tipo: datos.tipo,
+        icono: datos.tipo === "punto" ? datos.icono : null,
+        color: datos.tipo === "trazo" ? datos.color : null,
+        comentario: limpiar(datos.comentario),
+        geometria: datos.geometria,
+      })),
+    )
+    .select("id");
+
+  if (error || !data) {
+    return falla(
+      traducirErrorDeBase(error?.message ?? "No se pudieron guardar las anotaciones."),
+    );
+  }
+
+  revalidatePath(`/zonas`);
+  return exito({ creadas: data.length });
+}
+
 export async function editarAnotacion(
   anotacionId: number,
   datos: DatosDeAnotacion,

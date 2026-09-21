@@ -20,4 +20,5 @@ export const COMO_SE_LLAMA: Record<IconoPunto, string> = {
   cruce: "Cruce",
   mirador: "Mirador",
   cascada: "Cascada",
+  tranquera: "Tranquera",
 };
