@@ -8,6 +8,7 @@ import {
 } from "@/lib/offline/paquete";
 import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
 import { calentarLasPantallas } from "@/lib/offline/calentar";
+import { pedirQueNoLoBorren } from "@/lib/offline/permanente";
 
 /**
  * Los datos de la app en el celular.
@@ -53,6 +54,10 @@ export function useDatosDeLaApp(): DatosDeLaApp {
   useEffect(() => {
     let vigente = true;
     const cancelador = new AbortController();
+
+    // Antes que nada: que el navegador no borre lo guardado cuando el teléfono
+    // se llene. No espera a nadie y no cambia nada de lo que sigue.
+    void pedirQueNoLoBorren();
 
     void (async () => {
       const resultado = await sincronizarPaquete();

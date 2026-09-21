@@ -73,6 +73,11 @@ copiar el método, incluido el detalle medido allá de no marcar el pedido inter
 como precarga: con esa marca el servidor contesta un resumen que no alcanza para
 dibujar la pantalla.
 
+**Y se le pide al navegador que no borre lo guardado.** Un navegador que se
+queda sin espacio borra todo lo de un sitio de una vez, sin avisar: los datos,
+los mapas, las fotos y las pantallas. Ninguna de las dos apps lo pedía. Ahora sí,
+las dos.
+
 ### Decisiones tomadas
 
 - `019` — La foto de la anotación viaja con el mapa del sector, no con el

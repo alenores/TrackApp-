@@ -426,6 +426,36 @@ que destapar solo, sí o sí.**
 
 ---
 
+## ✅ R23 — El navegador podía borrar todo lo guardado, sin avisar
+
+**Qué pasaba.** Una app web no es dueña del espacio que usa: el navegador se lo
+presta. Cuando el teléfono se queda sin lugar, hace lugar borrando lo guardado
+de los sitios web, sin preguntar. Y lo borra **entero**: los datos de rutas y
+zonas, los mapas bajados, las fotos y hasta las pantallas guardadas. Después de
+eso la app ni siquiera abre sin señal.
+
+Hay una forma de pedirle que no lo haga, y **ninguna de las dos apps la usaba**.
+Verificado buscando en los dos repositorios: cero apariciones.
+
+**Cómo quedó (2026-09-21).** Las dos apps lo piden al arrancar. Cinco pruebas
+automáticas cubren los cuatro finales posibles, incluido el navegador que no
+sabe de esto y el que tira al preguntar.
+
+**Lo que no se pudo comprobar desde acá.** Pedirlo no garantiza que lo
+concedan: decide el navegador solo, por señales del aparato. En el navegador de
+pruebas, con un perfil recién creado, responde que no —es lo esperado— así que
+el camino del «sí» solo se puede ver en un teléfono de verdad con la app
+instalada.
+
+**Lo que queda por decidir.** Si el navegador dice que no, hoy el usuario no se
+entera. Es información que le corresponde tener: falta definir dónde decirlo sin
+convertirlo en ruido.
+
+**Detectado:** 2026-09-21, hablando de cuánto pesa un mapa.
+**Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

@@ -188,6 +188,21 @@ existe en el cerro.
 - **Las de crear y editar no se calientan.** Escriben en la base: guardarlas
   sería guardar un formulario que al tocarlo falla.
 
+### El navegador presta el espacio, no lo regala
+
+Cuando el teléfono se queda sin lugar, el navegador hace lugar **borrando lo
+guardado de los sitios web**, sin preguntar y sin avisar. Y borra **todo lo de
+la app de una vez**: los datos, los mapas, las fotos y las pantallas guardadas.
+Después de eso la app ni siquiera abre sin señal.
+
+- **La app le pide al navegador que lo marque como permanente**, apenas
+  arranca. Pedirlo no garantiza que lo concedan —decide el navegador solo— pero
+  con la app instalada en la pantalla de inicio normalmente dice que sí.
+- **Nada de lo que se guarda vive en un solo lugar.** Los datos livianos van al
+  guardado simple, lo pesado al depósito grande y las pantallas a lo del motor
+  offline. El borrado del navegador se los lleva a los tres juntos: no existe
+  «perdí las fotos pero me quedaron los mapas».
+
 ### El resto
 
 - **La pantalla de navegar lee de lo guardado en el celular, nunca de internet.**
