@@ -4,6 +4,84 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-21 — El mapa de montaña: lo que ya traía, lo que faltaba dibujar y las curvas
+
+### Estado al inicio
+
+El mapa se veía vacío en la sierra: ni senderos, ni arroyos, ni cumbres, ni
+refugios. Se pensó que Protomaps no traía esos datos y se planteó armar teselas
+propias desde OpenStreetMap. Las curvas de nivel estaban decididas (013) pero
+no construidas: la red de la sesión anterior no dejaba llegar a ninguna fuente
+de relieve. Las anotaciones solo se podían marcar como punto.
+
+### Lo que se hizo
+
+**Primero se midió, no se supuso.** Se contó qué tiene OpenStreetMap en el
+recuadro del Champaquí (254 senderos, 557 cursos de agua, 18 cumbres, 17
+refugios, 20 tranqueras) y después se abrió la tesela real de Protomaps sobre
+la misma zona: **casi todo eso ya estaba en el archivo que la app baja.** Lo
+escondía el dibujo, pensado para ciudad: un sendero en gris casi blanco de
+medio píxel, un arroyo recién al acercarse mucho, y refugios, campings,
+miradores, cuevas y manantiales sin dibujar porque la lista de puntos no los
+incluía y la hoja de íconos no los tenía. Armar teselas propias habría sumado
+solo las tranqueras y alambrados, que Protomaps descarta. Se descartó.
+
+**El fondo, corregido para la sierra.** Senderos a rayas y en color de tierra,
+aparte de los caminos de auto; arroyos visibles y desde más lejos; nombres de
+senderos. Cinco íconos propios —refugio, carpa, mirador, cueva, manantial—
+dibujados con la paleta de Protomaps y sumados a su hoja en cada compilación,
+sin tocar la original. Los puntos de montaña entran en la lista, con letra un
+poco más grande.
+
+**Los trazos.** La pantalla de anotaciones ya permite dibujar una línea de a
+toques, deshacer el último, elegir color de cuatro con nombre, y editar o
+borrar. La base y el mapa ya los aceptaban.
+
+**Las curvas de nivel.** Lo que baja con el sector es el relieve —la altura
+del terreno como imagen, de Mapterhorn/Copernicus— y las curvas las calcula
+el celular, leyendo siempre de lo guardado. Un sector de sierra de 6 × 6 km
+suma menos de medio mega. Verificado en la app real, sin señal, en los dos
+modos.
+
+**Una prueba que no corría en Windows** se arregló: buscaba fin de línea de
+Unix en un archivo que Git escribe con el de Windows.
+
+### Decisiones tomadas
+
+- No se arman teselas propias desde OpenStreetMap: el dato ya está en Protomaps.
+  Queda afuera lo único que Protomaps no trae: tranqueras y alambrados.
+- Los colores de trazo son cuatro, con nombre, y se guardan como color fijo:
+  son un dato del usuario, no una pieza de la interfaz.
+- Las curvas se calculan en el celular desde el relieve; no se bajan hechas.
+- El sombreado del terreno se probó y se sacó: no estaba decidido y complicaba
+  el borde del sector.
+
+### Documentos actualizados
+
+`decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
+pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), este registro.
+
+### Deuda o inconsistencias detectadas
+
+- **Tranqueras y alambrados** no se muestran: Protomaps no los incluye. Son 20
+  en todo el Champaquí. Si se quieren, hay que traerlos aparte de OpenStreetMap.
+- **La altura de las cumbres** no viene en la tesela de Protomaps: el mapa dice
+  «Cerro Champaquí» pero no «2790 m». El número lo dan las curvas.
+- **La foto satelital** sigue sin existir; las curvas sobre la foto (velo, botón
+  de prender y apagar) quedan para cuando exista.
+- Se creó un sector de prueba, «Los Gigantes - Refugio Nores», en la zona
+  Copina - Los Gigantes, para poder navegar la única ruta que hay. Ale decide
+  si queda o se borra.
+
+### Pendientes para la próxima
+
+- Que Ale mire las curvas en el celular, al sol, y ajuste grosor y color si
+  hace falta (perillas en `lib/mapas/relieve.ts` y las variables de color).
+- Importar trazos y puntos desde Google Earth por la misma puerta que las rutas
+  (decisión 010 lo contempla; no está hecho).
+
+---
+
 ## Sesión 2026-09-21 — Si el navegador borra los mapas, ahora te enterás
 
 ### Estado al inicio

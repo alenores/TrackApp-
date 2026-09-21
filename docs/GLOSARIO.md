@@ -24,6 +24,13 @@ nivel, que se prenden y apagan.
 Las líneas que marcan el desnivel. No son parte de la imagen del mapa: son un
 dato aparte que se descarga una vez por sector y se dibuja sobre cualquiera de
 los dos mapas. Siempre visibles en el simple, opcionales sobre el satelital.
+No bajan hechas: el celular las calcula a partir del **relieve**.
+
+**Relieve**
+La altura del terreno, punto por punto, guardada como imagen. Baja con el mapa
+de cada sector, en un solo acercamiento, y de ahí salen las curvas de nivel.
+Sale de un archivo del mundo distinto del mapa (Mapterhorn, con datos de
+Copernicus). Se pide por el mismo tipo de puente y se guarda en el mismo depósito.
 
 **Mapa básico**
 La línea del recorrido dibujada sobre fondo vacío, sin cartografía. Es lo que se
@@ -61,7 +68,8 @@ puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada).
 **Trazo**
 Anotación de una línea dibujada a mano uniendo varios puntos, con color
 elegible. Sirve para marcar lo que el mapa no muestra: un río, una huella, un
-alambrado.
+alambrado. Se dibuja de a toques, un punto por toque. No confundir con el
+**sendero**, que es el camino a pie que ya trae el fondo del mapa.
 
 **Cobertura**
 La relación entre una ruta y los sectores que la cruzan. Un tramo puede estar
