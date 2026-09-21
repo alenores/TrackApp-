@@ -8,6 +8,7 @@ import {
 } from "@/lib/offline/paquete";
 import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
 import { calentarLasPantallas } from "@/lib/offline/calentar";
+import { tirarLasPantallasDeOtraVersion } from "@/lib/offline/pantallas-de-otra-version";
 import { pedirQueNoLoBorren } from "@/lib/offline/permanente";
 import { ponerAlDiaLoBajado } from "@/lib/mapas/poner-al-dia-lo-bajado";
 
@@ -84,7 +85,11 @@ export function useDatosDeLaApp(): DatosDeLaApp {
        */
       const alDia = resultado.paquete;
       if (alDia) {
-        void calentarLasPantallas({ paquete: alDia, senal: cancelador.signal });
+        // Primero se tiran las de otra versión, si las hay; después se guardan
+        // las de esta. En ese orden, o el calentador las daría por hechas.
+        void tirarLasPantallasDeOtraVersion().then(() =>
+          calentarLasPantallas({ paquete: alDia, senal: cancelador.signal }),
+        );
       }
 
       /**

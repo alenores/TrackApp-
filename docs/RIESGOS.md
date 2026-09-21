@@ -549,6 +549,45 @@ errores.
 
 ---
 
+## ✅ R27 — Una pantalla guardada de otra versión arrastraba la app al código viejo
+
+**Qué pasaba.** La app guarda la pantalla de navegación de cada ruta para el
+cerro, y **una pantalla que ya está guardada no se vuelve a guardar**, sea de
+la versión que sea. Las pantallas se sirven «primero red, y si tarda más de
+tres segundos, lo guardado»: con una raya de señal, la de navegación guardada
+con la versión anterior se servía, pedía el código de esa versión —que ya no
+existe en el servidor— y aparecía «Esta pantalla se rompió», **con la versión
+nueva ya abajo**. Es el mismo bug que Vías de Escalada tuvo en julio (su
+bitácora del 2026-07-22). Ale lo vio tres veces seguidas el 2026-09-21; los
+dos arreglos anteriores (R25) no alcanzaban porque la recarga volvía a servir
+la misma pantalla vieja.
+
+**Cómo quedó (2026-09-21).** Al arrancar con una versión distinta de la que
+dejó las pantallas guardadas, **se tiran todas** —las de entrada, las del
+cerro y las sin regla propia— y el calentador las vuelve a guardar solo,
+apenas el paquete está al día. Sin señal no puede haber versión nueva, así
+que nunca se tira lo que hace falta en el cerro. La versión con la que se
+guardaron queda anotada en el celular.
+
+**Detectado:** 2026-09-21 · **Resuelto:** el mismo día.
+
+---
+
+## ✅ R28 — La barra de «yendo a otra pantalla» se prendía al deslizar una lista
+
+**Qué pasaba.** La línea finita de arriba que avisa «estoy yendo a otra
+pantalla» se prendía **al apoyar el dedo** sobre un link. En el celular, las
+tarjetas de rutas son links, y apoyar el dedo es también cómo se empieza a
+deslizar la lista: la barra quedaba girando doce segundos sin ir a ningún
+lado. Ale lo tomó por una recarga de la página.
+
+**Cómo quedó (2026-09-21).** Se prende al tocar el link, que es cuando de
+verdad se navega; deslizar no la toca. Verificado con el celular emulado.
+
+**Detectado:** 2026-09-21 · **Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

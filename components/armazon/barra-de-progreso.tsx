@@ -78,8 +78,16 @@ export function ProveedorDeBarraDeProgreso({ children }: { children: ReactNode }
     }, NAVIGATION_TIMEOUT_MS);
   }, [clearNavigationTimeout]);
 
+  /**
+   * La barra se prende **al soltar sobre un link**, no al apoyar el dedo.
+   *
+   * Apoyar el dedo es también cómo se empieza a desplazar una lista. Prendida
+   * al apoyar, en el celular quedaba girando doce segundos cada vez que se
+   * deslizaba la lista de rutas —que son todas links— sin ir a ningún lado.
+   * Ale lo vio el 2026-09-21 y lo tomó por una recarga.
+   */
   useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
+    const handleClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
 
@@ -94,9 +102,8 @@ export function ProveedorDeBarraDeProgreso({ children }: { children: ReactNode }
       startNavigation();
     };
 
-    document.addEventListener("pointerdown", handlePointerDown, true);
-    return () =>
-      document.removeEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
   }, [startNavigation]);
 
   return (

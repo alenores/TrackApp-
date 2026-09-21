@@ -63,6 +63,14 @@ mapa y solo cuando no queda nada por desplazar hacia arriba. De paso: la pieza
 que traba el zoom todavía buscaba el mapa del motor anterior, así que no
 reconocía al actual; corregido.
 
+**La causa de fondo del cartel, recién a la tercera.** Con la versión nueva ya
+abajo, el cartel seguía: la pantalla de navegación guardada para el cerro era
+de la versión vieja, no se reemplaza nunca, y con una raya de señal se servía
+antes que la red. Ahora una versión nueva tira todas las pantallas guardadas
+de la anterior y el calentador las rehace (R27). Y lo que Ale veía como «se
+refresca» al deslizar era la barra de «yendo a otra pantalla», que se prendía
+al apoyar el dedo sobre una tarjeta; ahora se prende al tocar el link (R28).
+
 ### Decisiones tomadas
 
 - No se arman teselas propias desde OpenStreetMap: el dato ya está en Protomaps.
@@ -76,7 +84,7 @@ reconocía al actual; corregido.
 ### Documentos actualizados
 
 `decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
-pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25, R26),
+pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25 a R28),
 `AGENTS.md` (regla de la versión nueva; sin tirar para recargar),
 `DISENO_EXTERIOR.md` (sin tirar para recargar), este registro.
 
