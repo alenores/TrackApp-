@@ -46,6 +46,12 @@ modos.
 **Una prueba que no corría en Windows** se arregló: buscaba fin de línea de
 Unix en un archivo que Git escribe con el de Windows.
 
+**Y la actualización rompía la pantalla abierta.** Al probar en el celular, Ale
+vio «Esta pantalla se rompió» al abrir la navegación: la app se había
+actualizado sola con cinco versiones nuevas y la pantalla vieja pedía archivos
+que ya no existían. La red de rescate ahora reconoce ese caso, avisa que hay
+versión nueva y recarga sola, una vez (R25).
+
 ### Decisiones tomadas
 
 - No se arman teselas propias desde OpenStreetMap: el dato ya está en Protomaps.
@@ -59,7 +65,8 @@ Unix en un archivo que Git escribe con el de Windows.
 ### Documentos actualizados
 
 `decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
-pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), este registro.
+pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25),
+`AGENTS.md` (regla de la versión nueva), este registro.
 
 ### Deuda o inconsistencias detectadas
 

@@ -2,7 +2,7 @@
 
 > App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
 > con guantes, sin señal y con la batería como recurso escaso.
-> Última revisión: 2026-09-18
+> Última revisión: 2026-09-21
 
 ---
 
@@ -272,6 +272,12 @@ destapa aunque no haya llegado lo que esperaba.
 se manda al login, el motor se cae al arrancar, en silencio, y la app deja de
 guardar **todo**: anda con señal como si nada y sin señal no hay nada. Pasó el
 2026-09-20 con la pieza que decide qué mostrar cuando falta una pantalla.
+
+**Un archivo de la app que ya no existe no es una pantalla rota: es una versión
+nueva.** La versión nueva toma el mando al instante y la pantalla vieja que
+quedó abierta pide archivos que ya no están. La red de rescate lo reconoce y
+recarga la página sola, una vez. No reintentar por dentro: reintenta lo mismo
+y falla igual. Pasó el 2026-09-21.
 
 ---
 

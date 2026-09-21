@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  convieneRecargarPorVersionNueva,
+  esUnArchivoDeLaAppQueYaNoExiste,
+} from "@/lib/actualizacion/version-nueva";
 
 /**
  * **La red de rescate.** Lo que se ve cuando una pantalla falla al dibujarse.
@@ -14,6 +18,11 @@ import { useEffect } from "react";
  * si se rompió el botón, un aviso hecho con ese botón tampoco se dibuja.
  * Por eso acá van estilos escritos a mano — es el único lugar de la app donde
  * eso es correcto, y por eso toma los colores de las variables igual.
+ *
+ * **Una excepción que no es una rotura:** cuando lo que falló es un archivo de
+ * la app que ya no existe, es que la app se actualizó mientras estaba abierta.
+ * Ahí no hay nada roto: se recarga una vez, sola, y listo. Ver
+ * `lib/actualizacion/version-nueva.ts`.
  */
 
 type Props = {
@@ -22,9 +31,49 @@ type Props = {
 };
 
 export default function PantallaRota({ error, reset }: Props) {
+  const esVersionNueva = esUnArchivoDeLaAppQueYaNoExiste(error);
+
+  // Se decide una sola vez, al aparecer: si se va a recargar, no hay cartel.
+  const [recargando] = useState(
+    () =>
+      esVersionNueva &&
+      convieneRecargarPorVersionNueva(
+        typeof window === "undefined" ? null : window.sessionStorage,
+      ),
+  );
+
   useEffect(() => {
+    if (recargando) {
+      window.location.reload();
+      return;
+    }
     console.error("Se rompió una pantalla de TrackApp:", error);
-  }, [error]);
+  }, [error, recargando]);
+
+  if (recargando) {
+    return (
+      <div
+        role="status"
+        style={{
+          minHeight: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px",
+          background: "var(--fondo, #0f172a)",
+          color: "var(--texto-suave, #aab8c9)",
+          fontFamily: "system-ui, sans-serif",
+          fontSize: "16px",
+        }}
+      >
+        Hay una versión nueva de la app. Un segundo…
+      </div>
+    );
+  }
+
+  /* Si es una versión nueva y ya se probó recargar, reintentar por dentro no
+     sirve: hay que recargar la página entera. */
+  const probarDeNuevo = esVersionNueva ? () => window.location.reload() : reset;
 
   return (
     <div
@@ -67,7 +116,7 @@ export default function PantallaRota({ error, reset }: Props) {
 
       <button
         type="button"
-        onClick={reset}
+        onClick={probarDeNuevo}
         style={{
           minHeight: "64px",
           borderRadius: "12px",

@@ -1,6 +1,6 @@
 # Riesgos y deuda técnica
 
-> Última revisión: 2026-09-20 (la pantalla negra del cerro)
+> Última revisión: 2026-09-21 (la versión nueva rompía la pantalla abierta)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 
 ---
@@ -484,6 +484,40 @@ en modo sol y noche, en singular y plural, y con la conexión cortada.
 **Detectado:** 2026-09-21, revisando qué pasa en cada app cuando el navegador
 borra lo guardado.
 **Resuelto:** el mismo día.
+
+---
+
+## ✅ R25 — Cada versión nueva rompía la pantalla que estaba abierta
+
+**Qué pasaba.** La app se actualiza sola con señal, y la versión nueva toma el
+mando **al instante**, aunque haya una pantalla vieja abierta. Esa pantalla, al
+pasar a otra por dentro de la app, pedía sus archivos viejos, que la versión
+nueva ya había tirado. El pedido fallaba y aparecía «Esta pantalla se rompió»,
+con «Probar de nuevo» reintentando lo mismo y fallando igual. Lo vio Ale en su
+celular el 2026-09-21, con cinco versiones publicadas en el medio, al abrir la
+navegación de una ruta.
+
+**Por qué estaba así.** En junio se sacó a propósito la recarga automática al
+actualizarse, porque rompía el login en el celular. Quedó escrito que «la
+siguiente navegación carga el contenido actualizado», y eso es falso cuando se
+navega por dentro de la app sin recargar la página.
+
+**Cómo quedó (2026-09-21).** Cuando lo que falló es exactamente «un archivo de
+la app que ya no existe», no es una pantalla rota: es una versión nueva. La red
+de rescate lo reconoce, avisa «hay una versión nueva» y recarga la página
+entera sola, una vez. Si vuelve a fallar enseguida, recién ahí muestra el
+cartel, y «Probar de nuevo» recarga de verdad. Sin señal no puede pasar: no hay
+versión nueva y nada se pide a internet.
+
+**Verificado:** cuatro pruebas automáticas que dibujan la pantalla de rescate
+con el error exacto que vio Ale: recarga sola una vez, no entra en bucle,
+«Probar de nuevo» recarga, y cualquier otra falla sigue mostrando el cartel.
+
+**Lo que queda:** la versión que ya está en cada celular no tiene este arreglo,
+así que la primera actualización después de esta puede mostrar el cartel una
+última vez. Ahí «Ir a mis rutas» lo resuelve. Después, nunca más.
+
+**Detectado:** 2026-09-21 · **Resuelto:** el mismo día.
 
 ---
 
