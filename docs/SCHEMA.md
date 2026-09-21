@@ -113,6 +113,34 @@ edita y borra.**
 
 ---
 
+## mapas_bajados
+
+**Qué mapas de sector tiene bajados cada usuario en su celular.** No guarda el
+mapa: guarda que lo bajaste.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | obligatorio. Cada uno ve solo lo suyo |
+| `sector_id` | bigint | obligatorio |
+| `tipo` | tipo_de_mapa | `simple` o `satelital` |
+| `acercamiento_maximo` | smallint | hasta qué nivel se bajó, para rehacerlo igual |
+
+**Un sector tiene un solo mapa a la vez.** Lo garantiza un índice único sobre
+`perfil_id` y `sector_id` que solo cuenta las filas vivas, así que sacar un mapa
+y volver a bajarlo reusa la misma fila.
+
+**Por qué existe.** El navegador puede borrar todo lo guardado del celular sin
+avisar. Si la única anotación de qué mapas tenías viviera ahí, se iría con el
+resto: al abrir con señal los datos vuelven solos, la pantalla se ve perfecta y
+los mapas no están. Con esta tabla la app compara lo que la base dice que tenías
+contra lo que quedó en el celular y avisa **en casa**. Ver la decisión 021.
+
+**Permisos:** cada usuario ve, crea, edita y borra únicamente sus propias filas.
+Nadie ve las de los demás, ni siquiera el administrador.
+
+---
+
 ## Cómo se detecta que hay novedades
 
 **Mirando `actualizado_en`.** Como lo mantiene un disparador de la base, cambia
@@ -143,6 +171,11 @@ que dice el navegador no sirve: Windows no conoce el `.gpx` y lo entrega como
 
 **Escrito el 2026-09-18** a partir del script ejecutado contra la base, que se
 verificó devolviendo el perfil administrador correctamente.
+
+**Actualizado el 2026-09-21.** La tabla `mapas_bajados` se creó ese día y se
+verificó leyendo la base con MCP: seguridad por fila activa, cuatro políticas,
+tres índices, el disparador de `actualizado_en` y los cuatro permisos para el
+usuario logueado.
 
 **Actualizado el 2026-09-20.** Los tipos que acepta `archivos-ruta` se leyeron
 de la base ese día (`storage.buckets`) y reemplazan lo que decía antes, que era

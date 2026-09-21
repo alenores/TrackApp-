@@ -446,11 +446,43 @@ señales del aparato; con la app instalada y usada seguido, dice que sí. Que
 diga que no no se le avisa al usuario: no es una falla, es una probabilidad, y
 no hay nada que él pueda hacer al respecto. Tema cerrado.
 
-**Lo que queda por decidir.** Si el navegador dice que no, hoy el usuario no se
-entera. Es información que le corresponde tener: falta definir dónde decirlo sin
-convertirlo en ruido.
+**Y si igual lo borra, el usuario se entera.** Qué mapas bajó cada uno se anota
+también en la base, que es la memoria que el navegador no puede tocar. Al abrir
+con señal la app compara las dos listas y avisa en el inicio qué mapas tenías y
+ya no están. Ver R24 y la decisión 021.
 
 **Detectado:** 2026-09-21, hablando de cuánto pesa un mapa.
+**Resuelto:** el mismo día.
+
+---
+
+## ✅ R24 — Un borrado del navegador dejaba la app viéndose perfecta y sin mapas
+
+**Qué pasaba.** TrackApp baja los datos sola y sin preguntar. Entonces, después
+de que el navegador se llevara todo, el usuario abría la app con señal, las
+zonas, los sectores y las rutas volvían en un segundo, la pantalla se veía
+impecable… y los mapas no estaban. **Ni el inicio ni la lista de rutas decían una
+palabra.** Se enteraba entrando a una ruta puntual, o en el cerro.
+
+Y la app no tenía forma de saberlo: la única anotación de qué mapas había bajado
+vivía en el mismo celular, así que se iba con el resto.
+
+**Cómo quedó (2026-09-21).** Una tabla nueva en la base, `mapas_bajados`, guarda
+qué bajó cada usuario. El inicio compara esa lista contra lo que hay en el
+celular y avisa: los mapas perdidos con franja ámbar y botón para recuperarlos,
+y aparte las rutas que nunca tuvieron mapa.
+
+**El caso que lo habría vuelto una mentira.** Sacar un mapa a propósito funciona
+sin señal; avisarle a la base, no. Sin resolverlo, quien sacaba un mapa en el
+cerro se encontraba al bajar con que la app le ofrecía recuperar justo lo que
+había tirado. El sacado queda anotado como pendiente en el celular y no se
+cuenta como perdido hasta que la base lo acepte.
+
+**Verificado:** 27 pruebas automáticas nuevas, y el aviso mirado en el navegador
+en modo sol y noche, en singular y plural, y con la conexión cortada.
+
+**Detectado:** 2026-09-21, revisando qué pasa en cada app cuando el navegador
+borra lo guardado.
 **Resuelto:** el mismo día.
 
 ---

@@ -4,6 +4,72 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-21 — Si el navegador borra los mapas, ahora te enterás
+
+### Estado al inicio
+
+Las dos apps ya le piden al navegador que no borre lo guardado. Pero ese pedido
+no es una garantía: lo concede el navegador solo. Faltaba responder qué pasa
+cuando igual lo borra.
+
+### Lo que se hizo
+
+**Primero se revisó qué hace hoy cada app.** En Vías de Escalada el resultado es
+bueno: como su paquete es todo, un borrado deja el celular sin nada y la app
+muestra la pantalla de primera descarga, con barra de progreso y, sin señal, un
+cartel que lo explica. El usuario se entera sí o sí.
+
+En TrackApp el resultado era malo, y de la peor manera: los datos vuelven solos
+al abrir con señal, así que la pantalla se veía impecable y los mapas no estaban.
+Ni el inicio ni la lista decían una palabra. Se enteraba en el cerro.
+
+**La causa.** El paquete de TrackApp es lo que el usuario eligió bajar, y esa
+elección vivía únicamente en el celular: el borrado se la llevaba también, así
+que la app no tenía con qué darse cuenta de que faltaba algo.
+
+**La solución.** Una tabla nueva en la base guarda qué mapas bajó cada uno. Al
+abrir con señal la app compara esa lista contra lo que hay en el celular y avisa
+en el inicio: los mapas perdidos con franja ámbar y un botón que los recupera
+todos, y aparte, más tranquilo, las rutas que nunca tuvieron mapa bajado.
+
+**Lo que casi lo vuelve una mentira.** Sacar un mapa a propósito funciona sin
+señal; avisarle a la base, no. Sin resolverlo, quien sacaba un mapa en el cerro
+se encontraba al bajar con que la app le ofrecía recuperar justo lo que había
+tirado. El sacado queda anotado como pendiente en el celular y no cuenta como
+pérdida hasta que la base lo acepte.
+
+**Se miró con los ojos, no solo con pruebas.** El aviso se abrió en el navegador
+en modo sol y en modo noche, en singular y en plural, y con la conexión cortada.
+Ahí aparecieron dos errores de redacción que ninguna prueba automática iba a
+encontrar: decía «Bajalo» con tres mapas y «Si pensás hacerlas» con una sola
+ruta.
+
+### Decisiones tomadas
+
+- `021` — La base recuerda qué mapas bajaste. El emparejado va del celular a la
+  base y **solo agrega**: nunca se borra de la base un mapa porque no esté en el
+  celular, porque eso es justamente la pérdida que hay que detectar.
+
+### Riesgos
+
+- **R23 cerrado del todo.** Que el navegador conceda o no el espacio permanente
+  ya no se avisa: no es una falla, es una probabilidad, y el usuario no puede
+  hacer nada con ese dato.
+- **R24 nuevo y resuelto:** un borrado del navegador dejaba TrackApp viéndose
+  perfecta y sin mapas.
+
+### Lo que queda
+
+- **OpenStreetMap:** revisar qué datos hay de verdad alrededor del Champaquí
+  (senderos, arroyos, cumbres, refugios) para decidir si vale la pena armar
+  nuestras propias imágenes de mapa. Quedó frenado por permisos de red.
+- El **mapa trucho** de fotos de Google Earth georreferenciadas.
+- Las **curvas de nivel** desde el modelo de elevación de 5 metros de IDECOR.
+- El **satelital para bajar**: hoy solo baja el mapa simple.
+- Probar en **modo avión** con el celular.
+
+---
+
 ## Sesión 2026-09-20 — La foto de la anotación, en el cerro
 
 ### Estado al inicio

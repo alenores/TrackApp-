@@ -9,6 +9,7 @@ import {
 import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
 import { calentarLasPantallas } from "@/lib/offline/calentar";
 import { pedirQueNoLoBorren } from "@/lib/offline/permanente";
+import { ponerAlDiaLoBajado } from "@/lib/mapas/poner-al-dia-lo-bajado";
 
 /**
  * Los datos de la app en el celular.
@@ -85,6 +86,14 @@ export function useDatosDeLaApp(): DatosDeLaApp {
       if (alDia) {
         void calentarLasPantallas({ paquete: alDia, senal: cancelador.signal });
       }
+
+      /**
+       * Y la base queda al día con lo que de verdad hay bajado en el celular.
+       *
+       * Arregla lo que quedó a medias: una descarga que no llegó a anotarse, un
+       * mapa que se sacó sin señal. Va por detrás, sin frenar nada.
+       */
+      void ponerAlDiaLoBajado();
     })();
 
     return () => {

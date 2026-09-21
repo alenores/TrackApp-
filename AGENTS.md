@@ -203,6 +203,26 @@ Después de eso la app ni siquiera abre sin señal.
   offline. El borrado del navegador se los lleva a los tres juntos: no existe
   «perdí las fotos pero me quedaron los mapas».
 
+### Lo que bajó cada uno lo recuerda la base
+
+**Perder los mapas no es el problema: el problema es no enterarse.** Los datos
+vuelven solos al abrir con señal, así que la pantalla se ve perfecta y los mapas
+no están. Por eso qué mapas bajó cada usuario **se anota también en la base**,
+que es la única memoria que el navegador no puede borrar.
+
+- **El inicio avisa dos cosas distintas y no las mezcla:** los mapas que tenías
+  y ya no están —eso es una pérdida, va con franja ámbar y arriba de todo— y las
+  rutas que nunca tuvieron mapa, que son una tarea y van en tarjeta común.
+- **Sacar un mapa a propósito funciona sin señal; avisarle a la base, no.** El
+  sacado queda anotado como pendiente en el celular y no se cuenta como perdido
+  hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
+  nuevo justo lo que él decidió tirar.
+- **El emparejado va del celular a la base y solo agrega.** Nunca se borra de la
+  base un mapa porque no esté en el celular: eso es la pérdida que hay que
+  detectar, y borrarla sería olvidar el problema en vez de avisarlo.
+
+Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
+
 ### El resto
 
 - **La pantalla de navegar lee de lo guardado en el celular, nunca de internet.**

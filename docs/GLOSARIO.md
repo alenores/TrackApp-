@@ -39,6 +39,21 @@ Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sender
 Algo que el administrador agrega encima del mapa para enriquecerlo. Puede ser
 un punto o un trazo. Siempre admite un comentario escrito.
 
+**Mapa perdido**
+Un mapa que la base dice que el usuario había bajado y que ya no está en el
+celular. **No es lo mismo que uno que nunca bajó:** el perdido lo tenía y no lo
+sabe, y por eso se avisa distinto y más fuerte.
+
+**Sacar un mapa**
+Que el usuario quite del celular, a propósito, un mapa que había bajado. Se dice
+«sacar» y no «borrar» para distinguirlo del borrado que hace el navegador por su
+cuenta, que es lo que produce un mapa perdido.
+
+**Sacado pendiente**
+Un mapa que el usuario sacó sin señal y que la base todavía no sabe que sacó.
+Mientras esté pendiente no se cuenta como perdido: si se contara, la app le
+ofrecería recuperar justo lo que él decidió tirar.
+
 **Punto**
 Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada).

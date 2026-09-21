@@ -26,6 +26,15 @@ import {
   olvidarTodosLosMapas,
   type TipoDeMapa,
 } from "@/lib/offline/mapas";
+import {
+  anotarQueLoSacasteVos,
+  olvidarElSacado,
+  olvidarTodosLosSacados,
+} from "@/lib/offline/sacados-a-proposito";
+import {
+  anotarQueBajasteElMapa,
+  olvidarQueTeniasElMapa,
+} from "@/lib/supabase/mapas-bajados";
 import type { Anotacion, Sector } from "@/types/database";
 
 /**
@@ -275,6 +284,18 @@ export async function bajarElMapaDelSector({
     };
   }
 
+  /**
+   * Y queda anotado también en la base, que es la memoria que el navegador no
+   * puede borrar. Si este aviso no llega, el mapa igual está bajado: la próxima
+   * apertura con señal lo pone al día sola. Por eso no frena nada ni se muestra.
+   */
+  olvidarElSacado(sector.id);
+  void anotarQueBajasteElMapa({
+    sectorId: sector.id,
+    tipo,
+    acercamientoMaximo,
+  });
+
   if (senal.aborted) return { estado: "cancelada" };
 
   return { estado: "listo", pedazos: total, bytes, fotos };
@@ -336,6 +357,19 @@ export async function borrarElMapaDelSector(
 ): Promise<ResultadoDeBorrado> {
   olvidarMapaDeSector(sectorId);
 
+  /**
+   * Y la base tiene que enterarse de que lo sacaste vos.
+   *
+   * **Primero se anota el pendiente y después se intenta avisar.** Sacar un mapa
+   * funciona sin señal; avisar, no. Sin el pendiente anotado, un sacado sin
+   * señal quedaría en la base como un mapa que todavía tenías, y la próxima
+   * apertura te diría que lo perdiste y te ofrecería bajar lo que tiraste.
+   */
+  anotarQueLoSacasteVos(sectorId);
+  void olvidarQueTeniasElMapa(sectorId).then((resultado) => {
+    if (resultado.ok) olvidarElSacado(sectorId);
+  });
+
   try {
     await borrarTeselasQueSobran(clavesQueSiguenHaciendoFalta(todosLosSectores));
     await borrarFotosQueSobran(fotosQueSiguenHaciendoFalta());
@@ -354,6 +388,9 @@ export async function borrarElMapaDelSector(
 /** Para cuando se cierra sesión: no queda mapa de la cuenta anterior. */
 export async function borrarTodosLosMapasDelCelular(): Promise<void> {
   olvidarTodosLosMapas();
+  // Los pendientes eran de la cuenta que se va: para la que entre después no
+  // significan nada, y aplicarlos le borraría anotaciones que sí son suyas.
+  olvidarTodosLosSacados();
   await borrarTodasLasTeselas();
   await borrarTodasLasFotos();
 }

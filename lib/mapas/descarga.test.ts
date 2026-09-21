@@ -15,6 +15,7 @@ import {
   type Tesela,
 } from "@/lib/mapas/teselas";
 import { mapaDelSector, sectoresConMapaBajado } from "@/lib/offline/mapas";
+import { losSacadosAProposito } from "@/lib/offline/sacados-a-proposito";
 import { cualesFotosEstanGuardadas } from "@/lib/anotaciones/deposito";
 import type { Anotacion, Sector } from "@/types/database";
 
@@ -297,6 +298,36 @@ describe("borrar el mapa de un sector", () => {
 
     expect(sectoresConMapaBajado().size).toBe(0);
     expect(await leerTesela("0/0/0")).toBeNull();
+  });
+
+  it("queda anotado que lo sacó el usuario, para no ofrecerle recuperarlo", async () => {
+    // Sin esta anotación, la app le diría después que «perdió» el mapa y le
+    // ofrecería bajar de nuevo justo lo que él decidió tirar.
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+
+    await borrarElMapaDelSector(UNO.id, [UNO]);
+
+    expect(losSacadosAProposito()).toContain(UNO.id);
+  });
+
+  it("volver a bajarlo limpia esa anotación", async () => {
+    // Si quedara puesta, el próximo aviso a la base borraría la anotación del
+    // mapa que el usuario acaba de bajar.
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+    await borrarElMapaDelSector(UNO.id, [UNO]);
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+
+    expect(losSacadosAProposito()).not.toContain(UNO.id);
+  });
+
+  it("cerrar sesión se lleva también los pendientes de la cuenta anterior", async () => {
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+    await borrarElMapaDelSector(UNO.id, [UNO]);
+
+    await borrarTodosLosMapasDelCelular();
+
+    expect(losSacadosAProposito()).toEqual([]);
   });
 });
 

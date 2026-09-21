@@ -50,6 +50,22 @@ Toda lista se trae **por tandas y ordenada por una columna única**, y se compar
 lo que llegó contra lo que informa la base. La base devuelve como máximo 1000
 filas por respuesta y no avisa: responde bien, con la lista cortada.
 
+### Lo que el celular no puede recordar solo
+
+El navegador puede borrar todo lo guardado cuando el teléfono se llena, y lo
+borra entero. Como los datos vuelven solos al abrir con señal, después de un
+borrado la app se ve perfecta y los mapas no están.
+
+Por eso **qué mapas bajó cada usuario se anota también en la base**, en
+`mapas_bajados`. Es la única memoria que sobrevive al borrado. Al abrir con señal
+se emparejan las dos listas, **en un solo sentido y solo agregando**: lo que está
+en el celular y no en la base se anota; lo que está en la base y no en el celular
+**no se borra**, porque eso es justamente la pérdida que hay que avisar.
+
+Sacar un mapa a propósito funciona sin señal, así que el aviso a la base puede no
+salir. Ese sacado queda anotado como pendiente en el celular y no cuenta como
+pérdida hasta que la base lo acepte. Ver la decisión 021.
+
 ## El mapa
 
 **Hay un solo mapa en toda la app.** Los tres modos —sin mapa, mapa simple y
