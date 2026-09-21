@@ -89,6 +89,8 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
 - **Nada que dependa de pellizcar, deslizar o mantener apretado.** Todo gesto
   fino necesita además un botón grande que haga lo mismo.
+- **No existe «tirar hacia abajo para recargar».** La app lo ignora: no sirve
+  para nada y en el cerro recarga el mapa sin querer.
 - **Todo lo importante va en la mitad de abajo de la pantalla**, al alcance del
   pulgar. Nada crítico en las esquinas de arriba.
 - **Pantalla mojada = toques fantasma.** Toda acción que borre o cancele algo

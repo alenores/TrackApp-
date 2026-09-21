@@ -106,6 +106,12 @@ segundo es poco confiable. Deslizar funciona a medias.
 gesto se puede dejar como atajo para quien tiene la mano libre, pero nunca puede
 ser la única forma de hacer algo.
 
+**No existe «tirar hacia abajo para recargar».** Chrome en el celular recarga
+la página entera con ese gesto. Acá no sirve para nada —la app se pone al día
+sola al abrir— y en el cerro un tirón sin querer recarga el mapa en el medio
+de una navegación. La app lo ignora, igual que Vías de Escalada. Decidido por
+Ale el 2026-09-21.
+
 ## Por qué todo va abajo
 
 Sosteniendo el celular con una mano y caminando, el pulgar llega cómodo hasta

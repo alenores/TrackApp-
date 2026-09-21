@@ -1,8 +1,14 @@
 /** Contenedor principal con scroll bajo la cabecera. */
 export const SELECTOR_DEL_PANEL_QUE_SE_DESPLAZA = ".app-scroll-pane";
 
-/** Selector de mapas Leaflet (pan/zoom propio). */
-export const SELECTOR_DEL_MAPA = ".leaflet-container";
+/**
+ * El mapa, que maneja sus propios gestos: dos dedos para acercar, arrastrar
+ * para mover. Nada de lo que se traba acá se traba adentro del mapa.
+ *
+ * Hasta el 2026-09-21 apuntaba al motor de mapa anterior, que ya no existe en
+ * la app: no reconocía al mapa actual y le trababa el zoom con dos dedos.
+ */
+export const SELECTOR_DEL_MAPA = ".maplibregl-map";
 
 /** Clase en `<html>` para CSS de bloqueo si el media query no aplica. */
 export const CLASE_QUE_TRABA_EL_ZOOM = "pwa-standalone-zoom-lock";

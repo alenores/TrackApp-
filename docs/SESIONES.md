@@ -56,6 +56,13 @@ segundo plano; acá, además, nunca navegando (R25). Un segundo cartel, «bloque
 de memoria inservible», era de las curvas recién hechas: un bloque vacío
 compartido, la misma trampa que el lector del mapa ya evitaba (R26).
 
+**Y el gesto de «tirar para recargar» se fue.** Ale lo vio en el celular y lo
+quiso afuera, como en Vías de Escalada. La regla de estilos que lo desactiva
+ya estaba y no alcanzaba; ahora la app ignora el gesto ella misma, fuera del
+mapa y solo cuando no queda nada por desplazar hacia arriba. De paso: la pieza
+que traba el zoom todavía buscaba el mapa del motor anterior, así que no
+reconocía al actual; corregido.
+
 ### Decisiones tomadas
 
 - No se arman teselas propias desde OpenStreetMap: el dato ya está en Protomaps.
@@ -70,7 +77,8 @@ compartido, la misma trampa que el lector del mapa ya evitaba (R26).
 
 `decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
 pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25, R26),
-`AGENTS.md` (regla de la versión nueva), este registro.
+`AGENTS.md` (regla de la versión nueva; sin tirar para recargar),
+`DISENO_EXTERIOR.md` (sin tirar para recargar), este registro.
 
 ### Deuda o inconsistencias detectadas
 
