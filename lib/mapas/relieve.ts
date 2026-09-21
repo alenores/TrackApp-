@@ -56,7 +56,19 @@ export const CAPA_DE_CURVAS = "curvas";
 export const CLAVE_DE_ALTURA = "altura";
 export const CLAVE_DE_NIVEL = "nivel";
 
-const SIN_CURVAS = new ArrayBuffer(0);
+/**
+ * Un pedazo sin curvas, **nuevo cada vez**.
+ *
+ * El mapa se queda con el bloque de memoria que se le entrega: lo manda a la
+ * pieza que trabaja aparte y de este lado queda inservible. Entregar dos veces
+ * el mismo bloque rompe el mapa al segundo pedido, con «ArrayBuffer is already
+ * detached». Pasó el 2026-09-21 con un solo bloque vacío compartido. Por lo
+ * mismo, lo que devuelve la pieza de curvas —que guarda cada pedazo en su
+ * memoria y devuelve siempre el mismo bloque— se copia antes de entregarlo.
+ */
+function sinCurvas(): ArrayBuffer {
+  return new ArrayBuffer(0);
+}
 
 /** Los tres números de grilla de una dirección `algo://z/x/y`, con o sin cola. */
 function grillaDeLaDireccion(direccion: string): { z: number; x: number; y: number } | null {
@@ -164,10 +176,11 @@ export function registrarElRelieveGuardado(): void {
     addProtocol: (nombre, protocolo) => {
       addProtocol(nombre, async (pedido, senal) => {
         const relieve = pedazoDeRelieveQueCubre(pedido.url);
-        if (!relieve) return { data: SIN_CURVAS };
+        if (!relieve) return { data: sinCurvas() };
         const guardados = await cualesEstanGuardadas([relieve]);
-        if (!guardados.has(relieve)) return { data: SIN_CURVAS };
-        return protocolo(pedido, senal);
+        if (!guardados.has(relieve)) return { data: sinCurvas() };
+        const respuesta = await protocolo(pedido, senal);
+        return { ...respuesta, data: respuesta.data.slice(0) };
       });
     },
   });

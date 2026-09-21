@@ -502,12 +502,20 @@ actualizarse, porque rompía el login en el celular. Quedó escrito que «la
 siguiente navegación carga el contenido actualizado», y eso es falso cuando se
 navega por dentro de la app sin recargar la página.
 
-**Cómo quedó (2026-09-21).** Cuando lo que falló es exactamente «un archivo de
-la app que ya no existe», no es una pantalla rota: es una versión nueva. La red
-de rescate lo reconoce, avisa «hay una versión nueva» y recarga la página
-entera sola, una vez. Si vuelve a fallar enseguida, recién ahí muestra el
-cartel, y «Probar de nuevo» recarga de verdad. Sin señal no puede pasar: no hay
-versión nueva y nada se pide a internet.
+**Cómo quedó (2026-09-21).** Dos capas, que se complementan:
+
+1. **La prevención, copiada de Vías de Escalada**, donde anda desde julio: al
+   llegar la versión nueva, la app se recarga sola, pero **solo si es una
+   actualización** (no en la primera instalación, que era lo que rompía el
+   login) y **solo cuando pasa a segundo plano**, que no se nota. Y una regla
+   propia de esta casa: nunca mientras se navega una ruta.
+2. **La red**, por si la recarga no llegó a ocurrir antes de que el usuario se
+   mueva: cuando lo que falló es exactamente «un archivo de la app que ya no
+   existe», no es una pantalla rota. La red de rescate lo reconoce, avisa «hay
+   una versión nueva» y recarga la página entera sola, una vez. Si vuelve a
+   fallar enseguida, recién ahí muestra el cartel, y «Probar de nuevo» recarga
+   de verdad. Sin señal no puede pasar: no hay versión nueva y nada se pide a
+   internet.
 
 **Verificado:** cuatro pruebas automáticas que dibujan la pantalla de rescate
 con el error exacto que vio Ale: recarga sola una vez, no entra en bucle,
@@ -518,6 +526,26 @@ así que la primera actualización después de esta puede mostrar el cartel una
 última vez. Ahí «Ir a mis rutas» lo resuelve. Después, nunca más.
 
 **Detectado:** 2026-09-21 · **Resuelto:** el mismo día.
+
+---
+
+## ✅ R26 — Un bloque de memoria compartido rompía las curvas al segundo pedido
+
+**Qué pasaba.** Al salir del sector bajado y volver, aparecía «El fondo del
+mapa no se pudo dibujar: ArrayBuffer at index 0 is already detached». Las
+curvas de nivel, recién construidas, contestaban «sin curvas» con **un único
+bloque vacío compartido**, y el mapa se queda con el bloque que se le entrega:
+el segundo pedido lo encontraba inservible. Era exactamente la trampa que el
+lector del mapa ya tenía documentada y evitada desde el 2026-09-19; se volvió a
+caer en ella en la pieza nueva.
+
+**Cómo quedó (2026-09-21).** Un bloque nuevo por cada respuesta, y lo que
+devuelve la pieza que calcula las curvas —que guarda cada pedazo en su memoria
+y devuelve siempre el mismo bloque— se copia antes de entregarlo. Verificado
+saliendo y entrando del sector seis veces a distintos acercamientos: cero
+errores.
+
+**Detectado:** 2026-09-21, por Ale, en el navegador · **Resuelto:** el mismo día.
 
 ---
 

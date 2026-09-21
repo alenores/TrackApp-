@@ -50,7 +50,11 @@ Unix en un archivo que Git escribe con el de Windows.
 vio «Esta pantalla se rompió» al abrir la navegación: la app se había
 actualizado sola con cinco versiones nuevas y la pantalla vieja pedía archivos
 que ya no existían. La red de rescate ahora reconoce ese caso, avisa que hay
-versión nueva y recarga sola, una vez (R25).
+versión nueva y recarga sola, una vez. Y se copió la prevención de Vías de
+Escalada: recargar al llegar la versión nueva, solo en actualización y solo en
+segundo plano; acá, además, nunca navegando (R25). Un segundo cartel, «bloque
+de memoria inservible», era de las curvas recién hechas: un bloque vacío
+compartido, la misma trampa que el lector del mapa ya evitaba (R26).
 
 ### Decisiones tomadas
 
@@ -65,7 +69,7 @@ versión nueva y recarga sola, una vez (R25).
 ### Documentos actualizados
 
 `decisiones/013` (cómo se construyó, medido), `decisiones/017` (curvas ya no
-pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25),
+pendientes), `GLOSARIO.md` (relieve; trazo vs. sendero), `RIESGOS.md` (R25, R26),
 `AGENTS.md` (regla de la versión nueva), este registro.
 
 ### Deuda o inconsistencias detectadas

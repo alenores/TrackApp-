@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   convieneRecargarPorVersionNueva,
+  cuandoRecargarPorVersionNueva,
+  esLaPantallaDeNavegar,
   esUnArchivoDeLaAppQueYaNoExiste,
 } from "@/lib/actualizacion/version-nueva";
 
@@ -69,5 +71,37 @@ describe("recargar una sola vez", () => {
       throw new Error("bloqueado");
     };
     expect(convieneRecargarPorVersionNueva(rota, 1000)).toBe(false);
+  });
+});
+
+describe("cuándo recargar al llegar la versión nueva", () => {
+  it("nunca en la primera instalación: no hay nada viejo abierto", () => {
+    expect(
+      cuandoRecargarPorVersionNueva({ habiaVersionAntes: false, visible: false, navegando: false }),
+    ).toBe("nunca");
+  });
+
+  it("nunca navegando una ruta, aunque la app esté en segundo plano", () => {
+    expect(
+      cuandoRecargarPorVersionNueva({ habiaVersionAntes: true, visible: false, navegando: true }),
+    ).toBe("nunca");
+  });
+
+  it("con la pantalla a la vista, se espera a que se esconda", () => {
+    expect(
+      cuandoRecargarPorVersionNueva({ habiaVersionAntes: true, visible: true, navegando: false }),
+    ).toBe("cuando-se-esconda");
+  });
+
+  it("ya en segundo plano, ahora mismo", () => {
+    expect(
+      cuandoRecargarPorVersionNueva({ habiaVersionAntes: true, visible: false, navegando: false }),
+    ).toBe("ahora");
+  });
+
+  it("reconoce la pantalla de navegar por su dirección", () => {
+    expect(esLaPantallaDeNavegar("/navegacion/12")).toBe(true);
+    expect(esLaPantallaDeNavegar("/rutas/12")).toBe(false);
+    expect(esLaPantallaDeNavegar("/")).toBe(false);
   });
 });

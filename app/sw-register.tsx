@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  cuandoRecargarPorVersionNueva,
+  esLaPantallaDeNavegar,
+} from "@/lib/actualizacion/version-nueva";
 
 const PWA_CACHE_BUST = "2026-06-11-no-reload-on-sw-update-v1";
 
@@ -18,12 +22,56 @@ async function deleteObsoleteCaches(): Promise<void> {
   await Promise.all(OBSOLETE_CACHE_NAMES.map((name) => caches.delete(name)));
 }
 
+/**
+ * Cuando la versión nueva toma el mando, la pantalla abierta hay que recargarla.
+ *
+ * **Sin esto, la pantalla vieja sigue en memoria pidiendo archivos que la
+ * versión nueva ya tiró**, y al pasar a otra pantalla por dentro de la app se
+ * rompe. Pasó el 2026-09-21. En junio se había sacado la recarga porque,
+ * hecha en el acto, rompía el login en el celular; la forma de Vías de
+ * Escalada, que anda desde julio, es recargar **solo si es una actualización**
+ * y **solo cuando la app pasa a segundo plano**, que no se nota. Acá se suma
+ * que nunca se recarga navegando una ruta: ver `lib/actualizacion`.
+ */
+function recargarCuandoCorresponda(habiaVersionAntes: boolean): void {
+  let recargando = false;
+  const recargar = () => {
+    if (recargando) return;
+    recargando = true;
+    window.location.reload();
+  };
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (recargando) return;
+
+    const decidir = () =>
+      cuandoRecargarPorVersionNueva({
+        habiaVersionAntes,
+        visible: document.visibilityState === "visible",
+        navegando: esLaPantallaDeNavegar(window.location.pathname),
+      });
+
+    const ahora = decidir();
+    if (ahora === "ahora") {
+      recargar();
+      return;
+    }
+    if (ahora === "nunca") return;
+
+    // Se vuelve a decidir al esconderse: si para entonces está navegando, no.
+    const alEsconderse = () => {
+      if (document.visibilityState !== "hidden") return;
+      document.removeEventListener("visibilitychange", alEsconderse);
+      if (decidir() === "ahora") recargar();
+    };
+    document.addEventListener("visibilitychange", alEsconderse);
+  });
+}
+
 async function registerServiceWorker(): Promise<void> {
-  // NOTA: eliminamos el window.location.reload() en controllerchange.
-  // El reload forzado causaba ERR_FAILED ("can't load this") en mobile cuando
-  // el SW se actualizaba mientras el usuario navegaba o hacía login.
-  // Con skipWaiting:true en el SW, el nuevo SW ya toma control inmediatamente.
-  // La siguiente navegación del usuario cargará el contenido actualizado.
+  // Si ya había una versión al mando, lo que viene es una actualización.
+  recargarCuandoCorresponda(Boolean(navigator.serviceWorker.controller));
+
   const registration = await navigator.serviceWorker.register("/sw.js");
 
   registration.addEventListener("updatefound", () => {

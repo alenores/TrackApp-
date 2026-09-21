@@ -48,3 +48,33 @@ export function convieneRecargarPorVersionNueva(
     return false;
   }
 }
+
+/**
+ * Qué hacer cuando la versión nueva acaba de tomar el mando.
+ *
+ * Copiado de Vías de Escalada, donde funciona desde julio de 2026:
+ *
+ * - **Solo si es una actualización.** La primera vez que se instala no hay
+ *   nada viejo abierto, y recargar ahí interrumpía el login.
+ * - **Nunca con la pantalla a la vista.** Se recarga cuando el usuario manda
+ *   la app a segundo plano, que es imperceptible.
+ * - **Nunca navegando una ruta.** Es regla de esta casa (decisión 012): nada
+ *   se actualiza durante una navegación. Si la versión nueva llegó en el
+ *   medio, se espera a que termine; la red de rescate cubre lo que falte.
+ */
+export type CuandoRecargar = "ahora" | "cuando-se-esconda" | "nunca";
+
+export function cuandoRecargarPorVersionNueva(estado: {
+  habiaVersionAntes: boolean;
+  visible: boolean;
+  navegando: boolean;
+}): CuandoRecargar {
+  if (!estado.habiaVersionAntes) return "nunca";
+  if (estado.navegando) return "nunca";
+  return estado.visible ? "cuando-se-esconda" : "ahora";
+}
+
+/** La pantalla de navegar una ruta, la única que no se puede interrumpir. */
+export function esLaPantallaDeNavegar(camino: string): boolean {
+  return camino.startsWith("/navegacion/");
+}
