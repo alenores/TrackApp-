@@ -161,6 +161,7 @@ export type Anotacion = {
   sectorId: number;
   perfilId: string;
   tipo: TipoAnotacion;
+  origen: "manual" | "google_earth" | "openstreetmap";
   /** Solo cuando `tipo` es `punto`. */
   icono: IconoPunto | null;
   /** Solo cuando `tipo` es `trazo`. */

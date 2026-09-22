@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import type { Feature, FeatureCollection, Polygon } from "geojson";
+import type { Feature, FeatureCollection, Point, Polygon } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import {
   capasDelFondo,
@@ -195,6 +195,21 @@ function comoPoligono(
   };
 }
 
+function comoPuntoEtiqueta(
+  rectangulo: Rectangulo,
+  etiqueta: string,
+): Feature<Point> {
+  const { latNorte, latSur, lonEste, lonOeste } = rectangulo;
+  return {
+    type: "Feature",
+    properties: { etiqueta },
+    geometry: {
+      type: "Point",
+      coordinates: [(lonOeste + lonEste) / 2, (latNorte + latSur) / 2],
+    },
+  };
+}
+
 function limitesDe(rectangulo: Rectangulo): maplibregl.LngLatBoundsLike {
   return [
     [rectangulo.lonOeste, rectangulo.latSur],
@@ -253,6 +268,7 @@ export function Mapa({
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<maplibregl.Map | null>(null);
+  const marcadoresDeEtiquetasRef = useRef<maplibregl.Marker[]>([]);
   const listoRef = useRef(false);
   /** Lo que se quiso dibujar antes de que el mapa terminara de armarse. */
   const esperandoRef = useRef<Array<() => void>>([]);
@@ -373,6 +389,7 @@ export function Mapa({
       const colores = coloresDelMapa();
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
+      mapa.addSource("etiquetas", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
@@ -388,15 +405,14 @@ export function Mapa({
         id: "rectangulos-relleno",
         type: "fill",
         source: FUENTE_RECTANGULOS,
-        // La zona no se rellena: es el territorio de referencia, y un relleno
-        // grande taparía el terreno que justamente se quiere mirar.
-        filter: ["!=", ["get", "clase"], "zona"],
+        // La zona y el sector no se rellenan: son referencias territoriales, y un relleno
+        // taparía el terreno que justamente se quiere mirar.
+        filter: ["all", ["!=", ["get", "clase"], "zona"], ["!=", ["get", "clase"], "sector"]],
         paint: {
           "fill-color": [
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "zona", colores.rectanguloZona,
             "sector_bajado", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
@@ -429,7 +445,7 @@ export function Mapa({
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "zona", colores.rectanguloZona,
+            "sector", colores.rectanguloNuevo, // Usamos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
@@ -552,7 +568,6 @@ export function Mapa({
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "zona", colores.rectanguloZona,
             "sector_bajado", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
@@ -561,7 +576,7 @@ export function Mapa({
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "zona", colores.rectanguloZona,
+            "sector", colores.rectanguloNuevo, // Mantenemos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
@@ -571,6 +586,11 @@ export function Mapa({
         "line-color",
         colores.rectanguloZona,
       );
+
+      if (mapa.getLayer("rectangulos-texto")) {
+        mapa.setPaintProperty("rectangulos-texto", "text-color", colores.rectanguloZona);
+        mapa.setPaintProperty("rectangulos-texto", "text-halo-color", colores.contorno);
+      }
 
       if (mapa.getLayer(ALTURAS)) {
         for (const capa of [CURVAS_FINAS, CURVAS_GRUESAS]) {
@@ -747,11 +767,32 @@ export function Mapa({
         ...rectangulos.map((cada) => comoPoligono(cada.rectangulo, cada.clase)),
         ...(rectangulo ? [comoPoligono(rectangulo, "nuevo")] : []),
       ];
-
+      
       ponerDatos(mapa, FUENTE_RECTANGULOS, {
         type: "FeatureCollection",
         features,
       });
+
+      for (const m of marcadoresDeEtiquetasRef.current) {
+        m.remove();
+      }
+      marcadoresDeEtiquetasRef.current = [];
+
+      for (const cada of rectangulos) {
+        if (cada.etiqueta) {
+          const el = document.createElement("div");
+          el.className = "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
+          el.textContent = cada.etiqueta as string;
+          const { latNorte, latSur, lonEste, lonOeste } = cada.rectangulo;
+          const lon = (lonOeste + lonEste) / 2;
+          const lat = (latNorte + latSur) / 2;
+          const m = new maplibregl.Marker({ element: el })
+            .setLngLat([lon, lat])
+            .addTo(mapa);
+          marcadoresDeEtiquetasRef.current.push(m);
+        }
+      }
+
       setDibujado(features.length);
 
       /**
@@ -903,11 +944,11 @@ export function Mapa({
         se descarga nunca, así que sin internet no hay nada que elegir.
       */}
       {enVivo ? (
-        <div className="absolute left-3 top-3 flex overflow-hidden rounded-xl border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+        <div className="absolute left-3 top-3 flex overflow-hidden rounded-md border border-borde-fuerte bg-superficie shadow-sm">
           {(
             [
-              ["dibujo", "Dibujo"],
-              ["satelital", "Foto"],
+              ["dibujo", "Básico"],
+              ["satelital", "Satélite"],
             ] as const
           ).map(([cual, etiqueta]) => (
             <button
@@ -916,10 +957,10 @@ export function Mapa({
               onClick={() => setTipoDeFondo(cual)}
               aria-pressed={tipoDeFondo === cual}
               className={[
-                "min-h-14 px-4 text-base font-semibold transition-colors",
+                "min-h-8 px-3 text-xs font-semibold transition-colors",
                 tipoDeFondo === cual
-                  ? "bg-acento text-acento-texto"
-                  : "text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                  ? "bg-texto text-fondo"
+                  : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
               ].join(" ")}
             >
               {etiqueta}
@@ -939,22 +980,24 @@ export function Mapa({
         El acercar de dos dedos es un gesto fino: con guantes no se acierta.
         Por eso están estos, y son grandes.
       */}
-      <div className="absolute right-3 top-3 flex flex-col gap-2">
-        <BotonDelMapa
-          etiqueta="Acercar el mapa"
-          grande={pantallaCompleta || enGrande}
-          alTocar={() => acercar(1)}
-        >
-          <path d="M12 5v14M5 12h14" />
-        </BotonDelMapa>
-        <BotonDelMapa
-          etiqueta="Alejar el mapa"
-          grande={pantallaCompleta || enGrande}
-          alTocar={() => acercar(-1)}
-        >
-          <path d="M5 12h14" />
-        </BotonDelMapa>
-      </div>
+      {pantallaCompleta || enGrande ? (
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <BotonDelMapa
+            etiqueta="Acercar el mapa"
+            grande={pantallaCompleta || enGrande}
+            alTocar={() => acercar(1)}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </BotonDelMapa>
+          <BotonDelMapa
+            etiqueta="Alejar el mapa"
+            grande={pantallaCompleta || enGrande}
+            alTocar={() => acercar(-1)}
+          >
+            <path d="M5 12h14" />
+          </BotonDelMapa>
+        </div>
+      ) : null}
 
       {/*
         Abrir el mapa en grande. Va abajo a la derecha, al alcance del pulgar, y

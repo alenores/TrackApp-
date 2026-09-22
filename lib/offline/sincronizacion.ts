@@ -214,6 +214,7 @@ async function bajarAnotaciones(): Promise<{
     sectorId: Number(fila.sector_id),
     perfilId: String(fila.perfil_id),
     tipo: fila.tipo as Anotacion["tipo"],
+    origen: (fila.origen as Anotacion["origen"]) ?? "manual",
     icono: (fila.icono as Anotacion["icono"]) ?? null,
     color: (fila.color as string | null) ?? null,
     comentario: (fila.comentario as string | null) ?? null,

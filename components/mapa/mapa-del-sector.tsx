@@ -91,143 +91,55 @@ export function MapaDelSector({
         <p className="text-sm leading-6 text-texto-suave">
           No cierres la app hasta que termine. Tarda unos segundos.
         </p>
-
-        <Boton variante="secundario" anchoCompleto onClick={cancelar}>
-          Cancelar
-        </Boton>
       </Tarjeta>
     );
   }
 
   if (paso.paso === "fallo") {
     return (
-      <Tarjeta tono="alta" franja="rojo" className="space-y-3">
-        <div className="flex items-start gap-3">
-          <IconoProblema />
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-rojo-texto">
-              El mapa quedó a medio bajar
-            </p>
-            <p className="mt-1 text-sm leading-6 text-texto-suave">
-              Entraron {paso.resueltos} de {paso.total} pedazos y se cortó: {paso.motivo}
-            </p>
-          </div>
-        </div>
-
-        <p className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto">
-          Volvé a intentar con señal. Lo que ya entró queda guardado, así que la
-          próxima vez tarda menos.
-        </p>
-
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-borde text-sm">
+        <span className="text-rojo-texto font-medium">Error al descargar</span>
         {haySenal ? (
-          <Boton anchoCompleto onClick={() => void bajar("simple")}>
-            Intentar de nuevo
+          <Boton onClick={() => void bajar("simple")}>
+            Reintentar
           </Boton>
         ) : null}
-      </Tarjeta>
+      </div>
     );
   }
 
   if (mapa) {
-    // El mapa puede estar bajado y aun así faltar una foto que se agregó
-    // después. Se dice acá, con señal, no en el cerro.
-    const fotosQueFaltan =
-      sectoresConFotosSinBajar([sector], anotaciones, [mapa])[0]?.cuantas ?? 0;
-
+    const fotosQueFaltan = sectoresConFotosSinBajar([sector], anotaciones, [mapa])[0]?.cuantas ?? 0;
+    
     return (
-      <Tarjeta
-        tono="alta"
-        franja={fotosQueFaltan > 0 ? "ambar" : "verde"}
-        className="space-y-3"
-      >
-        <div className="flex items-start gap-3">
-          {fotosQueFaltan > 0 ? <IconoAviso /> : <IconoListo />}
-          <div className="min-w-0 flex-1">
-            {fotosQueFaltan > 0 ? (
-              <>
-                <p className="text-base font-semibold text-ambar-texto">
-                  {fotosQueFaltan === 1
-                    ? "Falta bajar una foto de anotación"
-                    : `Faltan bajar ${fotosQueFaltan} fotos de anotación`}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-texto-suave">
-                  El mapa está en el celular, pero esas fotos se agregaron
-                  después. Sin señal no las vas a poder ver.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-base font-semibold text-texto">
-                  Podés salir sin señal
-                </p>
-                <p className="mt-1 text-sm leading-6 text-texto-suave">
-                  El mapa simple de este sector está en este celular.
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-
-        {fallaDeFotos ? (
-          <p
-            role="alert"
-            className="rounded-xl bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto"
-          >
-            {fallaDeFotos}
-          </p>
-        ) : null}
-
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-borde text-sm">
+        <span className="text-verde-texto font-medium flex items-center gap-1">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Descargado
+        </span>
+        
         {fotosQueFaltan > 0 && haySenal ? (
-          <Boton anchoCompleto onClick={() => void bajar("simple")}>
-            Bajar las fotos que faltan
+          <Boton variante="secundario" onClick={() => void bajar("simple")}>
+            Actualizar fotos ({fotosQueFaltan})
           </Boton>
         ) : null}
-
-        <dl className="grid grid-cols-2 gap-2 border-t border-borde pt-3">
-          <div>
-            <dt className="text-xs text-texto-suave">Ocupa</dt>
-            <dd className="mt-0.5 text-base font-semibold tabular-nums text-texto">
-              {mostrarPeso(mapa.bytes)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-texto-suave">Bajado el</dt>
-            <dd className="mt-0.5 text-base font-semibold text-texto">
-              {fechaEnPalabras(mapa.bajadoEn)}
-            </dd>
-          </div>
-        </dl>
-
-        <Boton
-          variante="destructivo"
-          anchoCompleto
-          disabled={sacando}
-          onClick={() => void alSacar()}
-        >
-          {sacando ? "Sacando…" : "Sacar del celular"}
-        </Boton>
-      </Tarjeta>
+      </div>
     );
   }
 
   return (
-    <Tarjeta tono="alta" franja="ambar" className="space-y-3">
-      <Rotulo>El mapa de este sector</Rotulo>
-      <p className="text-base font-semibold text-texto">Todavía no lo bajaste</p>
-      <p className="text-sm leading-6 text-texto-suave">
-        Bajalo ahora, desde casa. En el cerro no vas a tener con qué. Pesa{" "}
-        <strong className="font-semibold text-dato">
-          {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo))}
-        </strong>{" "}
-        más o menos.
-      </p>
-
+    <div className="flex items-center gap-3 mt-2 pt-2 border-t border-borde text-sm">
+      <span className="text-texto-suave">
+        Mapa: <strong className="text-texto">{mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo))}</strong>
+      </span>
       {haySenal ? (
-        <Boton anchoCompleto onClick={() => void bajar("simple")}>
-          Bajar el mapa
+        <Boton onClick={() => void bajar("simple")}>
+          Descargar
         </Boton>
       ) : null}
-    </Tarjeta>
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Cobertura } from "@/lib/cobertura";
 import { seSuperponen } from "@/lib/datos/rectangulo";
-import type { Rectangulo, Zona } from "@/types/database";
+import type { Rectangulo, Sector, Zona } from "@/types/database";
 
 /**
  * Qué rectángulos se dibujan sobre el mapa, y de qué clase es cada uno.
@@ -29,11 +29,27 @@ export type ClaseDeRectangulo =
 export type RectanguloEnElMapa = {
   rectangulo: Rectangulo;
   clase: ClaseDeRectangulo;
+  etiqueta?: string;
 };
 
 /** Lo mismo de siempre, para las pantallas que solo muestran vecinos. */
 export function comoSectores(rectangulos: Rectangulo[]): RectanguloEnElMapa[] {
   return rectangulos.map((rectangulo) => ({ rectangulo, clase: "sector" as const }));
+}
+
+/** Extrae la grilla (Ej: "A1") del nombre del sector ("A1 - Nombre"). */
+export function etiquetaDeSector(nombre: string): string {
+  const partes = nombre.split(" - ");
+  return partes[0] ?? nombre;
+}
+
+/** Transforma sectores en rectángulos dibujables con su etiqueta. */
+export function sectoresEnElMapa(sectores: Sector[], clase: ClaseDeRectangulo = "sector"): RectanguloEnElMapa[] {
+  return sectores.map((sector) => ({
+    rectangulo: sector.rectangulo,
+    clase,
+    etiqueta: etiquetaDeSector(sector.nombre)
+  }));
 }
 
 /** Las zonas que la ruta toca. Puede no tocar ninguna, o tocar cinco. */
@@ -67,6 +83,7 @@ export function rectangulosDeLaRuta(
       cada.estado === "descargado"
         ? ("sector_bajado" as const)
         : ("sector_sin_bajar" as const),
+    etiqueta: etiquetaDeSector(cada.sector.nombre)
   }));
 
   return [...deLasZonas, ...deLosSectores];

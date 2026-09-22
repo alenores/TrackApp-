@@ -34,113 +34,118 @@ export function TarjetaDeSector({
   soyAdministrador,
 }: SectorCardProps) {
   const router = useRouter();
-  const { confirmar, avisar } = useDialogos();
-  const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
-  const [borrando, setBorrando] = useState(false);
+  const { avisar } = useDialogos();
+  
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [nuevoSufijo, setNuevoSufijo] = useState("");
+  const [guardandoNombre, setGuardandoNombre] = useState(false);
 
-  const alBorrar = async () => {
-    const seguro = await confirmar({
-      titulo: `¿Borrar el sector «${sector.nombre}»?`,
-      mensaje:
-        "Se van también sus anotaciones. Si te arrepentís, se puede recuperar.",
-      textoDeAceptar: "Borrar",
-      destructivo: true,
-    });
+  const partes = sector.nombre.split(" - ");
+  const prefijo = partes.length > 1 ? partes[0] : sector.nombre;
+  const sufijoActual = partes.length > 1 ? partes.slice(1).join(" - ") : "";
 
-    if (!seguro) return;
+  const iniciarEdicion = () => {
+    setNuevoSufijo(sufijoActual);
+    setEditandoNombre(true);
+  };
 
-    setBorrando(true);
-    const resultado = await borrarSector(sector.id);
-    setBorrando(false);
-
-    if (!resultado.ok) {
-      await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error });
+  const guardarNombre = async () => {
+    if (!nuevoSufijo.trim()) {
+      setEditandoNombre(false);
       return;
     }
-
-    setOpcionesAbiertas(false);
-    router.refresh();
+    setGuardandoNombre(true);
+    const renombrarSector = (await import("@/app/actions/territorio")).renombrarSector;
+    const res = await renombrarSector(sector.id, `${prefijo} - ${nuevoSufijo.trim()}`);
+    setGuardandoNombre(false);
+    
+    if (res.ok) {
+      setEditandoNombre(false);
+      router.refresh();
+    } else {
+      await avisar({ titulo: "No se pudo cambiar el nombre", mensaje: res.error });
+    }
   };
 
   return (
-    <>
-      <div className="relative">
-        <Tarjeta tono="alta" className="space-y-2">
-          <div className="pr-14">
-            <h3 className="truncate text-base font-semibold text-texto">
-              {sector.nombre}
-            </h3>
+    <div className="relative">
+      <Tarjeta tono="alta" className="space-y-2 overflow-hidden">
+        <div className="pr-12">
+          {editandoNombre ? (
+            <div className="flex items-center gap-2">
+              <span className="text-base font-semibold text-texto shrink-0">{prefijo} -</span>
+              <input
+                type="text"
+                value={nuevoSufijo}
+                onChange={(e) => setNuevoSufijo(e.target.value)}
+                disabled={guardandoNombre}
+                className="flex-1 rounded-md border border-borde bg-superficie px-2 py-1 text-sm text-texto focus:border-acento focus:outline-none"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void guardarNombre();
+                  if (e.key === "Escape") setEditandoNombre(false);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => void guardarNombre()}
+                disabled={guardandoNombre}
+                className="rounded p-1 text-acento-texto hover:bg-acento-fondo"
+                aria-label="Guardar nombre"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-texto">
+                {sector.nombre}
+              </h3>
+              {soyAdministrador ? (
+                <button
+                  type="button"
+                  onClick={iniciarEdicion}
+                  className="rounded p-1 text-texto-suave hover:bg-superficie hover:text-texto shrink-0"
+                  aria-label="Editar nombre"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                  </svg>
+                </button>
+              ) : null}
+            </div>
+          )}
 
-            {sector.descripcion ? (
-              <p className="mt-1 line-clamp-2 text-sm text-texto-suave">
-                {sector.descripcion}
-              </p>
-            ) : null}
-          </div>
+          {sector.descripcion ? (
+            <p className="mt-1 line-clamp-2 text-sm text-texto-suave">
+              {sector.descripcion}
+            </p>
+          ) : null}
+        </div>
 
-          <p className="text-xs text-texto-suave">{mostrarTamano(sector.rectangulo)}</p>
+        <p className="text-xs text-texto-suave">{mostrarTamano(sector.rectangulo)}</p>
 
+        <div className="relative">
           <MapaDelSector
             sector={sector}
             todosLosSectores={todosLosSectores}
             anotaciones={anotaciones}
           />
-        </Tarjeta>
-
-        {soyAdministrador ? (
+          
           <button
             type="button"
-            aria-label={`Opciones de ${sector.nombre}`}
-            onClick={() => setOpcionesAbiertas(true)}
-            className="absolute right-2 top-2 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
+            onClick={() => router.push(`/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`)}
+            aria-label="Ver anotaciones"
+            className="absolute bottom-10 right-2 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-acento text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-              <circle cx="12" cy="5" r="1.75" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.75" fill="currentColor" />
-              <circle cx="12" cy="19" r="1.75" fill="currentColor" />
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </button>
-        ) : null}
-      </div>
-
-      <Emergente
-        abierto={opcionesAbiertas}
-        alCerrar={() => setOpcionesAbiertas(false)}
-        titulo={sector.nombre}
-        acciones={
-          <>
-            <BotonDeEmergente
-              variante="secundario"
-              onClick={() => {
-                setOpcionesAbiertas(false);
-                router.push(
-                  `/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`,
-                );
-              }}
-            >
-              Anotaciones
-            </BotonDeEmergente>
-            <BotonDeEmergente
-              variante="secundario"
-              onClick={() => {
-                setOpcionesAbiertas(false);
-                router.push(
-                  `/zonas/${sector.zonaId}/sectores/${sector.id}/editar`,
-                );
-              }}
-            >
-              Editar
-            </BotonDeEmergente>
-            <BotonDeEmergente
-              variante="destructivo"
-              disabled={borrando}
-              onClick={() => void alBorrar()}
-            >
-              {borrando ? "Borrando…" : "Borrar"}
-            </BotonDeEmergente>
-          </>
-        }
-      />
-    </>
+        </div>
+      </Tarjeta>
+    </div>
   );
 }

@@ -18,6 +18,7 @@ import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import {
   FORMATOS_DE_GOOGLE_EARTH,
@@ -105,14 +106,24 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [quitarLaFoto, setQuitarLaFoto] = useState(false);
 
-  const [trayendo, setTrayendo] = useState<Trayendo | null>(null);
-  const [buscando, setBuscando] = useState(false);
+  const [trayendo, setTrayendo] = useState<{
+    deDonde: "Google Earth" | "OpenStreetMap";
+    importacion: Importacion;
+  } | null>(null);
   const [errorAlTraer, setErrorAlTraer] = useState<string | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const [traidoConExito, setTraidoConExito] = useState<string | null>(null);
+
   const entradaDeGoogleEarth = useRef<HTMLInputElement>(null);
 
   const sector = paquete?.sectores.find((cada) => cada.id === sectorId) ?? null;
+  const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
   const anotaciones = (paquete?.anotaciones ?? []).filter(
     (cada) => cada.sectorId === sectorId,
+  );
+
+  const tieneTranquerasOAlambrados = anotaciones.some(
+    (a) => a.icono === "tranquera" || a.color === "#a855f7"
   );
 
   if (estado === "abriendo") {
@@ -274,6 +285,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     setMarcando(false);
     foto.quitar();
     setQuitarLaFoto(false);
+    await sincronizarPaquete();
     router.refresh();
   };
 
@@ -292,6 +304,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       return;
     }
     if (editando?.id === anotacion.id) setEditando(null);
+    await sincronizarPaquete();
     router.refresh();
   };
 
@@ -304,6 +317,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   const alElegirArchivoDeGoogleEarth = async (archivo: File | null) => {
     if (!archivo) return;
     setErrorAlTraer(null);
+    setTraidoConExito(null);
     setBuscando(true);
     const lectura = await leerArchivoDeGoogleEarth(archivo);
     setBuscando(false);
@@ -320,6 +334,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
 
   const traerDeOpenStreetMap = async () => {
     setErrorAlTraer(null);
+    setTraidoConExito(null);
     setBuscando(true);
     const { latNorte, latSur, lonEste, lonOeste } = sector.rectangulo;
     const direccion = `/api/osm/barreras?norte=${latNorte}&sur=${latSur}&este=${lonEste}&oeste=${lonOeste}`;
@@ -349,13 +364,19 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     if (!trayendo) return;
     setGuardando(true);
     setErrorAlTraer(null);
-    const resultado = await crearAnotacionesEnTanda(sectorId, trayendo.importacion.dentro);
+    const resultado = await crearAnotacionesEnTanda(
+      sectorId,
+      trayendo.importacion.dentro,
+      trayendo.deDonde === "Google Earth" ? "google_earth" : "openstreetmap"
+    );
     setGuardando(false);
     if (!resultado.ok) {
       setErrorAlTraer(resultado.error);
       return;
     }
+    setTraidoConExito(trayendo.deDonde);
     setTrayendo(null);
+    await sincronizarPaquete();
     router.refresh();
   };
 
@@ -375,6 +396,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       id: -1,
       sectorId,
       perfilId: "",
+      origen: "manual" as const,
       comentario: editando.comentario,
       fotoUrl: null,
       creadoEn: "",
@@ -423,6 +445,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           id: -(indice + 1),
           sectorId,
           perfilId: "",
+          origen: (trayendo.deDonde === "Google Earth" ? "google_earth" : "openstreetmap") as Anotacion["origen"],
           fotoUrl: null,
           creadoEn: "",
           actualizadoEn: "",
@@ -443,25 +466,38 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     : "Cambiá a Foto para ver el terreno de verdad antes de marcar.";
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:items-start">
-      <div className="space-y-3">
-        <Tarjeta className="space-y-2">
-          <div className="flex items-start gap-2">
-            <BotonVolver
-              destinoSiNoHayVuelta={`/zonas/${zonaId}`}
-              etiqueta="Volver a la zona"
-            />
-            <h1 className="min-w-0 flex-1 break-words pt-3 text-xl font-semibold text-texto">
-              Anotaciones de {sector.nombre}
-            </h1>
-          </div>
-          <p className="text-sm leading-6 text-texto-suave">
-            Marcá los lugares que hay que ver con los propios ojos: un vado, un
-            cruce dudoso, un refugio. Dibujá lo que el mapa no muestra: una
-            huella, un alambrado, un desvío. La foto muestra lo que el mapa no
-            puede.
-          </p>
-        </Tarjeta>
+    <div className="flex flex-col gap-3 max-w-2xl mx-auto">
+      <div>
+        <div className="flex items-center gap-3">
+          <BotonVolver
+            destinoSiNoHayVuelta={`/zonas/${zonaId}`}
+            etiqueta="Volver a la zona"
+          />
+          <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
+            Anotaciones
+          </h1>
+        </div>
+        <div className="mt-1 pl-12">
+          <p className="text-lg font-semibold text-texto">{sector.nombre}</p>
+          <p className="text-sm text-texto-suave">{zona?.nombre}</p>
+        </div>
+      </div>
+
+      <Tarjeta className="space-y-2">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          Dónde queda
+        </h2>
+        <CargadorDeMapa
+          enVivo
+          grande
+          encuadre={sector.rectangulo}
+          rectangulos={[{ rectangulo: sector.rectangulo, clase: "sector" }]}
+          anotaciones={enElMapa}
+          marcandoPunto={marcando}
+          alMarcarPunto={alMarcarPunto}
+        />
+        <p className="text-sm leading-6 text-texto-suave">{queHacerEnElMapa}</p>
+      </Tarjeta>
 
         {editando ? (
           <Tarjeta className="space-y-3">
@@ -687,61 +723,74 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           </Tarjeta>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Boton anchoCompleto paraNavegacion variante="principal" onClick={empezarUnPunto}>
-                {marcando ? "Tocá el mapa para marcar el punto" : "Marcar un lugar"}
-              </Boton>
-              <Boton anchoCompleto paraNavegacion variante="secundario" onClick={empezarUnTrazo}>
-                Dibujar un trazo
-              </Boton>
-            </div>
-
+          <div className="space-y-3">
             <Tarjeta className="space-y-2">
               <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-                Traer de afuera
+                Anotación manual
               </h2>
-              <p className="text-sm leading-6 text-texto-suave">
-                Lo que hayas marcado en Google Earth, o las tranqueras y alambrados
-                que OpenStreetMap tenga en este sector. Antes de guardar se ve qué
-                entra.
-              </p>
-              <input
-                ref={entradaDeGoogleEarth}
-                id="archivo-de-google-earth"
-                type="file"
-                accept={FORMATOS_DE_GOOGLE_EARTH}
-                className="sr-only"
-                onChange={(evento) => {
-                  void alElegirArchivoDeGoogleEarth(evento.target.files?.[0] ?? null);
-                }}
-              />
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Boton anchoCompleto variante="principal" onClick={empezarUnPunto}>
+                  {marcando ? "Tocá el mapa" : "Marcar un lugar"}
+                </Boton>
+                <Boton anchoCompleto variante="secundario" onClick={empezarUnTrazo}>
+                  Dibujar un trazo
+                </Boton>
+              </div>
+            </Tarjeta>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Tarjeta className="space-y-2">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+                  Desde Google Earth
+                </h2>
+                <input
+                  ref={entradaDeGoogleEarth}
+                  id="archivo-de-google-earth"
+                  type="file"
+                  accept={FORMATOS_DE_GOOGLE_EARTH}
+                  className="sr-only"
+                  onChange={(evento) => {
+                    void alElegirArchivoDeGoogleEarth(evento.target.files?.[0] ?? null);
+                  }}
+                />
                 <Boton
                   anchoCompleto
                   variante="secundario"
                   disabled={buscando}
                   onClick={() => entradaDeGoogleEarth.current?.click()}
                 >
-                  {buscando ? "Leyendo…" : "Desde Google Earth"}
+                  {buscando ? "Leyendo…" : "Subir archivo KML/KMZ"}
                 </Boton>
+              </Tarjeta>
+
+              <Tarjeta className="space-y-2">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+                  Descargar desde OpenStreetMap
+                </h2>
                 <Boton
                   anchoCompleto
                   variante="secundario"
-                  disabled={buscando}
+                  disabled={buscando || traidoConExito === "OpenStreetMap" || tieneTranquerasOAlambrados}
                   onClick={() => void traerDeOpenStreetMap()}
                 >
-                  {buscando ? "Preguntando…" : "Tranqueras y alambrados"}
+                  {buscando
+                    ? "Preguntando…"
+                    : traidoConExito === "OpenStreetMap" || tieneTranquerasOAlambrados
+                      ? "✓ Ya descargado"
+                      : "Tranqueras y alambrados"}
                 </Boton>
-              </div>
-              {errorAlTraer ? (
-                <p
-                  role="alert"
-                  className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto"
-                >
-                  {errorAlTraer}
-                </p>
-              ) : null}
-            </Tarjeta>
+              </Tarjeta>
+            </div>
+
+            {errorAlTraer ? (
+              <p
+                role="alert"
+                className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto"
+              >
+                {errorAlTraer}
+              </p>
+            ) : null}
+          </div>
           </>
         )}
 
@@ -757,69 +806,88 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
               </p>
             </Tarjeta>
           ) : (
-            anotaciones.map((anotacion) => (
-              <Tarjeta key={anotacion.id} tono="alta" className="space-y-2">
-                <div className="flex items-start gap-3">
-                  {anotacion.fotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- la foto viene del depósito y ya está achicada por el módulo de fotos.
-                    <img
-                      src={anotacion.fotoUrl}
-                      alt=""
-                      className="h-16 w-16 shrink-0 rounded-lg object-cover"
-                    />
-                  ) : null}
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 text-base font-semibold text-texto">
-                      {anotacion.tipo === "trazo" ? (
-                        <>
-                          <span
-                            aria-hidden
-                            className="h-3 w-6 shrink-0 rounded-full"
-                            style={{ backgroundColor: anotacion.color ?? undefined }}
-                          />
-                          Trazo · {nombreDelColor(anotacion.color)}
-                        </>
-                      ) : (
-                        COMO_SE_LLAMA[anotacion.icono ?? "cruce"]
-                      )}
-                    </p>
-                    {anotacion.comentario ? (
-                      <p className="mt-1 text-sm leading-6 text-texto-suave">
-                        {anotacion.comentario}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
+            anotaciones.map((anotacion) => {
+              let origenTexto = "";
+              if (anotacion.origen === "google_earth") origenTexto = "Desde Google Earth";
+              else if (anotacion.origen === "openstreetmap") origenTexto = "Desde OpenStreetMap";
+              else origenTexto = anotacion.tipo === "punto" ? "Punto marcado a mano" : "Trazo manual";
 
-                <div className="flex gap-2">
-                  <Boton variante="secundario" onClick={() => abrirParaEditar(anotacion)}>
-                    Editar
-                  </Boton>
-                  <Boton variante="destructivo" onClick={() => void alBorrar(anotacion)}>
-                    Borrar
-                  </Boton>
-                </div>
-              </Tarjeta>
-            ))
+              return (
+                <Tarjeta key={anotacion.id} tono="alta" className="relative pr-16 space-y-2">
+                  <div className="absolute right-2 top-2 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => abrirParaEditar(anotacion)}
+                      className="p-2 text-texto-suave hover:text-texto hover:bg-superficie rounded-lg transition-colors"
+                      aria-label="Editar"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void alBorrar(anotacion)}
+                      className="p-2 text-rojo-texto hover:bg-rojo-fondo rounded-lg transition-colors"
+                      aria-label="Borrar"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    {anotacion.fotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- la foto viene del depósito y ya está achicada por el módulo de fotos.
+                      <img
+                        src={anotacion.fotoUrl}
+                        alt=""
+                        className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-2 text-base font-semibold text-texto">
+                        {anotacion.tipo === "trazo" ? (
+                          <>
+                            <span
+                              aria-hidden
+                              className="h-3 w-6 shrink-0 rounded-full"
+                              style={{ backgroundColor: anotacion.color ?? undefined }}
+                            />
+                            {nombreDelColor(anotacion.color)}
+                          </>
+                        ) : (
+                          <>
+                            <span 
+                              aria-hidden 
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-acento text-acento-texto text-xs font-bold"
+                            >
+                              {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]?.charAt(0).toUpperCase()}
+                            </span>
+                            {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]}
+                          </>
+                        )}
+                      </p>
+                      
+                      <p className="text-xs uppercase tracking-wide text-texto-suave mt-1 font-semibold">
+                        {origenTexto}
+                      </p>
+
+                      {anotacion.comentario ? (
+                        <p className="mt-2 text-sm leading-6 text-texto-suave">
+                          {anotacion.comentario}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                </Tarjeta>
+              );
+            })
           )}
         </div>
-      </div>
-
-      <Tarjeta className="space-y-2 lg:sticky lg:top-0">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-          Dónde queda
-        </h2>
-        <CargadorDeMapa
-          enVivo
-          grande
-          encuadre={sector.rectangulo}
-          rectangulos={[{ rectangulo: sector.rectangulo, clase: "sector" }]}
-          anotaciones={enElMapa}
-          marcandoPunto={marcando}
-          alMarcarPunto={alMarcarPunto}
-        />
-        <p className="text-sm leading-6 text-texto-suave">{queHacerEnElMapa}</p>
-      </Tarjeta>
     </div>
   );
 }

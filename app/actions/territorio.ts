@@ -54,8 +54,11 @@ export type DatosDeZona = {
   rectangulo: Rectangulo;
 };
 
-export async function crearZona(
+import { calcularCuadricula } from "@/lib/territorio/fraccionamiento";
+
+export async function crearZonaConSectores(
   datos: DatosDeZona,
+  cuadricula: { filas: number; columnas: number }
 ): Promise<Resultado<{ zonaId: number }>> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
@@ -63,7 +66,9 @@ export async function crearZona(
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
   const supabase = await crearClienteEnElServidor();
-  const { data, error } = await supabase
+  
+  // 1. Crear la Zona
+  const { data: zonaData, error: zonaError } = await supabase
     .from("zonas")
     .insert({
       perfil_id: usuario.id,
@@ -74,14 +79,63 @@ export async function crearZona(
     .select("id")
     .single();
 
-  if (error || !data) {
+  if (zonaError || !zonaData) {
     return falla(
-      traducirErrorDeBase(error?.message ?? "No se pudo guardar la zona."),
+      traducirErrorDeBase(zonaError?.message ?? "No se pudo guardar la zona."),
+    );
+  }
+
+  const zonaId = (zonaData as { id: number }).id;
+
+  // 2. Crear los Sectores
+  const celdas = calcularCuadricula(datos.rectangulo, cuadricula.filas, cuadricula.columnas);
+  const letras = ["A", "B", "C", "D", "E", "F"];
+
+  const paraInsertar = celdas.map((celda) => {
+    const letra = letras[celda.columna - 1] ?? "Z";
+    return {
+      zona_id: zonaId,
+      perfil_id: usuario.id,
+      nombre: `${letra}${celda.fila} - ${datos.nombre.trim()}`,
+      descripcion: null,
+      ...escribirRectangulo(celda.rectangulo),
+    };
+  });
+
+  const { error: sectoresError } = await supabase
+    .from("sectores")
+    .insert(paraInsertar);
+
+  if (sectoresError) {
+    return falla(
+      traducirErrorDeBase(sectoresError.message ?? "Se guardó la zona pero fallaron los sectores."),
     );
   }
 
   revalidatePath("/zonas");
-  return exito({ zonaId: (data as { id: number }).id });
+  return exito({ zonaId });
+}
+
+export async function renombrarSector(
+  sectorId: number,
+  nuevoNombre: string,
+): Promise<Resultado> {
+  const usuario = await exigirSesion();
+  if (!usuario) return falla(SIN_SESION);
+  if (!limpiar(nuevoNombre)) return falla("El nombre no puede quedar vacío.");
+
+  const supabase = await crearClienteEnElServidor();
+  const { error } = await supabase
+    .from("sectores")
+    .update({ nombre: nuevoNombre.trim() })
+    .eq("id", sectorId)
+    .is("eliminado_en", null);
+
+  if (error) return falla(traducirErrorDeBase(error.message));
+
+  revalidatePath("/zonas");
+  revalidatePath(`/zonas`); // Ideal to force refresh list
+  return exito();
 }
 
 export async function editarZona(
@@ -192,6 +246,8 @@ export async function crearSector(
   revalidatePath(`/zonas/${datos.zonaId}`);
   return exito({ sectorId: (data as { id: number }).id });
 }
+
+
 
 export async function editarSector(
   sectorId: number,
@@ -333,6 +389,7 @@ export async function crearAnotacion(
     .insert({
       sector_id: datos.sectorId,
       perfil_id: usuario.id,
+      origen: "manual",
       tipo: datos.tipo,
       icono: datos.tipo === "punto" ? datos.icono : null,
       color: datos.tipo === "trazo" ? datos.color : null,
@@ -381,6 +438,7 @@ export async function crearAnotacion(
 export async function crearAnotacionesEnTanda(
   sectorId: number,
   lista: Array<Omit<DatosDeAnotacion, "sectorId" | "foto" | "quitarLaFoto">>,
+  origen: "google_earth" | "openstreetmap"
 ): Promise<Resultado<{ creadas: number }>> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
@@ -399,6 +457,7 @@ export async function crearAnotacionesEnTanda(
       lista.map((datos) => ({
         sector_id: sectorId,
         perfil_id: usuario.id,
+        origen: origen,
         tipo: datos.tipo,
         icono: datos.tipo === "punto" ? datos.icono : null,
         color: datos.tipo === "trazo" ? datos.color : null,

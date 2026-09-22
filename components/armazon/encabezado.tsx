@@ -37,17 +37,6 @@ export function Encabezado({ onMenuToggle, userName, userAvatarUrl }: HeaderProp
         </div>
 
         <BotonDeModo />
-
-        <Link
-          href="/perfiles"
-          aria-label={`Mi perfil (${userName})`}
-          className="flex shrink-0 items-center gap-2 rounded-xl py-1 pl-2 pr-1 transition-opacity hover:opacity-90"
-        >
-          <span className="max-w-[7.5rem] truncate text-sm font-medium text-texto sm:max-w-[10rem]">
-            {userName}
-          </span>
-          <Avatar src={userAvatarUrl} name={userName} size="sm" />
-        </Link>
       </div>
     </header>
   );

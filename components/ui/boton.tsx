@@ -63,8 +63,8 @@ export function Boton({
       onPointerDown={alTocar}
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
-        "inline-flex items-center justify-center rounded-xl px-5 font-semibold transition-colors",
-        paraNavegacion ? "min-h-16 py-4 text-lg" : "min-h-14 py-3 text-base",
+        "inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors",
+        paraNavegacion ? "min-h-16 py-4 text-lg" : "min-h-10 py-2 text-sm",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
         "disabled:cursor-not-allowed disabled:opacity-50",
         anchoCompleto ? "w-full" : "",

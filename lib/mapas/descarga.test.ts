@@ -84,6 +84,7 @@ function anotacionConFoto(id: number, sectorId: number, fotoUrl: string): Anotac
     sectorId,
     perfilId: "alguien",
     tipo: "punto",
+    origen: "manual",
     icono: "cruce",
     color: null,
     comentario: null,

@@ -42,6 +42,8 @@ type CamposDeTerritorioProps = {
   alCambiar: (campos: CamposDelTerritorio) => void;
   /** Los pedazos que ya existen, para ver dónde cae el nuevo. */
   rectangulosExistentes?: Rectangulo[];
+  /** Rectángulos adicionales ya formateados con su clase (como la previsualización). */
+  rectangulosExtra?: RectanguloEnElMapa[];
   /**
    * El territorio que contiene a este: la zona, cuando se arma un sector.
    *
@@ -65,6 +67,7 @@ export function CamposDeTerritorio({
   campos,
   alCambiar,
   rectangulosExistentes = [],
+  rectangulosExtra = [],
   contexto = null,
   pie,
 }: CamposDeTerritorioProps) {
@@ -103,6 +106,7 @@ export function CamposDeTerritorio({
       ? [{ rectangulo: contexto.rectangulo, clase: "zona" as const }]
       : []),
     ...comoSectores(rectangulosExistentes),
+    ...rectangulosExtra,
   ];
 
   const seSale =

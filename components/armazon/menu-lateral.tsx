@@ -69,6 +69,18 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    href: "/mapas",
+    label: "Mapas",
+    necesitaSenal: false,
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+        <path d="M9 3 2 7v14l7-4 6 4 7-4V3l-7 4-6-4Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 3v14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 7v14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
 ];
 
 type SidebarProps = {

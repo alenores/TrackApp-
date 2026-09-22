@@ -1,13 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { borrarZona } from "@/app/actions/territorio";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FlechaRedonda } from "@/components/ui/flecha-redonda";
 import { useDialogos } from "@/components/ui/dialogos";
-import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
-import { Enlace } from "@/components/ui/enlace";
 import type { Zona } from "@/types/database";
 
 /**
@@ -58,80 +56,99 @@ export function TarjetaDeZona({
     router.refresh();
   };
 
+  const temporizadorRef = useRef<NodeJS.Timeout | null>(null);
+
+  const iniciarToque = () => {
+    if (!soyAdministrador) return;
+    temporizadorRef.current = setTimeout(() => {
+      setOpcionesAbiertas(true);
+      temporizadorRef.current = null;
+    }, 500);
+  };
+
+  const cancelarToque = () => {
+    if (temporizadorRef.current) {
+      clearTimeout(temporizadorRef.current);
+      temporizadorRef.current = null;
+    }
+  };
+
+  const manejarClic = () => {
+    if (opcionesAbiertas) return;
+    router.push(`/zonas/${zona.id}`);
+  };
+
   return (
-    <>
-      <div className="relative">
-        <Enlace href={`/zonas/${zona.id}`} className="block">
-          <Tarjeta interactiva className="space-y-2">
-            <div className="flex items-start justify-between gap-3 pr-14">
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-semibold text-texto">
-                  {zona.nombre}
-                </h2>
+    <div className="relative">
+      <div 
+        className="block cursor-pointer select-none"
+        onClick={manejarClic}
+        onPointerDown={iniciarToque}
+        onPointerUp={cancelarToque}
+        onPointerLeave={cancelarToque}
+        onPointerCancel={cancelarToque}
+      >
+        <Tarjeta interactiva className="space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-lg font-semibold text-texto">
+                {zona.nombre}
+              </h2>
 
-                {zona.descripcion ? (
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-texto-suave">
-                    {zona.descripcion}
-                  </p>
-                ) : null}
-              </div>
-
-              <FlechaRedonda direction="right" className="-mt-0.5 shrink-0" />
+              {zona.descripcion ? (
+                <p className="mt-1 line-clamp-2 text-sm leading-6 text-texto-suave">
+                  {zona.descripcion}
+                </p>
+              ) : null}
             </div>
 
-            {cantidadDeSectores !== undefined ? (
-              <p className="text-xs text-texto-suave">
-                {cantidadDeSectores === 0
-                  ? "Todavía no tiene sectores"
-                  : cantidadDeSectores === 1
-                    ? "1 sector"
-                    : `${cantidadDeSectores} sectores`}
-              </p>
-            ) : null}
-          </Tarjeta>
-        </Enlace>
+            <FlechaRedonda direction="right" className="-mt-0.5 shrink-0" />
+          </div>
 
-        {soyAdministrador ? (
-          <button
-            type="button"
-            aria-label={`Opciones de ${zona.nombre}`}
-            onClick={() => setOpcionesAbiertas(true)}
-            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-              <circle cx="12" cy="5" r="1.75" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.75" fill="currentColor" />
-              <circle cx="12" cy="19" r="1.75" fill="currentColor" />
-            </svg>
-          </button>
-        ) : null}
+          {cantidadDeSectores !== undefined ? (
+            <p className="text-xs text-texto-suave">
+              {cantidadDeSectores === 0
+                ? "Todavía no tiene sectores"
+                : cantidadDeSectores === 1
+                  ? "1 sector"
+                  : `${cantidadDeSectores} sectores`}
+            </p>
+          ) : null}
+        </Tarjeta>
       </div>
 
-      <Emergente
-        abierto={opcionesAbiertas}
-        alCerrar={() => setOpcionesAbiertas(false)}
-        titulo={zona.nombre}
-        acciones={
-          <>
-            <BotonDeEmergente
-              variante="secundario"
-              onClick={() => {
-                setOpcionesAbiertas(false);
-                router.push(`/zonas/${zona.id}/editar`);
-              }}
-            >
-              Editar
-            </BotonDeEmergente>
-            <BotonDeEmergente
-              variante="destructivo"
-              disabled={borrando}
-              onClick={() => void alBorrar()}
-            >
-              {borrando ? "Borrando…" : "Borrar"}
-            </BotonDeEmergente>
-          </>
-        }
-      />
-    </>
+      {opcionesAbiertas ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-end gap-3 rounded-2xl bg-superficie/90 px-4 backdrop-blur-sm">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpcionesAbiertas(false);
+            }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-superficie text-texto shadow-sm transition-colors hover:bg-superficie-alta"
+            aria-label="Cerrar opciones"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              void alBorrar();
+            }}
+            disabled={borrando}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-destructivo text-destructivo-texto shadow-sm transition-colors hover:bg-destructivo-hover"
+            aria-label="Borrar"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

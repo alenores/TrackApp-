@@ -24,6 +24,7 @@ function existente(geometria: Anotacion["geometria"]): Anotacion {
     sectorId: 1,
     perfilId: "x",
     tipo: geometria.type === "Point" ? "punto" : "trazo",
+    origen: "manual",
     icono: null,
     color: null,
     comentario: null,

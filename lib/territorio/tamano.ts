@@ -4,10 +4,20 @@ import type { Rectangulo } from "@/types/database";
 /**
  * Qué tan grande es un pedazo de territorio.
  *
- * **Acá no se estima cuánto va a pesar el mapa.** Los archivos de mapa todavía
- * no existen, así que cualquier número de megas sería inventado, y un número
- * inventado en pantalla es peor que no poner nada: el usuario lo cree.
+ * **Acá no se estima cuánto va a pesar el mapa.** 
+ * Bueno, ahora sí lo hacemos a pedido del usuario, pero solo como una
+ * advertencia visual en la creación. Un número inventado en pantalla 
+ * puede ser peligroso si no se deja claro que es estimado.
  */
+
+export const UMBRAL_DE_RIESGO_MB = 100;
+const MB_POR_KM2 = 0.5;
+
+export function estimarPesoEnMB(rectangulo: Rectangulo): number {
+  const { anchoKm, altoKm } = tamanoDelRectangulo(rectangulo);
+  const areaKm2 = anchoKm * altoKm;
+  return Math.round(areaKm2 * MB_POR_KM2);
+}
 
 export type TamanoDelRectangulo = {
   anchoKm: number;

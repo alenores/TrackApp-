@@ -13,11 +13,11 @@ ejercicio de aprendizaje y no cumple estas reglas. No lo copies como referencia
 ni lo tomes como decisión tomada. Si una pantalla vieja hace algo que este
 archivo prohíbe, está mal la pantalla, no la regla.
 
-**Ale no lee código.** Todo lo que se explique tiene que entenderse sin saber
+**Alejandro (el ususrio y dueño de este producto) no lee ni entiende código en profundidad.** Todo lo que se explique tiene que entenderse sin saber
 programar. Nada de nombres de archivos ni de líneas en las explicaciones.
 
 **Ante ambigüedad, se pregunta.** Una pregunta corta ahorra medio día. No
-avanzar sobre suposiciones.
+avanzar sobre suposiciones. mientras menos decisiones sin defi ir mejor, por lo cual preguntarle al usuario la cantidad de veces que sea necesario.
 
 **Los datos que hay en la base no son datos.** Las filas que puedan quedar de
 rutas, zonas, sectores o usuarios son restos de la app vieja. **La app arranca
@@ -95,6 +95,7 @@ Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
   pulgar. Nada crítico en las esquinas de arriba.
 - **Pantalla mojada = toques fantasma.** Toda acción que borre o cancele algo
   pide confirmación.
+  **todo lo de guantes y una sola mano aplica para el modulo de navegación, no para sectores, zonas y demas modulos**
 
 ### Mapa
 
