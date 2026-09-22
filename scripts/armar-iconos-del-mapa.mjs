@@ -49,6 +49,12 @@ const PROPIOS = [
   { nombre: "viewpoint", dibujo: "mirador", paleta: "natural" },
   { nombre: "cave_entrance", dibujo: "cueva", paleta: "natural" },
   { nombre: "spring", dibujo: "manantial", paleta: "agua" },
+  { nombre: "arroyo", dibujo: "arroyo", paleta: "agua" },
+  { nombre: "cascada", dibujo: "cascada", paleta: "agua" },
+  { nombre: "puente", dibujo: "puente", paleta: "natural" },
+  { nombre: "cartel", dibujo: "cartel", paleta: "natural" },
+  { nombre: "cruce", dibujo: "cruce", paleta: "natural" },
+  { nombre: "tranquera", dibujo: "tranquera", paleta: "natural" },
 ];
 
 /** Medidos sobre los íconos de Protomaps de cada familia, píxel por píxel. */

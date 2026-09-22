@@ -41,6 +41,73 @@ import {
 } from "@/lib/anotaciones/colores-de-trazo";
 import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database";
 
+const ICONOS_SVG: Record<IconoPunto, React.ReactNode> = {
+  refugio: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M3 12l9-8 9 8M5 10v10h14V10M9 20v-6h6v6" />
+    </svg>
+  ),
+  cumbre: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M8 14l4-8 4 8M4 20h16" />
+    </svg>
+  ),
+  pueblo: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+      <path d="M9 7h6M9 11h6M9 15h6" />
+    </svg>
+  ),
+  fuente: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M12 22a8 8 0 0 0 8-8c0-4-8-12-8-12S4 10 4 14a8 8 0 0 0 8 8z" />
+    </svg>
+  ),
+  mirador: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  iglesia: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M12 3v8M9 6h6M8 21V11l4-3 4 3v10z" />
+    </svg>
+  ),
+  arroyo: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M2 12 Q 7 5 12 12 T 22 12" />
+    </svg>
+  ),
+  cascada: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M7 3v18M12 3v18M17 3v18" strokeDasharray="2 2"/>
+    </svg>
+  ),
+  puente: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M3 18 Q 12 4 21 18" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  ),
+  cartel: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <rect x="5" y="4" width="14" height="8" />
+      <line x1="12" y1="12" x2="12" y2="20" />
+    </svg>
+  ),
+  cruce: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  ),
+  tranquera: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+      <path d="M4 4v16M20 4v16M4 12h16M4 8l16 8" />
+    </svg>
+  ),
+};
+
 /**
  * Las anotaciones de un sector: marcar un punto o dibujar un trazo, escribirle
  * algo y sumarle una foto.
@@ -489,7 +556,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
         </h2>
         <CargadorDeMapa
           enVivo
-          grande
+          principal
           encuadre={sector.rectangulo}
           rectangulos={[{ rectangulo: sector.rectangulo, clase: "sector" }]}
           anotaciones={enElMapa}
@@ -849,34 +916,44 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
                       />
                     ) : null}
                     <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-2 text-base font-semibold text-texto">
-                        {anotacion.tipo === "trazo" ? (
-                          <>
-                            <span
-                              aria-hidden
-                              className="h-3 w-6 shrink-0 rounded-full"
-                              style={{ backgroundColor: anotacion.color ?? undefined }}
-                            />
-                            {nombreDelColor(anotacion.color)}
-                          </>
-                        ) : (
-                          <>
-                            <span 
-                              aria-hidden 
-                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-acento text-acento-texto text-xs font-bold"
-                            >
-                              {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]?.charAt(0).toUpperCase()}
-                            </span>
-                            {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]}
-                          </>
-                        )}
-                      </p>
+                      {anotacion.origen === "openstreetmap" ? (
+                        <p className="flex items-center gap-2 text-base font-semibold text-texto">
+                          {anotacion.tipo === "trazo" ? (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+                              <path d="M4 4v16M20 4v16M4 8h16M4 16h16" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-texto-suave shrink-0">
+                              <path d="M4 4v16M20 4v16M4 12h16M4 8l16 8" />
+                            </svg>
+                          )}
+                          {anotacion.comentario}
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-2 text-base font-semibold text-texto">
+                          {anotacion.tipo === "trazo" ? (
+                            <>
+                              <span
+                                aria-hidden
+                                className="h-3 w-6 shrink-0 rounded-full"
+                                style={{ backgroundColor: anotacion.color ?? undefined }}
+                              />
+                              {nombreDelColor(anotacion.color)}
+                            </>
+                          ) : (
+                            <>
+                              {ICONOS_SVG[anotacion.icono ?? "cruce"]}
+                              {COMO_SE_LLAMA[anotacion.icono ?? "cruce"]}
+                            </>
+                          )}
+                        </p>
+                      )}
                       
                       <p className="text-xs uppercase tracking-wide text-texto-suave mt-1 font-semibold">
                         {origenTexto}
                       </p>
 
-                      {anotacion.comentario ? (
+                      {anotacion.comentario && anotacion.origen !== "openstreetmap" ? (
                         <p className="mt-2 text-sm leading-6 text-texto-suave">
                           {anotacion.comentario}
                         </p>

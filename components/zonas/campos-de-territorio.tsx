@@ -237,7 +237,7 @@ export function CamposDeTerritorio({
 
           <CargadorDeMapa
             enVivo
-            grande
+            principal
             dibujando={dibujando}
             alDibujar={alDibujar}
             rectangulo={armado.ok ? armado.rectangulo : null}

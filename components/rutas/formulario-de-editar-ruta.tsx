@@ -54,6 +54,7 @@ export function FormularioDeEditarRuta({ rutaId, miPerfilId }: EditarRutaFormPro
       equipo: ruta.equipo ?? "",
       complicaciones: ruta.complicaciones ?? "",
       comentario: ruta.comentario ?? "",
+      color: ruta.color ?? "naranja",
     });
   }
 
@@ -103,6 +104,7 @@ export function FormularioDeEditarRuta({ rutaId, miPerfilId }: EditarRutaFormPro
       nivelEsfuerzo: campos.nivelEsfuerzo,
       equipo: campos.equipo || null,
       complicaciones: campos.complicaciones || null,
+      color: campos.color,
     });
 
     setGuardando(false);

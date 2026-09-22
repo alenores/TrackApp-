@@ -103,6 +103,7 @@ export function FormularioDeNuevaRuta() {
         nivelEsfuerzo: campos.nivelEsfuerzo,
         equipo: campos.equipo || null,
         complicaciones: campos.complicaciones || null,
+        color: campos.color,
       },
       recorrido.geometria,
       archivo,

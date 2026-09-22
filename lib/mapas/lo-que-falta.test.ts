@@ -46,6 +46,7 @@ function ruta(id: number, lonOeste: number, ancho = 0.1): RutaResumen {
     largoKm: 10,
     desnivelPositivoM: null,
     desnivelNegativoM: null,
+    color: "naranja",
     rectangulo: rect(lonOeste, ancho),
     creadoEn: "2026-09-01T10:00:00Z",
     actualizadoEn: "2026-09-01T10:00:00Z",

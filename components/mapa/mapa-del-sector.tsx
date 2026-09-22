@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -40,13 +40,26 @@ export function MapaDelSector({
   todosLosSectores,
   anotaciones,
 }: PropiedadesDelMapaDelSector) {
-  const { mapa, paso, fallaDeFotos, bajar, cancelar, sacar } = useMapaDelSector(
+  const { mapa, paso, fallaDeFotos, bajar, bajarFotosSolo, cancelar, sacar } = useMapaDelSector(
     sector,
     anotaciones,
   );
   // Bajar necesita señal. Sacar no: el espacio se libera acá mismo.
   const haySenal = useHaySenal();
   const { confirmar, avisar } = useDialogos();
+  const bajandoFotosRef = useRef(false);
+
+  useEffect(() => {
+    if (!mapa || !haySenal || paso.paso !== "quieto") return;
+    
+    const faltan = sectoresConFotosSinBajar([sector], anotaciones, [mapa])[0]?.cuantas ?? 0;
+    if (faltan > 0 && !bajandoFotosRef.current) {
+      bajandoFotosRef.current = true;
+      void bajarFotosSolo().finally(() => {
+        bajandoFotosRef.current = false;
+      });
+    }
+  }, [mapa, haySenal, paso.paso, sector, anotaciones, bajarFotosSolo]);
   const [sacando, setSacando] = useState(false);
 
   const alSacar = async () => {

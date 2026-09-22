@@ -16,9 +16,11 @@ import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import {
   mapasBajados,
   mirarLosMapas,
+  anotarMapaBajado,
   type MapaDeSector,
   type TipoDeMapa,
 } from "@/lib/offline/mapas";
+import { bajarLasFotosDeLasAnotaciones } from "@/lib/anotaciones/descarga";
 import type { Anotacion, Sector } from "@/types/database";
 
 /**
@@ -147,5 +149,26 @@ export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
     [sector],
   );
 
-  return { mapa, paso, fallaDeFotos, bajar, cancelar, sacar };
+  const bajarFotosSolo = useCallback(async () => {
+    if (!mapa) return;
+    const cancelador = new AbortController();
+    
+    const fotos = await bajarLasFotosDeLasAnotaciones({
+      anotaciones: anotaciones.filter((cada) => cada.sectorId === sector.id),
+      senal: cancelador.signal,
+    });
+
+    if (fotos.motivo) {
+      return; // Falló silenciosamente, se reintentará luego
+    }
+
+    const fotosGuardadas = Array.from(new Set([...mapa.fotos, ...fotos.direcciones]));
+
+    anotarMapaBajado({
+      ...mapa,
+      fotos: fotosGuardadas,
+    });
+  }, [sector.id, anotaciones, mapa]);
+
+  return { mapa, paso, fallaDeFotos, bajar, bajarFotosSolo, cancelar, sacar };
 }

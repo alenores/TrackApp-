@@ -133,6 +133,7 @@ export type RutaResumen = {
   desnivelPositivoM: number | null;
   desnivelNegativoM: number | null;
   rectangulo: Rectangulo;
+  color: string;
   creadoEn: string;
   actualizadoEn: string;
 };

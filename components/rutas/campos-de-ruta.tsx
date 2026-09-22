@@ -11,6 +11,7 @@ import {
   type ActividadRuta,
   type NivelEsfuerzo,
 } from "@/types/database";
+import { COLORES_DE_RUTA } from "@/lib/rutas/colores";
 
 /**
  * Los campos de una ruta, los mismos al subirla y al editarla.
@@ -28,6 +29,7 @@ export type CamposDeLaRuta = {
   equipo: string;
   complicaciones: string;
   comentario: string;
+  color: string;
 };
 
 export const CAMPOS_VACIOS: CamposDeLaRuta = {
@@ -39,6 +41,7 @@ export const CAMPOS_VACIOS: CamposDeLaRuta = {
   equipo: "",
   complicaciones: "",
   comentario: "",
+  color: "naranja",
 };
 
 const OPCIONES_DE_ACTIVIDAD: Opcion<ActividadRuta>[] = ACTIVIDADES_RUTA.map(
@@ -103,6 +106,32 @@ export function CamposDeRuta({ campos, alCambiar }: CamposDeRutaProps) {
           onChange={(evento) => cambiar({ descripcion: evento.target.value })}
           placeholder="En dos líneas: por dónde va y qué esperar."
         />
+      </Tarjeta>
+
+      <Tarjeta className="space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          Color en el mapa
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          {COLORES_DE_RUTA.map((c) => (
+            <button
+              key={c.clave}
+              type="button"
+              aria-label={c.nombre}
+              onClick={() => cambiar({ color: c.clave })}
+              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform ${
+                campos.color === c.clave
+                  ? "border-texto scale-110 shadow-sm"
+                  : "border-transparent hover:scale-105"
+              }`}
+            >
+              <span
+                className="h-8 w-8 rounded-full"
+                style={{ backgroundColor: c.hex }}
+              />
+            </button>
+          ))}
+        </div>
       </Tarjeta>
 
       <Tarjeta>

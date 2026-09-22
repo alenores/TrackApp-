@@ -16,6 +16,7 @@ import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 import { useModo } from "@/hooks/use-modo";
+import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
@@ -138,7 +139,9 @@ type MapaProps = {
    * En el celular queda igual de alto que siempre; en la computadora se estira
    * hasta ocupar casi toda la altura, que es donde se necesita ver.
    */
-  grande?: boolean;
+  principal?: boolean;
+  /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
+  controlesAdicionales?: ReactNode;
   /**
    * `true` mientras el usuario está marcando el rectángulo sobre el mapa.
    *
@@ -231,6 +234,7 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
         titulo: [anotacion.icono, anotacion.comentario]
           .filter(Boolean)
           .join(" · "),
+        icono: anotacion.icono ?? "cruce",
       },
       geometry: anotacion.geometria,
     })),
@@ -257,7 +261,8 @@ export function Mapa({
   rectangulos = [],
   referencia = null,
   pantallaCompleta = false,
-  grande = false,
+  principal = false,
+  controlesAdicionales = null,
   dibujando = false,
   alDibujar,
   marcandoPunto = false,
@@ -270,6 +275,57 @@ export function Mapa({
   const mapaRef = useRef<maplibregl.Map | null>(null);
   const marcadoresDeEtiquetasRef = useRef<maplibregl.Marker[]>([]);
   const listoRef = useRef(false);
+
+  // ===========================================================================
+  // ESTADOS Y EFECTOS
+  // ===========================================================================
+
+  const [gpsPrendido, setGpsPrendido] = useState(false);
+  const [posicionPropia, setPosicionPropia] = useState<PosicionEnElMapa | null>(null);
+  const vigilanciaRef = useRef<number | null>(null);
+  
+  const primeraVezRef = useRef(true);
+
+  const posicionEfectiva = miPosicion || posicionPropia;
+
+  // Apagar el GPS al cerrar el mapa
+  useEffect(() => {
+    return () => {
+      if (vigilanciaRef.current !== null) {
+        navigator.geolocation.clearWatch(vigilanciaRef.current);
+      }
+    };
+  }, []);
+
+  const alternarGps = useCallback(() => {
+    if (gpsPrendido) {
+      if (posicionPropia && mapaRef.current) {
+        // Si ya está prendido, al tocar de nuevo simplemente se centra.
+        mapaRef.current.flyTo({ center: [posicionPropia.lon, posicionPropia.lat], zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14 });
+      }
+    } else {
+      if (!navigator.geolocation) return;
+      setGpsPrendido(true);
+      primeraVezRef.current = true;
+      vigilanciaRef.current = navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          setPosicionPropia({ lat, lon });
+          
+          if (primeraVezRef.current && mapaRef.current) {
+            primeraVezRef.current = false;
+            mapaRef.current.flyTo({ center: [lon, lat], zoom: 14 });
+          }
+        },
+        (error) => {
+          console.error("Error obteniendo ubicación:", error);
+        },
+        { enableHighAccuracy: true }
+      );
+    }
+  }, [gpsPrendido, posicionPropia]);
+
   /** Lo que se quiso dibujar antes de que el mapa terminara de armarse. */
   const esperandoRef = useRef<Array<() => void>>([]);
   const { modo } = useModo();
@@ -472,7 +528,7 @@ export function Mapa({
         source: FUENTE_RUTA,
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
-          "line-color": colores.linea,
+          "line-color": ["coalesce", ["get", "color"], colores.linea],
           "line-width": 5,
           "line-opacity": 0.95,
         },
@@ -488,6 +544,34 @@ export function Mapa({
           "circle-color": ["coalesce", ["get", "color"], colores.anotacion],
           "circle-stroke-width": 2,
           "circle-stroke-color": colores.contorno,
+        },
+      });
+
+      mapa.addLayer({
+        id: "anotaciones-punto-icono",
+        type: "symbol",
+        source: FUENTE_ANOTACIONES,
+        filter: ["all", ["==", ["geometry-type"], "Point"], ["has", "icono"]],
+        layout: {
+          "icon-image": [
+            "match",
+            ["get", "icono"],
+            "refugio", "alpine_hut",
+            "cumbre", "peak",
+            "pueblo", "townspot",
+            "fuente", "spring",
+            "mirador", "viewpoint",
+            "iglesia", "place_of_worship",
+            "arroyo", "arroyo",
+            "cascada", "cascada",
+            "puente", "puente",
+            "cartel", "cartel",
+            "cruce", "cruce",
+            "tranquera", "tranquera",
+            "none"
+          ],
+          "icon-size": 1.2,
+          "icon-allow-overlap": true,
         },
       });
 
@@ -831,7 +915,7 @@ export function Mapa({
       ponerDatos(
         mapa,
         FUENTE_POSICION,
-        miPosicion
+        posicionEfectiva
           ? {
               type: "FeatureCollection",
               features: [
@@ -840,7 +924,7 @@ export function Mapa({
                   properties: {},
                   geometry: {
                     type: "Point",
-                    coordinates: [miPosicion.lon, miPosicion.lat],
+                    coordinates: [posicionEfectiva.lon, posicionEfectiva.lat],
                   },
                 },
               ],
@@ -904,7 +988,7 @@ export function Mapa({
           ? "fixed inset-0 h-dvh w-screen"
           : pantallaCompleta
             ? "relative h-full w-full"
-            : grande
+            : principal
               ? "relative h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
               : // La referencia se come alto: si no se lo devolvemos, el mapa
                 // queda una franja donde no se ve si la ruta cae adentro.
@@ -944,7 +1028,7 @@ export function Mapa({
         se descarga nunca, así que sin internet no hay nada que elegir.
       */}
       {enVivo ? (
-        <div className="absolute left-3 top-3 flex overflow-hidden rounded-md border border-borde-fuerte bg-superficie shadow-sm">
+        <div className="absolute left-3 top-3 flex h-14 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
           {(
             [
               ["dibujo", "Básico"],
@@ -957,7 +1041,7 @@ export function Mapa({
               onClick={() => setTipoDeFondo(cual)}
               aria-pressed={tipoDeFondo === cual}
               className={[
-                "min-h-8 px-3 text-xs font-semibold transition-colors",
+                "flex h-full items-center px-4 text-xs font-semibold transition-colors",
                 tipoDeFondo === cual
                   ? "bg-texto text-fondo"
                   : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
@@ -977,56 +1061,84 @@ export function Mapa({
       ) : null}
 
       {/*
-        El acercar de dos dedos es un gesto fino: con guantes no se acierta.
-        Por eso están estos, y son grandes.
+        Controles del margen superior derecho cuando el mapa está en pantalla completa o expandido.
       */}
       {pantallaCompleta || enGrande ? (
-        <div className="absolute right-3 top-3 flex flex-col gap-2">
-          <BotonDelMapa
-            etiqueta="Acercar el mapa"
-            grande={pantallaCompleta || enGrande}
-            alTocar={() => acercar(1)}
-          >
-            <path d="M12 5v14M5 12h14" />
-          </BotonDelMapa>
-          <BotonDelMapa
-            etiqueta="Alejar el mapa"
-            grande={pantallaCompleta || enGrande}
-            alTocar={() => acercar(-1)}
-          >
-            <path d="M5 12h14" />
-          </BotonDelMapa>
+        <div className="absolute right-3 top-3 flex items-center gap-2">
+          {enGrande ? (
+            <button
+              type="button"
+              aria-label="Cerrar el mapa grande"
+              onPointerDown={() => vibrarAlTocar()}
+              onClick={() => {
+                anotarLoQueSeMira();
+                setAPantallaCompleta(false);
+              }}
+              className={[
+                CLASE_DE_RESPUESTA_AL_TOQUE,
+                "flex h-14 w-14 items-center justify-center rounded-full",
+                "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
+                "hover:bg-superficie-alta",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
+              ].join(" ")}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                aria-hidden
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          ) : null}
+          <BotonDeModo paraNavegacion={pantallaCompleta} />
         </div>
       ) : null}
 
       {/*
-        Abrir el mapa en grande. Va abajo a la derecha, al alcance del pulgar, y
-        en TODOS los mapas: en el celular cualquier recuadro es chico, y mirar
-        si la ruta queda adentro de un sector en siete centímetros no se puede.
-
-        La pantalla de navegar no lo lleva: ya está en grande.
+        Abrir el mapa en grande y GPS. Van abajo a la derecha, al alcance del pulgar.
       */}
       {!pantallaCompleta ? (
-        <div className="absolute bottom-3 right-3">
+        <div className="absolute bottom-3 right-3 flex flex-col gap-2">
+          {controlesAdicionales}
+
           <BotonDelMapa
-            etiqueta={enGrande ? "Cerrar el mapa grande" : "Ver el mapa en grande"}
-            grande={enGrande}
-            alTocar={() => {
-              anotarLoQueSeMira();
-              setAPantallaCompleta(!enGrande);
-            }}
+            etiqueta={gpsPrendido ? "Centrar" : "Ubicarme"}
+            grande={false}
+            alTocar={alternarGps}
           >
-            {enGrande ? (
-              <path d="M6 6l12 12M18 6L6 18" />
+            {gpsPrendido ? (
+              <>
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                <circle cx="12" cy="10" r="3" fill="currentColor" />
+              </>
             ) : (
               <>
-                <path d="M9 4H4v5" />
-                <path d="M15 4h5v5" />
-                <path d="M15 20h5v-5" />
-                <path d="M9 20H4v-5" />
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                <circle cx="12" cy="10" r="3" />
               </>
             )}
           </BotonDelMapa>
+          
+          {!enGrande ? (
+            <BotonDelMapa
+              etiqueta="Ver el mapa en grande"
+              grande={false}
+              alTocar={() => {
+                anotarLoQueSeMira();
+                setAPantallaCompleta(true);
+              }}
+            >
+              <path d="M9 4H4v5" />
+              <path d="M15 4h5v5" />
+              <path d="M15 20h5v-5" />
+              <path d="M9 20H4v-5" />
+            </BotonDelMapa>
+          ) : null}
         </div>
       ) : null}
       </div>

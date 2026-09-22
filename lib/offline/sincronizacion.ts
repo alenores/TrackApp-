@@ -121,6 +121,7 @@ async function bajarRutas(): Promise<{
       complicaciones: (fila.complicaciones as string | null) ?? null,
       archivoUrl: (fila.archivo_url as string | null) ?? null,
       rectangulo: leerRectangulo(fila),
+      color: (fila.color as string | null) ?? "naranja",
       creadoEn: String(fila.creado_en),
       actualizadoEn: String(fila.actualizado_en),
     });

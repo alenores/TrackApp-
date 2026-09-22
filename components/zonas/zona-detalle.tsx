@@ -11,6 +11,8 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresEnElMapa } from "@/lib/mapas/rectangulos";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Rectangulo } from "@/types/database";
+import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
+import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
 
 /**
  * Una zona con sus sectores.
@@ -62,6 +64,13 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
 
   const soyElAutor = puedeAdministrar && miPerfilId === zona.perfilId;
 
+  const anotacionesDeLaZona = anotaciones.filter((anotacion) =>
+    sectores.some((sector) => sector.id === anotacion.sectorId)
+  );
+
+  const { rutasCruzadas, idsEncendidos, toggleRuta, recorridoCombinado } =
+    useRutasEnArea(zona.rectangulo);
+
   return (
     <div className="space-y-5">
       {estado === "sin_senal" ? (
@@ -99,7 +108,16 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         </h2>
         <CargadorDeMapa
           enVivo
-          grande
+          principal
+          recorrido={recorridoCombinado}
+          controlesAdicionales={
+            <SelectorDeRutasEnMapa
+              rutasCruzadas={rutasCruzadas}
+              idsEncendidos={idsEncendidos}
+              toggleRuta={toggleRuta}
+            />
+          }
+          anotaciones={anotacionesDeLaZona}
           encuadre={zona.rectangulo}
           rectangulos={[
             { rectangulo: zona.rectangulo, clase: "zona" },

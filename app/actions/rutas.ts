@@ -34,6 +34,7 @@ export type DatosDeRuta = {
   nivelEsfuerzo: NivelEsfuerzo | null;
   equipo: string | null;
   complicaciones: string | null;
+  color: string;
 };
 
 function limpiar(texto: string | null): string | null {
@@ -85,6 +86,7 @@ export async function crearRuta(
       nivel_esfuerzo: datos.nivelEsfuerzo,
       equipo: limpiar(datos.equipo),
       complicaciones: limpiar(datos.complicaciones),
+      color: datos.color,
       largo_km: numeros.largoKm,
       desnivel_positivo_m: numeros.desnivelPositivoM,
       desnivel_negativo_m: numeros.desnivelNegativoM,
@@ -196,6 +198,7 @@ export async function editarRuta(
       nivel_esfuerzo: datos.nivelEsfuerzo,
       equipo: limpiar(datos.equipo),
       complicaciones: limpiar(datos.complicaciones),
+      color: datos.color,
     })
     .eq("id", rutaId)
     .is("eliminado_en", null);

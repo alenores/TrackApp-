@@ -9,6 +9,8 @@ import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Anotacion, Sector } from "@/types/database";
+import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
+import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
 
 /**
  * Un sector en la lista de una zona.
@@ -69,7 +71,18 @@ export function TarjetaDeSector({
 
   return (
     <div className="relative">
-      <Tarjeta tono="alta" className="space-y-2 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => router.push(`/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`)}
+        aria-label="Ver anotaciones"
+        className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-verde-icono text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
+
+      <Tarjeta tono="alta" className="space-y-2 overflow-hidden relative">
         <div className="pr-12">
           {editandoNombre ? (
             <div className="flex items-center gap-2">
@@ -133,17 +146,6 @@ export function TarjetaDeSector({
             todosLosSectores={todosLosSectores}
             anotaciones={anotaciones}
           />
-          
-          <button
-            type="button"
-            onClick={() => router.push(`/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`)}
-            aria-label="Ver anotaciones"
-            className="absolute bottom-10 right-2 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-acento text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-          </button>
         </div>
       </Tarjeta>
     </div>
