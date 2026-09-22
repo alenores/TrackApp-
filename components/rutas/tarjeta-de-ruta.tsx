@@ -106,26 +106,45 @@ export function TarjetaDeRuta({
               ) : null}
             </div>
 
-            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-borde/50 text-center items-end">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Largo</span>
-                <span className="font-semibold tracking-wide text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.22)]">
-                  {mostrarLargo(ruta.largoKm)}
+            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-borde/50 text-center items-start">
+              <div className="flex flex-col items-center justify-start h-full">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1.5 leading-none">
+                  Largo
                 </span>
+                <div className="flex flex-1 items-center justify-center min-h-[32px] w-full">
+                  <span className="font-semibold tracking-wide text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.22)]">
+                    {mostrarLargo(ruta.largoKm)}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Desnivel</span>
-                <span className="text-sm font-medium text-texto">
-                  {ruta.desnivelPositivoM ? `+${ruta.desnivelPositivoM}m` : "—"}
+
+              <div className="flex flex-col items-center justify-start h-full">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1.5 leading-none">
+                  Desnivel
                 </span>
+                <div className="flex flex-1 items-center justify-center min-h-[32px] w-full">
+                  <span className="text-sm font-medium text-texto">
+                    {ruta.desnivelPositivoM ? `+${ruta.desnivelPositivoM}m` : "—"}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Técnica</span>
-                <IndicadorTecnica tecnica={ruta.dificultadTecnica} />
+
+              <div className="flex flex-col items-center justify-start h-full">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1.5 leading-none">
+                  Técnica
+                </span>
+                <div className="flex flex-1 items-center justify-center min-h-[32px] w-full">
+                  <IndicadorTecnica tecnica={ruta.dificultadTecnica} />
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Esfuerzo</span>
-                <VelocimetroEsfuerzo esfuerzo={ruta.nivelEsfuerzo} />
+
+              <div className="flex flex-col items-center justify-start h-full">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1.5 leading-none">
+                  Esfuerzo
+                </span>
+                <div className="flex flex-1 items-center justify-center min-h-[32px] w-full">
+                  <VelocimetroEsfuerzo esfuerzo={ruta.nivelEsfuerzo} />
+                </div>
               </div>
             </div>
 
