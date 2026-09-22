@@ -53,6 +53,8 @@ export const AJUSTES_POR_DESTINO = {
   avatar: { ladoLargo: 500, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
   /** La foto de portada ocupa todo el ancho, necesita resolución. */
   portada: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
+  /** La foto de una zona ilustra la tarjeta del territorio. */
+  zona: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
   /**
    * La foto de una anotación se mira para decidir algo en el cerro: si el vado
    * se cruza, si el desvío existe. Necesita más detalle que un avatar, así que

@@ -35,30 +35,21 @@ import type { Rectangulo } from "@/types/database";
  * valga igual en los cuatro formularios.
  */
 
+import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
+import type { FotoDeFormulario } from "@/hooks/use-foto";
+
 type CamposDeTerritorioProps = {
   /** «zona» o «sector», para que los textos hablen de lo que es. */
   queEs: "zona" | "sector";
   campos: CamposDelTerritorio;
   alCambiar: (campos: CamposDelTerritorio) => void;
+  fotoZona?: FotoDeFormulario;
+  fotoActualZona?: string | null;
   /** Los pedazos que ya existen, para ver dónde cae el nuevo. */
   rectangulosExistentes?: Rectangulo[];
   /** Rectángulos adicionales ya formateados con su clase (como la previsualización). */
   rectangulosExtra?: RectanguloEnElMapa[];
-  /**
-   * El territorio que contiene a este: la zona, cuando se arma un sector.
-   *
-   * Sirve para dos cosas: el mapa arranca mostrándolo, así se ve el hueco que
-   * se está por llenar, y se avisa si el sector se sale de él.
-   */
   contexto?: { rectangulo: Rectangulo; nombre: string } | null;
-  /**
-   * Lo que va al final de la columna de los campos: el aviso de error y el
-   * botón de guardar.
-   *
-   * Va acá y no suelto abajo porque en la computadora el mapa ocupa toda la
-   * altura al costado: un botón debajo del mapa quedaría a dos pantallas de
-   * scroll de los campos que acaba de llenar.
-   */
   pie?: ReactNode;
 };
 
@@ -66,6 +57,8 @@ export function CamposDeTerritorio({
   queEs,
   campos,
   alCambiar,
+  fotoZona,
+  fotoActualZona,
   rectangulosExistentes = [],
   rectangulosExtra = [],
   contexto = null,
@@ -149,6 +142,17 @@ export function CamposDeTerritorio({
             onChange={(evento) => cambiar({ descripcion: evento.target.value })}
             placeholder="Para qué sirve y qué abarca."
           />
+
+          {queEs === "zona" && fotoZona ? (
+            <div className="space-y-2 pt-1">
+              <p className="text-sm font-medium text-texto-suave">Foto de la zona</p>
+              <SelectorDeFoto
+                foto={fotoZona}
+                etiqueta="Elegir foto de la zona"
+                fotoActual={fotoActualZona}
+              />
+            </div>
+          ) : null}
         </Tarjeta>
 
         <Tarjeta className="space-y-4">

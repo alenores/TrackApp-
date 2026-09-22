@@ -105,6 +105,7 @@ export type Zona = {
   perfilId: string;
   nombre: string;
   descripcion: string | null;
+  fotoUrl?: string | null;
   rectangulo: Rectangulo;
   creadoEn: string;
   actualizadoEn: string;

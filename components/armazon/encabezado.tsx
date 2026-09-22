@@ -13,7 +13,7 @@ export function Encabezado() {
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
       {/* Sombreado liviano para mayor realismo de la foto sin perder legibilidad */}
-      <div className="absolute inset-0 bg-fondo/35 dark:bg-slate-950/40" />
+      <div className="absolute inset-0 bg-slate-950/40" />
 
       <div className="relative flex min-h-14 items-center justify-between gap-3 px-3 py-2 sm:px-4">
         <Link
@@ -26,12 +26,12 @@ export function Encabezado() {
             alt="TrackApp"
             className="h-8 w-8 rounded-lg object-contain shrink-0 shadow-sm"
           />
-          <span className="truncate text-lg font-extrabold tracking-wide text-texto drop-shadow-md uppercase">
+          <span className="truncate text-lg font-extrabold tracking-wide text-white drop-shadow-md uppercase">
             TrackApp
           </span>
         </Link>
 
-        <BotonDeModo className="h-9 w-9 shrink-0 border-borde/70 bg-superficie/85 shadow-sm" />
+        <BotonDeModo className="h-8 w-8 shrink-0 border-white/20 bg-black/40 text-white shadow-sm" />
       </div>
     </header>
   );

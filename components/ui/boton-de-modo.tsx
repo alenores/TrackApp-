@@ -25,6 +25,9 @@ export function BotonDeModo({
   const { modo, cambiar } = useModo();
   const vaASol = modo === "noche";
 
+  const tamanoBase = paraNavegacion ? "h-16 w-16" : "h-8 w-8";
+  const tieneTamanoPersonalizado = /\b(h-|w-)/.test(className);
+
   return (
     <button
       type="button"
@@ -34,10 +37,10 @@ export function BotonDeModo({
       title={vaASol ? "Pasar al modo sol" : "Pasar al modo noche"}
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
-        "flex shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave",
+        "flex shrink-0 items-center justify-center rounded-full border border-borde bg-superficie/90 text-texto-suave shadow-sm backdrop-blur-sm",
         "hover:bg-superficie-alta hover:text-texto",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        paraNavegacion ? "h-16 w-16" : "h-14 w-14",
+        tieneTamanoPersonalizado ? "" : tamanoBase,
         className,
       ]
         .filter(Boolean)
@@ -46,7 +49,7 @@ export function BotonDeModo({
       {vaASol ? (
         <svg
           viewBox="0 0 24 24"
-          className={paraNavegacion ? "h-7 w-7" : "h-6 w-6"}
+          className={paraNavegacion ? "h-7 w-7" : "h-4 w-4"}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -59,7 +62,7 @@ export function BotonDeModo({
       ) : (
         <svg
           viewBox="0 0 24 24"
-          className={paraNavegacion ? "h-7 w-7" : "h-6 w-6"}
+          className={paraNavegacion ? "h-7 w-7" : "h-4 w-4"}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}

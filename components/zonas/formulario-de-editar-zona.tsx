@@ -16,6 +16,9 @@ import {
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
 
+import { useFoto } from "@/hooks/use-foto";
+import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
+
 type EditarZonaFormProps = {
   zonaId: number;
   miPerfilId: string | null;
@@ -29,6 +32,7 @@ export function FormularioDeEditarZona({
   const { paquete, estado } = useDatosDeLaApp();
   const { confirmar, avisar } = useDialogos();
 
+  const fotoZona = useFoto("zona", FORMAS_DE_RECORTE.zona);
   const [campos, setCampos] = useState<CamposDelTerritorio>(TERRITORIO_VACIO);
   const [semilla, setSemilla] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -99,6 +103,7 @@ export function FormularioDeEditarZona({
       nombre: campos.nombre,
       descripcion: campos.descripcion || null,
       rectangulo: armado.rectangulo,
+      fotoFile: fotoZona.archivo,
     });
     setGuardando(false);
 
@@ -147,6 +152,8 @@ export function FormularioDeEditarZona({
       <CamposDeTerritorio
         queEs="zona"
         campos={campos}
+        fotoZona={fotoZona}
+        fotoActualZona={zona.fotoUrl}
         alCambiar={setCampos}
         rectangulosExistentes={sectoresDeLaZona.map(
           (sector) => sector.rectangulo,

@@ -18,11 +18,15 @@ import type { Rectangulo } from "@/types/database";
 
 import { estimarPesoEnMB, UMBRAL_DE_RIESGO_MB, mostrarTamano } from "@/lib/territorio/tamano";
 
+import { useFoto } from "@/hooks/use-foto";
+import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
+
 /** Crear una zona: el territorio grande que después se llena de sectores. */
 export function FormularioDeNuevaZona() {
   const router = useRouter();
   const { paquete } = useDatosDeLaApp();
 
+  const fotoZona = useFoto("zona", FORMAS_DE_RECORTE.zona);
   const [campos, setCampos] = useState<CamposDelTerritorio>(TERRITORIO_VACIO);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +54,7 @@ export function FormularioDeNuevaZona() {
         nombre: campos.nombre,
         descripcion: campos.descripcion || null,
         rectangulo: armado.rectangulo,
+        fotoFile: fotoZona.archivo,
       },
       seleccion
     );
@@ -76,6 +81,7 @@ export function FormularioDeNuevaZona() {
       <CamposDeTerritorio
         queEs="zona"
         campos={campos}
+        fotoZona={fotoZona}
         alCambiar={(nuevos) => {
           setCampos(nuevos);
           const nuevoArmado = rectanguloDeLosCampos(nuevos);

@@ -201,12 +201,7 @@ export function FormularioDePerfil({
 
         {/* Info del usuario */}
         <div className="mt-12 space-y-1">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-lg font-bold text-texto">{viewNombre}</p>
-            <span className="rounded-full border border-verde-borde bg-verde-fondo px-2.5 py-0.5 text-xs font-semibold text-verde-texto">
-              Tu cuenta
-            </span>
-          </div>
+          <p className="text-lg font-bold text-texto">{viewNombre}</p>
           <p className="text-sm font-medium text-texto-suave">{email || "—"}</p>
         </div>
 

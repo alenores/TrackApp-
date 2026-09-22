@@ -88,32 +88,45 @@ export function TarjetaDeZona({
         onPointerLeave={cancelarToque}
         onPointerCancel={cancelarToque}
       >
-        <Tarjeta interactiva className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-semibold text-texto">
-                {zona.nombre}
-              </h2>
+        <Tarjeta interactiva className="relative overflow-hidden space-y-2">
+          {zona.fotoUrl ? (
+            <>
+              <img
+                src={zona.fotoUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-950/30" />
+            </>
+          ) : null}
 
-              {zona.descripcion ? (
-                <p className="mt-1 line-clamp-2 text-sm leading-6 text-texto-suave">
-                  {zona.descripcion}
-                </p>
-              ) : null}
+          <div className="relative z-10 space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className={`truncate text-lg font-bold ${zona.fotoUrl ? "text-white drop-shadow-md" : "text-texto"}`}>
+                  {zona.nombre}
+                </h2>
+
+                {zona.descripcion ? (
+                  <p className={`mt-1 line-clamp-2 text-sm leading-6 ${zona.fotoUrl ? "text-slate-200 drop-shadow-sm" : "text-texto-suave"}`}>
+                    {zona.descripcion}
+                  </p>
+                ) : null}
+              </div>
+
+              <FlechaRedonda direction="right" className={`-mt-0.5 shrink-0 ${zona.fotoUrl ? "border-white/30 bg-black/40 text-white" : ""}`} />
             </div>
 
-            <FlechaRedonda direction="right" className="-mt-0.5 shrink-0" />
+            {cantidadDeSectores !== undefined ? (
+              <p className={`text-xs font-medium ${zona.fotoUrl ? "text-slate-300 drop-shadow-sm" : "text-texto-suave"}`}>
+                {cantidadDeSectores === 0
+                  ? "Todavía no tiene sectores"
+                  : cantidadDeSectores === 1
+                    ? "1 sector"
+                    : `${cantidadDeSectores} sectores`}
+              </p>
+            ) : null}
           </div>
-
-          {cantidadDeSectores !== undefined ? (
-            <p className="text-xs text-texto-suave">
-              {cantidadDeSectores === 0
-                ? "Todavía no tiene sectores"
-                : cantidadDeSectores === 1
-                  ? "1 sector"
-                  : `${cantidadDeSectores} sectores`}
-            </p>
-          ) : null}
         </Tarjeta>
       </div>
 

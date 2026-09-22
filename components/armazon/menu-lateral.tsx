@@ -84,13 +84,23 @@ const navItems: NavItem[] = [
   },
 ];
 
+import { Avatar } from "@/components/ui/avatar";
+
 type SidebarProps = {
+  userName?: string;
+  userAvatarUrl?: string | null;
   onNavigate?: () => void;
   onLogout?: () => void;
   loggingOut?: boolean;
 };
 
-export function MenuLateral({ onNavigate, onLogout, loggingOut = false }: SidebarProps) {
+export function MenuLateral({
+  userName,
+  userAvatarUrl,
+  onNavigate,
+  onLogout,
+  loggingOut = false,
+}: SidebarProps) {
   const haySenal = useHaySenal();
   const pathname = usePathname();
 
@@ -127,18 +137,29 @@ export function MenuLateral({ onNavigate, onLogout, loggingOut = false }: Sideba
         })}
       </div>
 
-      {onLogout ? (
-        <div className="mt-auto border-t border-borde pt-3">
-          <Boton
-            type="button"
-            variante="fantasma"
-            anchoCompleto
-            disabled={loggingOut}
-            onClick={onLogout}
-            className="justify-start px-3 text-left text-rojo-texto hover:bg-rojo-fondo-fuerte hover:text-rojo-texto"
-          >
-            {loggingOut ? "Saliendo…" : "Salir"}
-          </Boton>
+      {(userName || onLogout) ? (
+        <div className="mt-auto border-t border-borde pt-3 space-y-2">
+          {userName ? (
+            <div className="flex items-center gap-3 px-3 py-1">
+              <Avatar src={userAvatarUrl} name={userName} size="sm" />
+              <p className="min-w-0 truncate text-sm font-medium text-texto">
+                {userName}
+              </p>
+            </div>
+          ) : null}
+
+          {onLogout ? (
+            <Boton
+              type="button"
+              variante="fantasma"
+              anchoCompleto
+              disabled={loggingOut}
+              onClick={onLogout}
+              className="justify-start px-3 text-left text-rojo-texto hover:bg-rojo-fondo-fuerte hover:text-rojo-texto"
+            >
+              {loggingOut ? "Saliendo…" : "Salir"}
+            </Boton>
+          ) : null}
         </div>
       ) : null}
     </nav>

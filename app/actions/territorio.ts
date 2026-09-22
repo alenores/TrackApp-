@@ -48,10 +48,13 @@ const RECTANGULO_INVALIDO =
 
 // ------------------------------------------------------------------- zonas
 
+import { DEPOSITO_DE_FOTOS } from "@/lib/cuenta/fotos";
+
 export type DatosDeZona = {
   nombre: string;
   descripcion: string | null;
   rectangulo: Rectangulo;
+  fotoFile?: File | null;
 };
 
 import { calcularCuadricula } from "@/lib/territorio/fraccionamiento";
@@ -66,6 +69,8 @@ export async function crearZonaConSectores(
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
   const supabase = await crearClienteEnElServidor();
+
+  let fotoUrl: string | null = null;
   
   // 1. Crear la Zona
   const { data: zonaData, error: zonaError } = await supabase
@@ -86,6 +91,26 @@ export async function crearZonaConSectores(
   }
 
   const zonaId = (zonaData as { id: number }).id;
+
+  if (datos.fotoFile) {
+    const donde = `zonas/${zonaId}`;
+    const bytes = await datos.fotoFile.arrayBuffer();
+
+    const { error: errorAlSubir } = await supabase.storage
+      .from(DEPOSITO_DE_FOTOS)
+      .upload(donde, bytes, {
+        contentType: datos.fotoFile.type,
+        upsert: true,
+      });
+
+    if (!errorAlSubir) {
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
+      fotoUrl = `${publicUrl}?v=${Date.now()}`;
+      await supabase.from("zonas").update({ foto_url: fotoUrl }).eq("id", zonaId);
+    }
+  }
 
   // 2. Crear los Sectores
   const celdas = calcularCuadricula(datos.rectangulo, cuadricula.filas, cuadricula.columnas);
@@ -148,11 +173,33 @@ export async function editarZona(
   if (!rectanguloEsValido(datos.rectangulo)) return falla(RECTANGULO_INVALIDO);
 
   const supabase = await crearClienteEnElServidor();
+
+  let fotoUrl: string | null = null;
+  if (datos.fotoFile) {
+    const donde = `zonas/${zonaId}`;
+    const bytes = await datos.fotoFile.arrayBuffer();
+
+    const { error: errorAlSubir } = await supabase.storage
+      .from(DEPOSITO_DE_FOTOS)
+      .upload(donde, bytes, {
+        contentType: datos.fotoFile.type,
+        upsert: true,
+      });
+
+    if (!errorAlSubir) {
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
+      fotoUrl = `${publicUrl}?v=${Date.now()}`;
+    }
+  }
+
   const { error } = await supabase
     .from("zonas")
     .update({
       nombre: datos.nombre.trim(),
       descripcion: limpiar(datos.descripcion),
+      ...(fotoUrl ? { foto_url: fotoUrl } : {}),
       ...escribirRectangulo(datos.rectangulo),
     })
     .eq("id", zonaId)
