@@ -39,6 +39,21 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
     (sector) => sector.zonaId === zonaId,
   );
 
+  /**
+   * Las rutas que cruzan la zona se piden **antes de los carteles de abajo**.
+   *
+   * Abriendo la pantalla en frío —por el link, recargando, o al volver a abrir
+   * la app— el paquete todavía no está y la pantalla sale por el cartel de
+   * «abriendo». Pedirlas después de ese cartel hace que en el primer dibujado
+   * no se pidan y en el segundo sí, y React rompe la pantalla entera cuando eso
+   * pasa. Mientras no hay zona se pregunta por un rectángulo vacío, que no
+   * cruza ninguna ruta.
+   */
+  const { rutasCruzadas, idsEncendidos, toggleRuta, recorridoCombinado } =
+    useRutasEnArea(
+      zona?.rectangulo ?? { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 },
+    );
+
   if (estado === "abriendo") {
     return (
       <Tarjeta className="py-8 text-center text-base text-texto-suave">
@@ -67,9 +82,6 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
   const anotacionesDeLaZona = anotaciones.filter((anotacion) =>
     sectores.some((sector) => sector.id === anotacion.sectorId)
   );
-
-  const { rutasCruzadas, idsEncendidos, toggleRuta, recorridoCombinado } =
-    useRutasEnArea(zona.rectangulo);
 
   return (
     <div className="space-y-5">
