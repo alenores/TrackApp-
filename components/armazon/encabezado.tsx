@@ -12,32 +12,26 @@ export function Encabezado() {
         alt=""
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-fondo/75 backdrop-blur-[1px]" />
+      {/* Sombreado liviano para mayor realismo de la foto sin perder legibilidad */}
+      <div className="absolute inset-0 bg-fondo/35 dark:bg-slate-950/40" />
 
-      <div className="relative flex min-h-16 items-center justify-between gap-3 px-3 py-2.5 sm:px-4">
+      <div className="relative flex min-h-14 items-center justify-between gap-3 px-3 py-2 sm:px-4">
         <Link
           href="/"
-          aria-label="Ir al inicio"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-borde/70 bg-superficie/80 text-verde-texto shadow-sm backdrop-blur-md transition-colors hover:bg-superficie"
+          aria-label="TrackApp inicio"
+          className="flex items-center gap-2.5 min-w-0"
         >
-          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
-            <path
-              d="M4 18 8 6l4 8 4-5 4 9"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img
+            src="/logo-identidad.png"
+            alt="TrackApp"
+            className="h-8 w-8 rounded-lg object-contain shrink-0 shadow-sm"
+          />
+          <span className="truncate text-lg font-extrabold tracking-wide text-texto drop-shadow-md uppercase">
+            TrackApp
+          </span>
         </Link>
 
-        <div className="min-w-0 flex-1 text-center">
-          <p className="truncate text-lg font-extrabold tracking-wide text-texto drop-shadow-sm uppercase">
-            TrackApp
-          </p>
-        </div>
-
-        <BotonDeModo className="h-10 w-10 shrink-0 border-borde/70 bg-superficie/80 shadow-sm backdrop-blur-md" />
+        <BotonDeModo className="h-9 w-9 shrink-0 border-borde/70 bg-superficie/85 shadow-sm" />
       </div>
     </header>
   );

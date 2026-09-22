@@ -79,14 +79,21 @@ export function Armazon({
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-fondo/80 backdrop-blur-[1px]" />
+              <div className="absolute inset-0 bg-fondo/35 dark:bg-slate-950/40" />
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <Link href="/" className="block">
-                    <p className="text-lg font-extrabold tracking-wide text-texto drop-shadow-sm uppercase">TrackApp</p>
+                  <Link href="/" className="flex items-center gap-2 min-w-0">
+                    <img
+                      src="/logo-identidad.png"
+                      alt="TrackApp"
+                      className="h-7 w-7 rounded-lg object-contain shrink-0 shadow-sm"
+                    />
+                    <span className="truncate text-lg font-extrabold tracking-wide text-texto drop-shadow-md uppercase">
+                      TrackApp
+                    </span>
                   </Link>
-                  <BotonDeModo className="h-9 w-9 shrink-0 border-borde/70 bg-superficie/80 shadow-sm backdrop-blur-md" />
+                  <BotonDeModo className="h-9 w-9 shrink-0 border-borde/70 bg-superficie/85 shadow-sm" />
                 </div>
                 <div className="flex items-center gap-3">
                   <Avatar src={userAvatarUrl} name={userName} size="md" />

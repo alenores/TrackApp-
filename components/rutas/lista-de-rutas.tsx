@@ -144,7 +144,7 @@ export function ListaDeRutas({
               aria-pressed={searchOpen}
               onClick={toggleSearch}
               className={[
-                "inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
                 searchOpen
                   ? "border-acento-borde bg-verde-fondo text-verde-texto"
                   : "border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
