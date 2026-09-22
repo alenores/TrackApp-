@@ -132,7 +132,7 @@ export function ListaDeRutas({
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-texto">{title}</h2>
+            <h1 className="text-2xl font-bold uppercase text-texto">{title}</h1>
             <p className="text-sm text-texto-suave">{summaryText}</p>
           </div>
 

@@ -30,7 +30,7 @@ export function PantallaDePerfiles({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-texto">Perfiles</h1>
+        <h1 className="text-2xl font-bold uppercase text-texto">PERFILES</h1>
         <p className="mt-1 text-sm text-texto-suave">
           Usuarios de TrackApp y tu cuenta.
         </p>
