@@ -27,7 +27,7 @@ type PerfilFormProps = {
 };
 
 const PROFILE_FIELD_CLASS =
-  "border-borde bg-superficie text-texto placeholder:text-texto-suave";
+  "border-borde bg-superficie text-texto placeholder:text-texto-suave/50";
 
 
 function PencilIcon() {

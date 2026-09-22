@@ -167,7 +167,7 @@ export function ListaDeRutas({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar por nombre…"
-              className="w-full min-h-12 rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
+              className="w-full min-h-12 rounded-xl border border-borde bg-superficie px-4 py-3 text-base text-texto placeholder:text-texto-suave/50 focus:border-acento-borde focus:outline-none focus:ring-2 focus:ring-acento-borde"
             />
           </div>
         ) : null}

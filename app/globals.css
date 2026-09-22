@@ -192,6 +192,12 @@ body {
   overscroll-behavior: none;
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--texto-suave);
+  opacity: 0.45;
+}
+
 html.pwa-standalone-zoom-lock {
   height: 100%;
   width: 100%;

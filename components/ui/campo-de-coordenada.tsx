@@ -48,7 +48,7 @@ export function CampoDeCoordenada({
         aria-invalid={lectura.clase === "error" ? true : undefined}
         className={[
           "min-h-14 w-full rounded-xl border bg-fondo px-4 py-3 text-base text-texto",
-          "placeholder:text-texto-suave focus:outline-none focus:ring-2 focus:ring-acento-borde",
+          "placeholder:text-texto-suave/50 focus:outline-none focus:ring-2 focus:ring-acento-borde",
           lectura.clase === "error"
             ? "border-rojo-borde"
             : "border-borde-fuerte focus:border-acento-borde",
