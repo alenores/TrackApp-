@@ -73,18 +73,27 @@ export function Armazon({
       <div className="flex h-full min-h-0 bg-fondo">
         <aside className="hidden w-64 shrink-0 border-r border-borde bg-superficie/80 lg:block">
           <div className="flex h-full min-h-0 flex-col">
-            <div className="border-b border-borde px-4 py-4">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <Link href="/" className="block">
-                  <p className="text-lg font-bold text-texto">TrackApp</p>
-                </Link>
-                <BotonDeModo className="h-9 w-9 shrink-0" />
-              </div>
-              <div className="flex items-center gap-3">
-                <Avatar src={userAvatarUrl} name={userName} size="md" />
-                <p className="min-w-0 truncate text-sm font-medium text-texto">
-                  {userName}
-                </p>
+            <div className="relative overflow-hidden border-b border-borde px-4 py-4">
+              <img
+                src="/sierras-encabezado.jpg"
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-fondo/80 backdrop-blur-[1px]" />
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <Link href="/" className="block">
+                    <p className="text-lg font-extrabold tracking-wide text-texto drop-shadow-sm uppercase">TrackApp</p>
+                  </Link>
+                  <BotonDeModo className="h-9 w-9 shrink-0 border-borde/70 bg-superficie/80 shadow-sm backdrop-blur-md" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Avatar src={userAvatarUrl} name={userName} size="md" />
+                  <p className="min-w-0 truncate text-sm font-medium text-texto">
+                    {userName}
+                  </p>
+                </div>
               </div>
             </div>
             <MenuLateral onLogout={logoutHandler} loggingOut={loggingOut} />
