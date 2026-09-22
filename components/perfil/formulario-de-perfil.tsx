@@ -165,98 +165,117 @@ export function FormularioDePerfil({
   const viewNombre = initialNombre || displayNombre;
 
   return (
-    <Tarjeta className="relative flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-bold text-texto">Tu cuenta</h2>
-
-        {editing ? (
-          <CircleIconButton ariaLabel="Cerrar edición" onClick={cancelEditing}>
-            <CruzRedonda />
-          </CircleIconButton>
+    <div className="relative flex flex-col overflow-hidden rounded-2xl border border-verde-borde bg-superficie text-left shadow-sm">
+      {/* Banner de portada */}
+      <div className="relative h-28 w-full bg-superficie-alta sm:h-36">
+        {portadaUrl ? (
+          <img
+            src={portadaUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         ) : (
-          <CircleIconButton ariaLabel="Editar perfil" onClick={startEditing}>
+          <div className="absolute inset-0 bg-gradient-to-r from-acento/40 to-superficie-alta" />
+        )}
+
+        <div className="absolute right-3 top-3 z-10">
+          <CircleIconButton
+            ariaLabel={editing ? "Cerrar edición" : "Editar perfil"}
+            onClick={editing ? cancelEditing : startEditing}
+          >
             <span className={CLASE_DEL_CIRCULO}>
-              <PencilIcon />
+              {editing ? <CruzRedonda /> : <PencilIcon />}
             </span>
           </CircleIconButton>
-        )}
+        </div>
       </div>
 
-      {editing ? (
-        <form
-          onSubmit={(event) => void handleSubmit(event)}
-          className="space-y-4"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-texto-suave">Foto de portada</p>
-              <SelectorDeFoto
-                foto={fotoPortada}
-                deshabilitado={loading}
-                etiqueta="Elegir portada"
-                fotoActual={portadaUrl}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
-              <SelectorDeFoto
-                foto={foto}
-                deshabilitado={loading}
-                etiqueta="Elegir tu foto"
-                fotoActual={avatarUrl}
-                vistaPreviaRedonda
-              />
-            </div>
-          </div>
-
-          <Campo
-            label="Nombre"
-            type="text"
-            autoComplete="name"
-            required
-            maxLength={80}
-            value={nombre}
-            onChange={(event) => setNombre(event.target.value)}
-            placeholder="Tu nombre"
-            error={error ?? undefined}
-            className={PROFILE_FIELD_CLASS}
-          />
-
-          <Campo
-            label="Email"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            required
-            value={emailValue}
-            onChange={(event) => setEmailValue(event.target.value)}
-            placeholder="tu@email.com"
-            className={PROFILE_FIELD_CLASS}
-          />
-
-          <Boton type="submit" anchoCompleto disabled={loading}>
-            {loading ? "Guardando…" : "Guardar cambios"}
-          </Boton>
-        </form>
-      ) : (
-        <>
-          <div className="space-y-1">
-            <p className="text-lg font-semibold text-texto">{viewNombre}</p>
-            <p className="text-sm text-texto-suave">{email || "—"}</p>
-          </div>
-
-          <div className="flex justify-center pt-1">
+      {/* Contenido principal */}
+      <div className="relative px-4 pb-5 sm:px-5">
+        {/* Avatar solapado */}
+        <div className="absolute -top-10 left-4 sm:left-5">
+          <div className="rounded-full border-4 border-superficie shadow-md">
             <Avatar src={avatarUrl} name={viewNombre} size="lg" />
           </div>
-        </>
-      )}
+        </div>
 
-      {message ? (
-        <p className="rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
-          {message}
-        </p>
-      ) : null}
-    </Tarjeta>
+        {/* Info del usuario */}
+        <div className="mt-12 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-lg font-bold text-texto">{viewNombre}</p>
+            <span className="rounded-full border border-verde-borde bg-verde-fondo px-2.5 py-0.5 text-xs font-semibold text-verde-texto">
+              Tu cuenta
+            </span>
+          </div>
+          <p className="text-sm font-medium text-texto-suave">{email || "—"}</p>
+        </div>
+
+        {/* Formulario de edición */}
+        {editing ? (
+          <form
+            onSubmit={(event) => void handleSubmit(event)}
+            className="mt-5 space-y-4 pt-4 border-t border-borde/60"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-texto-suave">Foto de portada</p>
+                <SelectorDeFoto
+                  foto={fotoPortada}
+                  deshabilitado={loading}
+                  etiqueta="Elegir portada"
+                  fotoActual={portadaUrl}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
+                <SelectorDeFoto
+                  foto={foto}
+                  deshabilitado={loading}
+                  etiqueta="Elegir tu foto"
+                  fotoActual={avatarUrl}
+                  vistaPreviaRedonda
+                />
+              </div>
+            </div>
+
+            <Campo
+              label="Nombre"
+              type="text"
+              autoComplete="name"
+              required
+              maxLength={80}
+              value={nombre}
+              onChange={(event) => setNombre(event.target.value)}
+              placeholder="Tu nombre"
+              error={error ?? undefined}
+              className={PROFILE_FIELD_CLASS}
+            />
+
+            <Campo
+              label="Email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              required
+              value={emailValue}
+              onChange={(event) => setEmailValue(event.target.value)}
+              placeholder="tu@email.com"
+              className={PROFILE_FIELD_CLASS}
+            />
+
+            <Boton type="submit" anchoCompleto disabled={loading}>
+              {loading ? "Guardando…" : "Guardar cambios"}
+            </Boton>
+          </form>
+        ) : null}
+
+        {message ? (
+          <p className="mt-4 rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
+            {message}
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
