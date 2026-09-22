@@ -9,6 +9,7 @@ type PerfilesViewProps = {
   displayNombre: string;
   email: string;
   avatarUrl?: string | null;
+  portadaUrl?: string | null;
   perfiles: Perfil[];
   /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
   avisoDeListaIncompleta?: string | null;
@@ -20,6 +21,7 @@ export function PantallaDePerfiles({
   displayNombre,
   email,
   avatarUrl,
+  portadaUrl,
   perfiles,
   avisoDeListaIncompleta = null,
 }: PerfilesViewProps) {
@@ -39,6 +41,7 @@ export function PantallaDePerfiles({
         displayNombre={displayNombre}
         email={email}
         avatarUrl={avatarUrl}
+        portadaUrl={portadaUrl}
       />
 
       {avisoDeListaIncompleta ? (

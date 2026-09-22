@@ -41,7 +41,9 @@ export type FormaDeRecorte =
  */
 export const FORMAS_DE_RECORTE = {
   /** La foto de perfil se ve siempre dentro de un círculo. */
-  avatar: { tipo: "circulo" },
+  avatar: { tipo: "circulo" } as const,
+  /** La portada de perfil se ve apaisada, estilo banner. */
+  portada: { tipo: "fija", proporcion: 16 / 9 } as const,
   /**
    * La foto de una anotación se mira para reconocer un lugar: puede ser un
    * vado ancho o una pared alta. La forma la elige quien la saca.

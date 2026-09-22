@@ -94,6 +94,7 @@ export type Perfil = {
   id: string;
   nombre: string | null;
   avatarUrl: string | null;
+  portadaUrl: string | null;
   categoria: CategoriaUsuario;
   creadoEn: string;
   actualizadoEn: string;

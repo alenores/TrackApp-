@@ -23,6 +23,7 @@ type PerfilFormProps = {
   displayNombre: string;
   email: string;
   avatarUrl?: string | null;
+  portadaUrl?: string | null;
 };
 
 const PROFILE_FIELD_CLASS =
@@ -79,12 +80,11 @@ export function FormularioDePerfil({
   displayNombre,
   email,
   avatarUrl,
+  portadaUrl,
 }: PerfilFormProps) {
   const router = useRouter();
-  // La foto pasa por el módulo compartido: se lee una sola vez, se recorta, se
-  // convierte a WebP y se comprime por debajo del tope. La vista previa es
-  // exactamente lo que se va a subir.
   const foto = useFoto("avatar", FORMAS_DE_RECORTE.avatar);
+  const fotoPortada = useFoto("portada", FORMAS_DE_RECORTE.portada);
   const [editing, setEditing] = useState(false);
   const [nombre, setNombre] = useState(initialNombre || displayNombre);
   const [emailValue, setEmailValue] = useState(email);
@@ -107,6 +107,7 @@ export function FormularioDePerfil({
 
   const clearAvatarSelection = () => {
     foto.quitar();
+    fotoPortada.quitar();
   };
 
   const resetForm = () => {
@@ -137,6 +138,7 @@ export function FormularioDePerfil({
       nombre,
       email: emailValue,
       avatarFile: foto.archivo,
+      portadaFile: fotoPortada.archivo,
     });
 
     if (!result.success) {
@@ -185,15 +187,27 @@ export function FormularioDePerfil({
           onSubmit={(event) => void handleSubmit(event)}
           className="space-y-4"
         >
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
-            <SelectorDeFoto
-              foto={foto}
-              deshabilitado={loading}
-              etiqueta="Elegir tu foto"
-              fotoActual={avatarUrl}
-              vistaPreviaRedonda
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-texto-suave">Foto de portada</p>
+              <SelectorDeFoto
+                foto={fotoPortada}
+                deshabilitado={loading}
+                etiqueta="Elegir portada"
+                fotoActual={portadaUrl}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
+              <SelectorDeFoto
+                foto={foto}
+                deshabilitado={loading}
+                etiqueta="Elegir tu foto"
+                fotoActual={avatarUrl}
+                vistaPreviaRedonda
+              />
+            </div>
           </div>
 
           <Campo

@@ -20,18 +20,20 @@ type Fila = {
   id: string;
   nombre: string | null;
   avatar_url: string | null;
+  portada_url: string | null;
   categoria: CategoriaUsuario;
   creado_en: string;
   actualizado_en: string;
 };
 
-const COLUMNAS = "id, nombre, avatar_url, categoria, creado_en, actualizado_en";
+const COLUMNAS = "id, nombre, avatar_url, portada_url, categoria, creado_en, actualizado_en";
 
 function leer(fila: Fila): Perfil {
   return {
     id: fila.id,
     nombre: fila.nombre,
     avatarUrl: fila.avatar_url,
+    portadaUrl: fila.portada_url,
     categoria: fila.categoria,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,

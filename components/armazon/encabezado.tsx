@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Avatar } from "@/components/ui/avatar";
 
 type HeaderProps = {
@@ -12,13 +11,13 @@ type HeaderProps = {
 
 export function Encabezado({ onMenuToggle, userName, userAvatarUrl }: HeaderProps) {
   return (
-    <header className="z-30 shrink-0 border-b border-borde bg-fondo">
+    <header className="z-30 shrink-0 border-b border-borde bg-fondo lg:hidden">
       <div className="flex min-h-14 items-center gap-3 px-3 py-2 sm:px-4">
         <button
           type="button"
           onClick={onMenuToggle}
           aria-label="Abrir menú"
-          className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta lg:hidden"
+          className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta"
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
             <path
@@ -35,8 +34,6 @@ export function Encabezado({ onMenuToggle, userName, userAvatarUrl }: HeaderProp
             Cba Track App
           </p>
         </div>
-
-        <BotonDeModo />
       </div>
     </header>
   );

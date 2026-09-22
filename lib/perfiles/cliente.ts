@@ -20,7 +20,7 @@ export async function traerPerfilesPorId(
     const supabase = crearClienteEnElNavegador();
     const { data, error } = await supabase
       .from("perfiles")
-      .select("id, nombre, avatar_url, categoria, creado_en, actualizado_en")
+      .select("id, nombre, avatar_url, portada_url, categoria, creado_en, actualizado_en")
       .in("id", unicos)
       .is("eliminado_en", null);
 
@@ -32,6 +32,7 @@ export async function traerPerfilesPorId(
       id: string;
       nombre: string | null;
       avatar_url: string | null;
+      portada_url: string | null;
       categoria: Perfil["categoria"];
       creado_en: string;
       actualizado_en: string;
@@ -40,6 +41,7 @@ export async function traerPerfilesPorId(
         id: fila.id,
         nombre: fila.nombre,
         avatarUrl: fila.avatar_url,
+        portadaUrl: fila.portada_url,
         categoria: fila.categoria,
         creadoEn: fila.creado_en,
         actualizadoEn: fila.actualizado_en,

@@ -12,9 +12,9 @@ export default async function PerfilesPage() {
     return null;
   }
 
-  const [perfiles, avatarUrl] = await Promise.all([
+  const [perfiles, miPerfil] = await Promise.all([
     traerTodosLosPerfiles(),
-    traerMiPerfil().then((perfil) => perfil?.avatarUrl ?? null),
+    traerMiPerfil(),
   ]);
 
   return (
@@ -23,7 +23,8 @@ export default async function PerfilesPage() {
       initialNombre={nombreGuardado(user)}
       displayNombre={nombreParaMostrar(user)}
       email={user.email ?? ""}
-      avatarUrl={avatarUrl}
+      avatarUrl={miPerfil?.avatarUrl ?? null}
+      portadaUrl={miPerfil?.portadaUrl ?? null}
       perfiles={perfiles.filas}
       avisoDeListaIncompleta={perfiles.completa ? null : perfiles.motivo}
     />

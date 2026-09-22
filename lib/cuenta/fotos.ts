@@ -23,6 +23,10 @@ export function rutaDeLaFoto(perfilId: string): string {
   return `${perfilId}/avatar`;
 }
 
+export function rutaDeLaPortada(perfilId: string): string {
+  return `${perfilId}/portada`;
+}
+
 /**
  * Revisa la foto antes de subirla.
  *

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boton } from "@/components/ui/boton";
+import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 
 type NavItem = {

@@ -7,6 +7,7 @@ import { borrarLoGuardadoEnElCelular } from "@/lib/offline/salir";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { SelloDeVersion } from "@/components/armazon/sello-de-version";
 import { Encabezado } from "@/components/armazon/encabezado";
+import { Avatar } from "@/components/ui/avatar";
 import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progreso";
 import { MenuLateral } from "@/components/armazon/menu-lateral";
 import { BotonDeSubirRuta } from "@/components/rutas/boton-de-subir-ruta";
@@ -88,12 +89,14 @@ export function Armazon({
           <div className="flex h-full min-h-0 flex-col">
             <div className="border-b border-borde px-4 py-5">
               <Link href="/" className="block">
-                <p className="text-lg font-bold text-texto">TrackApp</p>
+                <p className="text-lg font-bold text-texto mb-4">TrackApp</p>
               </Link>
-              <p className="mt-1 truncate text-sm font-medium text-texto">
-                {userName}
-              </p>
-              <p className="truncate text-xs text-texto-suave">{userEmail}</p>
+              <div className="flex items-center gap-3">
+                <Avatar src={userAvatarUrl} name={userName} size="md" />
+                <p className="min-w-0 truncate text-sm font-medium text-texto">
+                  {userName}
+                </p>
+              </div>
             </div>
             <MenuLateral onLogout={logoutHandler} loggingOut={loggingOut} />
           </div>
@@ -110,13 +113,13 @@ export function Armazon({
             <aside className="relative z-50 h-full w-[min(18rem,85vw)] border-r border-borde bg-superficie shadow-xl">
               <div className="flex h-full min-h-0 flex-col">
                 <div className="border-b border-borde px-4 py-4">
-                  <p className="text-lg font-bold text-texto">TrackApp</p>
-                  <p className="mt-1 truncate text-sm font-medium text-texto">
-                    {userName}
-                  </p>
-                  <p className="truncate text-xs text-texto-suave">
-                    {userEmail}
-                  </p>
+                  <p className="text-lg font-bold text-texto mb-4">TrackApp</p>
+                  <div className="flex items-center gap-3">
+                    <Avatar src={userAvatarUrl} name={userName} size="md" />
+                    <p className="min-w-0 truncate text-sm font-medium text-texto">
+                      {userName}
+                    </p>
+                  </div>
                 </div>
                 <MenuLateral
                   onNavigate={() => setSidebarOpen(false)}

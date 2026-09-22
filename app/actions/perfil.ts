@@ -5,6 +5,7 @@ import {
   DEPOSITO_DE_FOTOS,
   revisarLaFoto,
   rutaDeLaFoto,
+  rutaDeLaPortada,
 } from "@/lib/cuenta/fotos";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import {
@@ -33,6 +34,7 @@ export async function editarPerfil(input: {
   nombre: string;
   email: string;
   avatarFile?: File | null;
+  portadaFile?: File | null;
 }): Promise<ResultadoDeEditarPerfil> {
   const nombre = input.nombre.trim();
   const email = input.email.trim().toLowerCase();
@@ -66,6 +68,11 @@ export async function editarPerfil(input: {
     if (problema) return { success: false, error: problema };
   }
 
+  if (input.portadaFile) {
+    const problema = revisarLaFoto(input.portadaFile);
+    if (problema) return { success: false, error: problema };
+  }
+
   const supabase = await crearClienteEnElServidor();
   const emailDeAhora = (usuario.email ?? "").toLowerCase();
   const cambioElEmail = email !== emailDeAhora;
@@ -90,6 +97,7 @@ export async function editarPerfil(input: {
   }
 
   let avatarUrl: string | null = null;
+  let portadaUrl: string | null = null;
 
   if (input.avatarFile) {
     const donde = rutaDeLaFoto(usuario.id);
@@ -105,7 +113,7 @@ export async function editarPerfil(input: {
     if (errorAlSubir) {
       return {
         success: false,
-        error: `No se pudo subir la foto: ${errorAlSubir.message}`,
+        error: `No se pudo subir la foto de perfil: ${errorAlSubir.message}`,
       };
     }
 
@@ -113,9 +121,32 @@ export async function editarPerfil(input: {
       data: { publicUrl },
     } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
 
-    // El agregado del final obliga al navegador a bajar la foto nueva: la
-    // dirección es siempre la misma y si no, sigue mostrando la anterior.
     avatarUrl = `${publicUrl}?v=${Date.now()}`;
+  }
+
+  if (input.portadaFile) {
+    const donde = rutaDeLaPortada(usuario.id);
+    const bytes = await input.portadaFile.arrayBuffer();
+
+    const { error: errorAlSubir } = await supabase.storage
+      .from(DEPOSITO_DE_FOTOS)
+      .upload(donde, bytes, {
+        contentType: input.portadaFile.type,
+        upsert: true,
+      });
+
+    if (errorAlSubir) {
+      return {
+        success: false,
+        error: `No se pudo subir la foto de portada: ${errorAlSubir.message}`,
+      };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
+
+    portadaUrl = `${publicUrl}?v=${Date.now()}`;
   }
 
   const { error: errorDelPerfil } = await supabase
@@ -123,6 +154,7 @@ export async function editarPerfil(input: {
     .update({
       nombre,
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      ...(portadaUrl ? { portada_url: portadaUrl } : {}),
     })
     .eq("id", usuario.id)
     .is("eliminado_en", null);
