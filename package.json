@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && next dev --webpack",
-    "build": "npm run generate:icons && npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && next build --webpack",
+    "build": "npm run lint && npm run generate:icons && npm run copiar:motor-del-mapa && npm run armar:iconos-del-mapa && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "generate:icons": "node scripts/generate-brand-icons.mjs",

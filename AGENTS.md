@@ -493,7 +493,8 @@ una consulta.
 ## Antes de decir que algo está listo
 
 1. `npx tsc --noEmit` sin errores.
-2. `npm run lint` sin errores.
+2. `npm run lint` sin errores. **La compilación lo corre sola y frena si hay
+   alguno**, así que un error acá no llega a publicarse. Los avisos no frenan.
 3. Las pruebas automáticas pasan. Si el cambio toca algo crítico, trae su prueba.
 4. Si el cambio es visual: mockup aprobado por Ale **antes** de tocar código.
 5. Si el cambio toca offline: probado con el modo avión activado.
