@@ -16,7 +16,7 @@ type SelectorProps = {
 export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta }: SelectorProps) {
   const [abierto, setAbierto] = useState(false);
 
-  if (rutasCruzadas.length === 0) return null;
+
 
   const cantidad = idsEncendidos.length;
 
@@ -40,12 +40,13 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
           className="h-6 w-6"
           fill="none"
           stroke="currentColor"
-          strokeWidth={2}
+          strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-          <path d="M9 10a3 3 0 1 1 6 0 3 3 0 0 1-6 0z" />
+          <circle cx="6" cy="19" r="3" />
+          <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+          <circle cx="18" cy="5" r="3" />
         </svg>
 
         {cantidad > 0 && (
@@ -62,8 +63,13 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
         descripcion="Elegí cuáles querés ver dibujadas sobre el mapa para ubicarte."
       >
         <div className="space-y-1">
-          {rutasCruzadas.map((ruta) => {
-            const encendida = idsEncendidos.includes(ruta.id);
+          {rutasCruzadas.length === 0 ? (
+            <p className="px-1 py-3 text-sm text-texto-suave">
+              No hay otras rutas cruzando esta zona.
+            </p>
+          ) : (
+            rutasCruzadas.map((ruta) => {
+              const encendida = idsEncendidos.includes(ruta.id);
             const color = hexDeLaRuta(ruta.color);
 
             return (
@@ -97,7 +103,7 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
                 />
               </label>
             );
-          })}
+          }))}
         </div>
       </Emergente>
     </>

@@ -142,6 +142,14 @@ type MapaProps = {
   principal?: boolean;
   /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
   controlesAdicionales?: ReactNode;
+  /** Función para cerrar cuando está en pantalla completa externa (ej. navegación). */
+  alCerrarPantallaCompleta?: () => void;
+  /** Cambiar este número fuerza al mapa a centrarse en la posición actual. */
+  forzarCentradoEn?: number;
+  /** Fondo inicial al abrir el mapa, por defecto dibujo. */
+  fondoInicial?: TipoDeFondo;
+  /** Se llama cuando el usuario cambia el tipo de fondo. */
+  alCambiarFondo?: (fondo: TipoDeFondo) => void;
   /**
    * `true` mientras el usuario está marcando el rectángulo sobre el mapa.
    *
@@ -246,10 +254,8 @@ function ponerDatos(
   fuente: string,
   datos: FeatureCollection,
 ): void {
-  const origen = mapa.getSource(fuente);
-  if (origen && "setData" in origen) {
-    (origen as maplibregl.GeoJSONSource).setData(datos);
-  }
+  const source = mapa.getSource(fuente) as maplibregl.GeoJSONSource | undefined;
+  if (source) source.setData(datos);
 }
 
 export function Mapa({
@@ -263,6 +269,10 @@ export function Mapa({
   pantallaCompleta = false,
   principal = false,
   controlesAdicionales = null,
+  alCerrarPantallaCompleta,
+  forzarCentradoEn,
+  fondoInicial = "dibujo",
+  alCambiarFondo,
   dibujando = false,
   alDibujar,
   marcandoPunto = false,
@@ -347,7 +357,7 @@ export function Mapa({
    */
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno. La foto solo existe con internet. */
-  const [tipoDeFondo, setTipoDeFondo] = useState<TipoDeFondo>("dibujo");
+  const [tipoDeFondo, setTipoDeFondo] = useState<TipoDeFondo>(fondoInicial);
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -935,6 +945,15 @@ export function Mapa({
     cuandoEsteListo(poner);
   }, [miPosicion]);
 
+  // Forzar centrado a pedido
+  useEffect(() => {
+    if (!forzarCentradoEn || !posicionEfectiva || !mapaRef.current) return;
+    mapaRef.current.flyTo({ 
+      center: [posicionEfectiva.lon, posicionEfectiva.lat], 
+      zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14 
+    });
+  }, [forzarCentradoEn, posicionEfectiva]);
+
   /**
    * El mapa abierto en grande, tapando la pantalla.
    *
@@ -1038,7 +1057,10 @@ export function Mapa({
             <button
               key={cual}
               type="button"
-              onClick={() => setTipoDeFondo(cual)}
+              onClick={() => {
+                setTipoDeFondo(cual);
+                if (alCambiarFondo) alCambiarFondo(cual);
+              }}
               aria-pressed={tipoDeFondo === cual}
               className={[
                 "flex h-full items-center px-4 text-xs font-semibold transition-colors",
@@ -1065,14 +1087,18 @@ export function Mapa({
       */}
       {pantallaCompleta || enGrande ? (
         <div className="absolute right-3 top-3 flex items-center gap-2">
-          {enGrande ? (
+          {enGrande || (pantallaCompleta && alCerrarPantallaCompleta) ? (
             <button
               type="button"
               aria-label="Cerrar el mapa grande"
               onPointerDown={() => vibrarAlTocar()}
               onClick={() => {
                 anotarLoQueSeMira();
-                setAPantallaCompleta(false);
+                if (enGrande) {
+                  setAPantallaCompleta(false);
+                } else if (alCerrarPantallaCompleta) {
+                  alCerrarPantallaCompleta();
+                }
               }}
               className={[
                 CLASE_DE_RESPUESTA_AL_TOQUE,

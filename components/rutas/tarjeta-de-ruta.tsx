@@ -87,48 +87,58 @@ export function TarjetaDeRuta({
       <div className="relative">
         <Enlace href={`/rutas/${ruta.id}`} className="block">
           <Tarjeta interactiva className="space-y-3">
-            <div className="space-y-1 pr-14">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="min-w-0 flex-1 text-lg font-semibold text-texto">
+            <div className="space-y-2 pr-14">
+              <div>
+                <h2 className="min-w-0 flex-1 text-lg font-semibold text-texto leading-tight">
                   {ruta.nombre}
                 </h2>
-                <FlechaRedonda direction="right" className="-mt-0.5 shrink-0" />
+                <span className="text-[10px] uppercase tracking-widest text-texto-suave">
+                  {fechaCorta(ruta.creadoEn)}
+                </span>
               </div>
+
+              <InsigniasDeActividad actividades={ruta.actividades} />
 
               {ruta.descripcion ? (
                 <p className="line-clamp-2 break-words whitespace-pre-wrap text-sm leading-6 text-texto-suave">
                   {ruta.descripcion}
                 </p>
               ) : null}
-
-              <InsigniasDeActividad actividades={ruta.actividades} />
             </div>
 
-            <dl className={RUTA_DATA_GRID_CLASS}>
-              <div className={RUTA_DATA_CELL_CLASS}>
-                <dt className={RUTA_DATA_LABEL_CLASS}>Largo</dt>
-                <dd className={RUTA_DISTANCE_VALUE_CLASS}>
+            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-borde/50 text-center items-end">
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Largo</span>
+                <span className="font-semibold tracking-wide text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.22)]">
                   {mostrarLargo(ruta.largoKm)}
-                </dd>
+                </span>
               </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Desnivel</span>
+                <span className="text-sm font-medium text-texto">
+                  {ruta.desnivelPositivoM ? `+${ruta.desnivelPositivoM}m` : "—"}
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Técnica</span>
+                <IndicadorTecnica tecnica={ruta.dificultadTecnica} />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1">Esfuerzo</span>
+                <VelocimetroEsfuerzo esfuerzo={ruta.nivelEsfuerzo} />
+              </div>
+            </div>
 
-              <div className={RUTA_DATA_CELL_CLASS}>
-                <dt className={RUTA_DATA_LABEL_CLASS}>Subida por</dt>
-                <dd className={RUTA_DATA_VALUE_CLASS}>{autor}</dd>
+            <div className="flex items-center justify-between pt-1 text-xs text-texto-suave">
+              <div className="flex items-center gap-2">
                 <AvatarDeQuienSubio
                   avatarUrl={avatarDelAutor}
                   uploaderLabel={autor}
                   size="sm"
                 />
+                <span className="font-medium text-texto">{autor}</span>
               </div>
-
-              <div className={RUTA_DATA_CELL_CLASS}>
-                <dt className={RUTA_DATA_LABEL_CLASS}>Fecha</dt>
-                <dd className={RUTA_DATA_VALUE_CLASS}>
-                  {fechaCorta(ruta.creadoEn)}
-                </dd>
-              </div>
-            </dl>
+            </div>
           </Tarjeta>
         </Enlace>
 
@@ -174,5 +184,61 @@ export function TarjetaDeRuta({
         }
       />
     </>
+  );
+}
+
+function IndicadorTecnica({ tecnica }: { tecnica: number | null }) {
+  if (tecnica === null) return <span className="text-sm font-medium text-texto">—</span>;
+  
+  const circulitos = 5;
+  const llenos = Math.ceil(tecnica / 2); // 1-2=1, 3-4=2, 5-6=3, 7-8=4, 9-10=5
+
+  return (
+    <div className="flex items-center gap-0.5 h-5" aria-label={`Técnica ${tecnica} de 10`}>
+      {Array.from({ length: circulitos }).map((_, i) => (
+        <div 
+          key={i} 
+          className={`h-2 w-2 rounded-full border border-blue-500 ${
+            i < llenos ? "bg-blue-500" : "bg-transparent"
+          }`} 
+        />
+      ))}
+    </div>
+  );
+}
+
+function VelocimetroEsfuerzo({ esfuerzo }: { esfuerzo: RutaResumen["nivelEsfuerzo"] }) {
+  if (!esfuerzo) return <span className="text-sm font-medium text-texto">—</span>;
+
+  // Convertimos a 1,2,3,4
+  const nivel = { bajo: 1, medio: 2, alto: 3, muy_alto: 4 }[esfuerzo] || 0;
+  
+  // bajo -> verde, medio -> amarillo, alto -> rojo, muy alto -> rojo fuerte
+  let colorFill = "#22c55e"; // verde
+  if (nivel === 2) colorFill = "#eab308"; // amarillo
+  if (nivel === 3) colorFill = "#ef4444"; // rojo
+  if (nivel === 4) colorFill = "#b91c1c"; // rojo fuerte
+
+  // Un velocímetro de semicírculo simple con SVG
+  // Angulo de rotación de la aguja: de -90deg a 90deg
+  const angulo = -90 + ((nivel - 1) / 3) * 180;
+
+  return (
+    <div className="flex flex-col items-center" aria-label={`Esfuerzo ${esfuerzo.replace("_", " ")}`}>
+      <div className="relative w-8 h-4 overflow-hidden">
+        {/* Fondo del arco */}
+        <div className="absolute w-8 h-8 rounded-full border-[3px] border-superficie-alta border-b-transparent border-l-transparent -rotate-45" />
+        {/* Aguja */}
+        <div 
+          className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-texto origin-bottom transition-transform"
+          style={{ transform: `translateX(-50%) rotate(${angulo}deg)` }}
+        />
+        {/* Punto central */}
+        <div className="absolute bottom-0 left-1/2 w-1.5 h-1.5 rounded-full bg-texto -translate-x-1/2 translate-y-1/2" />
+      </div>
+      <span className="text-[9px] mt-0.5 text-texto font-medium capitalize" style={{ color: colorFill }}>
+        {esfuerzo.replace("_", " ")}
+      </span>
+    </div>
   );
 }

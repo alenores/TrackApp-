@@ -33,7 +33,7 @@ export function ListaDeRutas({
   rutas,
   miPerfilId,
   perfiles,
-  title = "Rutas disponibles",
+  title = "RUTAS",
   showNewRouteFab = false,
   avisoDeListaIncompleta = null,
 }: RutaListProps) {

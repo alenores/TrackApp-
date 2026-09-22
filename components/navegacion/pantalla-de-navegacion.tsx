@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { FeatureCollection } from "geojson";
+import type { TipoDeFondo } from "@/components/mapa/capas-base";
+import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
-import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
@@ -44,6 +46,10 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const salida = `/rutas/${rutaId}`;
   const { open, requestExit, cancelExit, confirmExit } =
     useSalidaDeNavegacion(salida);
+  const searchParams = useSearchParams();
+  const fondoInicial = (searchParams.get("fondo") as TipoDeFondo) || "dibujo";
+  const rutasParams = searchParams.get("rutas");
+  const rutasExtrasIds = rutasParams ? rutasParams.split(",").map(Number) : [];
 
   const vigilanciaRef = useRef<number | null>(null);
   const sectoresBajados = useSectoresConMapaBajado();
@@ -62,6 +68,9 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const [metrosDeDesvio, setMetrosDeDesvio] = useState<number | null>(null);
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
   const [anotacionTocada, setAnotacionTocada] = useState<number | null>(null);
+  const [centrarGps, setCentrarGps] = useState<number>(0);
+
+  const { recorridoCombinado } = useRutasEnArea(rectangulo || { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 }, rutaId, rutasExtrasIds);
 
   usePantallaDespierta(estadoDelGps === "andando");
 
@@ -222,116 +231,96 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     );
   }
 
+  const recorridoCompletoMapa: FeatureCollection | null =
+    recorrido && recorridoCombinado
+      ? {
+          type: "FeatureCollection",
+          features: [...recorrido.features, ...recorridoCombinado.features],
+        }
+      : recorrido || recorridoCombinado;
+
   return (
     <>
-      <div className="flex h-[calc(100dvh-8rem)] min-h-[420px] flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold text-texto">
-              {nombre}
-            </h1>
-            <p className="text-sm text-texto-suave">Navegando sin conexión</p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => requestExit()}
-            onPointerDown={() => vibrarAlTocar()}
-            aria-label="Salir de la navegación"
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-2xl text-texto-suave hover:bg-superficie-alta hover:text-texto"
-          >
-            ×
-          </button>
-        </div>
-
-        {avisoDelMapa ? (
-          <div
-            role="status"
-            className="flex items-start gap-2 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="mt-0.5 h-5 w-5 shrink-0 text-ambar-icono"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.1}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M12 3.5 21 19H3Z" />
-              <path d="M12 10v4" />
-              <path d="M12 17.2v.1" />
-            </svg>
-            <p className="text-sm leading-6 text-ambar-texto">{avisoDelMapa}</p>
-          </div>
-        ) : null}
-
-        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-borde">
+      <div className="fixed inset-0 z-50 flex flex-col bg-mapa-fondo">
+        <div className="absolute inset-0">
           <CargadorDeMapa
-            recorrido={recorrido}
+            recorrido={recorridoCompletoMapa}
             anotaciones={anotaciones}
             miPosicion={posicion ? { lat: posicion.lat, lon: posicion.lon } : null}
             encuadre={rectangulo}
             pantallaCompleta
+            fondoInicial={fondoInicial}
+            forzarCentradoEn={centrarGps}
+            alCerrarPantallaCompleta={requestExit}
             alTocarAnotacion={abrirLaAnotacion}
           />
         </div>
 
-        {estoyFueraDeRuta ? (
-          <div
-            role="alert"
-            className="rounded-xl bg-rojo-fondo px-3 py-3 text-center text-lg font-bold text-rojo-texto ring-1 ring-rojo-borde"
-          >
-            Fuera de ruta
-          </div>
-        ) : null}
+        {/* Capa sobre el mapa (todo lo que no es el mapa en sí) */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
 
-        {posicionVieja ? (
-          <div
-            role="alert"
-            className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-sm text-ambar-texto"
-          >
-            Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
-            punto puede estar desactualizado.
-          </div>
-        ) : null}
-
-        <div className="space-y-2">
-          {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
-            <Boton
-              anchoCompleto
-              paraNavegacion
-              disabled={estadoDelGps === "pidiendo"}
-              onClick={prenderGps}
+          {estoyFueraDeRuta ? (
+            <div
+              role="alert"
+              className="rounded-xl bg-rojo-fondo px-3 py-3 text-center text-lg font-bold text-rojo-texto ring-1 ring-rojo-borde pointer-events-auto"
             >
-              {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-            </Boton>
+              Fuera de ruta
+            </div>
           ) : null}
 
-          {errorDelGps ? (
-            <p role="alert" className="text-base leading-6 text-rojo">
-              {errorDelGps}
-            </p>
+          {posicionVieja ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-sm text-ambar-texto pointer-events-auto"
+            >
+              Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
+              punto puede estar desactualizado.
+            </div>
           ) : null}
 
-          {/*
-            El cambio de modo vive acá abajo, al alcance del pulgar: si el sol
-            gira y la pantalla deja de leerse, no se puede pedir que el usuario
-            entre a un menú con guantes puestos.
-          */}
-          <div className="flex items-center gap-3">
-            <BotonDeModo paraNavegacion />
+          <div className="space-y-2 pointer-events-auto">
+            {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
+              <Boton
+                anchoCompleto
+                paraNavegacion
+                disabled={estadoDelGps === "pidiendo"}
+                onClick={prenderGps}
+              >
+                {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
+              </Boton>
+            ) : null}
 
-            {estadoDelGps === "andando" && metrosDeDesvio !== null ? (
-              <p className="flex-1 text-center text-lg font-medium text-texto-suave">
-                {!hayQueAvisarDelDesvio(metrosDeDesvio)
-                  ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
-                  : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
+            {errorDelGps ? (
+              <p role="alert" className="text-base leading-6 text-rojo bg-superficie/90 p-2 rounded-xl border border-rojo/20">
+                {errorDelGps}
               </p>
-            ) : (
-              <span className="flex-1" />
-            )}
+            ) : null}
+
+            <div className="flex items-center gap-3">
+              {estadoDelGps === "andando" ? (
+                <button
+                  type="button"
+                  aria-label="Centrar en mi ubicación"
+                  onClick={() => setCentrarGps(Date.now())}
+                  className="pointer-events-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)] hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
+                >
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                    <circle cx="12" cy="10" r="3" fill="currentColor" />
+                  </svg>
+                </button>
+              ) : null}
+
+              {estadoDelGps === "andando" && metrosDeDesvio !== null ? (
+                <p className="flex-1 text-center text-lg font-medium text-texto-suave bg-superficie/80 py-2 rounded-xl backdrop-blur-sm border border-borde">
+                  {!hayQueAvisarDelDesvio(metrosDeDesvio)
+                    ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
+                    : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
+                </p>
+              ) : (
+                <span className="flex-1" />
+              )}
+            </div>
           </div>
         </div>
       </div>

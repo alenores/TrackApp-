@@ -33,6 +33,9 @@ import {
   mostrarLargo,
 } from "@/lib/rutas/actividades";
 import type { Perfil, RutaSinRecorrido } from "@/types/database";
+import type { TipoDeFondo } from "@/components/mapa/capas-base";
+import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
+import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
 
 /**
  * La ficha de una ruta.
@@ -77,9 +80,13 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const [buscandoRecorrido, setBuscandoRecorrido] = useState(true);
   const [autor, setAutor] = useState<Perfil | null>(null);
   const [borrando, setBorrando] = useState(false);
+  const [fondoElegido, setFondoElegido] = useState<TipoDeFondo>("dibujo");
 
   const ruta: RutaSinRecorrido | null =
     paquete?.rutas.find((cada) => cada.id === rutaId) ?? null;
+
+  const { rutasCruzadas, idsEncendidos, toggleRuta, recorridoCombinado } =
+    useRutasEnArea(ruta?.rectangulo || { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 }, ruta?.id);
 
   useEffect(() => {
     let vigente = true;
@@ -142,6 +149,14 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
     ? rectangulosDeLaRuta(cobertura, zonas, ruta.rectangulo)
     : [];
 
+  const recorridoCompletoMapa: FeatureCollection | null =
+    recorrido && recorridoCombinado
+      ? {
+          type: "FeatureCollection",
+          features: [...recorrido.features, ...recorridoCombinado.features],
+        }
+      : recorrido || recorridoCombinado;
+
   const alBorrar = async () => {
     const seguro = await confirmar({
       titulo: `¿Borrar «${ruta.nombre}»?`,
@@ -178,33 +193,37 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
         </Tarjeta>
       ) : null}
 
-      <Tarjeta className="space-y-3">
-        <div className="flex items-start gap-2">
+      <div>
+        <div className="flex items-center gap-3">
           <BotonVolverALaLista />
-          <h1 className="min-w-0 flex-1 break-words pt-3 text-xl font-semibold text-texto">
+          <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
             {ruta.nombre}
           </h1>
         </div>
 
-        {ruta.descripcion ? (
-          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-texto-suave">
-            {ruta.descripcion}
-          </p>
-        ) : null}
+        <div className="mt-5 px-1 text-sm text-texto-suave">
+          {ruta.descripcion ? (
+            <p className="whitespace-pre-wrap break-words mb-4 text-base leading-6 text-texto-suave">
+              {ruta.descripcion}
+            </p>
+          ) : null}
 
-        <InsigniasDeActividad actividades={ruta.actividades} tamano="mediano" />
+          <div className="flex flex-col gap-4">
+            <InsigniasDeActividad actividades={ruta.actividades} tamano="mediano" />
 
-        <div className="flex items-center gap-2 border-t border-borde pt-3">
-          <Avatar src={autor?.avatarUrl} name={autor?.nombre ?? "?"} size="sm" />
-          <p className="text-sm text-texto-suave">
-            Subida por{" "}
-            <span className="font-medium text-texto">
-              {autor?.nombre ?? "alguien de la app"}
-            </span>{" "}
-            el {fechaCorta(ruta.creadoEn)}
-          </p>
+            <div className="flex items-center gap-2">
+              <Avatar src={autor?.avatarUrl} name={autor?.nombre ?? "?"} size="sm" />
+              <p className="text-sm text-texto-suave">
+                Subida por{" "}
+                <span className="font-medium text-texto">
+                  {autor?.nombre ?? "alguien de la app"}
+                </span>{" "}
+                el {fechaCorta(ruta.creadoEn)}
+              </p>
+            </div>
+          </div>
         </div>
-      </Tarjeta>
+      </div>
 
       <Tarjeta className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
@@ -263,38 +282,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
         </div>
       </Tarjeta>
 
-      <Tarjeta className="space-y-2">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-          El recorrido
-        </h2>
-        {recorrido ? (
-          <CargadorDeMapa
-            recorrido={recorrido}
-            encuadre={ruta.rectangulo}
-            rectangulos={rectangulos}
-            enVivo
-            referencia={
-              <ReferenciaDelMapa ruta clases={clasesDibujadas(rectangulos)} />
-            }
-          />
-        ) : (
-          <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-6 text-center text-sm leading-6 text-texto-suave">
-            La línea de esta ruta todavía no está guardada en el celular. Abrí la
-            app una vez con conexión y queda guardada sola.
-          </p>
-        )}
-      </Tarjeta>
-
-      {cobertura ? (
-        <BloqueDeCobertura
-          cobertura={cobertura}
-          anotaciones={paquete?.anotaciones ?? []}
-          mapasBajados={mapasBajados}
-          zonas={zonas}
-          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
-        />
-      ) : null}
-
       {hayTextos ? (
         <Tarjeta className="space-y-4">
           {ruta.equipo ? (
@@ -309,33 +296,53 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
         </Tarjeta>
       ) : null}
 
+      <Tarjeta className="space-y-2">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          El recorrido
+        </h2>
+        {recorrido ? (
+          <CargadorDeMapa
+            recorrido={recorridoCompletoMapa}
+            encuadre={ruta.rectangulo}
+            rectangulos={rectangulos}
+            enVivo
+            fondoInicial={fondoElegido}
+            alCambiarFondo={setFondoElegido}
+            controlesAdicionales={
+              <SelectorDeRutasEnMapa
+                rutasCruzadas={rutasCruzadas}
+                idsEncendidos={idsEncendidos}
+                toggleRuta={toggleRuta}
+              />
+            }
+            referencia={
+              <ReferenciaDelMapa ruta clases={clasesDibujadas(rectangulos)} />
+            }
+          />
+        ) : (
+          <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-6 text-center text-sm leading-6 text-texto-suave">
+            La línea de esta ruta todavía no está guardada en el celular. Abrí la
+            app una vez con conexión y queda guardada sola.
+          </p>
+        )}
+      </Tarjeta>
+
       <Boton
-        anchoCompleto
         paraNavegacion
-        disabled={!recorrido}
-        onClick={() => router.push(`/navegacion/${ruta.id}`)}
+        anchoCompleto
+        onClick={() => router.push(`/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`)}
       >
         Navegar esta ruta
       </Boton>
 
-      {soyElAutor ? (
-        <div className="flex gap-2 pb-2">
-          <Boton
-            variante="secundario"
-            className="flex-1"
-            onClick={() => router.push(`/rutas/${ruta.id}/editar`)}
-          >
-            Editar
-          </Boton>
-          <Boton
-            variante="destructivo"
-            className="flex-1"
-            disabled={borrando}
-            onClick={() => void alBorrar()}
-          >
-            {borrando ? "Borrando…" : "Borrar"}
-          </Boton>
-        </div>
+      {cobertura ? (
+        <BloqueDeCobertura
+          cobertura={cobertura}
+          anotaciones={paquete?.anotaciones ?? []}
+          mapasBajados={mapasBajados}
+          zonas={zonas}
+          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
+        />
       ) : null}
     </div>
   );

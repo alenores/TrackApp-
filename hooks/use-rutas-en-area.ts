@@ -10,15 +10,15 @@ import { hexDeLaRuta } from "@/lib/rutas/colores";
  * Encuentra qué rutas cruzan un área y maneja cuáles están encendidas, 
  * devolviendo un FeatureCollection combinado listo para dibujar en el mapa.
  */
-export function useRutasEnArea(rectanguloDelArea: Rectangulo) {
+export function useRutasEnArea(rectanguloDelArea: Rectangulo, excludeRutaId?: number, idsIniciales: number[] = []) {
   const { paquete } = useDatosDeLaApp();
   
   // Las rutas de la BD que se superponen con esta área.
   const rutasCruzadas = (paquete?.rutas ?? []).filter((ruta) => 
-    seSuperponen(ruta.rectangulo, rectanguloDelArea)
+    ruta.id !== excludeRutaId && seSuperponen(ruta.rectangulo, rectanguloDelArea)
   );
 
-  const [idsEncendidos, setIdsEncendidos] = useState<number[]>([]);
+  const [idsEncendidos, setIdsEncendidos] = useState<number[]>(idsIniciales);
   const [recorridosCargados, setRecorridosCargados] = useState<Record<number, FeatureCollection>>({});
 
   // Cargar el recorrido cuando se enciende una ruta y no lo teníamos
