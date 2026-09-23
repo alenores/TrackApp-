@@ -753,13 +753,9 @@ export function Mapa({
     const mapa = mapaRef.current;
     if (!mapa || !dibujando || !alDibujar) return;
 
-    mapa.dragPan.disable();
-    mapa.doubleClickZoom.disable();
     mapa.getCanvas().style.cursor = "crosshair";
 
     let puntoFijo: maplibregl.LngLat | null = null;
-    let puntoFijoPx: { x: number, y: number } | null = null;
-    let arrastrando = false;
 
     const armarDesdeFijo = (hasta: maplibregl.LngLat): Rectangulo | null => {
       if (!puntoFijo) return null;
@@ -795,81 +791,54 @@ export function Mapa({
 
     const dibujarPuntosExtra = (ajustado?: maplibregl.LngLat, original?: maplibregl.LngLat) => {
       const puntos = [];
-      
-      // Siempre mostramos el primer punto si ya se fijó (feedback visual)
       if (puntoFijo) {
         puntos.push({ type: "Feature" as const, properties: {}, geometry: { type: "Point" as const, coordinates: [puntoFijo.lng, puntoFijo.lat] } });
       }
-      
-      // Y mostramos el punto actual si está imantado
       if (ajustado && original && (ajustado.lat !== original.lat || ajustado.lng !== original.lng)) {
-        // Evitar duplicar visualmente si el ajustado es exactamente el punto fijo
         if (!puntoFijo || ajustado.lat !== puntoFijo.lat || ajustado.lng !== puntoFijo.lng) {
           puntos.push({ type: "Feature" as const, properties: {}, geometry: { type: "Point" as const, coordinates: [ajustado.lng, ajustado.lat] } });
         }
       }
-      
-      ponerDatos(mapa, "punto-de-ajuste", {
-        type: "FeatureCollection",
-        features: puntos
-      });
+      ponerDatos(mapa, "punto-de-ajuste", { type: "FeatureCollection", features: puntos });
     };
 
-    const empezar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
-      arrastrando = true;
+    const manejarClic = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
       const ajustado = imantar(evento.lngLat, evento.point);
       
       if (!puntoFijo) {
+        // Primer clic
         puntoFijo = ajustado;
-        puntoFijoPx = evento.point;
         dibujarPuntosExtra(ajustado, evento.lngLat);
+      } else {
+        // Segundo clic
+        const armado = armarDesdeFijo(ajustado);
+        if (armado) alDibujar(armado);
+        puntoFijo = null;
+        dibujarPuntosExtra();
       }
     };
 
     const mover = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
-      if (!puntoFijo) return;
+      if (!puntoFijo) {
+        // Si no hay primer punto, igual mostramos el imán al pasar por bordes
+        const ajustado = imantar(evento.lngLat, evento.point);
+        dibujarPuntosExtra(ajustado, evento.lngLat);
+        return;
+      }
       const ajustado = imantar(evento.lngLat, evento.point);
       dibujarPuntosExtra(ajustado, evento.lngLat);
       const armado = armarDesdeFijo(ajustado);
       if (armado) alDibujar(armado);
     };
 
-    const soltar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
-      if (!arrastrando || !puntoFijo || !puntoFijoPx) return;
-      arrastrando = false;
-      const ajustado = imantar(evento.lngLat, evento.point);
-      
-      const distanciaPx = Math.sqrt(Math.pow(evento.point.x - puntoFijoPx.x, 2) + Math.pow(evento.point.y - puntoFijoPx.y, 2));
-      
-      // Si movió menos de 10 píxeles, lo consideramos un click.
-      if (distanciaPx < 10) {
-        dibujarPuntosExtra(); // Mantiene el puntoFijo dibujado
-      } else {
-        // Arrastró o es el segundo click. Terminamos.
-        const armado = armarDesdeFijo(ajustado);
-        if (armado) alDibujar(armado);
-        puntoFijo = null;
-        puntoFijoPx = null;
-        dibujarPuntosExtra(); // Limpia los puntos
-      }
-    };
-
-    mapa.on("mousedown", empezar as any);
+    mapa.on("click", manejarClic as any);
     mapa.on("mousemove", mover as any);
-    mapa.on("mouseup", soltar as any);
-    mapa.on("touchstart", empezar as any);
     mapa.on("touchmove", mover as any);
-    mapa.on("touchend", soltar as any);
 
     return () => {
-      mapa.off("mousedown", empezar as any);
+      mapa.off("click", manejarClic as any);
       mapa.off("mousemove", mover as any);
-      mapa.off("mouseup", soltar as any);
-      mapa.off("touchstart", empezar as any);
       mapa.off("touchmove", mover as any);
-      mapa.off("touchend", soltar as any);
-      mapa.dragPan.enable();
-      mapa.doubleClickZoom.enable();
       mapa.getCanvas().style.cursor = "";
       dibujandoRef.current = false;
       ponerDatos(mapa, "punto-de-ajuste", VACIO);
