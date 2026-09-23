@@ -93,7 +93,7 @@ export async function crearZonaConSectores(
   const zonaId = (zonaData as { id: number }).id;
 
   if (datos.fotoFile) {
-    const donde = `zonas/${zonaId}`;
+    const donde = `${usuario.id}/zonas/${zonaId}.webp`;
     const bytes = await datos.fotoFile.arrayBuffer();
 
     const { error: errorAlSubir } = await supabase.storage
@@ -103,13 +103,17 @@ export async function crearZonaConSectores(
         upsert: true,
       });
 
-    if (!errorAlSubir) {
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
-      fotoUrl = `${publicUrl}?v=${Date.now()}`;
-      await supabase.from("zonas").update({ foto_url: fotoUrl }).eq("id", zonaId);
+    if (errorAlSubir) {
+      return falla(
+        `La zona se creó, pero no se pudo subir la foto: ${traducirErrorDeBase(errorAlSubir.message)}`,
+      );
     }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
+    fotoUrl = `${publicUrl}?v=${Date.now()}`;
+    await supabase.from("zonas").update({ foto_url: fotoUrl }).eq("id", zonaId);
   }
 
   // 2. Crear los Sectores
@@ -176,7 +180,7 @@ export async function editarZona(
 
   let fotoUrl: string | null = null;
   if (datos.fotoFile) {
-    const donde = `zonas/${zonaId}`;
+    const donde = `${usuario.id}/zonas/${zonaId}.webp`;
     const bytes = await datos.fotoFile.arrayBuffer();
 
     const { error: errorAlSubir } = await supabase.storage
@@ -186,12 +190,16 @@ export async function editarZona(
         upsert: true,
       });
 
-    if (!errorAlSubir) {
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
-      fotoUrl = `${publicUrl}?v=${Date.now()}`;
+    if (errorAlSubir) {
+      return falla(
+        `No se pudo subir la foto: ${traducirErrorDeBase(errorAlSubir.message)}`,
+      );
     }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS).getPublicUrl(donde);
+    fotoUrl = `${publicUrl}?v=${Date.now()}`;
   }
 
   const { error } = await supabase
