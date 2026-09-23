@@ -1,23 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { borrarZona, editarZona } from "@/app/actions/territorio";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
-import { CamposDeTerritorio } from "@/components/zonas/campos-de-territorio";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
-import {
-  rectanguloDeLosCampos,
-  territorioDesdeRectangulo,
-  TERRITORIO_VACIO,
-  type CamposDelTerritorio,
-} from "@/lib/territorio/esquinas";
+import { Campo } from "@/components/ui/campo";
+import { AreaDeTexto } from "@/components/ui/area-de-texto";
 
 import { useFoto } from "@/hooks/use-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
+import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 
 type EditarZonaFormProps = {
   zonaId: number;
@@ -33,8 +29,11 @@ export function FormularioDeEditarZona({
   const { confirmar, avisar } = useDialogos();
 
   const fotoZona = useFoto("zona", FORMAS_DE_RECORTE.zona);
-  const [campos, setCampos] = useState<CamposDelTerritorio>(TERRITORIO_VACIO);
-  const [semilla, setSemilla] = useState<number | null>(null);
+  
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [cargado, setCargado] = useState(false);
+  
   const [guardando, setGuardando] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,13 +43,13 @@ export function FormularioDeEditarZona({
     (sector) => sector.zonaId === zonaId,
   );
 
-  // Cuando aparece la zona guardada, se cargan los campos una sola vez.
-  if (zona && semilla !== zona.id) {
-    setSemilla(zona.id);
-    setCampos(
-      territorioDesdeRectangulo(zona.nombre, zona.descripcion, zona.rectangulo),
-    );
-  }
+  useEffect(() => {
+    if (zona && !cargado) {
+      setNombre(zona.nombre);
+      setDescripcion(zona.descripcion ?? "");
+      setCargado(true);
+    }
+  }, [zona, cargado]);
 
   if (estado === "abriendo") {
     return (
@@ -88,21 +87,19 @@ export function FormularioDeEditarZona({
     );
   }
 
-  const armado = rectanguloDeLosCampos(campos);
-
   const alGuardar = async () => {
     setError(null);
 
-    if (!armado.ok) {
-      setError(armado.error ?? "Completá las dos esquinas de la zona.");
+    if (!nombre.trim()) {
+      setError("Ponele un nombre a la zona.");
       return;
     }
 
     setGuardando(true);
     const resultado = await editarZona(zonaId, {
-      nombre: campos.nombre,
-      descripcion: campos.descripcion || null,
-      rectangulo: armado.rectangulo,
+      nombre: nombre,
+      descripcion: descripcion || null,
+      rectangulo: zona.rectangulo,
       fotoFile: fotoZona.archivo,
     });
     setGuardando(false);
@@ -149,47 +146,63 @@ export function FormularioDeEditarZona({
         <h1 className="text-xl font-semibold text-texto">Editar la zona</h1>
       </div>
 
-      <CamposDeTerritorio
-        queEs="zona"
-        campos={campos}
-        fotoZona={fotoZona}
-        fotoActualZona={zona.fotoUrl}
-        alCambiar={setCampos}
-        rectangulosExistentes={sectoresDeLaZona.map(
-          (sector) => sector.rectangulo,
-        )}
-        pie={
-          <>
-            {error ? (
-              <Tarjeta franja="rojo">
-                <p role="alert" className="text-sm leading-6 text-rojo-texto">
-                  {error}
-                </p>
-              </Tarjeta>
-            ) : null}
+      <Tarjeta className="space-y-5">
+        <Campo
+          label="Nombre"
+          id="nombre-de-la-zona"
+          type="text"
+          value={nombre}
+          onChange={(evento) => setNombre(evento.target.value)}
+          placeholder="Ej: Sierras Grandes"
+          maxLength={120}
+        />
 
-            <Boton
-              anchoCompleto
-              paraNavegacion
-              disabled={guardando || !armado.ok}
-              onClick={() => void alGuardar()}
-            >
-              {guardando ? "Guardando…" : "Guardar los cambios"}
-            </Boton>
+        <AreaDeTexto
+          label="Descripción"
+          id="descripcion-de-la-zona"
+          rows={2}
+          value={descripcion}
+          onChange={(evento) => setDescripcion(evento.target.value)}
+          placeholder="Para qué sirve y qué abarca."
+        />
 
-            <div className="pb-2">
-              <Boton
-                anchoCompleto
-                variante="destructivo"
-                disabled={borrando}
-                onClick={() => void alBorrar()}
-              >
-                {borrando ? "Borrando…" : "Borrar esta zona"}
-              </Boton>
-            </div>
-          </>
-        }
-      />
+        <div className="space-y-2 pt-1">
+          <p className="text-sm font-medium text-texto-suave">Foto de la zona</p>
+          <SelectorDeFoto
+            foto={fotoZona}
+            etiqueta="Elegir foto de la zona"
+            fotoActual={zona.fotoUrl}
+          />
+        </div>
+      </Tarjeta>
+
+      <div className="space-y-3">
+        {error ? (
+          <Tarjeta franja="rojo">
+            <p role="alert" className="text-sm leading-6 text-rojo-texto">
+              {error}
+            </p>
+          </Tarjeta>
+        ) : null}
+
+        <Boton
+          anchoCompleto
+          paraNavegacion
+          disabled={guardando || !nombre.trim()}
+          onClick={() => void alGuardar()}
+        >
+          {guardando ? "Guardando…" : "Guardar los cambios"}
+        </Boton>
+
+        <Boton
+          anchoCompleto
+          variante="destructivo"
+          disabled={borrando}
+          onClick={() => void alBorrar()}
+        >
+          {borrando ? "Borrando…" : "Borrar esta zona"}
+        </Boton>
+      </div>
     </div>
   );
 }
