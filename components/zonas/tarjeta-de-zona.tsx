@@ -2,10 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
-import { borrarZona } from "@/app/actions/territorio";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FlechaRedonda } from "@/components/ui/flecha-redonda";
-import { useDialogos } from "@/components/ui/dialogos";
 import type { Zona } from "@/types/database";
 
 /**
@@ -28,34 +26,7 @@ export function TarjetaDeZona({
   cantidadDeSectores,
 }: ZonaCardProps) {
   const router = useRouter();
-  const { confirmar, avisar } = useDialogos();
   const [opcionesAbiertas, setOpcionesAbiertas] = useState(false);
-  const [borrando, setBorrando] = useState(false);
-
-  const alBorrar = async () => {
-    const seguro = await confirmar({
-      titulo: `¿Borrar la zona «${zona.nombre}»?`,
-      mensaje:
-        "Se van también sus sectores y las anotaciones de cada uno. Si te arrepentís, se puede recuperar.",
-      textoDeAceptar: "Borrar",
-      destructivo: true,
-    });
-
-    if (!seguro) return;
-
-    setBorrando(true);
-    const resultado = await borrarZona(zona.id);
-    setBorrando(false);
-
-    if (!resultado.ok) {
-      await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error });
-      return;
-    }
-
-    setOpcionesAbiertas(false);
-    router.refresh();
-  };
-
   const temporizadorRef = useRef<NodeJS.Timeout | null>(null);
 
   const iniciarToque = () => {
@@ -160,20 +131,7 @@ export function TarjetaDeZona({
             </svg>
           </button>
           
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              void alBorrar();
-            }}
-            disabled={borrando}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-destructivo text-destructivo-texto shadow-sm transition-colors hover:bg-destructivo-hover"
-            aria-label="Borrar"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            </svg>
-          </button>
+
         </div>
       ) : null}
     </div>
