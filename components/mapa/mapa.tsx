@@ -738,15 +738,14 @@ export function Mapa({
     cuandoEsteListo(poner);
   }, [anotaciones]);
 
+  // Ref para tener siempre los rectángulos actualizados sin reiniciar el useEffect del dibujo
+  const rectangulosParaDibujo = useRef(rectangulos);
+  useEffect(() => {
+    rectangulosParaDibujo.current = rectangulos;
+  }, [rectangulos]);
+
   /**
-   * Marcar el rectángulo arrastrando sobre el mapa.
-   *
-   * **Mientras el modo está prendido, arrastrar deja de mover el mapa.** Es a
-   * propósito: si hiciera las dos cosas a la vez, nunca se sabría cuál de las
-   * dos va a pasar. Para mover el mapa se apaga el modo.
-   *
-   * Va avisando el rectángulo **mientras** se arrastra, no solo al soltar, así
-   * se ve crecer y los números de tamaño y peso acompañan.
+   * Marcar el rectángulo arrastrando sobre el mapa o con dos clics.
    */
   useEffect(() => {
     dibujandoRef.current = dibujando;
@@ -775,7 +774,7 @@ export function Mapa({
       let nuevaLng = punto.lng;
       const UMBRAL_PX = 15;
 
-      for (const capa of rectangulos) {
+      for (const capa of rectangulosParaDibujo.current) {
         const { latNorte, latSur, lonEste, lonOeste } = capa.rectangulo;
 
         const pxNorte = mapa.project([punto.lng, latNorte]).y;
@@ -875,7 +874,7 @@ export function Mapa({
       dibujandoRef.current = false;
       ponerDatos(mapa, "punto-de-ajuste", VACIO);
     };
-  }, [dibujando, alDibujar, rectangulos]);
+  }, [dibujando, alDibujar]);
 
   /**
    * Elegir un punto tocando el mapa.

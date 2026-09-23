@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
@@ -15,10 +15,12 @@ export function PantallaDeDibujarZona() {
   const { paquete } = useDatosDeLaApp();
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
 
-  const rectangulosExistentes: RectanguloEnElMapa[] = (paquete?.zonas ?? []).map(z => ({
-    rectangulo: z.rectangulo,
-    clase: "zona" as const
-  }));
+  const rectangulosExistentes = React.useMemo(() => {
+    return (paquete?.zonas ?? []).map(z => ({
+      rectangulo: z.rectangulo,
+      clase: "zona" as const
+    }));
+  }, [paquete?.zonas]);
 
   const alContinuar = () => {
     if (!rectangulo) return;
