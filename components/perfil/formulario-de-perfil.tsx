@@ -194,8 +194,8 @@ export function FormularioDePerfil({
       <div className="relative px-4 pb-5 sm:px-5">
         {/* Avatar solapado */}
         <div className="absolute -top-10 left-4 sm:left-5">
-          <div className="rounded-full border-4 border-superficie shadow-md">
-            <Avatar src={avatarUrl} name={viewNombre} size="lg" />
+          <div className="rounded-full border-2 border-superficie">
+            <Avatar src={avatarUrl} name={viewNombre} size="lg" sinBorde />
           </div>
         </div>
 

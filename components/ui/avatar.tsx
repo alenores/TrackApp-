@@ -9,6 +9,7 @@ type UserAvatarProps = {
   name: string;
   size?: UserAvatarSize;
   className?: string;
+  sinBorde?: boolean;
 };
 
 const SIZE_CLASSES: Record<UserAvatarSize, string> = {
@@ -29,6 +30,7 @@ export function Avatar({
   name,
   size = "md",
   className = "",
+  sinBorde = false,
 }: UserAvatarProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(src) && !imageFailed;
@@ -36,7 +38,8 @@ export function Avatar({
   return (
     <span
       className={[
-        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-acento-borde bg-acento font-semibold text-acento-texto",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-acento font-semibold text-acento-texto",
+        sinBorde ? "" : "border border-acento-borde",
         SIZE_CLASSES[size],
         className,
       ]
