@@ -93,24 +93,36 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         </Tarjeta>
       ) : null}
 
-      <div>
-        <div className="flex items-center gap-3">
+      <div className={`relative ${zona.fotoUrl ? "overflow-hidden rounded-2xl bg-superficie-alta p-4 sm:p-5" : ""}`}>
+        {zona.fotoUrl ? (
+          <>
+            <img
+              src={zona.fotoUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-950/30" />
+          </>
+        ) : null}
+
+        <div className={`relative z-10 flex items-center gap-3 ${zona.fotoUrl ? "mb-4" : ""}`}>
           <BotonVolver
             destinoSiNoHayVuelta="/zonas"
             etiqueta="Volver a las zonas"
+            className={zona.fotoUrl ? "[&>span]:bg-black/40 [&>span]:text-white [&>span]:border-white/30" : ""}
           />
-          <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
+          <h1 className={`min-w-0 flex-1 truncate text-2xl font-bold uppercase ${zona.fotoUrl ? "text-white drop-shadow-md" : "text-texto"}`}>
             {zona.nombre}
           </h1>
         </div>
 
-        <div className="mt-5 px-1 text-sm text-texto-suave">
+        <div className={`relative z-10 mt-5 px-1 text-sm ${zona.fotoUrl ? "text-slate-200 drop-shadow-sm" : "text-texto-suave"}`}>
           {zona.descripcion ? (
             <p className="whitespace-pre-wrap break-words mb-2 text-base">
               {zona.descripcion}
             </p>
           ) : null}
-          <p>Le da a la zona: <span className="font-semibold text-texto">{mostrarTamano(zona.rectangulo)}</span></p>
+          <p>Le da a la zona: <span className={`font-semibold ${zona.fotoUrl ? "text-white drop-shadow-sm" : "text-texto"}`}>{mostrarTamano(zona.rectangulo)}</span></p>
         </div>
       </div>
 
