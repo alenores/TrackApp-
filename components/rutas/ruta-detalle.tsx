@@ -238,44 +238,41 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       <Tarjeta className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-            Los números
+            Datos de la ruta
           </h2>
-          <span className="text-xs text-texto-suave">
-            el largo y los desniveles salen del archivo
-          </span>
         </div>
 
         <dl className="flex flex-col gap-1.5">
           <div className={`${CELDA} flex flex-col items-center justify-center py-4`}>
             <dt className={ETIQUETA}>Largo</dt>
-            <dd className="mt-1 text-3xl font-bold tracking-wide tabular-nums text-dato">
+            <dd className="mt-1 text-3xl font-bold tracking-wide tabular-nums text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.22)]">
               {mostrarLargo(ruta.largoKm)}
             </dd>
           </div>
 
           <div className="grid grid-cols-2 gap-1.5">
             <div className={CELDA}>
-              <dt className={ETIQUETA}>Dificultad técnica</dt>
-              <dd className="mt-2.5 h-6">
+              <dt className={`${ETIQUETA} text-center`}>Dificultad técnica</dt>
+              <dd className="mt-2.5 flex items-center justify-center h-6">
                 <IndicadorTecnica tecnica={ruta.dificultadTecnica} />
               </dd>
             </div>
-            <div className={`${CELDA} flex flex-col justify-between`}>
-              <dt className={ETIQUETA}>Esfuerzo</dt>
-              <dd className="mt-1 flex justify-end">
+            <div className={CELDA}>
+              <dt className={`${ETIQUETA} text-center`}>Esfuerzo</dt>
+              <dd className="mt-1 flex items-center justify-center h-6">
                 <VelocimetroEsfuerzo esfuerzo={ruta.nivelEsfuerzo} />
               </dd>
             </div>
             <div className={CELDA}>
-              <dt className={ETIQUETA}>Lo que se sube</dt>
-              <dd className={`${VALOR} flex items-center gap-1 text-verde-texto`}>
+              <dt className={`${ETIQUETA} text-center`}>Lo que se sube</dt>
+              <dd className={`${VALOR} flex items-center justify-center gap-1 text-verde-texto`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                 {mostrarDesnivel(ruta.desnivelPositivoM, "positivo")}
               </dd>
             </div>
             <div className={CELDA}>
-              <dt className={ETIQUETA}>Lo que se baja</dt>
-              <dd className={`${VALOR} flex items-center gap-1 text-ambar-texto`}>
+              <dt className={`${ETIQUETA} text-center`}>Lo que se baja</dt>
+              <dd className={`${VALOR} flex items-center justify-center gap-1 text-ambar-texto`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 7v10H7"/><path d="M17 17 7 7"/></svg>
                 {mostrarDesnivel(ruta.desnivelNegativoM, "negativo")}
               </dd>
@@ -283,16 +280,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           </div>
         </dl>
       </Tarjeta>
-
-      {cobertura ? (
-        <BloqueDeCobertura
-          cobertura={cobertura}
-          anotaciones={paquete?.anotaciones ?? []}
-          mapasBajados={mapasBajados}
-          zonas={zonas}
-          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
-        />
-      ) : null}
 
       {hayTextos ? (
         <Tarjeta className="space-y-4">
@@ -319,6 +306,18 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           ) : null}
         </Tarjeta>
       ) : null}
+
+      {cobertura ? (
+        <BloqueDeCobertura
+          cobertura={cobertura}
+          anotaciones={paquete?.anotaciones ?? []}
+          mapasBajados={mapasBajados}
+          zonas={zonas}
+          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
+        />
+      ) : null}
+
+
 
       <Tarjeta className="space-y-2">
         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
@@ -352,13 +351,16 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
         )}
       </Tarjeta>
 
-      <Boton
-        paraNavegacion
-        anchoCompleto
-        onClick={() => router.push(`/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`)}
-      >
-        Navegar esta ruta
-      </Boton>
+      <div className="flex justify-center">
+        <Boton
+          paraNavegacion
+          className="flex items-center gap-2 px-6"
+          onClick={() => router.push(`/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          Navegar esta ruta
+        </Boton>
+      </div>
     </div>
   );
 }

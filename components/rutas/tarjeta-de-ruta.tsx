@@ -18,7 +18,8 @@ import {
   RUTA_DISTANCE_VALUE_CLASS,
 } from "@/lib/rutas/estilos-de-celda";
 import { mostrarLargo } from "@/lib/rutas/actividades";
-import type { RutaResumen } from "@/types/database";
+import type { RutaResumen, Zona } from "@/types/database";
+import { seSuperponen } from "@/lib/datos/rectangulo";
 
 /**
  * Una ruta en la lista.
@@ -30,6 +31,8 @@ import type { RutaResumen } from "@/types/database";
 
 type RutaCardProps = {
   ruta: RutaResumen;
+  zonas: Zona[];
+  conMapa: Set<number>;
   autor: string;
   avatarDelAutor?: string | null;
   soyElAutor: boolean;
@@ -49,6 +52,8 @@ function fechaCorta(iso: string): string {
 
 export function TarjetaDeRuta({
   ruta,
+  zonas,
+  conMapa,
   autor,
   avatarDelAutor,
   soyElAutor,
@@ -82,6 +87,23 @@ export function TarjetaDeRuta({
     router.refresh();
   };
 
+  const zonasDeLaRuta = zonas.filter((z) => seSuperponen(z.rectangulo, ruta.rectangulo));
+  const nombresZonas = zonasDeLaRuta.map((z) => z.nombre).join(", ");
+
+  const distancias = ruta.distanciasPorSector || {};
+  let totalMetros = 0;
+  let metrosCubiertos = 0;
+
+  for (const [key, metros] of Object.entries(distancias)) {
+    totalMetros += metros;
+    if (key !== "sin_sector" && conMapa.has(Number(key))) {
+      metrosCubiertos += metros;
+    }
+  }
+
+  const porcentajeCobertura = totalMetros === 0 ? 100 : Math.round((metrosCubiertos / totalMetros) * 100);
+  const colorCobertura = porcentajeCobertura === 100 ? "text-verde" : porcentajeCobertura >= 80 ? "text-ambar-texto" : "text-rojo-texto";
+
   return (
     <>
       <div className="relative">
@@ -97,6 +119,12 @@ export function TarjetaDeRuta({
                 </span>
               </div>
 
+              {nombresZonas ? (
+                <p className="text-sm font-medium text-acento">
+                  {nombresZonas}
+                </p>
+              ) : null}
+
               <InsigniasDeActividad actividades={ruta.actividades} />
 
               {ruta.descripcion ? (
@@ -106,7 +134,7 @@ export function TarjetaDeRuta({
               ) : null}
             </div>
 
-            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-borde/50 text-center items-start">
+            <div className="grid grid-cols-4 gap-2 pt-3 pb-8 border-t border-borde/50 text-center items-start">
               <div className="flex flex-col items-center justify-start h-full">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-texto-suave mb-1.5 leading-none">
                   Largo
@@ -157,6 +185,13 @@ export function TarjetaDeRuta({
                 />
                 <span className="font-medium text-texto">{autor}</span>
               </div>
+            </div>
+
+            {/* Porcentaje de mapa offline */}
+            <div className="absolute bottom-3 right-4">
+              <span className={`text-[11px] font-semibold tracking-wide ${colorCobertura}`}>
+                MAPA OFFLINE {porcentajeCobertura}%
+              </span>
             </div>
           </Tarjeta>
         </Enlace>
