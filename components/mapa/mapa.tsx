@@ -35,6 +35,9 @@ import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import "maplibre-gl/dist/maplibre-gl.css";
 
+/** Toque o clic sobre el mapa: los dos traen dónde fue, en el mapa y en pantalla. */
+type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
+
 /**
  * **El único mapa de la app.**
  *
@@ -810,7 +813,7 @@ export function Mapa({
       ponerDatos(mapa, "punto-de-ajuste", { type: "FeatureCollection", features: puntos });
     };
 
-    const mousedown = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+    const mousedown = (evento: EventoDelPuntero) => {
       const actual = rectanguloActualRef.current;
       if (!actual || puntoFijo) return; // Si no hay área, o si ya se está dibujando una nueva, no hacemos nada
 
@@ -850,7 +853,7 @@ export function Mapa({
       }
     };
 
-    const manejarClic = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+    const manejarClic = (evento: EventoDelPuntero) => {
       if (arrastroBorde) return; // Si soltó de un arrastre de borde, ignorar este click
 
       const ajustado = imantar(evento.lngLat, evento.point);
@@ -868,7 +871,7 @@ export function Mapa({
       }
     };
 
-    const mover = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+    const mover = (evento: EventoDelPuntero) => {
       // 1. Está ajustando los bordes de la zona ya marcada
       if (ajustandoBordes && rectanguloBase) {
         arrastroBorde = true;
@@ -926,23 +929,23 @@ export function Mapa({
       }
     };
 
-    mapa.on("mousedown", mousedown as any);
+    mapa.on("mousedown", mousedown);
     mapa.on("mouseup", mouseup);
-    mapa.on("touchstart", mousedown as any);
+    mapa.on("touchstart", mousedown);
     mapa.on("touchend", mouseup);
 
-    mapa.on("click", manejarClic as any);
-    mapa.on("mousemove", mover as any);
-    mapa.on("touchmove", mover as any);
+    mapa.on("click", manejarClic);
+    mapa.on("mousemove", mover);
+    mapa.on("touchmove", mover);
 
     return () => {
-      mapa.off("mousedown", mousedown as any);
+      mapa.off("mousedown", mousedown);
       mapa.off("mouseup", mouseup);
-      mapa.off("touchstart", mousedown as any);
+      mapa.off("touchstart", mousedown);
       mapa.off("touchend", mouseup);
-      mapa.off("click", manejarClic as any);
-      mapa.off("mousemove", mover as any);
-      mapa.off("touchmove", mover as any);
+      mapa.off("click", manejarClic);
+      mapa.off("mousemove", mover);
+      mapa.off("touchmove", mover);
       mapa.getCanvas().style.cursor = "";
       mapa.dragPan.enable();
       dibujandoRef.current = false;
