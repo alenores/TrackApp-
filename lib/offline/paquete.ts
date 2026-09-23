@@ -17,7 +17,7 @@ import type { Anotacion, RutaSinRecorrido, Sector, Zona } from "@/types/database
  * es lo que dibuja las pantallas al instante.
  */
 
-const CLAVE_PAQUETE = "trackapp-paquete-v1";
+const CLAVE_PAQUETE = "trackapp-paquete-v2";
 const CLAVE_GALLETITA = "trackapp-tiene-paquete";
 
 export type Paquete = {

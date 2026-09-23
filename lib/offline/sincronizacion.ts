@@ -155,6 +155,7 @@ async function bajarZonas(): Promise<{ zonas: Zona[]; completa: boolean }> {
     perfilId: String(fila.perfil_id),
     nombre: String(fila.nombre),
     descripcion: (fila.descripcion as string | null) ?? null,
+    fotoUrl: (fila.foto_url as string | null) ?? null,
     rectangulo: leerRectangulo(fila),
     creadoEn: String(fila.creado_en),
     actualizadoEn: String(fila.actualizado_en),
