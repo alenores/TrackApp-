@@ -744,6 +744,11 @@ export function Mapa({
     rectangulosParaDibujo.current = rectangulos;
   }, [rectangulos]);
 
+  const rectanguloActualRef = useRef(rectangulo);
+  useEffect(() => {
+    rectanguloActualRef.current = rectangulo;
+  }, [rectangulo]);
+
   /**
    * Marcar el rectángulo arrastrando sobre el mapa o con dos clics.
    */
@@ -756,6 +761,9 @@ export function Mapa({
     mapa.getCanvas().style.cursor = "crosshair";
 
     let puntoFijo: maplibregl.LngLat | null = null;
+    let ajustandoBordes: { n?: boolean, s?: boolean, e?: boolean, o?: boolean } | null = null;
+    let rectanguloBase: Rectangulo | null = null;
+    let arrastroBorde = false;
 
     const armarDesdeFijo = (hasta: maplibregl.LngLat): Rectangulo | null => {
       if (!puntoFijo) return null;
@@ -802,11 +810,53 @@ export function Mapa({
       ponerDatos(mapa, "punto-de-ajuste", { type: "FeatureCollection", features: puntos });
     };
 
+    const mousedown = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      const actual = rectanguloActualRef.current;
+      if (!actual || puntoFijo) return; // Si no hay área, o si ya se está dibujando una nueva, no hacemos nada
+
+      const { latNorte, latSur, lonEste, lonOeste } = actual;
+      const pxN = mapa.project([evento.lngLat.lng, latNorte]).y;
+      const pxS = mapa.project([evento.lngLat.lng, latSur]).y;
+      const pxE = mapa.project([lonEste, evento.lngLat.lat]).x;
+      const pxO = mapa.project([lonOeste, evento.lngLat.lat]).x;
+
+      const y = evento.point.y;
+      const x = evento.point.x;
+      const UMBRAL = 15;
+
+      const n = Math.abs(y - pxN) < UMBRAL;
+      const s = Math.abs(y - pxS) < UMBRAL;
+      const e = Math.abs(x - pxE) < UMBRAL;
+      const o = Math.abs(x - pxO) < UMBRAL;
+
+      // Si tocó muy cerca de algún borde o esquina, empezamos a ajustar
+      if (n || s || e || o) {
+        ajustandoBordes = { n, s, e, o };
+        rectanguloBase = { ...actual };
+        arrastroBorde = false;
+        mapa.dragPan.disable();
+      }
+    };
+
+    const mouseup = () => {
+      if (ajustandoBordes) {
+        setTimeout(() => {
+          // El timeout es para que el click que dispara MapLibre alcance a ver arrastroBorde antes de limpiarse
+          arrastroBorde = false;
+        }, 100);
+        ajustandoBordes = null;
+        rectanguloBase = null;
+        mapa.dragPan.enable();
+      }
+    };
+
     const manejarClic = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      if (arrastroBorde) return; // Si soltó de un arrastre de borde, ignorar este click
+
       const ajustado = imantar(evento.lngLat, evento.point);
       
       if (!puntoFijo) {
-        // Primer clic
+        // Primer clic para empezar zona nueva
         puntoFijo = ajustado;
         dibujarPuntosExtra(ajustado, evento.lngLat);
       } else {
@@ -819,27 +869,82 @@ export function Mapa({
     };
 
     const mover = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
-      if (!puntoFijo) {
-        // Si no hay primer punto, igual mostramos el imán al pasar por bordes
+      // 1. Está ajustando los bordes de la zona ya marcada
+      if (ajustandoBordes && rectanguloBase) {
+        arrastroBorde = true;
         const ajustado = imantar(evento.lngLat, evento.point);
+        const r = { ...rectanguloBase };
+        if (ajustandoBordes.n) r.latNorte = ajustado.lat;
+        if (ajustandoBordes.s) r.latSur = ajustado.lat;
+        if (ajustandoBordes.e) r.lonEste = ajustado.lng;
+        if (ajustandoBordes.o) r.lonOeste = ajustado.lng;
+        
+        // Lo pasamos por rectanguloQueAbarca para que acomode Norte/Sur si se cruzan
+        const validR = rectanguloQueAbarca([
+           [r.lonOeste, r.latSur],
+           [r.lonEste, r.latNorte]
+        ]);
+        if (validR) alDibujar(validR);
         dibujarPuntosExtra(ajustado, evento.lngLat);
         return;
       }
+
+      // 2. Está dibujando de cero con el primer clic ya hecho
+      if (puntoFijo) {
+        const ajustado = imantar(evento.lngLat, evento.point);
+        dibujarPuntosExtra(ajustado, evento.lngLat);
+        const armado = armarDesdeFijo(ajustado);
+        if (armado) alDibujar(armado);
+        return;
+      }
+
+      // 3. Paseo libre por el mapa, mostramos imán si pasa por un borde
       const ajustado = imantar(evento.lngLat, evento.point);
       dibujarPuntosExtra(ajustado, evento.lngLat);
-      const armado = armarDesdeFijo(ajustado);
-      if (armado) alDibujar(armado);
+      
+      // Cursor extra: mostrar si está sobre un borde arrastrable
+      const actual = rectanguloActualRef.current;
+      if (actual && !puntoFijo) {
+        const { latNorte, latSur, lonEste, lonOeste } = actual;
+        const pxN = mapa.project([evento.lngLat.lng, latNorte]).y;
+        const pxS = mapa.project([evento.lngLat.lng, latSur]).y;
+        const pxE = mapa.project([lonEste, evento.lngLat.lat]).x;
+        const pxO = mapa.project([lonOeste, evento.lngLat.lat]).x;
+        const y = evento.point.y;
+        const x = evento.point.x;
+        const n = Math.abs(y - pxN) < 15;
+        const s = Math.abs(y - pxS) < 15;
+        const e = Math.abs(x - pxE) < 15;
+        const o = Math.abs(x - pxO) < 15;
+
+        if ((n || s) && (e || o)) mapa.getCanvas().style.cursor = "crosshair"; // Esquina
+        else if (n || s) mapa.getCanvas().style.cursor = "ns-resize"; // Borde horizontal
+        else if (e || o) mapa.getCanvas().style.cursor = "ew-resize"; // Borde vertical
+        else mapa.getCanvas().style.cursor = "crosshair"; // Nada
+      } else {
+        mapa.getCanvas().style.cursor = "crosshair";
+      }
     };
+
+    mapa.on("mousedown", mousedown as any);
+    mapa.on("mouseup", mouseup);
+    mapa.on("touchstart", mousedown as any);
+    mapa.on("touchend", mouseup);
 
     mapa.on("click", manejarClic as any);
     mapa.on("mousemove", mover as any);
     mapa.on("touchmove", mover as any);
 
     return () => {
+      mapa.off("mousedown", mousedown as any);
+      mapa.off("mouseup", mouseup);
+      mapa.off("touchstart", mousedown as any);
+      mapa.off("touchend", mouseup);
       mapa.off("click", manejarClic as any);
       mapa.off("mousemove", mover as any);
       mapa.off("touchmove", mover as any);
       mapa.getCanvas().style.cursor = "";
+      mapa.dragPan.enable();
       dibujandoRef.current = false;
       ponerDatos(mapa, "punto-de-ajuste", VACIO);
     };
