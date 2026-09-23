@@ -47,7 +47,7 @@ function sector(id: number, lonOeste: number): Sector {
 
 function cobertura(sectores: Array<[Sector, "descargado" | "falta_descargar"]>): Cobertura {
   return {
-    sectores: sectores.map(([sector, estado]) => ({ sector, estado })),
+    sectores: sectores.map(([sector, estado]) => ({ sector, estado, metros: 0 })),
     metrosSinCobertura: 0,
     metrosTotales: 10000,
   };

@@ -59,7 +59,7 @@ export function TarjetaDeZona({
         onPointerLeave={cancelarToque}
         onPointerCancel={cancelarToque}
       >
-        <Tarjeta interactiva className="relative overflow-hidden space-y-2">
+        <Tarjeta interactiva className="relative overflow-hidden p-0">
           {zona.fotoUrl ? (
             <>
               <img
@@ -71,7 +71,7 @@ export function TarjetaDeZona({
             </>
           ) : null}
 
-          <div className="relative z-10 space-y-2">
+          <div className="relative z-10 space-y-2 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <h2 className={`truncate text-lg font-bold ${zona.fotoUrl ? "text-white drop-shadow-md" : "text-texto"}`}>

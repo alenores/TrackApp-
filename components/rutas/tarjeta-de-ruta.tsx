@@ -206,7 +206,7 @@ export function TarjetaDeRuta({
   );
 }
 
-function IndicadorTecnica({ tecnica }: { tecnica: number | null }) {
+export function IndicadorTecnica({ tecnica }: { tecnica: number | null }) {
   if (tecnica === null) return <span className="text-sm font-medium text-texto">—</span>;
   
   const circulitos = 5;
@@ -226,7 +226,7 @@ function IndicadorTecnica({ tecnica }: { tecnica: number | null }) {
   );
 }
 
-function VelocimetroEsfuerzo({ esfuerzo }: { esfuerzo: RutaResumen["nivelEsfuerzo"] }) {
+export function VelocimetroEsfuerzo({ esfuerzo }: { esfuerzo: RutaResumen["nivelEsfuerzo"] }) {
   if (!esfuerzo) return <span className="text-sm font-medium text-texto">—</span>;
 
   // Convertimos a 1,2,3,4

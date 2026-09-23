@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { PantallaDeRutas } from "@/components/rutas/pantalla-de-rutas";
@@ -13,8 +14,19 @@ export default async function RutasPage() {
 
   return (
     <>
-      <MarcaDeAppLista />
-      <PantallaDeRutas miPerfilId={usuario?.id ?? null} />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Image
+          src="/fondo-rutas.webp"
+          alt="Fondo de rutas"
+          fill
+          className="object-cover object-center opacity-30"
+          priority
+        />
+      </div>
+      <div className="relative z-10 w-full">
+        <MarcaDeAppLista />
+        <PantallaDeRutas miPerfilId={usuario?.id ?? null} />
+      </div>
     </>
   );
 }

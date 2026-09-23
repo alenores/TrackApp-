@@ -7,6 +7,7 @@ import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { borrarRuta } from "@/app/actions/rutas";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/tarjeta-de-ruta";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { BotonVolver } from "@/components/ui/boton-volver";
@@ -244,63 +245,77 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
           </span>
         </div>
 
-        <dl className="grid grid-cols-2 gap-1.5">
-          <div className={CELDA}>
+        <dl className="flex flex-col gap-1.5">
+          <div className={`${CELDA} flex flex-col items-center justify-center py-4`}>
             <dt className={ETIQUETA}>Largo</dt>
-            <dd className="mt-0.5 text-lg font-semibold tracking-wide tabular-nums text-dato">
+            <dd className="mt-1 text-3xl font-bold tracking-wide tabular-nums text-dato">
               {mostrarLargo(ruta.largoKm)}
             </dd>
           </div>
-          <div className={CELDA}>
-            <dt className={ETIQUETA}>Dificultad técnica</dt>
-            <dd className={VALOR}>
-              {ruta.dificultadTecnica === null ? (
-                "—"
-              ) : (
-                <>
-                  {ruta.dificultadTecnica}{" "}
-                  <span className="text-sm font-normal text-texto-suave">
-                    de 10
-                  </span>
-                </>
-              )}
-            </dd>
-          </div>
-          <div className={CELDA}>
-            <dt className={ETIQUETA}>Lo que se sube</dt>
-            <dd className={VALOR}>
-              {mostrarDesnivel(ruta.desnivelPositivoM, "positivo")}
-            </dd>
-          </div>
-          <div className={CELDA}>
-            <dt className={ETIQUETA}>Lo que se baja</dt>
-            <dd className={VALOR}>
-              {mostrarDesnivel(ruta.desnivelNegativoM, "negativo")}
-            </dd>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <div className={CELDA}>
+              <dt className={ETIQUETA}>Dificultad técnica</dt>
+              <dd className="mt-2.5 h-6">
+                <IndicadorTecnica tecnica={ruta.dificultadTecnica} />
+              </dd>
+            </div>
+            <div className={`${CELDA} flex flex-col justify-between`}>
+              <dt className={ETIQUETA}>Esfuerzo</dt>
+              <dd className="mt-1 flex justify-end">
+                <VelocimetroEsfuerzo esfuerzo={ruta.nivelEsfuerzo} />
+              </dd>
+            </div>
+            <div className={CELDA}>
+              <dt className={ETIQUETA}>Lo que se sube</dt>
+              <dd className={`${VALOR} flex items-center gap-1 text-verde-texto`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                {mostrarDesnivel(ruta.desnivelPositivoM, "positivo")}
+              </dd>
+            </div>
+            <div className={CELDA}>
+              <dt className={ETIQUETA}>Lo que se baja</dt>
+              <dd className={`${VALOR} flex items-center gap-1 text-ambar-texto`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 7v10H7"/><path d="M17 17 7 7"/></svg>
+                {mostrarDesnivel(ruta.desnivelNegativoM, "negativo")}
+              </dd>
+            </div>
           </div>
         </dl>
-
-        <div className={CELDA}>
-          <div className="flex items-baseline justify-between gap-3">
-            <span className={ETIQUETA}>Esfuerzo</span>
-            <span className="text-base font-semibold text-texto">
-              {ruta.nivelEsfuerzo ? mostrarEsfuerzo(ruta.nivelEsfuerzo) : "—"}
-            </span>
-          </div>
-          <BarraDeEsfuerzo nivel={ruta.nivelEsfuerzo} />
-        </div>
       </Tarjeta>
+
+      {cobertura ? (
+        <BloqueDeCobertura
+          cobertura={cobertura}
+          anotaciones={paquete?.anotaciones ?? []}
+          mapasBajados={mapasBajados}
+          zonas={zonas}
+          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
+        />
+      ) : null}
 
       {hayTextos ? (
         <Tarjeta className="space-y-4">
           {ruta.equipo ? (
-            <Texto titulo="Qué llevar" cuerpo={ruta.equipo} />
+            <Texto 
+              titulo="Qué llevar" 
+              cuerpo={ruta.equipo} 
+              icono={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"/><path d="M10 2v2"/><path d="M14 2v2"/><path d="M7 22v-9a5 5 0 0 1 10 0v9"/><path d="M9 6h6"/></svg>}
+            />
           ) : null}
           {ruta.complicaciones ? (
-            <Texto titulo="Complicaciones" cuerpo={ruta.complicaciones} />
+            <Texto 
+              titulo="Complicaciones" 
+              cuerpo={ruta.complicaciones} 
+              icono={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ambar-texto"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>}
+            />
           ) : null}
           {ruta.comentario ? (
-            <Texto titulo="Comentario" cuerpo={ruta.comentario} />
+            <Texto 
+              titulo="Comentario" 
+              cuerpo={ruta.comentario} 
+              icono={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>}
+            />
           ) : null}
         </Tarjeta>
       ) : null}
@@ -344,16 +359,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       >
         Navegar esta ruta
       </Boton>
-
-      {cobertura ? (
-        <BloqueDeCobertura
-          cobertura={cobertura}
-          anotaciones={paquete?.anotaciones ?? []}
-          mapasBajados={mapasBajados}
-          zonas={zonas}
-          zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
-        />
-      ) : null}
     </div>
   );
 }
@@ -362,39 +367,22 @@ function BotonVolverALaLista() {
   return <BotonVolver destinoSiNoHayVuelta="/rutas" etiqueta="Volver a las rutas" />;
 }
 
-function Texto({ titulo, cuerpo }: { titulo: string; cuerpo: string }) {
+function Texto({ titulo, cuerpo, icono }: { titulo: string; cuerpo: string, icono: React.ReactNode }) {
   return (
-    <div>
-      <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-        {titulo}
-      </h2>
-      <p className="whitespace-pre-wrap break-words text-sm leading-6 text-texto">
-        {cuerpo}
-      </p>
+    <div className="flex items-start gap-3 rounded-xl bg-superficie-alta p-4 border border-borde/50">
+      <div className="mt-0.5 text-texto-suave">
+        {icono}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          {titulo}
+        </h2>
+        <p className="whitespace-pre-wrap break-words text-sm leading-6 text-texto">
+          {cuerpo}
+        </p>
+      </div>
     </div>
   );
 }
 
-const ESCALON_DE_ESFUERZO = { bajo: 1, medio: 2, alto: 3, muy_alto: 4 } as const;
 
-function BarraDeEsfuerzo({
-  nivel,
-}: {
-  nivel: RutaSinRecorrido["nivelEsfuerzo"];
-}) {
-  const llenos = nivel ? ESCALON_DE_ESFUERZO[nivel] : 0;
-
-  return (
-    <div className="mt-2 flex gap-1" aria-hidden>
-      {[1, 2, 3, 4].map((escalon) => (
-        <div
-          key={escalon}
-          className={[
-            "h-1.5 flex-1 rounded-full",
-            escalon <= llenos ? "bg-acento-hover" : "bg-superficie-alta",
-          ].join(" ")}
-        />
-      ))}
-    </div>
-  );
-}

@@ -51,9 +51,6 @@ export function BloqueDeCobertura({
   const faltanBajar = cobertura.sectores
     .filter((cada) => cada.estado === "falta_descargar")
     .map((cada) => cada.sector);
-  const yaBajados = cobertura.sectores
-    .filter((cada) => cada.estado === "descargado")
-    .map((cada) => cada.sector);
   const listo = coberturaCompleta(cobertura);
 
   // Un sector puede estar bajado y aun así faltarle una foto que se agregó
@@ -187,23 +184,8 @@ export function BloqueDeCobertura({
         )}
       </div>
 
-      {yaBajados.length > 0 ? (
-        <ul className="space-y-1.5">
-          {yaBajados.map((sector) => (
-            <li
-              key={sector.id}
-              className="flex items-center gap-2 rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm text-texto"
-            >
-              <TildeChico />
-              <span className="min-w-0 flex-1 truncate">{sector.nombre}</span>
-              <span className="shrink-0 text-xs text-texto-suave">en el celular</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
       <BajarLosMapasQueFaltan
-        sectoresQueFaltan={faltanBajar}
+        sectoresNecesarios={cobertura.sectores}
         anotaciones={anotaciones}
         fotosPendientes={fotosPendientes}
       />
@@ -286,20 +268,5 @@ function IconoProblema() {
   );
 }
 
-function TildeChico() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4 shrink-0 text-verde-icono"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="m5 12.5 4.5 4.5L19 7" />
-    </svg>
-  );
-}
+
 

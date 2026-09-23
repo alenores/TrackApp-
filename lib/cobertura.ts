@@ -23,6 +23,7 @@ export type EstadoDeSector = "descargado" | "falta_descargar";
 export type SectorNecesario = {
   sector: Sector;
   estado: EstadoDeSector;
+  metros: number;
 };
 
 export type Cobertura = {
@@ -130,7 +131,7 @@ export function calcularCobertura(
   sectoresDescargados: ReadonlySet<number> = new Set(),
 ): Cobertura {
   const lineas = extraerLineas(geometria);
-  const tocados = new Set<number>();
+  const metrosPorSector = new Map<number, number>();
 
   let metrosSinCobertura = 0;
   let metrosTotales = 0;
@@ -142,7 +143,7 @@ export function calcularCobertura(
 
     for (const sector of sectores) {
       if (puntoDentroDelRectangulo(lon, lat, sector.rectangulo)) {
-        tocados.add(sector.id);
+        metrosPorSector.set(sector.id, (metrosPorSector.get(sector.id) || 0) + metros);
         cubierto = true;
       }
     }
@@ -151,12 +152,13 @@ export function calcularCobertura(
   }
 
   const necesarios: SectorNecesario[] = sectores
-    .filter((sector) => tocados.has(sector.id))
+    .filter((sector) => metrosPorSector.has(sector.id))
     .map((sector) => ({
       sector,
       estado: sectoresDescargados.has(sector.id)
         ? ("descargado" as const)
         : ("falta_descargar" as const),
+      metros: Math.round(metrosPorSector.get(sector.id) || 0),
     }))
     .sort((a, b) => a.sector.nombre.localeCompare(b.sector.nombre, "es"));
 

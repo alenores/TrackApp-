@@ -11,6 +11,28 @@ import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { SectorConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import type { Anotacion, Sector } from "@/types/database";
+import type { SectorNecesario } from "@/lib/cobertura";
+
+function enKm(metros: number): string {
+  return `${(metros / 1000).toFixed(1).replace(".", ",")} km`;
+}
+
+function TildeChico() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4 shrink-0 text-verde-icono"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m5 12.5 4.5 4.5L19 7" />
+    </svg>
+  );
+}
 
 /**
  * Bajar, desde la ruta, los mapas que le faltan.
@@ -28,7 +50,7 @@ import type { Anotacion, Sector } from "@/types/database";
  */
 
 type PropiedadesDeBajarLosQueFaltan = {
-  sectoresQueFaltan: Sector[];
+  sectoresNecesarios: SectorNecesario[];
   /** Todas las anotaciones del celular: de acá salen las fotos que hay que bajar. */
   anotaciones: Anotacion[];
   /** Sectores ya bajados a los que les falta alguna foto de anotación. */
@@ -39,10 +61,13 @@ type Bajando = { sectorId: number; resueltos: number; total: number };
 type Fallo = { nombre: string; motivo: string };
 
 export function BajarLosMapasQueFaltan({
-  sectoresQueFaltan,
+  sectoresNecesarios,
   anotaciones,
   fotosPendientes,
 }: PropiedadesDeBajarLosQueFaltan) {
+  const sectoresQueFaltan = sectoresNecesarios
+    .filter((s) => s.estado === "falta_descargar")
+    .map((s) => s.sector);
   const [bajando, setBajando] = useState<Bajando | null>(null);
   const [fallo, setFallo] = useState<Fallo | null>(null);
   const [fotosQueNoEntraron, setFotosQueNoEntraron] = useState<string | null>(null);
@@ -59,9 +84,7 @@ export function BajarLosMapasQueFaltan({
   }, []);
 
   // Sin señal no hay nada que bajar: los botones se van. Lo que falta lo sigue
-  // diciendo el bloque de arriba, que es información y esa no se esconde nunca.
-  if (!haySenal) return null;
-  if (sectoresQueFaltan.length === 0 && fotosPendientes.length === 0) return null;
+  // diciendo la lista, que es información y esa no se esconde nunca.
 
   const pesoDeTodos = sectoresQueFaltan.reduce(
     (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo),
@@ -117,9 +140,10 @@ export function BajarLosMapasQueFaltan({
 
   return (
     <div className="space-y-2">
-      {sectoresQueFaltan.length > 0 ? (
+      {sectoresNecesarios.length > 0 ? (
         <ul className="space-y-1.5">
-          {sectoresQueFaltan.map((sector) => {
+          {sectoresNecesarios.map((necesario) => {
+            const { sector, estado, metros } = necesario;
             const esteBajando = bajando?.sectorId === sector.id;
 
             return (
@@ -127,11 +151,21 @@ export function BajarLosMapasQueFaltan({
                 key={sector.id}
                 className="flex min-h-14 items-center gap-2 rounded-xl border border-borde-suave bg-fondo px-3 py-2"
               >
-                <span className="min-w-0 flex-1 truncate text-sm text-texto">
-                  {sector.nombre}
-                </span>
+                {estado === "descargado" ? <TildeChico /> : null}
+                <div className="min-w-0 flex-1 flex flex-col justify-center">
+                  <span className="truncate text-sm text-texto font-medium">
+                    {sector.nombre}
+                  </span>
+                  <span className="text-xs text-texto-suave">
+                    {enKm(metros)}
+                  </span>
+                </div>
 
-                {esteBajando ? (
+                {estado === "descargado" ? (
+                  <span className="shrink-0 text-xs text-texto-suave">en el celular</span>
+                ) : !haySenal ? (
+                  <span className="shrink-0 text-xs text-texto-suave">falta bajar mapa</span>
+                ) : esteBajando ? (
                   <span className="shrink-0 text-xs font-semibold tabular-nums text-texto-suave">
                     {bajando.total > 0
                       ? `${bajando.resueltos} de ${bajando.total}`
@@ -142,7 +176,7 @@ export function BajarLosMapasQueFaltan({
                     type="button"
                     disabled={enFila}
                     onClick={() => void bajarEstos([sector])}
-                    className="min-h-11 shrink-0 rounded-lg border border-acento-borde bg-acento px-3.5 py-2 text-sm font-semibold text-acento-texto transition-colors hover:bg-acento-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="min-h-9 shrink-0 rounded-lg border border-acento-borde bg-acento px-3 py-1.5 text-xs font-semibold text-acento-texto transition-colors hover:bg-acento-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Bajar · {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo))}
                   </button>
@@ -160,19 +194,21 @@ export function BajarLosMapasQueFaltan({
         </p>
       ) : null}
 
-      {sectoresQueFaltan.length > 1 ? (
-        <Boton
-          anchoCompleto
-          disabled={enFila}
-          onClick={() => void bajarEstos(sectoresQueFaltan)}
-        >
-          {enFila
-            ? "Bajando…"
-            : `Bajar los ${sectoresQueFaltan.length} que faltan · ${mostrarPeso(pesoDeTodos)}`}
-        </Boton>
+      {haySenal && sectoresQueFaltan.length > 0 ? (
+        <div className="flex justify-end">
+          <Boton
+            variante="secundario"
+            disabled={enFila}
+            onClick={() => void bajarEstos(sectoresQueFaltan)}
+          >
+            {enFila
+              ? "Bajando…"
+              : `Descargar todos (${sectoresQueFaltan.length}) · ${mostrarPeso(pesoDeTodos)}`}
+          </Boton>
+        </div>
       ) : null}
 
-      {fotosPendientes.length > 0 ? (
+      {haySenal && fotosPendientes.length > 0 ? (
         <div className="space-y-2 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3">
           <p className="text-sm leading-6 text-ambar-texto">
             {fotosPendientes.length === 1
