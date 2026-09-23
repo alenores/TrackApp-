@@ -12,7 +12,8 @@ import {
   CLASE_DE_RESPALDO,
   loRechazoPorLaClase,
 } from "@/lib/rutas/archivo";
-import type { ActividadRuta, NivelEsfuerzo } from "@/types/database";
+import { calcularDistanciasPorSector } from "@/lib/cobertura";
+import type { ActividadRuta, NivelEsfuerzo, Sector } from "@/types/database";
 
 const DEPOSITO = "archivos-ruta";
 
@@ -74,6 +75,26 @@ export async function crearRuta(
 
   const supabase = await crearClienteEnElServidor();
 
+  const { data: sectores } = await supabase
+    .from("sectores")
+    .select("id, lat_norte, lat_sur, lon_este, lon_oeste")
+    .is("eliminado_en", null);
+
+  const sectoresDominio = (sectores ?? []).map((s) => ({
+    id: s.id,
+    rectangulo: {
+      latNorte: s.lat_norte,
+      latSur: s.lat_sur,
+      lonEste: s.lon_este,
+      lonOeste: s.lon_oeste,
+    },
+  })) as Sector[];
+
+  const distancias_por_sector = calcularDistanciasPorSector(
+    geometria,
+    sectoresDominio,
+  );
+
   const { data, error } = await supabase
     .from("rutas")
     .insert({
@@ -91,6 +112,7 @@ export async function crearRuta(
       desnivel_positivo_m: numeros.desnivelPositivoM,
       desnivel_negativo_m: numeros.desnivelNegativoM,
       geometria,
+      distancias_por_sector,
       ...escribirRectangulo(numeros.rectangulo),
     })
     .select("id")

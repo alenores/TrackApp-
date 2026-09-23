@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { useLoQueFalta } from "@/hooks/use-lo-que-falta";
-import { AvisoDeMapasQueFaltan } from "@/components/rutas/aviso-de-mapas-que-faltan";
+import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+
 import { ListaDeRutas } from "@/components/rutas/lista-de-rutas";
 import { EsqueletoDeListaDeRutas } from "@/components/rutas/esqueleto-de-lista";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -23,6 +24,7 @@ type RutasClientProps = {
 
 export function PantallaDeRutas({ miPerfilId }: RutasClientProps) {
   const { paquete, estado, aviso } = useDatosDeLaApp();
+  const conMapa = useSectoresConMapaBajado();
   const loQueFalta = useLoQueFalta(paquete);
   const [perfiles, setPerfiles] = useState<Record<string, Perfil>>({});
 
@@ -70,19 +72,10 @@ export function PantallaDeRutas({ miPerfilId }: RutasClientProps) {
         </Tarjeta>
       ) : null}
 
-      {/*
-        Va antes de la lista: es lo que hay que resolver en casa, con señal, y
-        no hay que ir a buscarlo entrando ruta por ruta.
-      */}
-      <AvisoDeMapasQueFaltan
-        perdidos={loQueFalta.perdidos}
-        rutas={loQueFalta.rutas}
-        aviso={loQueFalta.aviso}
-        anotaciones={paquete?.anotaciones ?? []}
-      />
-
       <ListaDeRutas
         rutas={rutas}
+        zonas={paquete?.zonas ?? []}
+        conMapa={conMapa}
         miPerfilId={miPerfilId}
         perfiles={perfiles}
         showNewRouteFab

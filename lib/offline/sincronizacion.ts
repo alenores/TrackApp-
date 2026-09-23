@@ -122,6 +122,7 @@ async function bajarRutas(): Promise<{
       archivoUrl: (fila.archivo_url as string | null) ?? null,
       rectangulo: leerRectangulo(fila),
       color: (fila.color as string | null) ?? "naranja",
+      distanciasPorSector: (fila.distancias_por_sector as Record<string, number> | null) ?? {},
       creadoEn: String(fila.creado_en),
       actualizadoEn: String(fila.actualizado_en),
     });

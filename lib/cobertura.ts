@@ -177,6 +177,48 @@ export function coberturaCompleta(cobertura: Cobertura): boolean {
   );
 }
 
+// ------------------------------------------------- pre-cálculo para la base
+
+/**
+ * Calcula cuántos metros del recorrido caen en cada sector para guardarlo en
+ * la base de datos (columna `distancias_por_sector`).
+ */
+export function calcularDistanciasPorSector(
+  geometria: FeatureCollection,
+  sectores: Sector[],
+): Record<string, number> {
+  const lineas = extraerLineas(geometria);
+  const metrosPorSector = new Map<number, number>();
+  let metrosSinCobertura = 0;
+
+  for (const { lon, lat, metros } of recorrerLinea(lineas)) {
+    let cubierto = false;
+
+    for (const sector of sectores) {
+      if (puntoDentroDelRectangulo(lon, lat, sector.rectangulo)) {
+        metrosPorSector.set(
+          sector.id,
+          (metrosPorSector.get(sector.id) || 0) + metros,
+        );
+        cubierto = true;
+      }
+    }
+
+    if (!cubierto) metrosSinCobertura += metros;
+  }
+
+  const resultado: Record<string, number> = {};
+  for (const [id, metros] of metrosPorSector.entries()) {
+    resultado[String(id)] = Math.round(metros);
+  }
+
+  if (metrosSinCobertura > 0) {
+    resultado["sin_sector"] = Math.round(metrosSinCobertura);
+  }
+
+  return resultado;
+}
+
 // ------------------------------------------------- cobertura de una zona
 
 export type HuecoDeZona = {

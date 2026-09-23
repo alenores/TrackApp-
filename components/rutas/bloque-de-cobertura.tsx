@@ -128,9 +128,6 @@ export function BloqueDeCobertura({
                   ? "Te falta un mapa para esta ruta"
                   : `Te faltan ${faltanBajar.length} mapas para esta ruta`}
               </p>
-              <p className="mt-1 text-sm leading-6 text-texto-suave">
-                Bajalos ahora, desde casa. En el cerro no vas a tener con qué.
-              </p>
             </>
           )}
         </div>

@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Perfil, RutaResumen } from "@/types/database";
+import type { Perfil, RutaResumen, Zona } from "@/types/database";
 import { TarjetaDeRuta } from "@/components/rutas/tarjeta-de-ruta";
 import { Tarjeta } from "@/components/ui/tarjeta";
 
 type RutaListProps = {
   rutas: RutaResumen[];
+  zonas: Zona[];
+  conMapa: Set<number>;
   miPerfilId: string | null;
   perfiles: Record<string, Perfil>;
   title?: string;
@@ -31,6 +33,8 @@ function SearchIcon() {
 
 export function ListaDeRutas({
   rutas,
+  zonas,
+  conMapa,
   miPerfilId,
   perfiles,
   title = "RUTAS",
@@ -203,6 +207,8 @@ export function ListaDeRutas({
             <li key={ruta.id}>
               <TarjetaDeRuta
                 ruta={ruta}
+                zonas={zonas}
+                conMapa={conMapa}
                 soyElAutor={miPerfilId === ruta.perfilId}
                 autor={
                   miPerfilId === ruta.perfilId

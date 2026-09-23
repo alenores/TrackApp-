@@ -135,6 +135,8 @@ export type RutaResumen = {
   desnivelPositivoM: number | null;
   desnivelNegativoM: number | null;
   rectangulo: Rectangulo;
+  /** Diccionario de cuántos metros caen en cada sector (id_sector: metros), y opcionalmente "sin_sector": metros */
+  distanciasPorSector: Record<string, number>;
   color: string;
   creadoEn: string;
   actualizadoEn: string;
