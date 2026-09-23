@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { borrarZona, editarZona } from "@/app/actions/territorio";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { BotonVolver } from "@/components/ui/boton-volver";
@@ -43,13 +43,12 @@ export function FormularioDeEditarZona({
     (sector) => sector.zonaId === zonaId,
   );
 
-  useEffect(() => {
-    if (zona && !cargado) {
-      setNombre(zona.nombre);
-      setDescripcion(zona.descripcion ?? "");
-      setCargado(true);
-    }
-  }, [zona, cargado]);
+  // Se llena una sola vez, cuando la zona aparece en el paquete.
+  if (zona && !cargado) {
+    setNombre(zona.nombre);
+    setDescripcion(zona.descripcion ?? "");
+    setCargado(true);
+  }
 
   if (estado === "abriendo") {
     return (
