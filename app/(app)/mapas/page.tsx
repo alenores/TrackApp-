@@ -69,8 +69,13 @@ export default function PantallaDeMapas() {
   };
 
   return (
-    <div className="flex flex-col gap-3 max-w-2xl mx-auto p-4 md:p-6 lg:p-8 w-full">
-      <div>
+    <>
+      <div 
+        className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat opacity-30" 
+        style={{ backgroundImage: "url('/fondo_mapas.webp')" }}
+      />
+      <div className="flex flex-col gap-3 max-w-2xl mx-auto p-4 md:p-6 lg:p-8 w-full relative">
+        <div>
         <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
           Mapas descargados
         </h1>
@@ -169,5 +174,6 @@ export default function PantallaDeMapas() {
         </>
       )}
     </div>
+    </>
   );
 }
