@@ -305,6 +305,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
             recorrido={recorridoCompletoMapa}
             encuadre={ruta.rectangulo}
             rectangulos={rectangulos}
+            anotaciones={paquete?.anotaciones ?? []}
             enVivo
             fondoInicial={fondoElegido}
             alCambiarFondo={setFondoElegido}
