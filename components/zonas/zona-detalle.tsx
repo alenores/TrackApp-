@@ -101,7 +101,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
               alt=""
               className="absolute inset-0 h-full w-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-950/30" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/20 to-transparent" />
           </>
         ) : null}
 
