@@ -153,7 +153,7 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   }));
   const rectangulosSectores: RectanguloEnElMapa[] = sectores.map((sector) => ({
     rectangulo: sector.rectangulo,
-    clase: sectoresBajados.includes(sector.id) ? "sector_bajado" as const : "sector_sin_bajar" as const,
+    clase: sectoresBajados.has(sector.id) ? "sector_bajado" as const : "sector_sin_bajar" as const,
     etiqueta: etiquetaDeSector(sector.nombre),
   }));
   const rectangulos = [...rectangulosZonas, ...rectangulosSectores];
