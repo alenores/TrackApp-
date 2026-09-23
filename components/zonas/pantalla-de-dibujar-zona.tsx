@@ -40,6 +40,7 @@ export function PantallaDeDibujarZona() {
           anotaciones={[]}
           enVivo={true}
           dibujando={true}
+          pantallaCompleta={true}
           alDibujar={setRectangulo}
           rectangulo={rectangulo}
         />
