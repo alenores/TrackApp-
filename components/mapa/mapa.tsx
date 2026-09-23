@@ -459,6 +459,7 @@ export function Mapa({
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
+      mapa.addSource("punto-de-ajuste", { type: "geojson", data: VACIO });
 
       // Las curvas van primero: debajo de todo lo de la app, encima del fondo.
       // Solo cuando el mapa lee lo guardado: en vivo no hay relieve.
@@ -593,6 +594,18 @@ export function Mapa({
           "circle-radius": 10,
           "circle-color": colores.gps,
           "circle-stroke-width": 3,
+          "circle-stroke-color": colores.contorno,
+        },
+      });
+
+      mapa.addLayer({
+        id: "punto-de-ajuste",
+        type: "circle",
+        source: "punto-de-ajuste",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": colores.rectanguloNuevo,
+          "circle-stroke-width": 2,
           "circle-stroke-color": colores.contorno,
         },
       });
@@ -755,41 +768,84 @@ export function Mapa({
       ]);
     };
 
-    const empezar = (evento: { lngLat: maplibregl.LngLat }) => {
-      desde = evento.lngLat;
+    const imantar = (punto: maplibregl.LngLat, puntoPantalla: { x: number, y: number }): maplibregl.LngLat => {
+      let nuevaLat = punto.lat;
+      let nuevaLng = punto.lng;
+      const UMBRAL_PX = 15;
+
+      for (const capa of rectangulos) {
+        const { latNorte, latSur, lonEste, lonOeste } = capa.rectangulo;
+
+        // Snapping de Latitud (eje Y en pantalla)
+        const pxNorte = mapa.project([punto.lng, latNorte]).y;
+        if (Math.abs(puntoPantalla.y - pxNorte) < UMBRAL_PX) nuevaLat = latNorte;
+
+        const pxSur = mapa.project([punto.lng, latSur]).y;
+        if (Math.abs(puntoPantalla.y - pxSur) < UMBRAL_PX) nuevaLat = latSur;
+
+        // Snapping de Longitud (eje X en pantalla)
+        const pxEste = mapa.project([lonEste, punto.lat]).x;
+        if (Math.abs(puntoPantalla.x - pxEste) < UMBRAL_PX) nuevaLng = lonEste;
+
+        const pxOeste = mapa.project([lonOeste, punto.lat]).x;
+        if (Math.abs(puntoPantalla.x - pxOeste) < UMBRAL_PX) nuevaLng = lonOeste;
+      }
+
+      return new maplibregl.LngLat(nuevaLng, nuevaLat);
     };
 
-    const mover = (evento: { lngLat: maplibregl.LngLat }) => {
-      const armado = armar(evento.lngLat);
+    const manejarPuntoDeAjuste = (ajustado: maplibregl.LngLat, original: maplibregl.LngLat) => {
+      if (ajustado.lat !== original.lat || ajustado.lng !== original.lng) {
+        ponerDatos(mapa, "punto-de-ajuste", {
+          type: "FeatureCollection",
+          features: [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [ajustado.lng, ajustado.lat] } }]
+        });
+      } else {
+        ponerDatos(mapa, "punto-de-ajuste", VACIO);
+      }
+    };
+
+    const empezar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      desde = imantar(evento.lngLat, evento.point);
+      manejarPuntoDeAjuste(desde, evento.lngLat);
+    };
+
+    const mover = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      const ajustado = imantar(evento.lngLat, evento.point);
+      manejarPuntoDeAjuste(ajustado, evento.lngLat);
+      const armado = armar(ajustado);
       if (armado) alDibujar(armado);
     };
 
-    const soltar = (evento: { lngLat: maplibregl.LngLat }) => {
-      const armado = armar(evento.lngLat);
+    const soltar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      const ajustado = imantar(evento.lngLat, evento.point);
+      ponerDatos(mapa, "punto-de-ajuste", VACIO);
+      const armado = armar(ajustado);
       if (armado) alDibujar(armado);
       desde = null;
     };
 
-    mapa.on("mousedown", empezar);
-    mapa.on("mousemove", mover);
-    mapa.on("mouseup", soltar);
-    mapa.on("touchstart", empezar);
-    mapa.on("touchmove", mover);
-    mapa.on("touchend", soltar);
+    mapa.on("mousedown", empezar as any);
+    mapa.on("mousemove", mover as any);
+    mapa.on("mouseup", soltar as any);
+    mapa.on("touchstart", empezar as any);
+    mapa.on("touchmove", mover as any);
+    mapa.on("touchend", soltar as any);
 
     return () => {
-      mapa.off("mousedown", empezar);
-      mapa.off("mousemove", mover);
-      mapa.off("mouseup", soltar);
-      mapa.off("touchstart", empezar);
-      mapa.off("touchmove", mover);
-      mapa.off("touchend", soltar);
+      mapa.off("mousedown", empezar as any);
+      mapa.off("mousemove", mover as any);
+      mapa.off("mouseup", soltar as any);
+      mapa.off("touchstart", empezar as any);
+      mapa.off("touchmove", mover as any);
+      mapa.off("touchend", soltar as any);
       mapa.dragPan.enable();
       mapa.doubleClickZoom.enable();
       mapa.getCanvas().style.cursor = "";
       dibujandoRef.current = false;
+      ponerDatos(mapa, "punto-de-ajuste", VACIO);
     };
-  }, [dibujando, alDibujar]);
+  }, [dibujando, alDibujar, rectangulos]);
 
   /**
    * Elegir un punto tocando el mapa.

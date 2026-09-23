@@ -33,7 +33,7 @@ export function ListaDeZonas({
 
         {soyAdministrador ? (
           <Enlace
-            href="/zonas/nueva"
+            href="/zonas/dibujar"
             aria-label="Nueva zona"
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta"
           >

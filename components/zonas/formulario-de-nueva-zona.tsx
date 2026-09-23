@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Enlace } from "@/components/ui/enlace";
 import { crearZonaConSectores } from "@/app/actions/territorio";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CamposDeTerritorio } from "@/components/zonas/campos-de-territorio";
@@ -26,8 +27,26 @@ export function FormularioDeNuevaZona() {
   const router = useRouter();
   const { paquete } = useDatosDeLaApp();
 
+  const searchParams = useSearchParams();
   const fotoZona = useFoto("zona", FORMAS_DE_RECORTE.zona);
-  const [campos, setCampos] = useState<CamposDelTerritorio>(TERRITORIO_VACIO);
+  
+  const [campos, setCampos] = useState<CamposDelTerritorio>(() => {
+    const latNorte = searchParams.get("latNorte");
+    const latSur = searchParams.get("latSur");
+    const lonEste = searchParams.get("lonEste");
+    const lonOeste = searchParams.get("lonOeste");
+
+    if (latNorte && latSur && lonEste && lonOeste) {
+      return {
+        ...TERRITORIO_VACIO,
+        latNorte,
+        latSur,
+        lonEste,
+        lonOeste,
+      };
+    }
+    return TERRITORIO_VACIO;
+  });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seleccion, setSeleccion] = useState<{ filas: number; columnas: number } | null>(null);
@@ -78,7 +97,25 @@ export function FormularioDeNuevaZona() {
         <h1 className="text-xl font-semibold text-texto">Nueva zona</h1>
       </div>
 
-      <CamposDeTerritorio
+      <div className="flex flex-col gap-3">
+        <Tarjeta>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold text-texto mb-1">Dibujar en el mapa</h2>
+              <p className="text-sm text-texto-suave">
+                Marcá el rectángulo arrastrando en el mapa. Se ajustará exacto a los bordes de otras zonas para no dejar huecos.
+              </p>
+            </div>
+            <Enlace
+              href="/zonas/dibujar"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-acento px-4 font-semibold text-acento-texto transition-colors hover:bg-acento-hover"
+            >
+              Ir al mapa
+            </Enlace>
+          </div>
+        </Tarjeta>
+
+        <CamposDeTerritorio
         queEs="zona"
         campos={campos}
         fotoZona={fotoZona}
@@ -196,6 +233,7 @@ export function FormularioDeNuevaZona() {
           </>
         }
       />
+      </div>
     </div>
   );
 }
