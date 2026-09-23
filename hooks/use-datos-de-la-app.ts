@@ -6,17 +6,22 @@ import {
   paqueteEnMemoria,
   type Paquete,
 } from "@/lib/offline/paquete";
-import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
-import { calentarLasPantallas } from "@/lib/offline/calentar";
-import { tirarLasPantallasDeOtraVersion } from "@/lib/offline/pantallas-de-otra-version";
-import { pedirQueNoLoBorren } from "@/lib/offline/permanente";
-import { ponerAlDiaLoBajado } from "@/lib/mapas/poner-al-dia-lo-bajado";
+import {
+  mirarLaPuestaAlDia,
+  ponerAlDiaUnaVezPorApertura,
+  puestaAlDiaDeEstaApertura,
+} from "@/lib/offline/puesta-al-dia";
+import type { ResultadoDeSincronizacion } from "@/lib/offline/sincronizacion";
 
 /**
  * Los datos de la app en el celular.
  *
  * Dibuja **al instante** con lo que ya está guardado, y si hay señal se pone al
  * día solo, sin preguntar nada ni mostrar un cartel de «hay novedades».
+ *
+ * **Ponerse al día pasa una vez por apertura, no en cada pantalla.** Todas las
+ * pantallas usan esto, pero solo la primera sale a la base: ver
+ * `lib/offline/puesta-al-dia.ts`.
  *
  * Cuando algo falla, lo que había sigue sirviendo: una actualización a medias
  * nunca rompe un paquete que ya andaba.
@@ -43,6 +48,13 @@ type Puesta =
   | { clase: "sin_senal" }
   | { clase: "fallo"; motivo: string };
 
+function comoPuesta(resultado: ResultadoDeSincronizacion | null): Puesta {
+  if (!resultado) return { clase: "buscando" };
+  if (resultado.clase === "fallo") return { clase: "fallo", motivo: resultado.motivo };
+  if (resultado.clase === "sin_senal") return { clase: "sin_senal" };
+  return { clase: "al_dia" };
+}
+
 export function useDatosDeLaApp(): DatosDeLaApp {
   // El paquete guardado ya está en la primera pantalla: no se espera a nada.
   const paquete = useSyncExternalStore(
@@ -51,59 +63,23 @@ export function useDatosDeLaApp(): DatosDeLaApp {
     () => null,
   );
 
-  const [puesta, setPuesta] = useState<Puesta>({ clase: "buscando" });
+  const [puesta, setPuesta] = useState<Puesta>(() =>
+    comoPuesta(puestaAlDiaDeEstaApertura()),
+  );
 
   useEffect(() => {
     let vigente = true;
-    const cancelador = new AbortController();
+    const anotar = (resultado: ResultadoDeSincronizacion) => {
+      if (vigente) setPuesta(comoPuesta(resultado));
+    };
 
-    // Antes que nada: que el navegador no borre lo guardado cuando el teléfono
-    // se llene. No espera a nadie y no cambia nada de lo que sigue.
-    void pedirQueNoLoBorren();
-
-    void (async () => {
-      const resultado = await sincronizarPaquete();
-      if (!vigente) return;
-
-      if (resultado.clase === "fallo") {
-        setPuesta({ clase: "fallo", motivo: resultado.motivo });
-        return;
-      }
-
-      if (resultado.clase === "sin_senal") {
-        setPuesta({ clase: "sin_senal" });
-        return;
-      }
-
-      setPuesta({ clase: "al_dia" });
-
-      /**
-       * Con el paquete al día se dejan listas las pantallas para el cerro.
-       *
-       * **El usuario no tiene que ir a visitarlas una por una.** Va sin esperar
-       * a nadie: la pantalla ya está dibujada y esto pasa por detrás.
-       */
-      const alDia = resultado.paquete;
-      if (alDia) {
-        // Primero se tiran las de otra versión, si las hay; después se guardan
-        // las de esta. En ese orden, o el calentador las daría por hechas.
-        void tirarLasPantallasDeOtraVersion().then(() =>
-          calentarLasPantallas({ paquete: alDia, senal: cancelador.signal }),
-        );
-      }
-
-      /**
-       * Y la base queda al día con lo que de verdad hay bajado en el celular.
-       *
-       * Arregla lo que quedó a medias: una descarga que no llegó a anotarse, un
-       * mapa que se sacó sin señal. Va por detrás, sin frenar nada.
-       */
-      void ponerAlDiaLoBajado();
-    })();
+    // Si otra pantalla o un guardado la pone al día, esta se entera.
+    const dejarDeMirar = mirarLaPuestaAlDia(anotar);
+    void ponerAlDiaUnaVezPorApertura().then(anotar);
 
     return () => {
       vigente = false;
-      cancelador.abort();
+      dejarDeMirar();
     };
   }, []);
 

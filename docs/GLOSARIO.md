@@ -20,6 +20,17 @@ El mapa sin vista satelital. **Siempre incluye curvas de nivel**, sin excepción
 El mapa con la foto del terreno real de fondo. También puede mostrar curvas de
 nivel, que se prenden y apagan.
 
+**Foto satelital**
+La imagen del terreno que va de fondo en el mapa satelital. Sale de Sentinel-2
+sin nubes (EOX, datos de Copernicus): diez metros por píxel, se ven bosques,
+agua y roca, no senderos. Baja por el mismo tipo de puente que el mapa y se
+guarda en el mismo depósito, con su propio nombre.
+
+**Puesta al día**
+Cuando la app le pregunta a la base si hay novedades y, si hay, las baja al
+celular. Automática y muda. Pasa una vez por apertura y después de guardar
+algo, nunca al pasar de pantalla ni durante una navegación.
+
 **Curvas de nivel**
 Las líneas que marcan el desnivel. No son parte de la imagen del mapa: son un
 dato aparte que se descarga una vez por sector y se dibuja sobre cualquiera de

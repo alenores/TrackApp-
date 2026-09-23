@@ -31,6 +31,7 @@ import {
   type RecorridoLeido,
 } from "@/lib/rutas/archivo";
 import { mostrarDesnivel, mostrarLargo } from "@/lib/rutas/actividades";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * Subir una ruta.
@@ -115,6 +116,8 @@ export function FormularioDeNuevaRuta() {
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/rutas/${resultado.datos.rutaId}`);
   };
 

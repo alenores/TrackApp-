@@ -2,6 +2,7 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
 import { ajustarParaLaMontana } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa } from "@/components/mapa/colores";
+import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
 import { DIRECCION_DE_LAS_TESELAS } from "@/lib/mapas/protocolo";
 import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
 import type { Modo } from "@/lib/modo";
@@ -30,20 +31,14 @@ export type TipoDeFondo = "dibujo" | "satelital";
 export const FUENTE_SATELITAL = "satelital";
 
 /**
- * De dónde sale la foto del terreno, **solo con internet**.
+ * La foto del terreno, en vivo: solo en las pantallas de administrar.
  *
- * Es Sentinel-2 sin nubes, de Europa. Diez metros por píxel: se ven los
- * bosques, el agua, los claros y la forma del terreno. **No se ve un sendero ni
- * un refugio.** Es lo mejor gratis que hay para la sierra.
- *
- * No se descarga nunca: su licencia no lo permitiría y además no hace falta.
- * Sirve para marcar rectángulos mirando el terreno de verdad.
+ * La misma foto que baja al celular con el mapa satelital. De dónde sale lo
+ * sabe un solo archivo.
  */
-const FOTO_DEL_TERRENO =
-  "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg";
+const FOTO_DEL_TERRENO = DIRECCION_DE_LA_FOTO;
 
-/** Quién hizo la foto. Su licencia obliga a decirlo, y corresponde. */
-export const QUIEN_HIZO_LA_FOTO = "Sentinel-2 cloudless por EOX · Copernicus";
+export { QUIEN_HIZO_LA_FOTO };
 
 /** El nombre con el que el mapa conoce a los pedazos guardados. */
 export const FUENTE_DEL_FONDO = "fondo";

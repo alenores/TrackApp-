@@ -14,6 +14,7 @@ import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { mostrarDesnivel, mostrarLargo } from "@/lib/rutas/actividades";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * Editar una ruta.
@@ -114,6 +115,8 @@ export function FormularioDeEditarRuta({ rutaId, miPerfilId }: EditarRutaFormPro
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/rutas/${rutaId}`);
   };
 
@@ -136,6 +139,8 @@ export function FormularioDeEditarRuta({ rutaId, miPerfilId }: EditarRutaFormPro
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push("/rutas");
   };
 

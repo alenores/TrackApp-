@@ -17,12 +17,14 @@ import {
   claveDeTesela,
   cuantasTeselas,
   cuantasTeselasDelRelieve,
+  teselasDeLaFoto,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
 } from "@/lib/mapas/teselas";
 import {
   anotarMapaBajado,
+  mapaDelSector,
   mapasBajados,
   olvidarMapaDeSector,
   olvidarTodosLosMapas,
@@ -62,6 +64,11 @@ import type { Anotacion, Sector } from "@/types/database";
  * Con el mapa baja también **el relieve del sector**, de donde salen las
  * curvas de nivel: son pedazos más de la misma cuenta, y sin ellos el sector
  * no está completo. Un mapa de montaña sin desnivel no sirve (decisión 013).
+ *
+ * El **satelital** es el simple más la foto: baja el mismo dibujo —de ahí
+ * salen los nombres que van encima de la foto—, el mismo relieve y, además,
+ * los pedazos de la foto. Un sector tiene un solo mapa a la vez (decisión
+ * 012): cambiar de uno al otro es volver a bajarlo con el otro tipo.
  *
  * Y bajan también **las fotos de las anotaciones de ese sector**, que es lo
  * único pesado que llevan. Esas van por otro camino: si una foto no entra, el
@@ -140,9 +147,36 @@ export type PedidoDeDescarga = {
   /** Las anotaciones de este sector: sus fotos bajan junto con el mapa. */
   anotaciones?: Anotacion[];
   acercamientoMaximo?: number;
+  /**
+   * Todos los sectores, para limpiar al cambiar de tipo.
+   *
+   * Pasar de satelital a simple deja de usar los pedazos de la foto, y lo que
+   * se descarga tiene que poder borrarse de verdad. Sin esta lista no se puede
+   * saber si otro sector satelital los sigue usando, así que no se toca nada.
+   */
+  todosLosSectores?: Sector[];
   avisarAvance?: (avance: AvanceDeDescarga) => void;
   senal?: AbortSignal;
 };
+
+/**
+ * Todos los pedazos que forman el mapa de un sector, según su tipo.
+ *
+ * Es la única cuenta de qué pedazos son de quién: la usan la descarga, la
+ * comprobación del final y el borrado. Dos cuentas distintas terminarían
+ * borrando lo que otro sector necesita.
+ */
+export function teselasDelMapa(
+  rectangulo: Sector["rectangulo"],
+  tipo: TipoDeMapa,
+  acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+): Tesela[] {
+  return [
+    ...teselasDelRectangulo(rectangulo, acercamientoMaximo),
+    ...teselasDelRelieve(rectangulo),
+    ...(tipo === "satelital" ? teselasDeLaFoto(rectangulo, acercamientoMaximo) : []),
+  ];
+}
 
 export async function bajarElMapaDelSector({
   sector,
@@ -150,13 +184,11 @@ export async function bajarElMapaDelSector({
   fuente,
   anotaciones = [],
   acercamientoMaximo = ACERCAMIENTO_MAXIMO,
+  todosLosSectores,
   avisarAvance,
   senal = new AbortController().signal,
 }: PedidoDeDescarga): Promise<ResultadoDeDescarga> {
-  const teselas = [
-    ...teselasDelRectangulo(sector.rectangulo, acercamientoMaximo),
-    ...teselasDelRelieve(sector.rectangulo),
-  ];
+  const teselas = teselasDelMapa(sector.rectangulo, tipo, acercamientoMaximo);
   const claves = teselas.map(claveDeTesela);
   const total = teselas.length;
 
@@ -274,6 +306,8 @@ export async function bajarElMapaDelSector({
     senal,
   });
 
+  const tipoAnterior = mapaDelSector(sector.id)?.tipo ?? null;
+
   const anotado = anotarMapaBajado({
     sectorId: sector.id,
     tipo,
@@ -305,6 +339,21 @@ export async function bajarElMapaDelSector({
     acercamientoMaximo,
   });
 
+  /**
+   * Si el sector cambió de tipo, lo que dejó de usarse se va.
+   *
+   * Recién ahora, con el nuevo ya anotado: si esto falla, lo peor que queda es
+   * espacio ocupado de gusto, nunca un sector sin mapa. Por eso no cambia el
+   * resultado.
+   */
+  if (tipoAnterior && tipoAnterior !== tipo && todosLosSectores) {
+    try {
+      await borrarTeselasQueSobran(clavesQueSiguenHaciendoFalta(todosLosSectores));
+    } catch {
+      // Queda espacio ocupado hasta el próximo borrado. El mapa nuevo está entero.
+    }
+  }
+
   if (senal.aborted) return { estado: "cancelada" };
 
   return { estado: "listo", pedazos: total, bytes, fotos };
@@ -324,13 +373,11 @@ function clavesQueSiguenHaciendoFalta(sectores: Sector[]): Set<string> {
     const sector = porSector.get(mapa.sectorId);
     if (!sector) continue;
 
-    for (const tesela of teselasDelRectangulo(
+    for (const tesela of teselasDelMapa(
       sector.rectangulo,
+      mapa.tipo,
       mapa.acercamientoMaximo || ACERCAMIENTO_MAXIMO,
     )) {
-      claves.add(claveDeTesela(tesela));
-    }
-    for (const tesela of teselasDelRelieve(sector.rectangulo)) {
       claves.add(claveDeTesela(tesela));
     }
   }
@@ -425,13 +472,23 @@ export const PESO_APROXIMADO_DE_UN_PEDAZO = 12 * 1024;
  */
 export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE = 112 * 1024;
 
+/**
+ * Un pedazo de foto satelital. Medido sobre el Champaquí el 2026-09-23: de
+ * 22 KB mirando de lejos a 11 KB en el acercamiento más cercano, que es donde
+ * están casi todos los pedazos de un sector.
+ */
+export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO = 14 * 1024;
+
 export function pesoAproximadoDelMapa(
   rectangulo: Sector["rectangulo"],
   acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+  tipo: TipoDeMapa = "simple",
 ): number {
+  const pedazos = cuantasTeselas(rectangulo, acercamientoMaximo);
   return (
-    cuantasTeselas(rectangulo, acercamientoMaximo) * PESO_APROXIMADO_DE_UN_PEDAZO +
-    cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE
+    pedazos * PESO_APROXIMADO_DE_UN_PEDAZO +
+    cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE +
+    (tipo === "satelital" ? pedazos * PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO : 0)
   );
 }
 

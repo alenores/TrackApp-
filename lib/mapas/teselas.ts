@@ -15,13 +15,16 @@ import type { Rectangulo } from "@/types/database";
  */
 
 /**
- * Un pedazo puede ser del dibujo del mapa o del relieve.
+ * Un pedazo puede ser del dibujo del mapa, del relieve o de la foto satelital.
  *
  * El relieve —la altura del terreno, de donde salen las curvas de nivel— es un
  * dato aparte del dibujo, pero **baja con el mismo sector y se cuenta igual**:
- * un pedazo más, con su nombre, en el mismo depósito.
+ * un pedazo más, con su nombre, en el mismo depósito. La foto satelital, lo
+ * mismo: la misma grilla que el dibujo, con otro nombre adelante.
  */
-export type Capa = "relieve";
+export type Capa = "relieve" | "satelital";
+
+const CAPAS: readonly Capa[] = ["relieve", "satelital"];
 
 export type Tesela = { z: number; x: number; y: number; capa?: Capa };
 
@@ -73,7 +76,10 @@ export function claveDeTesela({ z, x, y, capa }: Tesela): string {
 
 export function teselaDeClave(clave: string): Tesela | null {
   const partes = clave.split("/");
-  const capa = partes.length === 4 && partes[0] === "relieve" ? partes.shift() : undefined;
+  const capa =
+    partes.length === 4 && (CAPAS as readonly string[]).includes(partes[0])
+      ? partes.shift()
+      : undefined;
   if (partes.length !== 3) return null;
 
   const [z, x, y] = partes.map((parte) => Number(parte));
@@ -178,4 +184,21 @@ export function teselasDelRelieve(rectangulo: Rectangulo): Tesela[] {
     }
   }
   return teselas;
+}
+
+/**
+ * Los pedazos de la foto satelital de un rectángulo.
+ *
+ * **La misma grilla y los mismos acercamientos que el dibujo**, con otro nombre:
+ * así la foto se estira y se achica igual que el mapa simple, y los pedazos
+ * lejanos, que son un puñado, los comparten todos los sectores.
+ */
+export function teselasDeLaFoto(
+  rectangulo: Rectangulo,
+  acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+): Tesela[] {
+  return teselasDelRectangulo(rectangulo, acercamientoMaximo).map((tesela) => ({
+    ...tesela,
+    capa: "satelital",
+  }));
 }

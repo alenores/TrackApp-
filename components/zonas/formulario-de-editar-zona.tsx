@@ -14,6 +14,7 @@ import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { useFoto } from "@/hooks/use-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 type EditarZonaFormProps = {
   zonaId: number;
@@ -108,6 +109,8 @@ export function FormularioDeEditarZona({
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/zonas/${zonaId}`);
   };
 
@@ -132,6 +135,8 @@ export function FormularioDeEditarZona({
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push("/zonas");
   };
 

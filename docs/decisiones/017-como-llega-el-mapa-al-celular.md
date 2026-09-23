@@ -82,8 +82,13 @@ Una zona entera son 3292 pedazos. **Por eso existen los sectores.**
 
 ## Lo que queda afuera a propósito
 
-- **El satelital todavía no existe.** Cuando exista, entra por el mismo puente y
-  aparece el selector entre los dos. No se dibuja hoy una opción que falla al
-  tocarla.
+- **El satelital entró el 2026-09-23 por el mismo puente** (`api/satelital`).
+  Es Sentinel-2 sin nubes, de EOX: su licencia deja guardarlo para uso no
+  comercial citando la fuente. Un sector satelital baja el mismo dibujo (de ahí
+  salen los nombres sobre la foto), el mismo relieve y además los pedazos de la
+  foto, hasta el mismo acercamiento. Medido sobre el Champaquí: 11 a 22 KB por
+  pedazo. Se lee con su propio candado (`foto-guardada://`), que tampoco sale a
+  internet. **El selector en pantalla y cómo se ve navegando todavía no están**:
+  esperan el mockup aprobado.
 - **Las curvas de nivel** entraron el 2026-09-21 por el mismo puente, apuntando
   a otro archivo: el del relieve. Ver decisión 013.

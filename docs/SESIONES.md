@@ -4,6 +4,61 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-23 — El satelital baja al celular, y la app deja de consultar en cada pantalla
+
+### Estado al inicio
+
+El mapa simple se bajaba y andaba. El satelital existía solo en vivo, al marcar
+rectángulos, y un comentario del código decía que su licencia no dejaba
+guardarlo. Ale notó que pasar de pantalla en pantalla era lento aunque los
+datos ya estuvieran en el celular.
+
+### Lo que se hizo
+
+**Satelital, la parte que no se ve.** Se verificó la licencia: Sentinel-2 sin
+nubes de EOX es Creative Commons no comercial, y su servicio es libre para usos
+no comerciales citando la fuente. Se puede guardar. El comentario estaba mal.
+Se midió la foto sobre el Champaquí: 11 a 22 KB por pedazo, disponible hasta el
+acercamiento 17. Se armó:
+
+- el puente `api/satelital`, igual a los del mapa y el relieve;
+- la foto en el mismo depósito, con su propio nombre (`satelital/z/x/y`);
+- un sector satelital = el dibujo + el relieve + la foto;
+- el candado `foto-guardada://`, que lee la foto del celular y nunca sale a
+  internet;
+- pasar de satelital a simple libera la foto, sin tocar la de un sector vecino;
+- el peso aproximado ya cuenta la foto.
+
+**Lentitud.** Se encontró la causa en el código: cada pantalla, al abrirse,
+consultaba la base, repasaba todas las pantallas guardadas y los mapas bajados.
+Ahora se hace una vez por apertura y después de guardar algo → `decisiones/022`.
+
+### Documentos actualizados
+
+`ARQUITECTURA.md`, `GLOSARIO.md` (foto satelital, puesta al día), decisiones
+`013`, `017` y la nueva `022`.
+
+### Deuda o inconsistencias detectadas
+
+- **Borrar una ruta desde su tarjeta, o renombrar un sector, no se veía hasta
+  cambiar de pantalla**: refrescaban la pantalla sin volver a traer los datos.
+  Quedó cubierto con la puesta al día después de guardar.
+- **El glosario llama «mapa básico» a la ruta sobre fondo vacío**, pero el
+  botón del mapa en vivo dice «Básico» para el mapa simple. Dos cosas con la
+  misma palabra.
+- La prueba de los archivos del motor offline solo pasa después de compilar,
+  porque revisa archivos que genera la compilación.
+
+### Pendientes para la próxima
+
+1. **Mockup del satelital**: dónde se elige simple o satelital al bajar, cómo se
+   ve navegando, el botón de curvas y el velo sobre la foto (decisión 013).
+2. Qué se ve navegando cuando la ruta cruza un sector simple y uno satelital.
+3. Botón de sincronizar a mano: sí o no (decisión 022).
+4. La otra mitad de la lentitud: las pantallas de entrada esperan al servidor.
+
+---
+
 ## Sesión 2026-09-21 — El mapa de montaña: lo que ya traía, lo que faltaba dibujar y las curvas
 
 ### Estado al inicio

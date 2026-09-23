@@ -15,6 +15,7 @@ import {
   TERRITORIO_VACIO,
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 type EditarSectorFormProps = {
   zonaId: number;
@@ -118,6 +119,8 @@ export function FormularioDeEditarSector({
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/zonas/${zonaId}`);
   };
 
@@ -142,6 +145,8 @@ export function FormularioDeEditarSector({
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/zonas/${zonaId}`);
   };
 

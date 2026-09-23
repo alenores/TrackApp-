@@ -14,6 +14,7 @@ import { cualesEstanGuardadas, leerTesela } from "@/lib/mapas/deposito";
 import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
+  teselasDeLaFoto,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
@@ -465,5 +466,99 @@ describe("el peso que se avisa antes de bajar", () => {
     const relieve = teselasDelRelieve(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE;
     expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve);
     expect(relieve).toBeGreaterThan(0);
+  });
+});
+
+describe("el mapa satelital", () => {
+  it("baja el dibujo, el relieve y además la foto, y queda anotado como satelital", async () => {
+    const { fuente: origen, pedidas } = fuente();
+
+    const resultado = await bajarElMapaDelSector({
+      sector: UNO,
+      tipo: "satelital",
+      fuente: origen,
+    });
+
+    expect(resultado.estado).toBe("listo");
+    expect(mapaDelSector(UNO.id)?.tipo).toBe("satelital");
+
+    // Sin el dibujo no hay nombres sobre la foto, y sin relieve no hay curvas.
+    const fotos = teselasDeLaFoto(UNO.rectangulo).map(claveDeTesela);
+    expect(pedidas.length).toBe(cuantosPedazos(UNO) + fotos.length);
+    expect((await cualesEstanGuardadas(fotos)).size).toBe(fotos.length);
+  });
+
+  it("si la foto se corta a la mitad, el sector NO queda marcado", async () => {
+    const { fuente: origen } = fuente((tesela) =>
+      tesela.capa === "satelital" && tesela.z === ACERCAMIENTO_MAXIMO
+        ? "romper"
+        : new Uint8Array([1]),
+    );
+
+    const resultado = await bajarElMapaDelSector({
+      sector: UNO,
+      tipo: "satelital",
+      fuente: origen,
+    });
+
+    expect(resultado.estado).toBe("incompleta");
+    expect(mapaDelSector(UNO.id)).toBeNull();
+  });
+
+  it("pasar de satelital a simple libera el espacio de la foto", async () => {
+    const { fuente: origen } = fuente();
+    const fotos = teselasDeLaFoto(UNO.rectangulo).map(claveDeTesela);
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
+    expect((await cualesEstanGuardadas(fotos)).size).toBe(fotos.length);
+
+    const resultado = await bajarElMapaDelSector({
+      sector: UNO,
+      tipo: "simple",
+      fuente: origen,
+      todosLosSectores: [UNO, OTRO],
+    });
+
+    expect(resultado.estado).toBe("listo");
+    expect(mapaDelSector(UNO.id)?.tipo).toBe("simple");
+    expect((await cualesEstanGuardadas(fotos)).size).toBe(0);
+    // El dibujo y el relieve siguen: son el mapa simple.
+    const delSimple = [
+      ...teselasDelRectangulo(UNO.rectangulo),
+      ...teselasDelRelieve(UNO.rectangulo),
+    ].map(claveDeTesela);
+    expect((await cualesEstanGuardadas(delSimple)).size).toBe(delSimple.length);
+  });
+
+  it("cambiar de tipo no se lleva la foto que usa el sector de al lado", async () => {
+    const { fuente: origen } = fuente();
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
+    await bajarElMapaDelSector({ sector: OTRO, tipo: "satelital", fuente: origen });
+    await bajarElMapaDelSector({
+      sector: UNO,
+      tipo: "simple",
+      fuente: origen,
+      todosLosSectores: [UNO, OTRO],
+    });
+
+    const fotosDelOtro = teselasDeLaFoto(OTRO.rectangulo).map(claveDeTesela);
+    expect((await cualesEstanGuardadas(fotosDelOtro)).size).toBe(fotosDelOtro.length);
+  });
+
+  it("borrar un sector satelital libera también la foto", async () => {
+    const { fuente: origen } = fuente();
+    await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
+
+    await borrarElMapaDelSector(UNO.id, [UNO, OTRO]);
+
+    const fotos = teselasDeLaFoto(UNO.rectangulo).map(claveDeTesela);
+    expect((await cualesEstanGuardadas(fotos)).size).toBe(0);
+  });
+
+  it("pesa más que el simple, y la estimación lo dice antes de bajar", () => {
+    expect(
+      pesoAproximadoDelMapa(UNO.rectangulo, ACERCAMIENTO_MAXIMO, "satelital"),
+    ).toBeGreaterThan(pesoAproximadoDelMapa(UNO.rectangulo));
   });
 });

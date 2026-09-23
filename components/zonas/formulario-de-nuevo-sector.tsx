@@ -13,6 +13,7 @@ import {
   TERRITORIO_VACIO,
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * Crear un sector.
@@ -63,6 +64,8 @@ export function FormularioDeNuevoSector({ zonaId }: NuevaSectorFormProps) {
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/zonas/${zonaId}`);
   };
 

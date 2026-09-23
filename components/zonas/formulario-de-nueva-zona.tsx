@@ -21,6 +21,7 @@ import { estimarPesoEnMB, UMBRAL_DE_RIESGO_MB, mostrarTamano } from "@/lib/terri
 
 import { useFoto } from "@/hooks/use-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /** Crear una zona: el territorio grande que después se llena de sectores. */
 export function FormularioDeNuevaZona() {
@@ -82,6 +83,8 @@ export function FormularioDeNuevaZona() {
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push(`/zonas/${resultado.datos.zonaId}`);
   };
 
