@@ -39,10 +39,8 @@ export function FormularioDeNuevaZona() {
     if (latNorte && latSur && lonEste && lonOeste) {
       return {
         ...TERRITORIO_VACIO,
-        latNorte,
-        latSur,
-        lonEste,
-        lonOeste,
+        noroeste: `${latNorte}, ${lonOeste}`,
+        sudeste: `${latSur}, ${lonEste}`,
       };
     }
     return TERRITORIO_VACIO;

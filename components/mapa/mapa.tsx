@@ -758,12 +758,13 @@ export function Mapa({
     mapa.doubleClickZoom.disable();
     mapa.getCanvas().style.cursor = "crosshair";
 
-    let desde: maplibregl.LngLat | null = null;
+    let puntoFijo: maplibregl.LngLat | null = null;
+    let arrastrando = false;
 
-    const armar = (hasta: maplibregl.LngLat): Rectangulo | null => {
-      if (!desde) return null;
+    const armarDesdeFijo = (hasta: maplibregl.LngLat): Rectangulo | null => {
+      if (!puntoFijo) return null;
       return rectanguloQueAbarca([
-        [desde.lng, desde.lat],
+        [puntoFijo.lng, puntoFijo.lat],
         [hasta.lng, hasta.lat],
       ]);
     };
@@ -806,23 +807,42 @@ export function Mapa({
     };
 
     const empezar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
-      desde = imantar(evento.lngLat, evento.point);
-      manejarPuntoDeAjuste(desde, evento.lngLat);
+      arrastrando = true;
+      const ajustado = imantar(evento.lngLat, evento.point);
+      
+      if (!puntoFijo) {
+        puntoFijo = ajustado;
+        manejarPuntoDeAjuste(puntoFijo, evento.lngLat);
+      }
     };
 
     const mover = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      if (!puntoFijo) return;
       const ajustado = imantar(evento.lngLat, evento.point);
       manejarPuntoDeAjuste(ajustado, evento.lngLat);
-      const armado = armar(ajustado);
+      const armado = armarDesdeFijo(ajustado);
       if (armado) alDibujar(armado);
     };
 
     const soltar = (evento: { lngLat: maplibregl.LngLat, point: { x: number, y: number } }) => {
+      if (!arrastrando) return;
+      arrastrando = false;
       const ajustado = imantar(evento.lngLat, evento.point);
-      ponerDatos(mapa, "punto-de-ajuste", VACIO);
-      const armado = armar(ajustado);
-      if (armado) alDibujar(armado);
-      desde = null;
+      
+      // Si soltó exactamente donde empezó, es un click para fijar el primer punto.
+      if (puntoFijo && Math.abs(ajustado.lat - puntoFijo.lat) < 0.00001 && Math.abs(ajustado.lng - puntoFijo.lng) < 0.00001) {
+        // Feedback extra para el primer punto
+        ponerDatos(mapa, "punto-de-ajuste", {
+          type: "FeatureCollection",
+          features: [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [puntoFijo.lng, puntoFijo.lat] } }]
+        });
+      } else {
+        // Arrastró o es el segundo click. Terminamos.
+        const armado = armarDesdeFijo(ajustado);
+        if (armado) alDibujar(armado);
+        puntoFijo = null;
+        ponerDatos(mapa, "punto-de-ajuste", VACIO);
+      }
     };
 
     mapa.on("mousedown", empezar as any);

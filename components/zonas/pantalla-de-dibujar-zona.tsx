@@ -27,12 +27,12 @@ export function PantallaDeDibujarZona() {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-fondo">
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center p-3 gap-3 bg-superficie/90 border-b border-borde shadow-sm backdrop-blur">
+      <div className="relative z-10 flex items-center p-3 gap-3 bg-superficie border-b border-borde shadow-sm">
         <BotonVolver destinoSiNoHayVuelta="/zonas" etiqueta="Volver" />
         <h1 className="text-lg font-semibold text-texto">Dibujar nueva zona</h1>
       </div>
 
-      <div className="flex-1 relative pt-14">
+      <div className="flex-1 relative">
         <CargadorDeMapa
           recorrido={null}
           encuadre={null}
@@ -44,18 +44,6 @@ export function PantallaDeDibujarZona() {
           alDibujar={setRectangulo}
           rectangulo={rectangulo}
         />
-        
-        {/* Helper text overlay */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-[90%] max-w-sm">
-          <Tarjeta franja="ambar" className="bg-superficie/95 backdrop-blur shadow-lg py-2 px-3 text-center">
-            <p className="text-sm font-medium text-texto">
-              Arrastrá sobre el mapa para marcar la zona.
-            </p>
-            <p className="text-xs text-texto-suave mt-1">
-              El área se pegará automáticamente a los bordes de las zonas vecinas.
-            </p>
-          </Tarjeta>
-        </div>
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full px-4 max-w-md">
           <Boton
