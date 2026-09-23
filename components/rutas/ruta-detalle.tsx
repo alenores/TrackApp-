@@ -18,8 +18,9 @@ import { ReferenciaDelMapa } from "@/components/mapa/referencia-del-mapa";
 import { calcularCobertura, type Cobertura } from "@/lib/cobertura";
 import {
   clasesDibujadas,
-  rectangulosDeLaRuta,
   zonasQueCruza,
+  etiquetaDeSector,
+  type RectanguloEnElMapa,
 } from "@/lib/mapas/rectangulos";
 import {
   useMapasBajados,
@@ -144,10 +145,18 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const zonas = zonasQueCruza(ruta.rectangulo, paquete?.zonas ?? []);
   const zonaDeLaRuta = zonas[0] ?? null;
 
-  // Lo que se dibuja encima de la ruta: sus zonas abajo, sus sectores arriba.
-  const rectangulos = cobertura
-    ? rectangulosDeLaRuta(cobertura, zonas, ruta.rectangulo)
-    : [];
+  // Lo que se dibuja encima de la ruta: TODAS las zonas y TODOS los sectores
+  // para dar contexto completo cuando se amplía el mapa.
+  const rectangulosZonas: RectanguloEnElMapa[] = (paquete?.zonas ?? []).map((zona) => ({
+    rectangulo: zona.rectangulo,
+    clase: "zona" as const,
+  }));
+  const rectangulosSectores: RectanguloEnElMapa[] = sectores.map((sector) => ({
+    rectangulo: sector.rectangulo,
+    clase: sectoresBajados.includes(sector.id) ? "sector_bajado" as const : "sector_sin_bajar" as const,
+    etiqueta: etiquetaDeSector(sector.nombre),
+  }));
+  const rectangulos = [...rectangulosZonas, ...rectangulosSectores];
 
   const recorridoCompletoMapa: FeatureCollection | null =
     recorrido && recorridoCombinado
