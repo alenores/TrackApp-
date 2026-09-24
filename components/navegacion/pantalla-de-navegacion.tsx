@@ -6,7 +6,7 @@ import type { FeatureCollection } from "geojson";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
 import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
-import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
+import { useAnotacionesEnElMapa } from "@/components/navegacion/anotaciones-en-el-mapa";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -23,6 +23,7 @@ import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
 import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
+import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
 /**
@@ -56,6 +57,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
   const [anotaciones, setAnotaciones] = useState<Anotacion[]>([]);
   const [cargandoRecorrido, setCargandoRecorrido] = useState(true);
+  const gps = useGps();
   const {
     estado: estadoDelGps,
     error: errorDelGps,
@@ -63,23 +65,15 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     prender: prenderGps,
     segundosSinNoticias,
     posicionVieja,
-  } = useGps();
+  } = gps;
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
-  const [anotacionTocada, setAnotacionTocada] = useState<number | null>(null);
   const [centrarGps, setCentrarGps] = useState<number>(0);
+  const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
+  const deAnotaciones = useAnotacionesEnElMapa({ delPaquete: anotaciones, gps, centrarEnMi });
 
   const { recorridoCombinado } = useRutasEnArea(rectangulo || { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 }, rutaId, rutasExtrasIds);
 
   usePantallaDespierta(estadoDelGps === "andando");
-
-  // Abrir la ficha de una anotación es un toque en el mapa. Se pasa una función
-  // que no cambia entre dibujados: el mapa la engancha una sola vez.
-  const abrirLaAnotacion = useCallback((anotacionId: number) => {
-    vibrarAlTocar();
-    setAnotacionTocada(anotacionId);
-  }, []);
-
-  const cerrarLaAnotacion = useCallback(() => setAnotacionTocada(null), []);
 
   // Todo sale del celular, nunca de internet.
   useEffect(() => {
@@ -104,9 +98,13 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         const idsQueLaCruzan = sectoresQueLaCruzan.map((sector) => sector.id);
         setSectoresDeLaRuta(idsQueLaCruzan);
 
+        // Las de los sectores que cruza y las marcadas sin sector cerca de
+        // la ruta: manda dónde están, no a qué sector se las anotó.
         setAnotaciones(
-          (paquete?.anotaciones ?? []).filter((anotacion) =>
-            idsQueLaCruzan.includes(anotacion.sectorId),
+          anotacionesDelLugar(
+            paquete?.anotaciones ?? [],
+            sectoresQueLaCruzan,
+            ruta.rectangulo,
           ),
         );
 
@@ -200,7 +198,9 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         <div className="absolute inset-0">
           <CargadorDeMapa
             recorrido={recorridoCompletoMapa}
-            anotaciones={anotaciones}
+            anotaciones={deAnotaciones.enElMapa}
+            marcandoPunto={deAnotaciones.marcandoPunto}
+            alMarcarPunto={deAnotaciones.alMarcarPunto}
             miPosicion={posicion ? { lat: posicion.lat, lon: posicion.lon } : null}
             encuadre={rectangulo}
             pantallaCompleta
@@ -208,11 +208,15 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
             alCerrarPantallaCompleta={requestExit}
-            alTocarAnotacion={abrirLaAnotacion}
+            alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           />
         </div>
 
-        {/* Capa sobre el mapa (todo lo que no es el mapa en sí) */}
+        {deAnotaciones.aviso}
+
+        {deAnotaciones.anotando ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
+        ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
 
           {estoyFueraDeRuta ? (
@@ -277,16 +281,14 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
                 <span className="flex-1" />
               )}
             </div>
+
+            {deAnotaciones.botones}
           </div>
         </div>
+        )}
       </div>
 
-      <FichaDeAnotacion
-        anotacion={
-          anotaciones.find((cada) => cada.id === anotacionTocada) ?? null
-        }
-        alCerrar={cerrarLaAnotacion}
-      />
+      {deAnotaciones.resto}
 
       <ModalDeSalida
         open={open}

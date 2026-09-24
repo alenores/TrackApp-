@@ -588,6 +588,37 @@ verdad se navega; deslizar no la toca. Verificado con el celular emulado.
 
 ---
 
+## 🟡 R29 — Un borrado no llegaba a los celulares de los demás
+
+**Qué pasaba.** El celular sabe si hay novedades mirando la fecha de cambio más
+nueva de cada tabla. Un usuario común no veía las anotaciones borradas, así que
+cuando alguien borraba una, la fecha más nueva que él veía no cambiaba: su
+celular creía que no había novedades y la anotación borrada seguía en su mapa.
+Antes solo borraba el administrador, que sí las veía, y por eso no se notaba.
+
+**Cómo quedó (2026-09-24).** Los usuarios con sesión leen también las filas
+borradas de `anotaciones`; la app pide siempre solo las vivas. Script
+`scripts/supabase-anotaciones-borradas-se-notan.sql`.
+
+**Pendiente de revisar:** si rutas, zonas y sectores tienen la misma regla de
+lectura, tienen el mismo problema. No se miró.
+
+**Detectado:** 2026-09-24 · **Se resuelve** cuando Ale corre el script en la base.
+
+---
+
+## 🟡 R30 — La navegación de una ruta calcula el aviso de «sin mapa» y no lo muestra
+
+**Qué pasa.** La pantalla de navegar una ruta arma el aviso de que un pedazo de
+la ruta no tiene mapa bajado, pero no lo dibuja en ningún lado. El control de
+estilo lo marca como un dato que nadie usa. La regla dice que la pantalla tiene
+que decir con claridad que ese mapa no está descargado.
+
+**Detectado:** 2026-09-24, al sumar el botón de anotar. No se tocó: no es parte
+de este cambio y necesita ver dónde va en pantalla.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

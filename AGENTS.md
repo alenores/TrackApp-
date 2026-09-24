@@ -228,6 +228,18 @@ que es la única memoria que el navegador no puede borrar.
 
 Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
+### Lo que se anota en el cerro
+
+- **Anotar desde la navegación no sale a internet.** Lo marcado, cambiado o
+  borrado queda en el celular y sube solo **con señal y la navegación
+  cerrada**. Primero los datos, después la foto: si la foto falla, lo demás ya
+  subió y la ficha dice que la foto no. Ver
+  `docs/decisiones/023-anotar-desde-la-navegacion.md`.
+- **En el cerro solo se ve la foto chica.** Baja sola con las anotaciones; la
+  grande nunca baja y se mira con internet en zonas y sectores.
+- **Manda el punto del GPS**, caiga o no en un sector. Dónde se muestra una
+  anotación sale de dónde está, no de a qué sector se la anotó.
+
 ### El resto
 
 - **El mapa libre es navegación.** Las mismas reglas: lee solo lo guardado,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { elPaqueteQuedoViejo, type Paquete } from "@/lib/offline/paquete";
+import { elPaqueteQuedoViejo, FORMATO_DEL_PAQUETE, type Paquete } from "@/lib/offline/paquete";
 
 /**
  * De esto depende que el celular se actualice cuando tiene que actualizarse.
@@ -15,6 +15,7 @@ function paquete(ultimaModificacion: string | null): Paquete {
     anotaciones: [],
     ultimaModificacion,
     guardadoEn: "2026-09-01T10:00:00Z",
+    formato: FORMATO_DEL_PAQUETE,
   };
 }
 
@@ -70,5 +71,12 @@ describe("elPaqueteQuedoViejo", () => {
         "2026-09-01T09:00:00-03:00",
       ),
     ).toBe(false);
+  });
+
+  it("un paquete armado con otra forma de datos se vuelve a bajar aunque la base no tenga novedades", () => {
+    // Le faltan campos que la app nueva necesita, como la foto chica de las
+    // anotaciones: sin esto se quedaría así hasta que alguien cambie algo.
+    const viejo = { ...paquete("2026-09-02T10:00:00Z"), formato: undefined };
+    expect(elPaqueteQuedoViejo(viejo, "2026-09-01T10:00:00Z")).toBe(true);
   });
 });

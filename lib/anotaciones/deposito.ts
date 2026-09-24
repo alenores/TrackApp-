@@ -4,6 +4,7 @@ import {
   leerDelDeposito,
 } from "@/lib/offline/deposito";
 import { FORMATO } from "@/lib/anotaciones/fotos";
+import { esFotoPendiente } from "@/lib/anotaciones/pendientes";
 
 /**
  * Dónde se guardan en el celular las fotos de las anotaciones.
@@ -90,9 +91,12 @@ export async function borrarFotosQueSobran(
     (donde) => donde.getAllKeys(),
   );
 
+  // Las fotos de lo marcado sin señal no se tocan: todavía no subieron y no
+  // están en ninguna lista de la base. Se van solas cuando el pendiente sube.
   const sobran = guardadas.filter(
     (direccion): direccion is string =>
       typeof direccion === "string" &&
+      !esFotoPendiente(direccion) &&
       !direccionesQueSiguenHaciendoFalta.has(direccion),
   );
 

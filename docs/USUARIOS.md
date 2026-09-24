@@ -26,6 +26,13 @@ administrador mientras el producto sea chico.
 
 Ver `decisiones/009-cobertura-de-mapas-de-un-ruta.md`.
 
+**Sobre las anotaciones (2026-09-24):** **cualquier usuario** —administrador,
+premium o normal— anota desde la navegación. Nada es privado: todos ven todas.
+Cada uno cambia y borra lo suyo; el administrador, todo. Crearlas desde la
+pantalla del sector, con la computadora, sigue siendo del administrador.
+
+Ver `decisiones/023-anotar-desde-la-navegacion.md`.
+
 ## Lo que NO está definido
 
 **Qué puede hacer cada categoría.** Y no se inventa.

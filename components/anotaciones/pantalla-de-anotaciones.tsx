@@ -12,14 +12,14 @@ import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { useDialogos } from "@/components/ui/dialogos";
-import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
+import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
 import {
   FORMATOS_DE_GOOGLE_EARTH,
   leerArchivoDeGoogleEarth,
@@ -34,12 +34,11 @@ import {
 import {
   claveDelColor,
   COLOR_DE_TRAZO_POR_DEFECTO,
-  COLORES_DE_TRAZO,
   type ColorDeTrazo,
   nombreDelColor,
   TRAZO,
 } from "@/lib/anotaciones/colores-de-trazo";
-import { ICONOS_PUNTO, type Anotacion, type IconoPunto } from "@/types/database";
+import { type Anotacion, type IconoPunto } from "@/types/database";
 
 const ICONOS_SVG: Record<IconoPunto, React.ReactNode> = {
   refugio: (
@@ -185,9 +184,11 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
 
   const sector = paquete?.sectores.find((cada) => cada.id === sectorId) ?? null;
   const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
-  const anotaciones = (paquete?.anotaciones ?? []).filter(
-    (cada) => cada.sectorId === sectorId,
-  );
+  // Las anotadas a este sector y las marcadas desde la navegación que caen
+  // adentro: manda dónde está, no a qué sector se la anotó.
+  const anotaciones = sector
+    ? anotacionesDelLugar(paquete?.anotaciones ?? [], [sector])
+    : [];
 
   const tieneTranquerasOAlambrados = anotaciones.some(
     (a) => a.icono === "tranquera" || a.color === "#a855f7"
@@ -311,6 +312,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       sectorId,
       comentario: editando.comentario.trim() || null,
       foto: foto.archivo,
+      fotoChica: foto.archivoChico,
       quitarLaFoto,
     };
 
@@ -463,9 +465,13 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       id: -1,
       sectorId,
       perfilId: "",
+      deAdministrador: false,
       origen: "manual" as const,
       comentario: editando.comentario,
       fotoUrl: null,
+      fotoChicaUrl: null,
+      marcadaEn: "",
+      precisionGpsMetros: null,
       creadoEn: "",
       actualizadoEn: "",
     };
@@ -512,8 +518,12 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           id: -(indice + 1),
           sectorId,
           perfilId: "",
+          deAdministrador: false,
           origen: (trayendo.deDonde === "Google Earth" ? "google_earth" : "openstreetmap") as Anotacion["origen"],
           fotoUrl: null,
+          fotoChicaUrl: null,
+          marcadaEn: "",
+          precisionGpsMetros: null,
           creadoEn: "",
           actualizadoEn: "",
         })),
@@ -578,89 +588,23 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
                   : "Trazo nuevo"}
             </h2>
 
-            {editando.tipo === "punto" ? (
-              <div>
-                <p className="mb-1.5 text-sm text-texto-suave">Qué es</p>
-                <div className="flex flex-wrap gap-2">
-                  {ICONOS_PUNTO.map((cual) => (
-                    <button
-                      key={cual}
-                      type="button"
-                      onClick={() => setEditando({ ...editando, icono: cual })}
-                      aria-pressed={editando.icono === cual}
-                      className={[
-                        "min-h-14 rounded-xl border px-4 text-base font-semibold transition-colors",
-                        editando.icono === cual
-                          ? "border-acento-borde bg-acento text-acento-texto"
-                          : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
-                      ].join(" ")}
-                    >
-                      {COMO_SE_LLAMA[cual]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="mb-1.5 text-sm text-texto-suave">De qué color</p>
-                <div className="flex flex-wrap gap-2">
-                  {COLORES_DE_TRAZO.map((cual) => (
-                    <button
-                      key={cual}
-                      type="button"
-                      onClick={() => setEditando({ ...editando, color: cual })}
-                      aria-pressed={editando.color === cual}
-                      className={[
-                        "flex min-h-14 items-center gap-2 rounded-xl border px-4 text-base font-semibold transition-colors",
-                        editando.color === cual
-                          ? "border-acento-borde bg-acento text-acento-texto"
-                          : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
-                      ].join(" ")}
-                    >
-                      <span
-                        aria-hidden
-                        className="h-3 w-6 rounded-full"
-                        style={{ backgroundColor: TRAZO[cual].color }}
-                      />
-                      {TRAZO[cual].nombre}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <AreaDeTexto
-              label="Qué hay que saber"
-              id="comentario-de-la-anotacion"
-              rows={3}
-              value={editando.comentario}
-              onChange={(evento) =>
-                setEditando({ ...editando, comentario: evento.target.value })
+            <CamposDeAnotacion
+              tipo={editando.tipo}
+              icono={editando.tipo === "punto" ? editando.icono : "cruce"}
+              alCambiarIcono={(icono) =>
+                editando.tipo === "punto" && setEditando({ ...editando, icono })
               }
-              placeholder={
-                editando.tipo === "punto"
-                  ? "Por acá se cruza el arroyo. Por la izquierda no se puede."
-                  : "Huella que no figura en el mapa. Sigue el alambrado hasta la tranquera."
+              color={editando.tipo === "trazo" ? editando.color : COLOR_DE_TRAZO_POR_DEFECTO}
+              alCambiarColor={(color) =>
+                editando.tipo === "trazo" && setEditando({ ...editando, color })
               }
-            />
-
-            <SelectorDeFoto
+              comentario={editando.comentario}
+              alCambiarComentario={(comentario) => setEditando({ ...editando, comentario })}
               foto={foto}
-              etiqueta="Agregar una foto del lugar"
-              deshabilitado={guardando}
               fotoActual={quitarLaFoto ? null : editando.fotoActual}
+              alQuitarFotoActual={() => setQuitarLaFoto(true)}
+              guardando={guardando}
             />
-
-            {editando.fotoActual && !quitarLaFoto && foto.estado === "vacio" ? (
-              <Boton
-                variante="destructivo"
-                anchoCompleto
-                disabled={guardando}
-                onClick={() => setQuitarLaFoto(true)}
-              >
-                Quitar la foto
-              </Boton>
-            ) : null}
 
             {editando.tipo === "punto" ? (
               <>
@@ -877,6 +821,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
               let origenTexto = "";
               if (anotacion.origen === "google_earth") origenTexto = "Desde Google Earth";
               else if (anotacion.origen === "openstreetmap") origenTexto = "Desde OpenStreetMap";
+              else if (anotacion.origen === "navegacion") origenTexto = anotacion.deAdministrador ? "Marcada navegando · administrador" : "Marcada navegando · usuario";
               else origenTexto = anotacion.tipo === "punto" ? "Punto marcado a mano" : "Trazo manual";
 
               return (

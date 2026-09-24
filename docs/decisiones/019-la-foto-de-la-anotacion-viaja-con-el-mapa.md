@@ -1,6 +1,6 @@
 # 019 — La foto de la anotación viaja con el mapa del sector
 
-**Fecha:** 2026-09-20 · **Estado:** vigente
+**Fecha:** 2026-09-20 · **Estado:** reemplazada por la 023 (2026-09-24)
 **Completa la decisión 010 (anotaciones) y la 012 (modelo de descarga).**
 
 ---

@@ -62,6 +62,15 @@ export function traducirErrorDeBase(mensaje: string): string {
     return "Falta completar un dato obligatorio.";
   }
 
+  if (
+    texto.includes("failed to fetch") ||
+    texto.includes("fetch failed") ||
+    texto.includes("networkerror") ||
+    texto.includes("load failed")
+  ) {
+    return "No hubo conexión con la base: la señal no alcanzó. Se vuelve a intentar sola; con buena señal podés probar de nuevo.";
+  }
+
   return mensaje;
 }
 

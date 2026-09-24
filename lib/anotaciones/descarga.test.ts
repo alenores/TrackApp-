@@ -3,16 +3,17 @@ import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   bajarLasFotosDeLasAnotaciones,
+  cuantasFotosChicasFaltan,
   fotosDeLasAnotaciones,
-  sectoresConFotosSinBajar,
+  ponerAlDiaLasFotosChicas,
 } from "@/lib/anotaciones/descarga";
 import {
   borrarTodasLasFotos,
   cualesFotosEstanGuardadas,
+  guardarFotos,
   leerFoto,
 } from "@/lib/anotaciones/deposito";
-import type { MapaDeSector } from "@/lib/offline/mapas";
-import type { Anotacion, Sector } from "@/types/database";
+import type { Anotacion } from "@/types/database";
 
 /**
  * Las pruebas de las fotos de las anotaciones.
@@ -21,48 +22,28 @@ import type { Anotacion, Sector } from "@/types/database";
  * el momento en que la persona está parada en el cruce sin señal. Si la app
  * dice que está bajada y no está, el error no se ve en casa: se ve ahí.
  *
- * Las dos que mandan son: que no se dé por bajada una foto que no entró, y que
- * una foto agregada después de bajar el mapa se note **en casa**.
+ * Las que mandan son: que no se dé por bajada una foto que no entró, que se
+ * baje la foto chica y nunca la grande, y que lo que falta se sepa **en casa**.
  */
 
-function anotacion(id: number, sectorId: number, fotoUrl: string | null): Anotacion {
+function anotacion(id: number, sectorId: number | null, fotoChicaUrl: string | null): Anotacion {
   return {
     id,
     sectorId,
     perfilId: "alguien",
+    deAdministrador: false,
     tipo: "punto",
     origen: "manual",
     icono: "cruce",
     color: null,
     comentario: null,
-    fotoUrl,
+    fotoUrl: fotoChicaUrl ? fotoChicaUrl.replace("chica", "grande") : null,
+    fotoChicaUrl,
     geometria: { type: "Point", coordinates: [-64.9, -31.9] },
+    marcadaEn: "2026-09-01T10:00:00Z",
+    precisionGpsMetros: null,
     creadoEn: "2026-09-01T10:00:00Z",
     actualizadoEn: "2026-09-01T10:00:00Z",
-  };
-}
-
-function sector(id: number): Sector {
-  return {
-    id,
-    zonaId: 1,
-    perfilId: "alguien",
-    nombre: `Sector ${id}`,
-    descripcion: null,
-    rectangulo: { latNorte: -31.9, latSur: -31.91, lonOeste: -64.9, lonEste: -64.89 },
-    creadoEn: "2026-09-01T10:00:00Z",
-    actualizadoEn: "2026-09-01T10:00:00Z",
-  };
-}
-
-function mapaBajado(sectorId: number, fotos: string[]): MapaDeSector {
-  return {
-    sectorId,
-    tipo: "simple",
-    bytes: 1000,
-    bajadoEn: "2026-09-01T10:00:00Z",
-    acercamientoMaximo: 15,
-    fotos,
   };
 }
 
@@ -101,12 +82,12 @@ describe("qué fotos hacen falta", () => {
   it("junta las direcciones sin repetir y saltea las anotaciones sin foto", () => {
     expect(
       fotosDeLasAnotaciones([
-        anotacion(1, 1, "https://foto/a.webp"),
+        anotacion(1, 1, "https://foto/a-chica.webp"),
         anotacion(2, 1, null),
-        anotacion(3, 1, "https://foto/a.webp"),
-        anotacion(4, 1, "https://foto/b.webp"),
+        anotacion(3, 1, "https://foto/a-chica.webp"),
+        anotacion(4, 1, "https://foto/b-chica.webp"),
       ]),
-    ).toEqual(["https://foto/a.webp", "https://foto/b.webp"]);
+    ).toEqual(["https://foto/a-chica.webp", "https://foto/b-chica.webp"]);
   });
 });
 
@@ -116,51 +97,51 @@ describe("bajar las fotos", () => {
 
     const avance = await bajarLasFotosDeLasAnotaciones({
       anotaciones: [
-        anotacion(1, 1, "https://foto/a.webp"),
-        anotacion(2, 1, "https://foto/b.webp"),
+        anotacion(1, 1, "https://foto/a-chica.webp"),
+        anotacion(2, 1, "https://foto/b-chica.webp"),
       ],
     });
 
     expect(avance).toMatchObject({ bajadas: 2, total: 2, motivo: null });
     expect(avance.direcciones.sort()).toEqual([
-      "https://foto/a.webp",
-      "https://foto/b.webp",
+      "https://foto/a-chica.webp",
+      "https://foto/b-chica.webp",
     ]);
-    expect(await leerFoto("https://foto/a.webp")).not.toBeNull();
+    expect(await leerFoto("https://foto/a-chica.webp")).not.toBeNull();
   });
 
   it("una foto que no entró no se cuenta como bajada, y se dice por qué", async () => {
-    servidor((direccion) => (direccion.endsWith("b.webp") ? 404 : "bien"));
+    servidor((direccion) => (direccion.endsWith("b-chica.webp") ? 404 : "bien"));
 
     const avance = await bajarLasFotosDeLasAnotaciones({
       anotaciones: [
-        anotacion(1, 1, "https://foto/a.webp"),
-        anotacion(2, 1, "https://foto/b.webp"),
+        anotacion(1, 1, "https://foto/a-chica.webp"),
+        anotacion(2, 1, "https://foto/b-chica.webp"),
       ],
     });
 
     expect(avance.bajadas).toBe(1);
     expect(avance.total).toBe(2);
     expect(avance.motivo).toContain("404");
-    expect(avance.direcciones).toEqual(["https://foto/a.webp"]);
-    expect(await leerFoto("https://foto/b.webp")).toBeNull();
+    expect(avance.direcciones).toEqual(["https://foto/a-chica.webp"]);
+    expect(await leerFoto("https://foto/b-chica.webp")).toBeNull();
   });
 
   it("una falla no frena a las demás", async () => {
-    servidor((direccion) => (direccion.endsWith("a.webp") ? 500 : "bien"));
+    servidor((direccion) => (direccion.endsWith("a-chica.webp") ? 500 : "bien"));
 
     const avance = await bajarLasFotosDeLasAnotaciones({
       anotaciones: [
-        anotacion(1, 1, "https://foto/a.webp"),
-        anotacion(2, 1, "https://foto/b.webp"),
-        anotacion(3, 1, "https://foto/c.webp"),
+        anotacion(1, 1, "https://foto/a-chica.webp"),
+        anotacion(2, 1, "https://foto/b-chica.webp"),
+        anotacion(3, 1, "https://foto/c-chica.webp"),
       ],
     });
 
     expect(avance.bajadas).toBe(2);
     expect(avance.direcciones.sort()).toEqual([
-      "https://foto/b.webp",
-      "https://foto/c.webp",
+      "https://foto/b-chica.webp",
+      "https://foto/c-chica.webp",
     ]);
   });
 
@@ -168,7 +149,7 @@ describe("bajar las fotos", () => {
     servidor(() => "vacia");
 
     const avance = await bajarLasFotosDeLasAnotaciones({
-      anotaciones: [anotacion(1, 1, "https://foto/a.webp")],
+      anotaciones: [anotacion(1, 1, "https://foto/a-chica.webp")],
     });
 
     expect(avance.bajadas).toBe(0);
@@ -178,7 +159,7 @@ describe("bajar las fotos", () => {
   it("no vuelve a pedir lo que ya está en el celular", async () => {
     const primeras = servidor(() => "bien");
     await bajarLasFotosDeLasAnotaciones({
-      anotaciones: [anotacion(1, 1, "https://foto/a.webp")],
+      anotaciones: [anotacion(1, 1, "https://foto/a-chica.webp")],
     });
     expect(primeras).toHaveLength(1);
     vi.unstubAllGlobals();
@@ -186,12 +167,12 @@ describe("bajar las fotos", () => {
     const segundas = servidor(() => "bien");
     const avance = await bajarLasFotosDeLasAnotaciones({
       anotaciones: [
-        anotacion(1, 1, "https://foto/a.webp"),
-        anotacion(2, 1, "https://foto/b.webp"),
+        anotacion(1, 1, "https://foto/a-chica.webp"),
+        anotacion(2, 1, "https://foto/b-chica.webp"),
       ],
     });
 
-    expect(segundas).toEqual(["https://foto/b.webp"]);
+    expect(segundas).toEqual(["https://foto/b-chica.webp"]);
     expect(avance.bajadas).toBe(2);
   });
 
@@ -209,68 +190,79 @@ describe("bajar las fotos", () => {
   it("cancelada a mitad, lo que entró queda", async () => {
     const cancelador = new AbortController();
     servidor((direccion) => {
-      if (direccion.endsWith("a.webp")) cancelador.abort();
+      if (direccion.endsWith("a-chica.webp")) cancelador.abort();
       return "bien";
     });
 
     await bajarLasFotosDeLasAnotaciones({
-      anotaciones: [anotacion(1, 1, "https://foto/a.webp")],
+      anotaciones: [anotacion(1, 1, "https://foto/a-chica.webp")],
       senal: cancelador.signal,
     });
 
-    const guardadas = await cualesFotosEstanGuardadas(["https://foto/a.webp"]);
+    const guardadas = await cualesFotosEstanGuardadas(["https://foto/a-chica.webp"]);
     expect(guardadas.size).toBe(1);
   });
 });
 
-describe("qué sectores tienen fotos sin bajar", () => {
-  it("avisa de una foto agregada después de bajar el mapa", () => {
-    const faltan = sectoresConFotosSinBajar(
-      [sector(1)],
-      [
-        anotacion(1, 1, "https://foto/vieja.webp"),
-        anotacion(2, 1, "https://foto/nueva.webp"),
-      ],
-      [mapaBajado(1, ["https://foto/vieja.webp"])],
-    );
+describe("la foto chica baja sola y la grande nunca", () => {
+  it("pide solo la chica", async () => {
+    const pedidas = servidor(() => "bien");
 
-    expect(faltan).toHaveLength(1);
-    expect(faltan[0].cuantas).toBe(1);
+    await bajarLasFotosDeLasAnotaciones({
+      anotaciones: [anotacion(1, 1, "https://foto/a-chica.webp")],
+    });
+
+    expect(pedidas).toEqual(["https://foto/a-chica.webp"]);
   });
 
-  it("no avisa cuando están todas", () => {
+  it("una anotación fuera de todo sector también baja su foto", async () => {
+    servidor(() => "bien");
+
+    const avance = await bajarLasFotosDeLasAnotaciones({
+      anotaciones: [anotacion(1, null, "https://foto/a-chica.webp")],
+    });
+
+    expect(avance.bajadas).toBe(1);
+  });
+
+  it("al ponerse al día tira las que ya no son de ninguna anotación", async () => {
+    await guardarFotos([
+      { direccion: "https://foto/vieja-chica.webp", bytes: new Uint8Array([1]) },
+    ]);
+    servidor(() => "bien");
+
+    await ponerAlDiaLasFotosChicas([anotacion(1, 1, "https://foto/a-chica.webp")]);
+
+    expect(await leerFoto("https://foto/vieja-chica.webp")).toBeNull();
+    expect(await leerFoto("https://foto/a-chica.webp")).not.toBeNull();
+  });
+});
+
+describe("cuántas fotos faltan, para avisar en casa", () => {
+  it("cuenta las que no están en el celular", async () => {
+    await guardarFotos([
+      { direccion: "https://foto/a-chica.webp", bytes: new Uint8Array([1]) },
+    ]);
+
     expect(
-      sectoresConFotosSinBajar(
-        [sector(1)],
-        [anotacion(1, 1, "https://foto/a.webp")],
-        [mapaBajado(1, ["https://foto/a.webp"])],
-      ),
-    ).toEqual([]);
+      await cuantasFotosChicasFaltan([
+        anotacion(1, 1, "https://foto/a-chica.webp"),
+        anotacion(2, 1, "https://foto/b-chica.webp"),
+      ]),
+    ).toBe(1);
   });
 
-  it("un sector sin mapa bajado no aparece: ahí el aviso es otro", () => {
+  it("sin fotos no falta nada", async () => {
+    expect(await cuantasFotosChicasFaltan([anotacion(1, 1, null)])).toBe(0);
+  });
+
+  it("una foto reemplazada cuenta como faltante", async () => {
+    await guardarFotos([
+      { direccion: "https://foto/a-chica.webp?v=1", bytes: new Uint8Array([1]) },
+    ]);
+
     expect(
-      sectoresConFotosSinBajar([sector(1)], [anotacion(1, 1, "https://foto/a.webp")], []),
-    ).toEqual([]);
-  });
-
-  it("no cuenta las fotos de otro sector", () => {
-    expect(
-      sectoresConFotosSinBajar(
-        [sector(1)],
-        [anotacion(1, 2, "https://foto/de-otro.webp")],
-        [mapaBajado(1, [])],
-      ),
-    ).toEqual([]);
-  });
-
-  it("una foto reemplazada cuenta como faltante", () => {
-    const faltan = sectoresConFotosSinBajar(
-      [sector(1)],
-      [anotacion(1, 1, "https://foto/a.webp?v=2")],
-      [mapaBajado(1, ["https://foto/a.webp?v=1"])],
-    );
-
-    expect(faltan[0].cuantas).toBe(1);
+      await cuantasFotosChicasFaltan([anotacion(1, 1, "https://foto/a-chica.webp?v=2")]),
+    ).toBe(1);
   });
 });

@@ -4,10 +4,9 @@ import { revalidatePath } from "next/cache";
 import type { LineString, Point } from "geojson";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import {
-  DEPOSITO_DE_FOTOS_DE_ANOTACION,
-  revisarLaFotoDeAnotacion,
-  rutaDeLaFotoDeAnotacion,
-} from "@/lib/anotaciones/fotos";
+  quitarLasFotosDeLaAnotacion,
+  subirLasFotosDeLaAnotacion,
+} from "@/lib/anotaciones/subir-fotos";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
   escribirRectangulo,
@@ -357,6 +356,13 @@ export async function borrarSector(sectorId: number): Promise<Resultado> {
 
 // ------------------------------------------------------------- anotaciones
 
+/**
+ * Cuando la base no cambió ninguna fila: la anotación ya no está, o es de otra
+ * persona. Cada uno edita y borra lo suyo; el administrador, todo.
+ */
+const NO_ES_TUYA =
+  "No se cambió nada: esa anotación ya no está o la hizo otra persona. Cada uno puede editar y borrar solo las suyas.";
+
 export type DatosDeAnotacion = {
   sectorId: number;
   tipo: TipoAnotacion;
@@ -368,6 +374,8 @@ export type DatosDeAnotacion = {
   geometria: Point | LineString;
   /** La foto nueva, cuando el usuario eligió una. */
   foto?: File | null;
+  /** Su copia chica, la que viaja al cerro. Va siempre junto con `foto`. */
+  fotoChica?: File | null;
   /** `true` cuando el usuario sacó la foto que tenía. */
   quitarLaFoto?: boolean;
 };
@@ -391,42 +399,6 @@ function revisarAnotacion(datos: DatosDeAnotacion): string | null {
   }
 
   return null;
-}
-
-/**
- * Sube la foto de una anotación y devuelve su dirección.
- *
- * **La foto va después de crear la anotación**, porque el archivo se llama con
- * su número. Si esto falla, la anotación ya quedó guardada: se avisa que la
- * foto no entró, pero no se pierde lo que el usuario escribió.
- */
-async function guardarLaFoto(
-  anotacionId: number,
-  perfilId: string,
-  foto: File,
-): Promise<Resultado<{ fotoUrl: string }>> {
-  const problema = revisarLaFotoDeAnotacion(foto);
-  if (problema) return falla(problema);
-
-  const supabase = await crearClienteEnElServidor();
-  const donde = rutaDeLaFotoDeAnotacion(perfilId, anotacionId);
-
-  const { error } = await supabase.storage
-    .from(DEPOSITO_DE_FOTOS_DE_ANOTACION)
-    .upload(donde, await foto.arrayBuffer(), {
-      contentType: foto.type,
-      upsert: true,
-    });
-
-  if (error) return falla(`No se pudo subir la foto: ${error.message}`);
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(DEPOSITO_DE_FOTOS_DE_ANOTACION).getPublicUrl(donde);
-
-  // El agregado del final obliga al navegador a bajar la foto nueva: la
-  // dirección es siempre la misma y si no, sigue mostrando la anterior.
-  return exito({ fotoUrl: `${publicUrl}?v=${Date.now()}` });
 }
 
 export async function crearAnotacion(
@@ -463,12 +435,25 @@ export async function crearAnotacion(
   const anotacionId = (data as { id: number }).id;
 
   if (datos.foto) {
-    const subida = await guardarLaFoto(anotacionId, usuario.id, datos.foto);
-    if (!subida.ok) return falla(subida.error);
+    if (!datos.fotoChica) {
+      return falla(
+        "La anotación quedó guardada pero la foto no: faltó prepararle la copia chica. Volvé a elegir la foto.",
+      );
+    }
+    const subida = await subirLasFotosDeLaAnotacion(
+      supabase,
+      usuario.id,
+      anotacionId,
+      datos.foto,
+      datos.fotoChica,
+    );
+    if (!subida.ok) {
+      return falla(`La anotación quedó guardada pero la foto no. ${subida.error}`);
+    }
 
     const { error: errorDeFoto } = await supabase
       .from("anotaciones")
-      .update({ foto_url: subida.datos.fotoUrl })
+      .update({ foto_url: subida.datos.fotoUrl, foto_chica_url: subida.datos.fotoChicaUrl })
       .eq("id", anotacionId);
 
     if (errorDeFoto) {
@@ -492,7 +477,7 @@ export async function crearAnotacion(
  */
 export async function crearAnotacionesEnTanda(
   sectorId: number,
-  lista: Array<Omit<DatosDeAnotacion, "sectorId" | "foto" | "quitarLaFoto">>,
+  lista: Array<Omit<DatosDeAnotacion, "sectorId" | "foto" | "fotoChica" | "quitarLaFoto">>,
   origen: "google_earth" | "openstreetmap"
 ): Promise<Resultado<{ creadas: number }>> {
   const usuario = await exigirSesion();
@@ -544,22 +529,29 @@ export async function editarAnotacion(
 
   const supabase = await crearClienteEnElServidor();
 
-  let fotoUrl: string | null | undefined;
+  let fotos: { foto_url: string | null; foto_chica_url: string | null } | undefined;
 
   if (datos.foto) {
-    const subida = await guardarLaFoto(anotacionId, usuario.id, datos.foto);
+    if (!datos.fotoChica) {
+      return falla("Faltó prepararle la copia chica a la foto. Volvé a elegirla.");
+    }
+    const subida = await subirLasFotosDeLaAnotacion(
+      supabase,
+      usuario.id,
+      anotacionId,
+      datos.foto,
+      datos.fotoChica,
+    );
     if (!subida.ok) return falla(subida.error);
-    fotoUrl = subida.datos.fotoUrl;
+    fotos = { foto_url: subida.datos.fotoUrl, foto_chica_url: subida.datos.fotoChicaUrl };
   } else if (datos.quitarLaFoto) {
-    // Se saca la dirección y también el archivo: lo que se quita tiene que
+    // Se saca la dirección y también los archivos: lo que se quita tiene que
     // liberar el espacio de verdad.
-    await supabase.storage
-      .from(DEPOSITO_DE_FOTOS_DE_ANOTACION)
-      .remove([rutaDeLaFotoDeAnotacion(usuario.id, anotacionId)]);
-    fotoUrl = null;
+    await quitarLasFotosDeLaAnotacion(supabase, usuario.id, anotacionId);
+    fotos = { foto_url: null, foto_chica_url: null };
   }
 
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("anotaciones")
     .update({
       tipo: datos.tipo,
@@ -567,12 +559,14 @@ export async function editarAnotacion(
       color: datos.tipo === "trazo" ? datos.color : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,
-      ...(fotoUrl !== undefined ? { foto_url: fotoUrl } : {}),
-    })
+      ...(fotos ?? {}),
+    }, { count: "exact" })
     .eq("id", anotacionId)
     .is("eliminado_en", null);
 
   if (error) return falla(traducirErrorDeBase(error.message));
+  // Sin permiso la base no da error: no cambia nada. Eso se dice.
+  if (count === 0) return falla(NO_ES_TUYA);
 
   revalidatePath("/zonas");
   return exito();
@@ -583,13 +577,14 @@ export async function borrarAnotacion(anotacionId: number): Promise<Resultado> {
   if (!usuario) return falla(SIN_SESION);
 
   const supabase = await crearClienteEnElServidor();
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("anotaciones")
-    .update({ eliminado_en: new Date().toISOString() })
+    .update({ eliminado_en: new Date().toISOString() }, { count: "exact" })
     .eq("id", anotacionId)
     .is("eliminado_en", null);
 
   if (error) return falla(traducirErrorDeBase(error.message));
+  if (count === 0) return falla(NO_ES_TUYA);
 
   revalidatePath("/zonas");
   return exito();

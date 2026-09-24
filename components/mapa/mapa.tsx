@@ -1045,7 +1045,12 @@ export function Mapa({
     const MITAD_DEL_DEDO = 22;
 
     const tocar = (evento: maplibregl.MapMouseEvent) => {
-      if (!mapa.getLayer("anotaciones-punto")) return;
+      // Los puntos primero: si el dedo cae sobre un punto y un trazo, se abre
+      // el punto, que es lo más chico y lo más difícil de acertar.
+      const capas = ["anotaciones-punto", "anotaciones-trazo"].filter((capa) =>
+        Boolean(mapa.getLayer(capa)),
+      );
+      if (capas.length === 0) return;
 
       const { x, y } = evento.point;
       const encontradas = mapa.queryRenderedFeatures(
@@ -1053,7 +1058,11 @@ export function Mapa({
           [x - MITAD_DEL_DEDO, y - MITAD_DEL_DEDO],
           [x + MITAD_DEL_DEDO, y + MITAD_DEL_DEDO],
         ],
-        { layers: ["anotaciones-punto"] },
+        { layers: capas },
+      );
+      encontradas.sort(
+        (a, b) =>
+          Number(a.layer.id !== "anotaciones-punto") - Number(b.layer.id !== "anotaciones-punto"),
       );
 
       const id = encontradas[0]?.properties?.id;

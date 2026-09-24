@@ -13,7 +13,7 @@ import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import { comoLista, sectoresDeLasRutas } from "@/lib/mapas/lo-que-falta";
 import type { MapaPerdido, RutaSinMapa } from "@/lib/mapas/lo-que-falta";
 import { NOMBRE_DEL_TIPO, TIPOS_DE_MAPA, type TipoDeMapa } from "@/lib/offline/mapas";
-import type { Anotacion, Sector } from "@/types/database";
+import type { Sector } from "@/types/database";
 
 /**
  * Lo que le falta a este celular, dicho en el inicio.
@@ -38,8 +38,6 @@ type PropiedadesDelAviso = {
   rutas: RutaSinMapa[];
   /** Por qué no se pudo revisar, cuando no se pudo. Nunca se traga. */
   aviso: string | null;
-  /** De acá salen las fotos de anotación que viajan con cada mapa. */
-  anotaciones: Anotacion[];
 };
 
 type Bajando = { nombre: string; resueltos: number; total: number };
@@ -51,7 +49,6 @@ export function AvisoDeMapasQueFaltan({
   perdidos,
   rutas,
   aviso,
-  anotaciones,
 }: PropiedadesDelAviso) {
   const haySenal = useHaySenal();
   const [bajando, setBajando] = useState<Bajando | null>(null);
@@ -94,7 +91,6 @@ export function AvisoDeMapasQueFaltan({
         sector,
         tipo,
         fuente: fuenteDelServidor(),
-        anotaciones: anotaciones.filter((cada) => cada.sectorId === sector.id),
         senal: cancelador.signal,
         avisarAvance: ({ resueltos, total }) => {
           if (montadoRef.current) {

@@ -20,16 +20,18 @@ const NOMBRE = "trackapp-offline";
 /**
  * Sube de número cada vez que se agrega un estante.
  *
- * La 1 tenía solo los recorridos. La 2 sumó los pedazos de mapa. La 3 suma las
- * fotos de las anotaciones.
+ * La 1 tenía solo los recorridos. La 2 sumó los pedazos de mapa. La 3 sumó las
+ * fotos de las anotaciones. La 4 suma las anotaciones marcadas sin señal que
+ * esperan para subirse.
  */
-const VERSION = 3;
+const VERSION = 4;
 
 export const ESTANTES = {
   recorridos: "recorridos",
   teselas: "teselas",
   mapasDeSector: "mapas-de-sector",
   fotosDeAnotacion: "fotos-de-anotacion",
+  anotacionesPendientes: "anotaciones-pendientes",
 } as const;
 
 export type Estante = (typeof ESTANTES)[keyof typeof ESTANTES];

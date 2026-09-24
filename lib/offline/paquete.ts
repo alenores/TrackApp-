@@ -1,4 +1,5 @@
 import type { Anotacion, RutaSinRecorrido, Sector, Zona } from "@/types/database";
+import { completarAnotacionVieja } from "@/lib/anotaciones/fila";
 
 /**
  * El paquete offline: lo que la app guarda en el celular para funcionar sin
@@ -31,7 +32,21 @@ export type Paquete = {
    */
   ultimaModificacion: string | null;
   guardadoEn: string;
+  /**
+   * Con qué forma de datos se armó. Un paquete de otra forma se vuelve a
+   * bajar entero apenas hay señal, aunque la base no tenga novedades: le
+   * faltan campos que la app nueva necesita.
+   */
+  formato?: number;
 };
+
+/**
+ * La forma actual del paquete.
+ *
+ * La 2 sumó a las anotaciones la foto chica, quién las hizo y cuándo se
+ * marcaron (2026-09-24).
+ */
+export const FORMATO_DEL_PAQUETE = 2;
 
 const PAQUETE_VACIO: Paquete = {
   rutas: [],
@@ -96,7 +111,7 @@ export function leerPaquete(): Paquete | null {
       rutas: paquete.rutas ?? [],
       zonas: paquete.zonas ?? [],
       sectores: paquete.sectores ?? [],
-      anotaciones: paquete.anotaciones ?? [],
+      anotaciones: (paquete.anotaciones ?? []).map(completarAnotacionVieja),
     };
   } catch {
     return null;
@@ -115,6 +130,7 @@ export function guardarPaquete(
   try {
     const guardado: Paquete = {
       ...paquete,
+      formato: FORMATO_DEL_PAQUETE,
       guardadoEn: new Date().toISOString(),
     };
 
@@ -172,6 +188,7 @@ export function elPaqueteQuedoViejo(
 ): boolean {
   if (!paquete) return true;
   if (!ultimaModificacionEnLaBase) return false;
+  if (paquete.formato !== FORMATO_DEL_PAQUETE) return true;
   if (!paquete.ultimaModificacion) return true;
 
   return (

@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useMapaDelSector } from "@/hooks/use-mapa-del-sector";
 import { mostrarPeso, pesoAproximadoDelMapa } from "@/lib/mapas/descarga";
-import { sectoresConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import { NOMBRE_DEL_TIPO, TIPOS_DE_MAPA } from "@/lib/offline/mapas";
-import type { Anotacion, Sector } from "@/types/database";
+import type { Sector } from "@/types/database";
 
 /**
  * El mapa de un sector: bajarlo, verlo y sacarlo.
@@ -26,29 +24,12 @@ type PropiedadesDelMapaDelSector = {
   sector: Sector;
   /** Todos los sectores. Se mantiene por las pantallas que lo pasan. */
   todosLosSectores: Sector[];
-  /** Todas las anotaciones: sus fotos bajan junto con el mapa del sector. */
-  anotaciones: Anotacion[];
 };
 
-export function MapaDelSector({ sector, anotaciones }: PropiedadesDelMapaDelSector) {
-  const { mapas, paso, bajar, bajarFotosSolo } = useMapaDelSector(sector, anotaciones);
+export function MapaDelSector({ sector }: PropiedadesDelMapaDelSector) {
+  const { mapas, paso, bajar } = useMapaDelSector(sector);
   // Bajar necesita señal: sin señal el botón no aparece, lo que falta se dice igual.
   const haySenal = useHaySenal();
-  const bajandoFotosRef = useRef(false);
-
-  const fotosQueFaltan =
-    sectoresConFotosSinBajar([sector], anotaciones, mapas)[0]?.cuantas ?? 0;
-
-  useEffect(() => {
-    if (mapas.length === 0 || !haySenal || paso.paso !== "quieto") return;
-
-    if (fotosQueFaltan > 0 && !bajandoFotosRef.current) {
-      bajandoFotosRef.current = true;
-      void bajarFotosSolo().finally(() => {
-        bajandoFotosRef.current = false;
-      });
-    }
-  }, [mapas.length, haySenal, paso.paso, fotosQueFaltan, bajarFotosSolo]);
 
   if (paso.paso === "bajando") {
     const porcentaje = paso.total > 0 ? Math.round((paso.resueltos / paso.total) * 100) : 0;
@@ -128,11 +109,6 @@ export function MapaDelSector({ sector, anotaciones }: PropiedadesDelMapaDelSect
         );
       })}
 
-      {fotosQueFaltan > 0 && haySenal ? (
-        <p className="text-texto-suave">
-          Bajando {fotosQueFaltan === 1 ? "una foto de anotación nueva" : `${fotosQueFaltan} fotos de anotación nuevas`}…
-        </p>
-      ) : null}
     </div>
   );
 }

@@ -25,6 +25,11 @@ lectura filtra `eliminado_en is null`**, salvo que el caso pida ver lo borrado.
 **Permisos:** todos ven todos los perfiles. Cada uno edita el suyo. El
 administrador puede cambiar la categoría de cualquiera.
 
+**Se crea sola al registrarse** (desde 2026-09-24), con el nombre que el
+usuario puso: la función `crear_perfil_al_registrarse`, enganchada al alta de
+usuarios. Reemplaza dos funciones de la app vieja que escribían en `profiles`,
+una tabla que ya no existe. Script: `scripts/supabase-perfil-al-registrarse.sql`.
+
 ---
 
 ## zonas
@@ -40,8 +45,16 @@ administrador puede cambiar la categoría de cualquiera.
 **El rectángulo de la zona no se descarga nunca.** Existe solo para medir qué
 parte del territorio todavía no tiene sector encima.
 
-**Permisos:** todos los que tienen sesión las ven. **Solo el administrador crea,
-edita y borra.**
+**Permisos (desde 2026-09-24):** todos los que tienen sesión las ven, también
+las borradas —así un borrado mueve la fecha de novedades en todos los
+celulares; la app pide siempre solo las vivas—. **Cualquiera crea las suyas y
+cambia y borra solo las suyas. El administrador, todas.** Scripts:
+`scripts/supabase-anotaciones-desde-la-navegacion.sql` y
+`scripts/supabase-anotaciones-borradas-se-notan.sql`.
+
+**Fotos:** en el depósito `fotos-anotaciones`, en la carpeta de quien la subió:
+`<perfil>/<anotación>.webp` la grande y `<perfil>/<anotación>-chica.webp` la
+chica.
 
 ---
 
@@ -94,13 +107,20 @@ borra la suya.**
 | Columna | Tipo | Notas |
 |---|---|---|
 | `id` | bigint | número correlativo |
-| `sector_id` | bigint | obligatorio. **Pertenecen al territorio, no a la ruta** |
-| `perfil_id` | uuid | obligatorio |
+| `sector_id` | bigint | **opcional desde 2026-09-24.** Vacío en las marcadas desde la navegación: manda el punto, no el sector |
+| `perfil_id` | uuid | obligatorio. Quién la hizo; de su categoría sale si es del administrador |
+| `origen` | text | `manual`, `google_earth`, `openstreetmap` o `navegacion`. La base no acepta otro |
 | `tipo` | tipo_anotacion | `punto` o `trazo` |
 | `icono` | icono_punto | solo si es punto |
 | `color` | text | solo si es trazo |
 | `comentario` | text | texto libre, para las dos formas |
 | `geometria` | jsonb | el punto o la línea, obligatorio |
+| `foto_url` | text | la foto grande, hasta 2 MB. Se ve con internet |
+| `foto_chica_url` | text | la foto chica, la que baja al celular y se ve en el cerro |
+| `codigo_local` | uuid | el código que le pone el celular a una marca hecha sin señal. Único: evita duplicados al reintentar |
+| `marcada_en` | timestamptz | cuándo se marcó de verdad. Por defecto, al crearla |
+| `precision_gps_metros` | real | cuánto podía errar el GPS. Vacío si se marcó a mano o es un trazo |
+| `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | como en toda tabla |
 
 **Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
 fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21)
@@ -108,8 +128,16 @@ fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21)
 **La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
 un trazo lleva color y no lleva ícono.
 
-**Permisos:** todos los que tienen sesión las ven. **Solo el administrador crea,
-edita y borra.**
+**Permisos (desde 2026-09-24):** todos los que tienen sesión las ven, también
+las borradas —así un borrado mueve la fecha de novedades en todos los
+celulares; la app pide siempre solo las vivas—. **Cualquiera crea las suyas y
+cambia y borra solo las suyas. El administrador, todas.** Scripts:
+`scripts/supabase-anotaciones-desde-la-navegacion.sql` y
+`scripts/supabase-anotaciones-borradas-se-notan.sql`.
+
+**Fotos:** en el depósito `fotos-anotaciones`, en la carpeta de quien la subió:
+`<perfil>/<anotación>.webp` la grande y `<perfil>/<anotación>-chica.webp` la
+chica.
 
 ---
 

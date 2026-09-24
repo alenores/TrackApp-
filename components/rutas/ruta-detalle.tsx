@@ -23,10 +23,7 @@ import {
   etiquetaDeSector,
   type RectanguloEnElMapa,
 } from "@/lib/mapas/rectangulos";
-import {
-  useMapasBajados,
-  useSectoresConMapaBajado,
-} from "@/hooks/use-mapa-del-sector";
+import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import { traerPerfilesPorId } from "@/lib/perfiles/cliente";
 import {
@@ -77,7 +74,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const puedeAdministrar = usePuedeAdministrar(miPerfilId !== null);
   const { confirmar, avisar } = useDialogos();
   const sectoresBajados = useSectoresConMapaBajado();
-  const mapasBajados = useMapasBajados();
 
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
   const [buscandoRecorrido, setBuscandoRecorrido] = useState(true);
@@ -313,8 +309,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       {cobertura ? (
         <BloqueDeCobertura
           cobertura={cobertura}
-          anotaciones={paquete?.anotaciones ?? []}
-          mapasBajados={mapasBajados}
           zonas={zonas}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />

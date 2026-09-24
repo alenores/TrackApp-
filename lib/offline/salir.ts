@@ -1,3 +1,5 @@
+import { borrarTodosLosPendientes } from "@/lib/anotaciones/pendientes";
+import { olvidarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 import { borrarTodosLosMapasDelCelular } from "@/lib/mapas/descarga";
 import { borrarPaquete } from "@/lib/offline/paquete";
 import { borrarTodosLosRecorridos } from "@/lib/offline/recorridos";
@@ -23,6 +25,16 @@ export async function borrarLoGuardadoEnElCelular(): Promise<void> {
 
   try {
     await borrarTodosLosRecorridos();
+  } catch {
+    // Ídem.
+  }
+
+  olvidarMiPerfil();
+
+  try {
+    // Lo marcado sin señal que no subió era de la cuenta que se va. Se avisa
+    // antes, en el cartel de cerrar sesión.
+    await borrarTodosLosPendientes();
   } catch {
     // Ídem.
   }

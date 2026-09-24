@@ -6,6 +6,7 @@ import { useLoQueFalta } from "@/hooks/use-lo-que-falta";
 import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 
 import { ListaDeRutas } from "@/components/rutas/lista-de-rutas";
+import { AvisoDeAnotaciones } from "@/components/anotaciones/aviso-de-anotaciones";
 import { EsqueletoDeListaDeRutas } from "@/components/rutas/esqueleto-de-lista";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { traerPerfilesPorId } from "@/lib/perfiles/cliente";
@@ -71,6 +72,8 @@ export function PantallaDeRutas({ miPerfilId }: RutasClientProps) {
           </p>
         </Tarjeta>
       ) : null}
+
+      <AvisoDeAnotaciones anotaciones={paquete?.anotaciones ?? []} />
 
       <ListaDeRutas
         rutas={rutas}

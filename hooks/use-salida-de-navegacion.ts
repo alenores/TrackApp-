@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { hayEmergenteAbierta } from "@/lib/emergentes/historial";
 
 function resolvePathname(href: string): string {
   if (href.startsWith("http")) {
@@ -46,6 +47,9 @@ export function useSalidaDeNavegacion(defaultExitHref: string) {
     window.history.pushState({ navigationExitGuard: true }, "", guardUrlRef.current);
 
     const handlePopState = () => {
+      // Con una emergente abierta, el atrás es para cerrarla: ya consumió su
+      // propia entrada y la de la salida sigue en su lugar.
+      if (hayEmergenteAbierta()) return;
       requestExit();
       window.history.pushState(
         { navigationExitGuard: true },

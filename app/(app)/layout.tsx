@@ -15,10 +15,13 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const userAvatarUrl = (await traerMiPerfil())?.avatarUrl ?? null;
+  const miPerfil = await traerMiPerfil();
+  const userAvatarUrl = miPerfil?.avatarUrl ?? null;
 
   return (
     <Armazon
+      miPerfilId={user.id}
+      soyAdministrador={miPerfil?.categoria === "administrador"}
       userName={nombreParaMostrar(user)}
       userEmail={user.email ?? ""}
       userAvatarUrl={userAvatarUrl}
