@@ -44,8 +44,7 @@ directamente: la usan a través de `useDatosDeLaApp`.
 
 ## Lo que queda abierto
 
-- **Botón de «sincronizar a mano».** Lo planteó Ale; la decisión 012 dice que no
-  hay botón de actualizar. Lo decide Ale.
+- **Botón de «sincronizar a mano»: no, por ahora** (decidió Ale el 2026-09-24).
 - **Una app que queda abierta días enteros** no se vuelve a poner al día hasta
   que se reabre. Si hace falta, se agrega una puesta al día al volver a la app
   después de varias horas. Lo decide Ale.

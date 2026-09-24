@@ -141,6 +141,8 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
 export function capasDelFondo(
   modo: Modo,
   tipo: TipoDeFondo = "dibujo",
+  /** Con curvas encima, la foto lleva velo para que se lean. */
+  conVelo = true,
 ): LayerSpecification[] {
   const dibujo = ajustarParaLaMontana(
     layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
@@ -167,8 +169,9 @@ export function capasDelFondo(
         recorten encima. Sigue al modo: se aclara con sol y se oscurece de
         noche (decisión 013). Los valores finos quedan para la prueba al sol.
       */
-      paint:
-        modo === "sol"
+      paint: !conVelo
+        ? {}
+        : modo === "sol"
           ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
           : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 },
     },
