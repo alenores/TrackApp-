@@ -32,8 +32,8 @@ Definido con Ale, paso a paso (decisión 023):
   mapa del sector.
 - **La base:** sector opcional, foto chica, código del celular, fecha real de
   marcado y precisión del GPS; permisos para que cada usuario cree y cambie lo
-  suyo. Tres scripts en `scripts/`: el de las anotaciones ya lo corrió Ale; el
-  del perfil al registrarse y el de los borrados quedaron para que los corra.
+  suyo. Tres scripts en `scripts/`, los tres corridos por Ale en el editor y
+  verificados con la fila de control que devuelve cada uno.
 - **Se quitó la regla de guantes** (pedido de Ale). Quedan el resto de las
   reglas de una sola mano y los tamaños mínimos.
 - **Arreglos encontrados en el camino:** el perfil de un usuario nuevo no se

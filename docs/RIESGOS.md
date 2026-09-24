@@ -588,7 +588,7 @@ verdad se navega; deslizar no la toca. Verificado con el celular emulado.
 
 ---
 
-## 🟡 R29 — Un borrado no llegaba a los celulares de los demás
+## ✅ R29 — Un borrado no llegaba a los celulares de los demás
 
 **Qué pasaba.** El celular sabe si hay novedades mirando la fecha de cambio más
 nueva de cada tabla. Un usuario común no veía las anotaciones borradas, así que
@@ -603,7 +603,7 @@ borradas de `anotaciones`; la app pide siempre solo las vivas. Script
 **Pendiente de revisar:** si rutas, zonas y sectores tienen la misma regla de
 lectura, tienen el mismo problema. No se miró.
 
-**Detectado:** 2026-09-24 · **Se resuelve** cuando Ale corre el script en la base.
+**Detectado:** 2026-09-24 · **Resuelto:** el mismo día. Ale corrió el script y la base respondió que todo usuario con sesión lee la tabla entera.
 
 ---
 
