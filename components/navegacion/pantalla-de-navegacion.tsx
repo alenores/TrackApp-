@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { FeatureCollection } from "geojson";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
@@ -15,10 +15,9 @@ import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import {
   distanciaALaRutaEnMetros,
-  mensajeDeErrorDelGps,
   hayQueAvisarDelDesvio,
-  type EstadoDelGps,
 } from "@/lib/navegacion/desvio";
+import { useGps } from "@/hooks/use-gps";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
 import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
@@ -35,9 +34,6 @@ import type { Anotacion, Rectangulo } from "@/types/database";
  * Ver la regla «La navegación es 100% sin conexión» en AGENTS.md.
  */
 
-/** Cuántos segundos sin noticias del GPS para avisar que la posición envejeció. */
-const SEGUNDOS_PARA_AVISAR_POSICION_VIEJA = 30;
-
 type NavegacionViewProps = {
   rutaId: number;
 };
@@ -51,7 +47,6 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const rutasParams = searchParams.get("rutas");
   const rutasExtrasIds = rutasParams ? rutasParams.split(",").map(Number) : [];
 
-  const vigilanciaRef = useRef<number | null>(null);
   const sectoresBajados = useSectoresConMapaBajado();
   const mapasBajados = useMapasBajados();
   /** Los sectores que cruza esta ruta: de ellos sale qué mapas hay para elegir. */
@@ -61,14 +56,14 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
   const [anotaciones, setAnotaciones] = useState<Anotacion[]>([]);
   const [cargandoRecorrido, setCargandoRecorrido] = useState(true);
-  const [estadoDelGps, setEstadoDelGps] = useState<EstadoDelGps>("apagado");
-  const [errorDelGps, setErrorDelGps] = useState<string | null>(null);
-  const [posicion, setPosicion] = useState<{ lat: number; lon: number } | null>(
-    null,
-  );
-  const [ultimaNoticia, setUltimaNoticia] = useState<number | null>(null);
-  const [ahora, setAhora] = useState(() => Date.now());
-  const [metrosDeDesvio, setMetrosDeDesvio] = useState<number | null>(null);
+  const {
+    estado: estadoDelGps,
+    error: errorDelGps,
+    posicion,
+    prender: prenderGps,
+    segundosSinNoticias,
+    posicionVieja,
+  } = useGps();
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
   const [anotacionTocada, setAnotacionTocada] = useState<number | null>(null);
   const [centrarGps, setCentrarGps] = useState<number>(0);
@@ -138,60 +133,13 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     };
   }, [rutaId, sectoresBajados]);
 
-  // Un reloj lento, solo para saber si la posición envejeció.
-  useEffect(() => {
-    if (estadoDelGps !== "andando") return;
-    const tic = window.setInterval(() => setAhora(Date.now()), 5000);
-    return () => window.clearInterval(tic);
-  }, [estadoDelGps]);
-
-  useEffect(() => {
-    return () => {
-      if (vigilanciaRef.current !== null) {
-        navigator.geolocation.clearWatch(vigilanciaRef.current);
-      }
-    };
-  }, []);
-
-  const prenderGps = useCallback(() => {
-    if (!navigator.geolocation) {
-      setErrorDelGps(
-        "Este celular no tiene GPS disponible para la app. Fijate en los permisos del navegador.",
-      );
-      setEstadoDelGps("no_disponible");
-      return;
-    }
-
-    setEstadoDelGps("pidiendo");
-    setErrorDelGps(null);
-
-    if (vigilanciaRef.current !== null) {
-      navigator.geolocation.clearWatch(vigilanciaRef.current);
-    }
-
-    vigilanciaRef.current = navigator.geolocation.watchPosition(
-      (lectura) => {
-        const lat = lectura.coords.latitude;
-        const lon = lectura.coords.longitude;
-
-        setPosicion({ lat, lon });
-        setEstadoDelGps("andando");
-        setUltimaNoticia(Date.now());
-        setAhora(Date.now());
-
-        if (recorrido) {
-          setMetrosDeDesvio(distanciaALaRutaEnMetros(lat, lon, recorrido));
-        }
-      },
-      (error) => {
-        setErrorDelGps(mensajeDeErrorDelGps(error));
-        setEstadoDelGps(
-          error.code === error.PERMISSION_DENIED ? "sin_permiso" : "no_disponible",
-        );
-      },
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
-    );
-  }, [recorrido]);
+  const metrosDeDesvio = useMemo(
+    () =>
+      posicion && recorrido
+        ? distanciaALaRutaEnMetros(posicion.lat, posicion.lon, recorrido)
+        : null,
+    [posicion, recorrido],
+  );
 
   const estoyFueraDeRuta =
     estadoDelGps === "andando" &&
@@ -202,13 +150,6 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   useEffect(() => {
     if (estoyFueraDeRuta) vibrarAlTocar(220);
   }, [estoyFueraDeRuta]);
-
-  const segundosSinNoticias =
-    ultimaNoticia === null ? 0 : Math.round((ahora - ultimaNoticia) / 1000);
-
-  const posicionVieja =
-    estadoDelGps === "andando" &&
-    segundosSinNoticias > SEGUNDOS_PARA_AVISAR_POSICION_VIEJA;
 
   if (cargandoRecorrido) {
     return (

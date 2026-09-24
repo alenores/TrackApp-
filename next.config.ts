@@ -157,7 +157,8 @@ const withPWA = withPWAInit({
     },
     {
       /**
-       * Pedido interno de las pantallas del cerro: la ruta y la navegación.
+       * Pedido interno de las pantallas del cerro: la ruta, la navegación y el
+       * mapa libre.
        *
        * **Primero lo guardado, sin preguntar.** Son las que se abren caminando,
        * con el celular en la mano y sin señal: mandan la velocidad y la certeza
@@ -166,7 +167,8 @@ const withPWA = withPWAInit({
        */
       urlPattern: ({ request, url }: { request: Request; url: URL }) =>
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
-        /^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname),
+        (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
+          /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
         cacheName: PANTALLAS_DEL_CERRO_INTERNO,
@@ -181,7 +183,9 @@ const withPWA = withPWAInit({
     {
       /** El documento de esas mismas pantallas: otra respuesta, otro guardado. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
-        sameOrigin && /^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname),
+        sameOrigin &&
+        (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
+          /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
         cacheName: PANTALLAS_DEL_CERRO,

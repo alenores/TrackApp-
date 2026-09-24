@@ -74,7 +74,10 @@ export function cuandoRecargarPorVersionNueva(estado: {
   return estado.visible ? "cuando-se-esconda" : "ahora";
 }
 
-/** La pantalla de navegar una ruta, la única que no se puede interrumpir. */
+/**
+ * Las pantallas del cerro que no se pueden interrumpir: navegar una ruta y el
+ * mapa libre. Mientras están abiertas no se recarga la app ni se pone al día.
+ */
 export function esLaPantallaDeNavegar(camino: string): boolean {
-  return camino.startsWith("/navegacion/");
+  return camino.startsWith("/navegacion/") || /^\/mapa-libre\/?$/.test(camino);
 }

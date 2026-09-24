@@ -33,8 +33,8 @@ function direcciones(p: Paquete): string[] {
 }
 
 describe("qué pantallas se dejan listas", () => {
-  it("las de entrada van siempre, aunque no haya nada cargado", () => {
-    expect(direcciones(VACIO)).toEqual(["/", "/rutas", "/zonas"]);
+  it("las de entrada y el mapa libre van siempre, aunque no haya nada cargado", () => {
+    expect(direcciones(VACIO)).toEqual(["/", "/rutas", "/zonas", "/mapa-libre"]);
   });
 
   it("cada zona del paquete tiene la suya", () => {
@@ -48,6 +48,15 @@ describe("qué pantallas se dejan listas", () => {
     const cuales = direcciones(paquete([], [12]));
     expect(cuales).toContain("/rutas/12");
     expect(cuales).toContain("/navegacion/12");
+  });
+
+  it("el mapa libre queda listo siempre, en el depósito del cerro", () => {
+    // Se abre en el cerro, sin señal: si no está guardado, no existe.
+    const pantallas = pantallasParaCalentar(paquete([], [12]));
+    const mapaLibre = pantallas.find((cada) => cada.direccion === "/mapa-libre");
+    expect(mapaLibre?.deposito).toBe(
+      pantallas.find((cada) => cada.direccion === "/navegacion/12")?.deposito,
+    );
   });
 
   it("NO se calientan las pantallas de crear ni de editar", () => {

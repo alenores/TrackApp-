@@ -53,9 +53,17 @@ cualquier regla. Se renuevan solo con una versión nueva de la app. Lección:
 para saber qué hace el motor offline se mira el que se publica, no solo las
 reglas de `next.config.ts`.
 
+**Mapa libre** (pedido de Ale, sin mockup por decisión suya): pantalla completa
+desde la barra de abajo con todos los mapas bajados, todas las anotaciones y
+las rutas elegidas (todas, ninguna o algunas, con las de tu zona primero). Usa
+el mismo GPS que la navegación, ahora en una pieza compartida, y las mismas
+barreras: no se pone al día, no se recarga y queda guardada al abrir la app.
+Arreglado de paso: al cambiar de modo sol a noche el mapa pisaba el color
+propio de cada ruta.
+
 ### Documentos actualizados
 
-`GLOSARIO.md` (desplegable, foto de fondo, filtro de rutas, circulitos de
+`GLOSARIO.md` (mapa libre, desplegable, foto de fondo, filtro de rutas, circulitos de
 técnica, velocímetro de esfuerzo).
 
 ### Deuda o inconsistencias detectadas

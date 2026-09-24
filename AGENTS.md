@@ -228,6 +228,8 @@ Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
 ### El resto
 
+- **El mapa libre es navegación.** Las mismas reglas: lee solo lo guardado,
+  nunca se pone al día, nunca se recarga, y queda lista sola al abrir la app.
 - **La navegación no se pone al día.** Lee con `usePaqueteGuardado`, nunca con
   `useDatosDeLaApp`, y la puesta al día se niega a correr con la navegación
   abierta. Pasó el 2026-09-24: estaba escrito y no se cumplía.

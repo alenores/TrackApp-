@@ -187,6 +187,13 @@ rutas con sus textos, las zonas, los sectores y las anotaciones. Se actualiza
 solo, sin preguntar nada. **Las líneas de los recorridos no van adentro**: pesan
 demasiado y viajan aparte.
 
+**Mapa libre**
+El mapa del cerro sin seguir una ruta: todos los mapas bajados, todas las
+anotaciones y las rutas que elijas (todas, ninguna o algunas), con tu punto de
+GPS. Las rutas de la zona donde estás se proponen primero. No avisa desvíos
+porque no seguís ninguna. Tiene las mismas reglas que la navegación: nunca
+consulta internet.
+
 **Filtro de rutas**
 Lo que achica la lista de rutas según zona, para qué sirve, largo, dificultad
 técnica, esfuerzo y si el mapa está en el celular. Muestra lo mismo que la

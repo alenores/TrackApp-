@@ -5,12 +5,15 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 
 type NavigationExitModalProps = {
   open: boolean;
+  /** La pregunta del cartel. Por defecto, la de navegar una ruta. */
+  titulo?: string;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
 export function ModalDeSalida({
   open,
+  titulo = "¿Salir de la navegación?",
   onCancel,
   onConfirm,
 }: NavigationExitModalProps) {
@@ -39,7 +42,7 @@ export function ModalDeSalida({
             id="navigation-exit-title"
             className="text-lg font-bold text-texto"
           >
-            ¿Salir de la navegación?
+            {titulo}
           </h2>
           <p id="navigation-exit-description" className="text-sm leading-6 text-texto-suave">
             Tu posición GPS se desactivará

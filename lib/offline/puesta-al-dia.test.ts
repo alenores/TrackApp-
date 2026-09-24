@@ -135,6 +135,15 @@ describe("navegando una ruta", () => {
     expect(calentar).not.toHaveBeenCalled();
   });
 
+  it("en el mapa libre tampoco sale a internet", async () => {
+    sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
+    abrirEn("/mapa-libre");
+
+    await ponerAlDiaUnaVezPorApertura();
+
+    expect(sincronizar).not.toHaveBeenCalled();
+  });
+
   it("al salir de la navegación, la primera pantalla sí se pone al día", async () => {
     sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
     abrirEn("/navegacion/12");
