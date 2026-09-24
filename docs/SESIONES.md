@@ -44,6 +44,15 @@ al día. Ahora lee solo lo guardado, y la puesta al día se niega a correr con l
 navegación abierta; la hace la primera pantalla que se abra después. Con su
 prueba automática, que falla sin el arreglo.
 
+**Las letras, los íconos y el motor del mapa no salen a internet.** Se creyó
+que se pedían a internet al abrir un mapa, porque en las reglas del motor
+offline caen en la de «primero la red». Mirando el motor offline que de verdad
+se publica se vio que no: todos los archivos de `public/` quedan guardados al
+instalar la app (la lista de precarga), y esa lista contesta antes que
+cualquier regla. Se renuevan solo con una versión nueva de la app. Lección:
+para saber qué hace el motor offline se mira el que se publica, no solo las
+reglas de `next.config.ts`.
+
 ### Documentos actualizados
 
 `GLOSARIO.md` (desplegable, foto de fondo, filtro de rutas, circulitos de
