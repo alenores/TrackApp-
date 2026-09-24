@@ -312,6 +312,10 @@ const withPWA = withPWAInit({
       /**
        * Todo lo que no tiene regla propia.
        *
+       * **No incluye lo de `public/`** (letras, íconos y motor del mapa, fotos
+       * de fondo): eso va en la precarga, que contesta antes que todas estas
+       * reglas y nunca pregunta a internet.
+       *
        * **Primero la red**, no primero lo guardado: una pantalla nueva que
        * alguien agregue y se olvide de anotar arriba va a andar sin señal igual,
        * pero no se va a quedar congelada en la versión vieja durante meses.

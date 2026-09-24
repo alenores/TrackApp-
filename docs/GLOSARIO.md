@@ -31,6 +31,12 @@ Cuando la app le pregunta a la base si hay novedades y, si hay, las baja al
 celular. Automática y muda. Pasa una vez por apertura y después de guardar
 algo, nunca al pasar de pantalla ni durante una navegación.
 
+**Precarga**
+Lo que la app guarda sola al instalarse: todo lo que está en `public/`, como
+las letras, los íconos y el motor del mapa. Se usa siempre desde el celular y
+se renueva solo con una versión nueva de la app. No es el **paquete**: el
+paquete son los datos y se pone al día al abrir.
+
 **Curvas de nivel**
 Las líneas que marcan el desnivel. No son parte de la imagen del mapa: son un
 dato aparte que se descarga una vez por sector y se dibuja sobre cualquiera de
