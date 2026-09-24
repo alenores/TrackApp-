@@ -43,9 +43,9 @@ de cada sector, en un solo acercamiento, y de ahí salen las curvas de nivel.
 Sale de un archivo del mundo distinto del mapa (Mapterhorn, con datos de
 Copernicus). Se pide por el mismo tipo de puente y se guarda en el mismo depósito.
 
-**Mapa básico**
-La línea del recorrido dibujada sobre fondo vacío, sin cartografía. Es lo que se
-ve sin conexión cuando no se descargaron las imágenes del mapa.
+**Mapa básico** — *palabra retirada (2026-09-23)*
+No se usa más: se confundía con el mapa simple. La ruta sobre fondo vacío se
+llama **sin mapa** (ver arriba). En la app se dice **simple** o **satelital**.
 
 **Mapa completo**
 Lo mismo, con las imágenes de la cartografía descargadas.

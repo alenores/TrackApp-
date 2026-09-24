@@ -1212,7 +1212,7 @@ export function Mapa({
         <div className="absolute left-3 top-3 flex h-14 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
           {(
             [
-              ["dibujo", "Básico"],
+              ["dibujo", "Simple"],
               ["satelital", "Satélite"],
             ] as const
           ).map(([cual, etiqueta]) => (
