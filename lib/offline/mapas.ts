@@ -14,8 +14,24 @@
 
 const CLAVE = "trackapp-mapas-v1";
 
-/** Un sector tiene un solo mapa a la vez: o el simple, o el satelital. */
+/**
+ * Los dos mapas que puede tener un sector. **Puede tener uno, el otro o los
+ * dos** (decidió Ale el 2026-09-24): cada uno se baja y se saca por separado.
+ */
 export type TipoDeMapa = "simple" | "satelital";
+
+export const TIPOS_DE_MAPA: readonly TipoDeMapa[] = ["simple", "satelital"];
+
+/** Cómo se nombra cada uno en pantalla. Una sola palabra por concepto. */
+export const NOMBRE_DEL_TIPO: Record<TipoDeMapa, string> = {
+  simple: "Simple",
+  satelital: "Satelital",
+};
+
+/** El nombre de un mapa bajado: un sector y un tipo. */
+export function claveDeMapa(sectorId: number, tipo: TipoDeMapa): string {
+  return `${sectorId}:${tipo}`;
+}
 
 export type MapaDeSector = {
   sectorId: number;
@@ -116,8 +132,16 @@ export function mapasBajados(): MapaDeSector[] {
   return enMemoria;
 }
 
-export function mapaDelSector(sectorId: number): MapaDeSector | null {
-  return mapasBajados().find((cada) => cada.sectorId === sectorId) ?? null;
+/** El mapa de un tipo de un sector, o nada si ese no está bajado. */
+export function mapaDelSector(sectorId: number, tipo: TipoDeMapa): MapaDeSector | null {
+  return (
+    mapasBajados().find((cada) => cada.sectorId === sectorId && cada.tipo === tipo) ?? null
+  );
+}
+
+/** Todos los mapas bajados de un sector: ninguno, uno o los dos. */
+export function mapasDelSector(sectorId: number): MapaDeSector[] {
+  return mapasBajados().filter((cada) => cada.sectorId === sectorId);
 }
 
 export function sectoresConMapaBajado(): Set<number> {
@@ -132,13 +156,18 @@ export function sectoresConMapaBajado(): Set<number> {
  * verde y el usuario saldría al cerro con medio mapa.
  */
 export function anotarMapaBajado(mapa: MapaDeSector): boolean {
-  const otros = mapasBajados().filter((cada) => cada.sectorId !== mapa.sectorId);
+  const otros = mapasBajados().filter(
+    (cada) => !(cada.sectorId === mapa.sectorId && cada.tipo === mapa.tipo),
+  );
   return guardarEnElCelular([...otros, mapa]);
 }
 
-export function olvidarMapaDeSector(sectorId: number): boolean {
+/** Olvida un tipo de mapa de un sector, o los dos si no se dice cuál. */
+export function olvidarMapaDeSector(sectorId: number, tipo?: TipoDeMapa): boolean {
   return guardarEnElCelular(
-    mapasBajados().filter((cada) => cada.sectorId !== sectorId),
+    mapasBajados().filter(
+      (cada) => !(cada.sectorId === sectorId && (tipo === undefined || cada.tipo === tipo)),
+    ),
   );
 }
 

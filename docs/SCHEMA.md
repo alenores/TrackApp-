@@ -126,9 +126,13 @@ mapa: guarda que lo bajaste.
 | `tipo` | tipo_de_mapa | `simple` o `satelital` |
 | `acercamiento_maximo` | smallint | hasta qué nivel se bajó, para rehacerlo igual |
 
-**Un sector tiene un solo mapa a la vez.** Lo garantiza un índice único sobre
-`perfil_id` y `sector_id` que solo cuenta las filas vivas, así que sacar un mapa
-y volver a bajarlo reusa la misma fila.
+**Un sector puede tener los dos mapas: una fila viva por tipo.** Lo garantiza
+un índice único sobre `perfil_id`, `sector_id` y `tipo` que solo cuenta las
+filas vivas, así que sacar un mapa y volver a bajarlo reusa la misma fila.
+⚠️ **Pendiente de aplicar en la base** (2026-09-24):
+`scripts/supabase-mapas-bajados-dos-tipos.sql`. Hasta entonces el índice viejo
+es por sector: el segundo mapa de un sector no queda anotado en la base (el
+celular lo tiene igual) y si se pierde no se avisa.
 
 **Por qué existe.** El navegador puede borrar todo lo guardado del celular sin
 avisar. Si la única anotación de qué mapas tenías viviera ahí, se iría con el

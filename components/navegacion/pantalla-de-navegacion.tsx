@@ -21,7 +21,7 @@ import {
 } from "@/lib/navegacion/desvio";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
-import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import type { Anotacion, Rectangulo } from "@/types/database";
@@ -53,6 +53,9 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
 
   const vigilanciaRef = useRef<number | null>(null);
   const sectoresBajados = useSectoresConMapaBajado();
+  const mapasBajados = useMapasBajados();
+  /** Los sectores que cruza esta ruta: de ellos sale qué mapas hay para elegir. */
+  const [sectoresDeLaRuta, setSectoresDeLaRuta] = useState<number[]>([]);
   const [recorrido, setRecorrido] = useState<FeatureCollection | null>(null);
   const [nombre, setNombre] = useState("Ruta");
   const [rectangulo, setRectangulo] = useState<Rectangulo | null>(null);
@@ -104,6 +107,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         );
 
         const idsQueLaCruzan = sectoresQueLaCruzan.map((sector) => sector.id);
+        setSectoresDeLaRuta(idsQueLaCruzan);
 
         setAnotaciones(
           (paquete?.anotaciones ?? []).filter((anotacion) =>
@@ -239,6 +243,16 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         }
       : recorrido || recorridoCombinado;
 
+  // Simple, satelital o los dos: los que estén bajados en algún sector de la ruta.
+  const fondosDisponibles: TipoDeFondo[] = [];
+  const tiposBajados = new Set(
+    mapasBajados
+      .filter((mapa) => sectoresDeLaRuta.includes(mapa.sectorId))
+      .map((mapa) => mapa.tipo),
+  );
+  if (tiposBajados.has("simple")) fondosDisponibles.push("dibujo");
+  if (tiposBajados.has("satelital")) fondosDisponibles.push("satelital");
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex flex-col bg-mapa-fondo">
@@ -250,6 +264,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             encuadre={rectangulo}
             pantallaCompleta
             fondoInicial={fondoInicial}
+            fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
             alCerrarPantallaCompleta={requestExit}
             alTocarAnotacion={abrirLaAnotacion}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { borrarElMapaDelSector, mostrarPeso } from "@/lib/mapas/descarga";
+import { claveDeMapa, NOMBRE_DEL_TIPO, type TipoDeMapa } from "@/lib/offline/mapas";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Boton } from "@/components/ui/boton";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -13,7 +14,8 @@ export default function PantallaDeMapas() {
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const mapas = useMapasBajados();
   const { confirmar, avisar } = useDialogos();
-  const [borrando, setBorrando] = useState<number | null>(null);
+  /** El mapa que se está borrando, con `claveDeMapa`: un sector puede tener dos. */
+  const [borrando, setBorrando] = useState<string | null>(null);
 
   const sectores = paquete?.sectores ?? [];
   const zonas = paquete?.zonas ?? [];
@@ -36,7 +38,9 @@ export default function PantallaDeMapas() {
         // Ordenar por nombre de Zona y luego por nombre de Sector
         const difZona = a.zonaNombre.localeCompare(b.zonaNombre);
         if (difZona !== 0) return difZona;
-        return a.sectorNombre.localeCompare(b.sectorNombre);
+        const difSector = a.sectorNombre.localeCompare(b.sectorNombre);
+        if (difSector !== 0) return difSector;
+        return a.tipo.localeCompare(b.tipo);
       });
   }, [mapas, sectores, zonas]);
 
@@ -45,19 +49,19 @@ export default function PantallaDeMapas() {
     [mapas]
   );
 
-  const handleBorrar = async (sectorId: number, nombreSector: string) => {
+  const handleBorrar = async (sectorId: number, tipo: TipoDeMapa, nombreSector: string) => {
     const seguro = await confirmar({
       titulo: "¿Borrar este mapa?",
-      mensaje: `El mapa de "${nombreSector}" se va a borrar de tu celular para liberar espacio. Vas a necesitar señal para volver a bajarlo.`,
+      mensaje: `El mapa ${tipo} de "${nombreSector}" se va a borrar de tu celular para liberar espacio. Vas a necesitar señal para volver a bajarlo.`,
       textoDeAceptar: "Borrar mapa",
       destructivo: true,
     });
 
     if (!seguro) return;
 
-    setBorrando(sectorId);
+    setBorrando(claveDeMapa(sectorId, tipo));
     try {
-      const resultado = await borrarElMapaDelSector(sectorId, sectores);
+      const resultado = await borrarElMapaDelSector(sectorId, sectores, tipo);
       if (!resultado.ok) {
         await avisar({
           titulo: "No se pudo borrar del todo",
@@ -133,15 +137,16 @@ export default function PantallaDeMapas() {
 
           <div className="space-y-3">
             {mapasConInfo.map((mapa) => {
-              const estaBorrando = borrando === mapa.sectorId;
+              const clave = claveDeMapa(mapa.sectorId, mapa.tipo);
+              const estaBorrando = borrando === clave;
               
               return (
-                <Tarjeta key={mapa.sectorId} className="relative pr-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <Tarjeta key={clave} className="relative pr-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="absolute right-2 top-2">
                     <button
                       type="button"
                       disabled={estaBorrando || borrando !== null}
-                      onClick={() => handleBorrar(mapa.sectorId, mapa.nombreSector)}
+                      onClick={() => handleBorrar(mapa.sectorId, mapa.tipo, mapa.nombreSector)}
                       className="p-2 text-rojo-texto hover:bg-rojo-fondo rounded-lg transition-colors disabled:opacity-50"
                       aria-label="Borrar mapa"
                       title="Borrar mapa"
@@ -166,7 +171,7 @@ export default function PantallaDeMapas() {
                     </p>
                     <div className="mt-2 flex items-center gap-2 text-xs font-medium text-texto-suave">
                       <span className="bg-fondo border border-borde-suave rounded-md px-2 py-1">
-                        {mapa.tipo === "simple" ? "Simple" : "Satelital"}
+                        {NOMBRE_DEL_TIPO[mapa.tipo]}
                       </span>
                       <span className="bg-fondo border border-borde-suave rounded-md px-2 py-1 tabular-nums">
                         {mostrarPeso(mapa.bytes)}

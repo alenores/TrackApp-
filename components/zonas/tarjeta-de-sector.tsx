@@ -11,6 +11,7 @@ import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Anotacion, Sector } from "@/types/database";
 import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
 import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * Un sector en la lista de una zona.
@@ -63,6 +64,8 @@ export function TarjetaDeSector({
     
     if (res.ok) {
       setEditandoNombre(false);
+      // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+      void ponerAlDiaDespuesDeGuardar();
       router.refresh();
     } else {
       await avisar({ titulo: "No se pudo cambiar el nombre", mensaje: res.error });

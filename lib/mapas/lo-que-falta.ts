@@ -1,6 +1,6 @@
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import type { MapaQueTenias } from "@/lib/supabase/mapas-bajados";
-import type { TipoDeMapa } from "@/lib/offline/mapas";
+import { claveDeMapa, type TipoDeMapa } from "@/lib/offline/mapas";
 import type { RutaResumen, Sector } from "@/types/database";
 
 /**
@@ -38,12 +38,14 @@ export type RutaSinMapa = {
 export function mapasPerdidos(
   loQueTenias: MapaQueTenias[],
   sectores: Sector[],
-  sectoresConMapa: Set<number>,
+  /** Los mapas que hay en el celular, cada uno con `claveDeMapa`. */
+  mapasEnElCelular: Set<string>,
 ): MapaPerdido[] {
   const porId = new Map(sectores.map((sector) => [sector.id, sector]));
 
   return loQueTenias.flatMap((tenia) => {
-    if (sectoresConMapa.has(tenia.sectorId)) return [];
+    // Tener el simple no cubre haber perdido el satelital: son dos mapas.
+    if (mapasEnElCelular.has(claveDeMapa(tenia.sectorId, tenia.tipo))) return [];
 
     const sector = porId.get(tenia.sectorId);
     if (!sector) return [];

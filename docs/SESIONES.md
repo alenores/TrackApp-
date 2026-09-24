@@ -4,6 +4,75 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-23 — El satelital baja al celular, y la app deja de consultar en cada pantalla
+
+### Estado al inicio
+
+El mapa simple se bajaba y andaba. El satelital existía solo en vivo, al marcar
+rectángulos, y un comentario del código decía que su licencia no dejaba
+guardarlo. Ale notó que pasar de pantalla en pantalla era lento aunque los
+datos ya estuvieran en el celular.
+
+### Lo que se hizo
+
+**Satelital, la parte que no se ve.** Se verificó la licencia: Sentinel-2 sin
+nubes de EOX es Creative Commons no comercial, y su servicio es libre para usos
+no comerciales citando la fuente. Se puede guardar. El comentario estaba mal.
+Se midió la foto sobre el Champaquí: 11 a 22 KB por pedazo, disponible hasta el
+acercamiento 17. Se armó:
+
+- el puente `api/satelital`, igual a los del mapa y el relieve;
+- la foto en el mismo depósito, con su propio nombre (`satelital/z/x/y`);
+- un sector satelital = el dibujo + el relieve + la foto;
+- el candado `foto-guardada://`, que lee la foto del celular y nunca sale a
+  internet;
+- pasar de satelital a simple libera la foto, sin tocar la de un sector vecino;
+- el peso aproximado ya cuenta la foto.
+
+**Lentitud.** Se encontró la causa en el código: cada pantalla, al abrirse,
+consultaba la base, repasaba todas las pantallas guardadas y los mapas bajados.
+Ahora se hace una vez por apertura y después de guardar algo → `decisiones/022`.
+
+### Documentos actualizados
+
+`ARQUITECTURA.md`, `GLOSARIO.md` (foto satelital, puesta al día), decisiones
+`013`, `017` y la nueva `022`.
+
+### Deuda o inconsistencias detectadas
+
+- **Borrar una ruta desde su tarjeta, o renombrar un sector, no se veía hasta
+  cambiar de pantalla**: refrescaban la pantalla sin volver a traer los datos.
+  Quedó cubierto con la puesta al día después de guardar.
+- **El glosario llama «mapa básico» a la ruta sobre fondo vacío**, pero el
+  botón del mapa en vivo dice «Básico» para el mapa simple. Dos cosas con la
+  misma palabra.
+- La prueba de los archivos del motor offline solo pasa después de compilar,
+  porque revisa archivos que genera la compilación.
+
+### Segunda parte (2026-09-24), por pedido de Ale, sin mockup
+
+- «Básico» retirado: el botón dice **Simple** y **Satelital**.
+- **Un sector puede tener los dos mapas** (decisión 012 cambiada). Se baja cada
+  uno por separado desde el sector, desde la ruta y desde el inicio; se saca
+  cada uno desde «Mapas descargados».
+- Navegando, el botón Simple/Satelital muestra solo lo que está bajado en los
+  sectores de la ruta; sin nada, no aparece. La foto se lee del celular.
+- Las pantallas de entrada ya no esperan al servidor: todas abren desde lo
+  guardado (decisión 022).
+
+### Pendientes para la próxima
+
+1. **Aplicar en la base** `scripts/supabase-mapas-bajados-dos-tipos.sql`: la
+   base de TrackApp no está conectada a esta sesión.
+2. Probar en el celular con modo avión: el satelital navegando y las pantallas
+   de entrada sin señal.
+3. Botón para apagar las curvas sobre la foto (decisión 013) y valores finos
+   del velo, con la prueba al sol.
+4. Botón de sincronizar a mano: sí o no (decisión 022).
+5. Crear una ruta trae todos los sectores sin tope (regla de las 1000 filas).
+
+---
+
 ## Sesión 2026-09-21 — El mapa de montaña: lo que ya traía, lo que faltaba dibujar y las curvas
 
 ### Estado al inicio

@@ -20,6 +20,7 @@ import {
 import { mostrarLargo } from "@/lib/rutas/actividades";
 import type { RutaResumen, Zona } from "@/types/database";
 import { seSuperponen } from "@/lib/datos/rectangulo";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * Una ruta en la lista.
@@ -84,6 +85,8 @@ export function TarjetaDeRuta({
     }
 
     setAccionesAbiertas(false);
+    // La ruta borrada tiene que desaparecer ya de la lista, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.refresh();
   };
 

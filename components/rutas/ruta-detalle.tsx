@@ -38,6 +38,7 @@ import type { Perfil, RutaSinRecorrido } from "@/types/database";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
 import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
 import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
  * La ficha de una ruta.
@@ -186,6 +187,8 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
       return;
     }
 
+    // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
+    void ponerAlDiaDespuesDeGuardar();
     router.push("/rutas");
   };
 

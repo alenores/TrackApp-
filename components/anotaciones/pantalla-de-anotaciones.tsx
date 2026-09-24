@@ -18,7 +18,7 @@ import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
-import { sincronizarPaquete } from "@/lib/offline/sincronizacion";
+import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import {
   FORMATOS_DE_GOOGLE_EARTH,
@@ -352,7 +352,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     setMarcando(false);
     foto.quitar();
     setQuitarLaFoto(false);
-    await sincronizarPaquete();
+    await ponerAlDiaDespuesDeGuardar();
     router.refresh();
   };
 
@@ -371,7 +371,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       return;
     }
     if (editando?.id === anotacion.id) setEditando(null);
-    await sincronizarPaquete();
+    await ponerAlDiaDespuesDeGuardar();
     router.refresh();
   };
 
@@ -443,7 +443,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
     }
     setTraidoConExito(trayendo.deDonde);
     setTrayendo(null);
-    await sincronizarPaquete();
+    await ponerAlDiaDespuesDeGuardar();
     router.refresh();
   };
 

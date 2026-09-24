@@ -29,13 +29,15 @@ Hay dos caminos, y los dos existen:
 
 ---
 
-## Simple o satelital: son excluyentes
+## Simple, satelital o los dos
 
-**Un sector tiene un solo mapa a la vez.** O el simple, o el satelital. Nunca los
-dos.
+> **Cambió el 2026-09-24 (decidió Ale).** Antes eran excluyentes.
 
-- Se puede **reemplazar** uno por el otro cuando el usuario quiera.
-- Se puede **eliminar** el mapa de un sector cuando el usuario quiera.
+**Un sector puede tener el simple, el satelital o los dos.** Cada uno se baja y
+se saca por separado. Navegando, el botón Simple/Satelital muestra solo los que
+hay: sin ninguno no aparece, con uno muestra ese.
+
+- Se puede **eliminar** cada mapa de un sector cuando el usuario quiera.
 - **El espacio que ocupa cada uno se puede ver**, pero sin darle protagonismo: es
   un dato de consulta, no el centro de la pantalla. Nada de barras grandes,
   alarmas de espacio ni advertencias.

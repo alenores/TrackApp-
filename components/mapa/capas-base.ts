@@ -2,7 +2,11 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
 import { ajustarParaLaMontana } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa } from "@/components/mapa/colores";
-import { DIRECCION_DE_LAS_TESELAS } from "@/lib/mapas/protocolo";
+import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
+import {
+  DIRECCION_DE_LA_FOTO_GUARDADA,
+  DIRECCION_DE_LAS_TESELAS,
+} from "@/lib/mapas/protocolo";
 import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
 import type { Modo } from "@/lib/modo";
 
@@ -30,20 +34,14 @@ export type TipoDeFondo = "dibujo" | "satelital";
 export const FUENTE_SATELITAL = "satelital";
 
 /**
- * De dónde sale la foto del terreno, **solo con internet**.
+ * La foto del terreno, en vivo: solo en las pantallas de administrar.
  *
- * Es Sentinel-2 sin nubes, de Europa. Diez metros por píxel: se ven los
- * bosques, el agua, los claros y la forma del terreno. **No se ve un sendero ni
- * un refugio.** Es lo mejor gratis que hay para la sierra.
- *
- * No se descarga nunca: su licencia no lo permitiría y además no hace falta.
- * Sirve para marcar rectángulos mirando el terreno de verdad.
+ * La misma foto que baja al celular con el mapa satelital. De dónde sale lo
+ * sabe un solo archivo.
  */
-const FOTO_DEL_TERRENO =
-  "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg";
+const FOTO_DEL_TERRENO = DIRECCION_DE_LA_FOTO;
 
-/** Quién hizo la foto. Su licencia obliga a decirlo, y corresponde. */
-export const QUIEN_HIZO_LA_FOTO = "Sentinel-2 cloudless por EOX · Copernicus";
+export { QUIEN_HIZO_LA_FOTO };
 
 /** El nombre con el que el mapa conoce a los pedazos guardados. */
 export const FUENTE_DEL_FONDO = "fondo";
@@ -106,18 +104,17 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
     glyphs: direccionCompleta(LETRAS),
     sprite: iconosDelFondo(modo),
     sources: {
-      // La foto solo existe con internet: nunca se baja.
-      ...(enVivo
-        ? {
-            [FUENTE_SATELITAL]: {
-              type: "raster" as const,
-              tiles: [FOTO_DEL_TERRENO],
-              tileSize: 256,
-              maxzoom: 17,
-              attribution: QUIEN_HIZO_LA_FOTO,
-            },
-          }
-        : {}),
+      /*
+        La foto: en vivo, de internet; si no, del celular y de ningún otro lado.
+        Donde no se bajó el satelital la foto viene vacía y se ve el fondo liso.
+      */
+      [FUENTE_SATELITAL]: {
+        type: "raster" as const,
+        tiles: [enVivo ? FOTO_DEL_TERRENO : DIRECCION_DE_LA_FOTO_GUARDADA],
+        tileSize: 256,
+        maxzoom: enVivo ? 17 : ACERCAMIENTO_MAXIMO,
+        attribution: QUIEN_HIZO_LA_FOTO,
+      },
       [FUENTE_DEL_FONDO]: {
         type: "vector",
         tiles: [enVivo ? direccionCompleta(EN_VIVO) : DIRECCION_DE_LAS_TESELAS],
@@ -165,6 +162,15 @@ export function capasDelFondo(
       id: "foto-del-terreno",
       type: "raster",
       source: FUENTE_SATELITAL,
+      /*
+        El velo: la foto baja su contraste para que las curvas de nivel se
+        recorten encima. Sigue al modo: se aclara con sol y se oscurece de
+        noche (decisión 013). Los valores finos quedan para la prueba al sol.
+      */
+      paint:
+        modo === "sol"
+          ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
+          : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 },
     },
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];

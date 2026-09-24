@@ -14,8 +14,11 @@ import {
   claveDeLaDireccion,
   DIRECCION_DE_LAS_TESELAS,
   olvidarElMapaGuardado,
+  DIRECCION_DE_LA_FOTO_GUARDADA,
   PROTOCOLO,
+  PROTOCOLO_DE_LA_FOTO,
   registrarElMapaGuardado,
+  servirFotoGuardada,
   servirTeselaGuardada,
 } from "@/lib/mapas/protocolo";
 
@@ -91,11 +94,13 @@ describe("registrar el protocolo", () => {
     registrarElMapaGuardado();
     registrarElMapaGuardado();
 
+    // Dos puertas, las dos al celular: el dibujo y la foto satelital.
     expect(registrados.has(PROTOCOLO)).toBe(true);
-    expect(registrados.size).toBe(1);
+    expect(registrados.has(PROTOCOLO_DE_LA_FOTO)).toBe(true);
+    expect(registrados.size).toBe(2);
 
     olvidarElMapaGuardado();
-    expect(registrados.has(PROTOCOLO)).toBe(false);
+    expect(registrados.size).toBe(0);
   });
 });
 
@@ -119,5 +124,33 @@ describe("entregar el mismo pedazo dos veces", () => {
 
     expect(uno).not.toBe(otro);
     expect(uno.byteLength).toBe(0);
+  });
+});
+
+describe("la foto satelital guardada", () => {
+  it("devuelve la foto, no el dibujo del mismo lugar", async () => {
+    await guardarTeselas([
+      { clave: "12/1309/2432", bytes: new Uint8Array([1]) },
+      { clave: "satelital/12/1309/2432", bytes: new Uint8Array([9, 9, 9]) },
+    ]);
+
+    const foto = await servirFotoGuardada("foto-guardada://12/1309/2432");
+    expect(new Uint8Array(foto)).toEqual(new Uint8Array([9, 9, 9]));
+  });
+
+  it("NO sale a internet, ni siquiera cuando la foto no está", async () => {
+    const red = vi.fn();
+    vi.stubGlobal("fetch", red);
+
+    const foto = await servirFotoGuardada("foto-guardada://15/10473/19460");
+
+    expect(red).not.toHaveBeenCalled();
+    // Vacío: el mapa lo dibuja transparente y se ve lo que hay abajo.
+    expect(foto.byteLength).toBe(0);
+    vi.unstubAllGlobals();
+  });
+
+  it("la dirección del estilo usa el mismo protocolo que se registra", () => {
+    expect(DIRECCION_DE_LA_FOTO_GUARDADA.startsWith(`${PROTOCOLO_DE_LA_FOTO}://`)).toBe(true);
   });
 });

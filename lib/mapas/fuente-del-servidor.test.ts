@@ -39,4 +39,13 @@ describe("a qué puente va cada pedazo", () => {
     );
     expect(pedidas).toEqual(["/api/relieve/12/5/6"]);
   });
+
+  it("la foto satelital va al puente de la foto", async () => {
+    const pedidas = servidorQueAnota();
+    await fuenteDelServidor().pedirTesela(
+      { z: 15, x: 5, y: 6, capa: "satelital" },
+      new AbortController().signal,
+    );
+    expect(pedidas).toEqual(["/api/satelital/15/5/6"]);
+  });
 });

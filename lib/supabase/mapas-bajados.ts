@@ -93,10 +93,10 @@ async function quienSoy(
 /**
  * Anotar en la base que este celular bajó el mapa de un sector.
  *
- * Primero se intenta revivir la fila que ya había —el usuario pudo haber
- * borrado ese mapa a propósito alguna vez— y recién si no había ninguna se crea
- * una nueva. Nunca hay más de una fila por sector: el índice único de la base lo
- * garantiza, y por eso revivir no puede dejar dos vivas.
+ * Primero se intenta revivir la fila que ya había de ese sector **y ese
+ * tipo** —el usuario pudo haber borrado ese mapa a propósito alguna vez— y
+ * recién si no había ninguna se crea una nueva. Un sector puede tener una fila
+ * por tipo: el simple y el satelital se anotan y se sacan por separado.
  */
 export async function anotarQueBajasteElMapa(
   mapa: MapaQueTenias,
@@ -120,6 +120,7 @@ export async function anotarQueBajasteElMapa(
       .update(fila)
       .eq("perfil_id", perfilId)
       .eq("sector_id", mapa.sectorId)
+      .eq("tipo", mapa.tipo)
       .select("id");
 
     if (revividas.error) {
@@ -158,6 +159,8 @@ export async function anotarQueBajasteElMapa(
  */
 export async function olvidarQueTeniasElMapa(
   sectorId: number,
+  /** Cuál de los dos. Sin tipo se olvidan los dos. */
+  tipo: TipoDeMapa | null,
 ): Promise<ResultadoDeAnotar> {
   try {
     const supabase = crearClienteEnElNavegador();
@@ -167,12 +170,14 @@ export async function olvidarQueTeniasElMapa(
       return { ok: false, motivo: "No hay sesión abierta." };
     }
 
-    const { error } = await supabase
+    const pedido = supabase
       .from("mapas_bajados")
       .update({ eliminado_en: new Date().toISOString() })
       .eq("perfil_id", perfilId)
       .eq("sector_id", sectorId)
       .is("eliminado_en", null);
+
+    const { error } = await (tipo ? pedido.eq("tipo", tipo) : pedido);
 
     if (error) return { ok: false, motivo: error.message };
 

@@ -12,6 +12,7 @@ import {
   ladoDeLaGrilla,
   teselaDeClave,
   teselasDelRectangulo,
+  teselasDeLaFoto,
   teselasDelRelieve,
 } from "@/lib/mapas/teselas";
 import type { Rectangulo } from "@/types/database";
@@ -233,6 +234,31 @@ describe("el relieve", () => {
     const delDibujo = new Set(teselasDelRectangulo(sierra).map(claveDeTesela));
     for (const pedazo of teselasDelRelieve(sierra)) {
       expect(delDibujo.has(claveDeTesela(pedazo))).toBe(false);
+    }
+  });
+});
+
+describe("la foto satelital", () => {
+  const sierra = { latNorte: -31.97, latSur: -32.01, lonOeste: -64.96, lonEste: -64.9 };
+
+  it("sus pedazos se nombran aparte y el nombre va y vuelve", () => {
+    const pedazo: Tesela = { z: 15, x: 10473, y: 19460, capa: "satelital" };
+    expect(claveDeTesela(pedazo)).toBe("satelital/15/10473/19460");
+    expect(teselaDeClave("satelital/15/10473/19460")).toEqual(pedazo);
+  });
+
+  it("cubre la misma grilla que el dibujo, pedazo por pedazo", () => {
+    const delDibujo = teselasDelRectangulo(sierra).map(({ z, x, y }) => `${z}/${x}/${y}`);
+    const deLaFoto = teselasDeLaFoto(sierra).map(({ z, x, y }) => `${z}/${x}/${y}`);
+    expect(deLaFoto).toEqual(delDibujo);
+  });
+
+  it("no comparte nombre con ningún pedazo del dibujo ni del relieve", () => {
+    const otros = new Set(
+      [...teselasDelRectangulo(sierra), ...teselasDelRelieve(sierra)].map(claveDeTesela),
+    );
+    for (const pedazo of teselasDeLaFoto(sierra)) {
+      expect(otros.has(claveDeTesela(pedazo))).toBe(false);
     }
   });
 });

@@ -17,6 +17,7 @@ import {
   claveDeTesela,
   cuantasTeselas,
   cuantasTeselasDelRelieve,
+  teselasDeLaFoto,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
@@ -62,6 +63,12 @@ import type { Anotacion, Sector } from "@/types/database";
  * Con el mapa baja también **el relieve del sector**, de donde salen las
  * curvas de nivel: son pedazos más de la misma cuenta, y sin ellos el sector
  * no está completo. Un mapa de montaña sin desnivel no sirve (decisión 013).
+ *
+ * El **satelital** es el simple más la foto: baja el mismo dibujo —de ahí
+ * salen los nombres que van encima de la foto—, el mismo relieve y, además,
+ * los pedazos de la foto. Un sector puede tener uno, el otro o los dos: bajar
+ * el satelital de un sector que ya tiene el simple solo trae la foto, porque
+ * el resto ya está.
  *
  * Y bajan también **las fotos de las anotaciones de ese sector**, que es lo
  * único pesado que llevan. Esas van por otro camino: si una foto no entra, el
@@ -144,6 +151,25 @@ export type PedidoDeDescarga = {
   senal?: AbortSignal;
 };
 
+/**
+ * Todos los pedazos que forman el mapa de un sector, según su tipo.
+ *
+ * Es la única cuenta de qué pedazos son de quién: la usan la descarga, la
+ * comprobación del final y el borrado. Dos cuentas distintas terminarían
+ * borrando lo que otro sector necesita.
+ */
+export function teselasDelMapa(
+  rectangulo: Sector["rectangulo"],
+  tipo: TipoDeMapa,
+  acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+): Tesela[] {
+  return [
+    ...teselasDelRectangulo(rectangulo, acercamientoMaximo),
+    ...teselasDelRelieve(rectangulo),
+    ...(tipo === "satelital" ? teselasDeLaFoto(rectangulo, acercamientoMaximo) : []),
+  ];
+}
+
 export async function bajarElMapaDelSector({
   sector,
   tipo,
@@ -153,10 +179,7 @@ export async function bajarElMapaDelSector({
   avisarAvance,
   senal = new AbortController().signal,
 }: PedidoDeDescarga): Promise<ResultadoDeDescarga> {
-  const teselas = [
-    ...teselasDelRectangulo(sector.rectangulo, acercamientoMaximo),
-    ...teselasDelRelieve(sector.rectangulo),
-  ];
+  const teselas = teselasDelMapa(sector.rectangulo, tipo, acercamientoMaximo);
   const claves = teselas.map(claveDeTesela);
   const total = teselas.length;
 
@@ -298,7 +321,7 @@ export async function bajarElMapaDelSector({
    * puede borrar. Si este aviso no llega, el mapa igual está bajado: la próxima
    * apertura con señal lo pone al día sola. Por eso no frena nada ni se muestra.
    */
-  olvidarElSacado(sector.id);
+  olvidarElSacado(sector.id, tipo);
   void anotarQueBajasteElMapa({
     sectorId: sector.id,
     tipo,
@@ -324,13 +347,11 @@ function clavesQueSiguenHaciendoFalta(sectores: Sector[]): Set<string> {
     const sector = porSector.get(mapa.sectorId);
     if (!sector) continue;
 
-    for (const tesela of teselasDelRectangulo(
+    for (const tesela of teselasDelMapa(
       sector.rectangulo,
+      mapa.tipo,
       mapa.acercamientoMaximo || ACERCAMIENTO_MAXIMO,
     )) {
-      claves.add(claveDeTesela(tesela));
-    }
-    for (const tesela of teselasDelRelieve(sector.rectangulo)) {
       claves.add(claveDeTesela(tesela));
     }
   }
@@ -366,8 +387,11 @@ export type ResultadoDeBorrado = { ok: true } | { ok: false; motivo: string };
 export async function borrarElMapaDelSector(
   sectorId: number,
   todosLosSectores: Sector[],
+  /** Cuál de los dos. Sin tipo se sacan los dos. */
+  tipo?: TipoDeMapa,
 ): Promise<ResultadoDeBorrado> {
-  olvidarMapaDeSector(sectorId);
+  olvidarMapaDeSector(sectorId, tipo);
+  const cual = tipo ?? null;
 
   /**
    * Y la base tiene que enterarse de que lo sacaste vos.
@@ -377,9 +401,9 @@ export async function borrarElMapaDelSector(
    * señal quedaría en la base como un mapa que todavía tenías, y la próxima
    * apertura te diría que lo perdiste y te ofrecería bajar lo que tiraste.
    */
-  anotarQueLoSacasteVos(sectorId);
-  void olvidarQueTeniasElMapa(sectorId).then((resultado) => {
-    if (resultado.ok) olvidarElSacado(sectorId);
+  anotarQueLoSacasteVos(sectorId, cual);
+  void olvidarQueTeniasElMapa(sectorId, cual).then((resultado) => {
+    if (resultado.ok) olvidarElSacado(sectorId, cual);
   });
 
   try {
@@ -425,13 +449,23 @@ export const PESO_APROXIMADO_DE_UN_PEDAZO = 12 * 1024;
  */
 export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE = 112 * 1024;
 
+/**
+ * Un pedazo de foto satelital. Medido sobre el Champaquí el 2026-09-23: de
+ * 22 KB mirando de lejos a 11 KB en el acercamiento más cercano, que es donde
+ * están casi todos los pedazos de un sector.
+ */
+export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO = 14 * 1024;
+
 export function pesoAproximadoDelMapa(
   rectangulo: Sector["rectangulo"],
   acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
+  tipo: TipoDeMapa = "simple",
 ): number {
+  const pedazos = cuantasTeselas(rectangulo, acercamientoMaximo);
   return (
-    cuantasTeselas(rectangulo, acercamientoMaximo) * PESO_APROXIMADO_DE_UN_PEDAZO +
-    cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE
+    pedazos * PESO_APROXIMADO_DE_UN_PEDAZO +
+    cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE +
+    (tipo === "satelital" ? pedazos * PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO : 0)
   );
 }
 

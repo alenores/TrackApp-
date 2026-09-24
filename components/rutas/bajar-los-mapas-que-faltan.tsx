@@ -9,6 +9,13 @@ import {
 } from "@/lib/mapas/descarga";
 import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import { useHaySenal } from "@/hooks/use-hay-senal";
+import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
+import {
+  claveDeMapa,
+  NOMBRE_DEL_TIPO,
+  TIPOS_DE_MAPA,
+  type TipoDeMapa,
+} from "@/lib/offline/mapas";
 import type { SectorConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import type { Anotacion, Sector } from "@/types/database";
 import type { SectorNecesario } from "@/lib/cobertura";
@@ -57,7 +64,8 @@ type PropiedadesDeBajarLosQueFaltan = {
   fotosPendientes: SectorConFotosSinBajar[];
 };
 
-type Bajando = { sectorId: number; resueltos: number; total: number };
+type Bajando = { sectorId: number; tipo: TipoDeMapa; resueltos: number; total: number };
+type Pendiente = { sector: Sector; tipo: TipoDeMapa };
 type Fallo = { nombre: string; motivo: string };
 
 export function BajarLosMapasQueFaltan({
@@ -65,9 +73,14 @@ export function BajarLosMapasQueFaltan({
   anotaciones,
   fotosPendientes,
 }: PropiedadesDeBajarLosQueFaltan) {
-  const sectoresQueFaltan = sectoresNecesarios
-    .filter((s) => s.estado === "falta_descargar")
-    .map((s) => s.sector);
+  const bajados = useMapasBajados();
+  const enElCelular = new Set(bajados.map((cada) => claveDeMapa(cada.sectorId, cada.tipo)));
+  const tiene = (sector: Sector, tipo: TipoDeMapa) =>
+    enElCelular.has(claveDeMapa(sector.id, tipo));
+
+  /** Por cada tipo, los sectores de la ruta a los que les falta ese mapa. */
+  const faltanDe = (tipo: TipoDeMapa) =>
+    sectoresNecesarios.map((cada) => cada.sector).filter((sector) => !tiene(sector, tipo));
   const [bajando, setBajando] = useState<Bajando | null>(null);
   const [fallo, setFallo] = useState<Fallo | null>(null);
   const [fotosQueNoEntraron, setFotosQueNoEntraron] = useState<string | null>(null);
@@ -86,30 +99,31 @@ export function BajarLosMapasQueFaltan({
   // Sin señal no hay nada que bajar: los botones se van. Lo que falta lo sigue
   // diciendo la lista, que es información y esa no se esconde nunca.
 
-  const pesoDeTodos = sectoresQueFaltan.reduce(
-    (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo),
-    0,
-  );
+  const pesoDeTodos = (tipo: TipoDeMapa) =>
+    faltanDe(tipo).reduce(
+      (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo, undefined, tipo),
+      0,
+    );
 
-  const bajarEstos = async (sectores: Sector[]) => {
+  const bajarEstos = async (pendientes: Pendiente[]) => {
     canceladorRef.current?.abort();
     const cancelador = new AbortController();
     canceladorRef.current = cancelador;
     setFallo(null);
     setFotosQueNoEntraron(null);
 
-    for (const sector of sectores) {
+    for (const { sector, tipo } of pendientes) {
       if (cancelador.signal.aborted) break;
-      setBajando({ sectorId: sector.id, resueltos: 0, total: 0 });
+      setBajando({ sectorId: sector.id, tipo, resueltos: 0, total: 0 });
 
       const resultado = await bajarElMapaDelSector({
         sector,
-        tipo: "simple",
+        tipo,
         fuente: fuenteDelServidor(),
         anotaciones,
         senal: cancelador.signal,
         avisarAvance: ({ resueltos, total }) => {
-          if (montadoRef.current) setBajando({ sectorId: sector.id, resueltos, total });
+          if (montadoRef.current) setBajando({ sectorId: sector.id, tipo, resueltos, total });
         },
       });
 
@@ -161,25 +175,37 @@ export function BajarLosMapasQueFaltan({
                   </span>
                 </div>
 
-                {estado === "descargado" ? (
-                  <span className="shrink-0 text-xs text-texto-suave">en el celular</span>
-                ) : !haySenal ? (
-                  <span className="shrink-0 text-xs text-texto-suave">falta bajar mapa</span>
-                ) : esteBajando ? (
+                {esteBajando ? (
                   <span className="shrink-0 text-xs font-semibold tabular-nums text-texto-suave">
+                    {NOMBRE_DEL_TIPO[bajando.tipo]}:{" "}
                     {bajando.total > 0
                       ? `${bajando.resueltos} de ${bajando.total}`
                       : "empezando…"}
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    disabled={enFila}
-                    onClick={() => void bajarEstos([sector])}
-                    className="min-h-9 shrink-0 rounded-lg border border-acento-borde bg-acento px-3 py-1.5 text-xs font-semibold text-acento-texto transition-colors hover:bg-acento-hover disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Bajar · {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo))}
-                  </button>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    {TIPOS_DE_MAPA.map((tipo) =>
+                      tiene(sector, tipo) ? (
+                        <span key={tipo} className="text-xs text-texto-suave">
+                          {NOMBRE_DEL_TIPO[tipo]}: en el celular
+                        </span>
+                      ) : haySenal ? (
+                        <button
+                          key={tipo}
+                          type="button"
+                          disabled={enFila}
+                          onClick={() => void bajarEstos([{ sector, tipo }])}
+                          className="min-h-9 rounded-lg border border-acento-borde bg-acento px-3 py-1.5 text-xs font-semibold text-acento-texto transition-colors hover:bg-acento-hover disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {NOMBRE_DEL_TIPO[tipo]} ·{" "}
+                          {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo, undefined, tipo))}
+                        </button>
+                      ) : null,
+                    )}
+                    {!haySenal && estado === "falta_descargar" ? (
+                      <span className="text-xs text-texto-suave">falta bajar mapa</span>
+                    ) : null}
+                  </div>
                 )}
               </li>
             );
@@ -194,17 +220,24 @@ export function BajarLosMapasQueFaltan({
         </p>
       ) : null}
 
-      {haySenal && sectoresQueFaltan.length > 0 ? (
-        <div className="flex justify-end">
-          <Boton
-            variante="secundario"
-            disabled={enFila}
-            onClick={() => void bajarEstos(sectoresQueFaltan)}
-          >
-            {enFila
-              ? "Bajando…"
-              : `Descargar todos (${sectoresQueFaltan.length}) · ${mostrarPeso(pesoDeTodos)}`}
-          </Boton>
+      {haySenal && sectoresNecesarios.length > 1 ? (
+        <div className="flex flex-wrap justify-end gap-2">
+          {TIPOS_DE_MAPA.map((tipo) => {
+            const faltan = faltanDe(tipo);
+            if (faltan.length < 2) return null;
+            return (
+              <Boton
+                key={tipo}
+                variante="secundario"
+                disabled={enFila}
+                onClick={() => void bajarEstos(faltan.map((sector) => ({ sector, tipo })))}
+              >
+                {enFila
+                  ? "Bajando…"
+                  : `${NOMBRE_DEL_TIPO[tipo]}, todos (${faltan.length}) · ${mostrarPeso(pesoDeTodos(tipo))}`}
+              </Boton>
+            );
+          })}
         </div>
       ) : null}
 
@@ -225,7 +258,15 @@ export function BajarLosMapasQueFaltan({
             anchoCompleto
             disabled={enFila}
             onClick={() =>
-              void bajarEstos(fotosPendientes.map((cada) => cada.sector))
+              void bajarEstos(
+                // Las fotos se anotan en cada mapa bajado del sector.
+                fotosPendientes.flatMap((cada) =>
+                  TIPOS_DE_MAPA.filter((tipo) => tiene(cada.sector, tipo)).map((tipo) => ({
+                    sector: cada.sector,
+                    tipo,
+                  })),
+                ),
+              )
             }
           >
             {enFila ? "Bajando…" : "Bajar las fotos que faltan"}

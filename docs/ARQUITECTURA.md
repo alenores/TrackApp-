@@ -42,6 +42,10 @@ botón de actualizar, sin preguntar nada. Dos límites la protegen:
 2. Si falla a mitad de camino, **queda lo que había**. Una actualización
    incompleta nunca puede romper un paquete que ya servía.
 
+**Pasa una vez por apertura, no en cada pantalla**, y otra vez justo después de
+guardar algo. Si no hubo señal, la próxima pantalla reintenta. Ver
+`decisiones/022` y `lib/offline/puesta-al-dia.ts`.
+
 Para saber si hay novedades se pide **una fila por tabla**: la fecha de
 modificación más nueva. Ordenar es trabajo de la base, no del celular. Recién si
 esa fecha es más nueva que la del paquete se baja algo.
