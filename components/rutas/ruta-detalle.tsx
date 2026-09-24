@@ -7,7 +7,7 @@ import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { borrarRuta } from "@/app/actions/rutas";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
-import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/tarjeta-de-ruta";
+import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
 import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { BotonVolver } from "@/components/ui/boton-volver";

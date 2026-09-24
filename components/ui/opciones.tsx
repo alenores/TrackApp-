@@ -29,6 +29,20 @@ type OpcionesProps<T extends string | number> = {
   columnas?: 2 | 3 | 4 | 5;
   /** `true` cuando se puede elegir más de una. */
   multiple?: boolean;
+  /**
+   * `campo` es el rótulo de un dato dentro de una tarjeta. `seccion` es el
+   * título en mayúsculas de un bloque, cuando las opciones van sueltas.
+   */
+  titulo?: "campo" | "seccion";
+};
+
+/** El título en mayúsculas de un bloque de un formulario o de un filtro. */
+export const CLASE_DE_TITULO_DE_SECCION =
+  "text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave";
+
+const CLASES_DE_TITULO = {
+  campo: "mb-1.5 p-0 text-sm font-medium text-texto-suave",
+  seccion: `mb-2 p-0 ${CLASE_DE_TITULO_DE_SECCION}`,
 };
 
 const COLUMNAS: Record<2 | 3 | 4 | 5, string> = {
@@ -46,10 +60,11 @@ export function Opciones<T extends string | number>({
   alElegir,
   columnas = 2,
   multiple = false,
+  titulo = "campo",
 }: OpcionesProps<T>) {
   return (
     <fieldset className="border-0 p-0">
-      <legend className="mb-1.5 p-0 text-sm font-medium text-texto-suave">
+      <legend className={CLASES_DE_TITULO[titulo]}>
         {etiqueta}
       </legend>
       {ayuda ? (

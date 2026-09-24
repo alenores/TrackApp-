@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { borrarRuta } from "@/app/actions/rutas";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
+import {
+  IndicadorTecnica,
+  VelocimetroEsfuerzo,
+} from "@/components/rutas/indicadores-de-exigencia";
 import { AvatarDeQuienSubio } from "@/components/rutas/avatar-de-quien-subio";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FlechaRedonda } from "@/components/ui/flecha-redonda";
@@ -20,6 +24,7 @@ import {
 import { mostrarLargo } from "@/lib/rutas/actividades";
 import type { RutaResumen, Zona } from "@/types/database";
 import { seSuperponen } from "@/lib/datos/rectangulo";
+import { porcentajeDeMapa } from "@/lib/rutas/filtros";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**
@@ -93,18 +98,7 @@ export function TarjetaDeRuta({
   const zonasDeLaRuta = zonas.filter((z) => seSuperponen(z.rectangulo, ruta.rectangulo));
   const nombresZonas = zonasDeLaRuta.map((z) => z.nombre).join(", ");
 
-  const distancias = ruta.distanciasPorSector || {};
-  let totalMetros = 0;
-  let metrosCubiertos = 0;
-
-  for (const [key, metros] of Object.entries(distancias)) {
-    totalMetros += metros;
-    if (key !== "sin_sector" && conMapa.has(Number(key))) {
-      metrosCubiertos += metros;
-    }
-  }
-
-  const porcentajeCobertura = totalMetros === 0 ? 100 : Math.round((metrosCubiertos / totalMetros) * 100);
+  const porcentajeCobertura = porcentajeDeMapa(ruta, conMapa);
   const colorCobertura = porcentajeCobertura === 100 ? "text-verde" : porcentajeCobertura >= 80 ? "text-ambar-texto" : "text-rojo-texto";
 
   return (
@@ -241,61 +235,5 @@ export function TarjetaDeRuta({
         }
       />
     </>
-  );
-}
-
-export function IndicadorTecnica({ tecnica }: { tecnica: number | null }) {
-  if (tecnica === null) return <span className="text-sm font-medium text-texto">—</span>;
-  
-  const circulitos = 5;
-  const llenos = Math.ceil(tecnica / 2); // 1-2=1, 3-4=2, 5-6=3, 7-8=4, 9-10=5
-
-  return (
-    <div className="flex items-center gap-0.5 h-5" aria-label={`Técnica ${tecnica} de 10`}>
-      {Array.from({ length: circulitos }).map((_, i) => (
-        <div 
-          key={i} 
-          className={`h-2 w-2 rounded-full border border-blue-500 ${
-            i < llenos ? "bg-blue-500" : "bg-transparent"
-          }`} 
-        />
-      ))}
-    </div>
-  );
-}
-
-export function VelocimetroEsfuerzo({ esfuerzo }: { esfuerzo: RutaResumen["nivelEsfuerzo"] }) {
-  if (!esfuerzo) return <span className="text-sm font-medium text-texto">—</span>;
-
-  // Convertimos a 1,2,3,4
-  const nivel = { bajo: 1, medio: 2, alto: 3, muy_alto: 4 }[esfuerzo] || 0;
-  
-  // bajo -> verde, medio -> amarillo, alto -> rojo, muy alto -> rojo fuerte
-  let colorFill = "#22c55e"; // verde
-  if (nivel === 2) colorFill = "#eab308"; // amarillo
-  if (nivel === 3) colorFill = "#ef4444"; // rojo
-  if (nivel === 4) colorFill = "#b91c1c"; // rojo fuerte
-
-  // Un velocímetro de semicírculo simple con SVG
-  // Angulo de rotación de la aguja: de -90deg a 90deg
-  const angulo = -90 + ((nivel - 1) / 3) * 180;
-
-  return (
-    <div className="flex flex-col items-center" aria-label={`Esfuerzo ${esfuerzo.replace("_", " ")}`}>
-      <div className="relative w-8 h-4 overflow-hidden">
-        {/* Fondo del arco */}
-        <div className="absolute w-8 h-8 rounded-full border-[3px] border-superficie-alta border-b-transparent border-l-transparent -rotate-45" />
-        {/* Aguja */}
-        <div 
-          className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-texto origin-bottom transition-transform"
-          style={{ transform: `translateX(-50%) rotate(${angulo}deg)` }}
-        />
-        {/* Punto central */}
-        <div className="absolute bottom-0 left-1/2 w-1.5 h-1.5 rounded-full bg-texto -translate-x-1/2 translate-y-1/2" />
-      </div>
-      <span className="text-[9px] mt-0.5 text-texto font-medium capitalize" style={{ color: colorFill }}>
-        {esfuerzo.replace("_", " ")}
-      </span>
-    </div>
   );
 }

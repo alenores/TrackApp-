@@ -125,6 +125,16 @@ Dos bordes distintos, a propósito. La **rayita** separa dos superficies y puede
 ser tenue, porque no se lee. El **borde fuerte** es el contorno de algo que se
 toca —un campo, un botón, el foco— y sí tiene que verse con sol de frente.
 
+**Desplegable**
+Una lista que se abre al tocar y muestra una opción por renglón, de 56 píxeles.
+Reemplaza a la lista del sistema, que está prohibida. Se usa cuando las opciones
+son muchas o crecen con el tiempo, como las zonas. Para pocas opciones que
+conviene ver juntas se usan botones.
+
+**Foto de fondo**
+La foto que va detrás de una lista, como la de rutas o la de mapas. Con sol va
+casi entera; de noche solo se asoma. Es decoración: no se toca ni se lee.
+
 ## Usuarios
 
 **Administrador**
@@ -170,6 +180,21 @@ Todo lo liviano que la app guarda en el celular para funcionar sin señal: las
 rutas con sus textos, las zonas, los sectores y las anotaciones. Se actualiza
 solo, sin preguntar nada. **Las líneas de los recorridos no van adentro**: pesan
 demasiado y viajan aparte.
+
+**Filtro de rutas**
+Lo que achica la lista de rutas según zona, para qué sirve, largo, dificultad
+técnica, esfuerzo y si el mapa está en el celular. Muestra lo mismo que la
+tarjeta de la ruta, con los mismos dibujos. Los filtros puestos quedan arriba de
+la lista como pastillas y cada una se saca con su cruz.
+
+**Circulitos de técnica**
+Cómo se dibuja la dificultad técnica: cinco circulitos, y cada uno vale 2
+puntos. Una ruta de dificultad 5 pinta tres. En el filtro, tocar el tercero
+quiere decir «hasta dificultad 6».
+
+**Velocímetro de esfuerzo**
+Cómo se dibuja el nivel de esfuerzo: una aguja y un color por nivel, verde
+(bajo), amarillo (medio), rojo (alto) y rojo fuerte (muy alto).
 
 **Desnivel positivo / desnivel negativo**
 Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque
