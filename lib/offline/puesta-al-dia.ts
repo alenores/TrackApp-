@@ -1,4 +1,6 @@
 import { calentarLasPantallas } from "@/lib/offline/calentar";
+import { paqueteEnMemoria } from "@/lib/offline/paquete";
+import { esLaPantallaDeNavegar } from "@/lib/actualizacion/version-nueva";
 import { tirarLasPantallasDeOtraVersion } from "@/lib/offline/pantallas-de-otra-version";
 import { pedirQueNoLoBorren } from "@/lib/offline/permanente";
 import {
@@ -96,6 +98,10 @@ async function correr(): Promise<Resultado> {
   return resultado;
 }
 
+function estaAbiertaLaNavegacion(): boolean {
+  return typeof window !== "undefined" && esLaPantallaDeNavegar(window.location.pathname);
+}
+
 /**
  * Pone el paquete al día si en esta apertura todavía no se hizo.
  *
@@ -106,6 +112,14 @@ export function ponerAlDiaUnaVezPorApertura(): Promise<Resultado> {
   // Que el navegador no borre lo guardado cuando el teléfono se llene. Pedirlo
   // de nuevo no cuesta nada y no espera a nadie.
   void pedirQueNoLoBorren();
+
+  // Navegando no se sale a internet. Nunca, ni con señal: ver «La navegación
+  // es 100% sin conexión» en AGENTS.md. Pasaba al reabrir la app parado en la
+  // navegación. No se anota como hecha: la primera pantalla que se abra al
+  // salir de la navegación es la que se pone al día.
+  if (estaAbiertaLaNavegacion()) {
+    return Promise.resolve({ clase: "sin_senal", paquete: paqueteEnMemoria() });
+  }
 
   if (hecha) return Promise.resolve(hecha);
   if (enCurso) return enCurso;

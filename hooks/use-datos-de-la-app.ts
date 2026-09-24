@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  mirarElPaquete,
-  paqueteEnMemoria,
-  type Paquete,
-} from "@/lib/offline/paquete";
+import { useEffect, useState } from "react";
+import type { Paquete } from "@/lib/offline/paquete";
+import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import {
   mirarLaPuestaAlDia,
   ponerAlDiaUnaVezPorApertura,
@@ -57,11 +54,7 @@ function comoPuesta(resultado: ResultadoDeSincronizacion | null): Puesta {
 
 export function useDatosDeLaApp(): DatosDeLaApp {
   // El paquete guardado ya está en la primera pantalla: no se espera a nada.
-  const paquete = useSyncExternalStore(
-    mirarElPaquete,
-    paqueteEnMemoria,
-    () => null,
-  );
+  const paquete = usePaqueteGuardado();
 
   const [puesta, setPuesta] = useState<Puesta>(() =>
     comoPuesta(puestaAlDiaDeEstaApertura()),

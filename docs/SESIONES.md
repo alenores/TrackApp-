@@ -37,6 +37,13 @@ Con mockup aprobado por Ale:
   como pastillas arriba. Lo guardado se revisa al leerlo, y una zona que ya no
   existe se ignora.
 
+**Navegar ya no sale a internet ni al reabrir la app.** Revisando a pedido de
+Ale se encontró que, si la app se reabría parada en la navegación, se ponía al
+día con la base desde ahí: la navegación usaba una pieza que dispara la puesta
+al día. Ahora lee solo lo guardado, y la puesta al día se niega a correr con la
+navegación abierta; la hace la primera pantalla que se abra después. Con su
+prueba automática, que falla sin el arreglo.
+
 ### Documentos actualizados
 
 `GLOSARIO.md` (desplegable, foto de fondo, filtro de rutas, circulitos de

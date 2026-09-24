@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { FeatureCollection } from "geojson";
-import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import type { Rectangulo } from "@/types/database";
 import { leerRecorrido } from "@/lib/offline/recorridos";
@@ -9,9 +9,12 @@ import { hexDeLaRuta } from "@/lib/rutas/colores";
 /**
  * Encuentra qué rutas cruzan un área y maneja cuáles están encendidas, 
  * devolviendo un FeatureCollection combinado listo para dibujar en el mapa.
+ *
+ * Lo usa la pantalla de navegación, así que **solo lee lo guardado**: nunca
+ * dispara la puesta al día.
  */
 export function useRutasEnArea(rectanguloDelArea: Rectangulo, excludeRutaId?: number, idsIniciales: number[] = []) {
-  const { paquete } = useDatosDeLaApp();
+  const paquete = usePaqueteGuardado();
   
   // Las rutas de la BD que se superponen con esta área.
   const rutasCruzadas = (paquete?.rutas ?? []).filter((ruta) => 

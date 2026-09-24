@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sincronizar = vi.fn();
 const calentar = vi.fn(async () => ({ pedidas: 0, listas: 0 }));
@@ -112,6 +112,36 @@ describe("después de guardar algo", () => {
     await ponerAlDiaDespuesDeGuardar();
     await ponerAlDiaUnaVezPorApertura();
 
+    expect(sincronizar).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("navegando una ruta", () => {
+  const abrirEn = (camino: string) =>
+    vi.stubGlobal("window", { location: { pathname: camino } });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("no sale a internet nunca, ni con señal", async () => {
+    sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
+    abrirEn("/navegacion/12");
+
+    await ponerAlDiaUnaVezPorApertura();
+    await ponerAlDiaUnaVezPorApertura();
+
+    expect(sincronizar).not.toHaveBeenCalled();
+    expect(calentar).not.toHaveBeenCalled();
+  });
+
+  it("al salir de la navegación, la primera pantalla sí se pone al día", async () => {
+    sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
+    abrirEn("/navegacion/12");
+    await ponerAlDiaUnaVezPorApertura();
+
+    abrirEn("/rutas/12");
+    expect((await ponerAlDiaUnaVezPorApertura()).clase).toBe("actualizado");
     expect(sincronizar).toHaveBeenCalledTimes(1);
   });
 });
