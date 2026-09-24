@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   convieneRecargarPorVersionNueva,
   cuandoRecargarPorVersionNueva,
+  direccionDelArchivoQueFalta,
   esLaPantallaDeNavegar,
+  preguntarPorElArchivo,
   esUnArchivoDeLaAppQueYaNoExiste,
 } from "@/lib/actualizacion/version-nueva";
 
@@ -105,5 +107,52 @@ describe("cuándo recargar al llegar la versión nueva", () => {
     expect(esLaPantallaDeNavegar("/mapas")).toBe(false);
     expect(esLaPantallaDeNavegar("/rutas/12")).toBe(false);
     expect(esLaPantallaDeNavegar("/")).toBe(false);
+  });
+});
+
+describe("preguntarle a internet por la pieza que faltó", () => {
+  it("saca la dirección del mensaje, como lo vio Ale", () => {
+    expect(
+      direccionDelArchivoQueFalta({
+        message:
+          "Loading chunk 7538 failed. (error: https://x.vercel.app/_next/static/chunks/7538-3a9eef05dd0bdfac.js)",
+      }),
+    ).toBe("https://x.vercel.app/_next/static/chunks/7538-3a9eef05dd0bdfac.js");
+  });
+
+  it("aunque la dirección tenga paréntesis adentro", () => {
+    expect(
+      direccionDelArchivoQueFalta({
+        message:
+          "Loading chunk 7417 failed. (error: https://x.vercel.app/_next/static/chunks/app/(app)/mapa-libre/page-1.js)",
+      }),
+    ).toBe("https://x.vercel.app/_next/static/chunks/app/(app)/mapa-libre/page-1.js");
+  });
+
+  it("sin dirección en el mensaje no inventa una", () => {
+    expect(direccionDelArchivoQueFalta({ message: "ChunkLoadError" })).toBeNull();
+  });
+
+  it("un 404 quiere decir que salió una versión nueva", async () => {
+    expect(await preguntarPorElArchivo("u", async () => ({ status: 404 }))).toBe("no_existe");
+  });
+
+  it("si está, fue un corte pasajero", async () => {
+    expect(await preguntarPorElArchivo("u", async () => ({ status: 200 }))).toBe("existe");
+  });
+
+  it("sin señal no contesta, y eso no es una versión nueva", async () => {
+    const sinSenal = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    expect(await preguntarPorElArchivo("u", sinSenal)).toBe("sin_respuesta");
+  });
+
+  it("si tarda más que el tope, se da por sin respuesta: nada tapa para siempre", async () => {
+    const colgada = (_: string, opciones: RequestInit) =>
+      new Promise<{ status: number }>((_, rechazar) => {
+        opciones.signal?.addEventListener("abort", () => rechazar(new Error("cortada")));
+      });
+    expect(await preguntarPorElArchivo("u", colgada, 10)).toBe("sin_respuesta");
   });
 });

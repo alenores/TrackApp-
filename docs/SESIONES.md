@@ -70,6 +70,16 @@ de subida que no quedaba anotado (ahora tiene su prueba).
 
 Queda para que Ale lo pruebe en la versión de prueba del borrador.
 
+### Después, probando Ale
+
+Al abrir la versión de prueba justo mientras se publicaba otra, el mapa libre
+quedó en «Esta pantalla se rompió» y recargar no lo arreglaba (R31). Se confirmó
+con una prueba de Ale (pasar por el inicio lo destrababa) y se arregló de raíz:
+la red de rescate le pregunta a internet por la pieza que faltó y, solo si hay
+señal y la pieza no existe, tira las pantallas guardadas y recarga. A pedido de
+Ale, el cartel ahora muestra todos los datos de la falla y un botón para
+copiarlos. Se miró en el navegador forzando la falla.
+
 ### Pendiente
 
 - R30: la navegación de una ruta no muestra el aviso de «sin mapa».

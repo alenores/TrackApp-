@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import {
   convieneRecargarPorVersionNueva,
+  direccionDelArchivoQueFalta,
   esUnArchivoDeLaAppQueYaNoExiste,
+  preguntarPorElArchivo,
+  type RespuestaSobreElArchivo,
 } from "@/lib/actualizacion/version-nueva";
+import {
+  tirarTodasLasPantallasGuardadas,
+  versionDeLasPantallasGuardadas,
+} from "@/lib/offline/pantallas-de-otra-version";
+import { SELLO_DE_VERSION } from "@/lib/sello-de-version";
+import { DatosDeLaFalla, juntarLosDatos } from "@/app/datos-de-la-falla";
 
 /**
  * **La red de rescate.** Lo que se ve cuando una pantalla falla al dibujarse.
@@ -23,6 +32,15 @@ import {
  * la app que ya no existe, es que la app se actualizó mientras estaba abierta.
  * Ahí no hay nada roto: se recarga una vez, sola, y listo. Ver
  * `lib/actualizacion/version-nueva.ts`.
+ *
+ * **Antes de recargar se le pregunta a internet por la pieza que faltó.** Si
+ * contesta que no existe, hay señal y salió una versión nueva: se tiran las
+ * pantallas guardadas —que son de la versión vieja y volverían a pedir la
+ * pieza— y se recarga. Si no contesta, puede ser el cerro sin señal: ahí las
+ * pantallas guardadas son lo único que deja navegar y no se tocan.
+ *
+ * **Y el cartel muestra todos los datos de la falla** (pedido de Ale): para
+ * arreglarla con una captura, no a las adivinanzas.
  */
 
 type Props = {
@@ -30,27 +48,67 @@ type Props = {
   reset: () => void;
 };
 
+type Fase = "revisando" | "recargando" | "cartel";
+
+const QUE_CONTESTO: Record<RespuestaSobreElArchivo, string> = {
+  no_existe: "no existe: hay señal y salió una versión nueva de la app",
+  existe: "existe: fue un corte pasajero",
+  sin_respuesta: "no contestó: sin señal o muy lenta",
+};
+
 export default function PantallaRota({ error, reset }: Props) {
   const esVersionNueva = esUnArchivoDeLaAppQueYaNoExiste(error);
+  const piezaQueFalta = esVersionNueva ? direccionDelArchivoQueFalta(error) : null;
 
-  // Se decide una sola vez, al aparecer: si se va a recargar, no hay cartel.
-  const [recargando] = useState(
-    () =>
-      esVersionNueva &&
-      convieneRecargarPorVersionNueva(
-        typeof window === "undefined" ? null : window.sessionStorage,
-      ),
-  );
+  const [consulta, setConsulta] = useState<RespuestaSobreElArchivo | null>(null);
+  // Se decide al aparecer. Sin la dirección de la pieza no hay a quién
+  // preguntarle: se hace lo de siempre, recargar una vez.
+  const [fase, setFase] = useState<Fase>(() => {
+    if (!esVersionNueva) return "cartel";
+    if (piezaQueFalta) return "revisando";
+    return convieneRecargarPorVersionNueva(
+      typeof window === "undefined" ? null : window.sessionStorage,
+    )
+      ? "recargando"
+      : "cartel";
+  });
 
   useEffect(() => {
-    if (recargando) {
+    if (fase === "recargando") {
       window.location.reload();
       return;
     }
-    console.error("Se rompió una pantalla de TrackApp:", error);
-  }, [error, recargando]);
+    if (fase === "cartel") {
+      console.error("Se rompió una pantalla de TrackApp:", error);
+      return;
+    }
 
-  if (recargando) {
+    // Revisando: se pregunta por la pieza, con tope de tiempo.
+    let vigente = true;
+    void preguntarPorElArchivo(piezaQueFalta ?? "").then(async (respuesta) => {
+      if (!vigente) return;
+      setConsulta(respuesta);
+
+      const puedeRecargar =
+        respuesta !== "sin_respuesta" &&
+        convieneRecargarPorVersionNueva(window.sessionStorage);
+
+      if (!puedeRecargar) {
+        setFase("cartel");
+        return;
+      }
+      // Con la pieza confirmada como inexistente, lo guardado es de la
+      // versión vieja: se tira para que la recarga traiga la nueva.
+      if (respuesta === "no_existe") await tirarTodasLasPantallasGuardadas();
+      if (vigente) setFase("recargando");
+    });
+
+    return () => {
+      vigente = false;
+    };
+  }, [fase, error, piezaQueFalta]);
+
+  if (fase !== "cartel") {
     return (
       <div
         role="status"
@@ -66,14 +124,38 @@ export default function PantallaRota({ error, reset }: Props) {
           fontSize: "16px",
         }}
       >
-        Hay una versión nueva de la app. Un segundo…
+        {fase === "revisando"
+          ? "Revisando qué pasó…"
+          : "Hay una versión nueva de la app. Un segundo…"}
       </div>
     );
   }
 
-  /* Si es una versión nueva y ya se probó recargar, reintentar por dentro no
-     sirve: hay que recargar la página entera. */
-  const probarDeNuevo = esVersionNueva ? () => window.location.reload() : reset;
+  /* Si es una versión nueva, reintentar por dentro no sirve: hay que recargar
+     la página entera. Si internet ya confirmó que la pieza no existe, antes se
+     tiran las pantallas guardadas, que son de la versión vieja. */
+  const probarDeNuevo = esVersionNueva
+    ? async () => {
+        if (consulta === "no_existe") await tirarTodasLasPantallasGuardadas();
+        window.location.reload();
+      }
+    : reset;
+
+  const explicacion =
+    esVersionNueva && consulta === "sin_respuesta"
+      ? "Falta una pieza de la app que no está guardada en el celular, y no hay señal para traerla. Volvé a la pantalla anterior, o abrí la app de nuevo cuando tengas señal."
+      : esVersionNueva && consulta === "no_existe"
+        ? "Salió una versión nueva de la app y esta pantalla no pudo cargarla sola. Tocá «Probar de nuevo»; si sigue, tocá «Ir a mis rutas»."
+        : "No es tu celular ni tu conexión: falló la app. Lo que tenés descargado sigue guardado y no se perdió nada.";
+
+  const datos = juntarLosDatos({
+    error,
+    version: SELLO_DE_VERSION,
+    versionDeLasPantallas:
+      typeof window === "undefined" ? null : versionDeLasPantallasGuardadas(),
+    piezaQueFalta,
+    consulta: consulta ? QUE_CONTESTO[consulta] : null,
+  });
 
   return (
     <div
@@ -95,8 +177,7 @@ export default function PantallaRota({ error, reset }: Props) {
       </h1>
 
       <p style={{ margin: 0, fontSize: "16px", lineHeight: "24px" }}>
-        No es tu celular ni tu conexión: falló la app. Lo que tenés descargado
-        sigue guardado y no se perdió nada.
+        {explicacion}
       </p>
 
       <p
@@ -116,7 +197,7 @@ export default function PantallaRota({ error, reset }: Props) {
 
       <button
         type="button"
-        onClick={probarDeNuevo}
+        onClick={() => void probarDeNuevo()}
         style={{
           minHeight: "64px",
           borderRadius: "12px",
@@ -155,6 +236,8 @@ export default function PantallaRota({ error, reset }: Props) {
       >
         Ir a mis rutas
       </button>
+
+      <DatosDeLaFalla datos={datos} />
     </div>
   );
 }

@@ -619,6 +619,25 @@ de este cambio y necesita ver dónde va en pantalla.
 
 ---
 
+## ✅ R31 — El mapa libre quedaba roto después de una versión nueva, y recargar no alcanzaba
+
+**Qué pasaba.** Ale abrió la versión de prueba justo mientras se publicaba otra.
+La app guardó sola una copia del mapa libre armada con la versión vieja. Al
+entrar, esa copia pidió piezas que ya no existían: «Esta pantalla se rompió».
+La red de rescate recargaba, pero el mapa libre se abre siempre desde lo
+guardado —así anda en el cerro— y volvía a abrir la copia vieja. La limpieza de
+copias viejas corre en el inicio, nunca en la navegación, así que quedaba
+trabado hasta pasar por el inicio.
+
+**Cómo quedó (2026-09-24).** La red de rescate le pregunta a internet por la
+pieza que faltó. Si no existe, tira las pantallas guardadas y recarga. Si no
+contesta —sin señal— no tira nada. Además el cartel muestra todos los datos de
+la falla. Con sus pruebas, y mirado en el navegador forzando la pieza faltante.
+
+**Detectado:** 2026-09-24, por Ale · **Resuelto:** el mismo día.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

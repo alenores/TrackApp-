@@ -305,6 +305,17 @@ quedó abierta pide archivos que ya no están. La red de rescate lo reconoce y
 recarga la página sola, una vez. No reintentar por dentro: reintenta lo mismo
 y falla igual. Pasó el 2026-09-21.
 
+**Antes de recargar, la red de rescate le pregunta a internet por la pieza.**
+Si contesta que no existe, hay señal y salió una versión nueva: se tiran las
+pantallas guardadas —las del cerro se abren siempre desde el celular y
+volverían a pedir la pieza vieja— y se recarga. **Si no contesta, no se tira
+nada**: puede ser el cerro sin señal, donde lo guardado es lo único que deja
+navegar. Pasó el 2026-09-24 en el mapa libre.
+
+**El cartel de la red de rescate muestra todos los datos de la falla**, con un
+botón para copiarlos. Pedido de Ale: se arregla con una captura, no a las
+adivinanzas. No se sacan ni se esconden.
+
 ---
 
 ## Fotos

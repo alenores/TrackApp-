@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { DatosDeLaFalla, juntarLosDatos } from "@/app/datos-de-la-falla";
+import { versionDeLasPantallasGuardadas } from "@/lib/offline/pantallas-de-otra-version";
+import { SELLO_DE_VERSION } from "@/lib/sello-de-version";
 
 /**
  * La red de rescate de más afuera: cuando falla el armazón de la app entera y
@@ -9,6 +12,8 @@ import { useEffect } from "react";
  * Tiene que dibujar su propio documento, así que no puede usar nada de la app
  * ni las variables de color: acá los colores van escritos, porque es lo único
  * que se puede garantizar cuando ya falló todo lo demás.
+ *
+ * Muestra también todos los datos de la falla, para arreglarla con una captura.
  */
 
 type Props = {
@@ -78,6 +83,14 @@ export default function TodoRoto({ error, reset }: Props) {
         >
           Probar de nuevo
         </button>
+
+        <DatosDeLaFalla
+          datos={juntarLosDatos({
+            error,
+            version: SELLO_DE_VERSION,
+            versionDeLasPantallas: versionDeLasPantallasGuardadas(),
+          })}
+        />
       </body>
     </html>
   );
