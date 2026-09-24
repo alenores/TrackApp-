@@ -24,6 +24,7 @@ import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import {
   ALTURAS,
+  CAPAS_DE_RELIEVE,
   capasDeRelieve,
   CURVAS_FINAS,
   CURVAS_GRUESAS,
@@ -84,6 +85,7 @@ function ponerElFondo(
   mapa: maplibregl.Map,
   modo: Modo,
   tipo: TipoDeFondo,
+  conCurvas: boolean,
 ): string | null {
   try {
     for (const vieja of todasLasCapasDelFondo(modo)) {
@@ -92,7 +94,14 @@ function ponerElFondo(
 
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
-    for (const capa of capasDelFondo(modo, tipo)) mapa.addLayer(capa, debajoDe);
+    for (const capa of capasDelFondo(modo, tipo, conCurvas)) mapa.addLayer(capa, debajoDe);
+
+    // Las curvas: siempre en el simple; en el satelital, según el botón.
+    for (const capa of CAPAS_DE_RELIEVE) {
+      if (mapa.getLayer(capa)) {
+        mapa.setLayoutProperty(capa, "visibility", conCurvas ? "visible" : "none");
+      }
+    }
 
     mapa.setSprite(iconosDelFondo(modo));
     return null;
@@ -373,6 +382,11 @@ export function Mapa({
   const opcionesDeFondo: TipoDeFondo[] = enVivo
     ? ["dibujo", "satelital"]
     : (fondosDisponibles ?? []);
+  /**
+   * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
+   * simple no hay botón: se ven siempre.
+   */
+  const [curvasSobreLaFoto, setCurvasSobreLaFoto] = useState(true);
   /** El que se ve: el elegido si está bajado; si no, el que haya. */
   const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
     ? tipoElegido
@@ -415,6 +429,11 @@ export function Mapa({
   useEffect(() => {
     tipoDeFondoRef.current = tipoDeFondo;
   }, [tipoDeFondo]);
+  const conCurvas = tipoDeFondo !== "satelital" || curvasSobreLaFoto;
+  const curvasRef = useRef(conCurvas);
+  useEffect(() => {
+    curvasRef.current = conCurvas;
+  }, [conCurvas]);
   /** Mientras se dibuja, el mapa no se reencuadra: pelearía con el mouse. */
   const dibujandoRef = useRef(dibujando);
   /**
@@ -636,7 +655,9 @@ export function Mapa({
       for (const dibujar of esperandoRef.current) dibujar();
       esperandoRef.current = [];
 
-      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current));
+      setAvisoDelFondo(
+        ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current),
+      );
     });
 
     // Un fondo que no carga no puede quedarse callado.
@@ -666,7 +687,7 @@ export function Mapa({
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
-      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo));
+      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas));
 
       mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
@@ -728,7 +749,7 @@ export function Mapa({
     };
 
     cuandoEsteListo(pintar);
-  }, [modo, tipoDeFondo]);
+  }, [modo, tipoDeFondo, conCurvas]);
 
   // La línea de la ruta.
   useEffect(() => {
@@ -1259,6 +1280,29 @@ export function Mapa({
             </button>
           ))}
         </div>
+      ) : null}
+
+      {/*
+        Curvas sobre la foto: se prenden y apagan. Va debajo del botón
+        Simple/Satelital, y solo con la foto guardada: en vivo no hay curvas.
+      */}
+      {!enVivo && tipoDeFondo === "satelital" ? (
+        <button
+          type="button"
+          onPointerDown={() => vibrarAlTocar()}
+          onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
+          aria-pressed={curvasSobreLaFoto}
+          className={[
+            CLASE_DE_RESPUESTA_AL_TOQUE,
+            pantallaCompleta ? "top-[5.25rem] h-16" : "top-[4.75rem] h-14",
+            "absolute left-3 flex items-center rounded-full border border-borde-fuerte px-4 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
+            curvasSobreLaFoto
+              ? "bg-texto text-fondo"
+              : "bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
+          ].join(" ")}
+        >
+          {curvasSobreLaFoto ? "Curvas: sí" : "Curvas: no"}
+        </button>
       ) : null}
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}

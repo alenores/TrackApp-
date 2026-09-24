@@ -137,6 +137,13 @@ describe("la foto del terreno", () => {
     }
   });
 
+  it("con curvas la foto lleva velo, y sin curvas se ve limpia", () => {
+    const conCurvas = capasDelFondo("sol", "satelital", true)[0] as { paint?: object };
+    const sinCurvas = capasDelFondo("sol", "satelital", false)[0] as { paint?: object };
+    expect(Object.keys(conCurvas.paint ?? {}).length).toBeGreaterThan(0);
+    expect(sinCurvas.paint).toEqual({});
+  });
+
   it("se dice quién hizo la foto, que su licencia lo exige", () => {
     expect(QUIEN_HIZO_LA_FOTO).toMatch(/EOX/);
   });

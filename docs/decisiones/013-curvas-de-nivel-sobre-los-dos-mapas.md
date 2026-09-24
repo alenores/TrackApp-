@@ -111,5 +111,5 @@ otras cosas.
 - **Los valores exactos** de opacidad del velo sobre la foto satelital y de
   grosor de línea. Van con la prueba al sol que ya está pendiente en
   `DISENO_EXTERIOR.md`. El satelital ya baja al celular (2026-09-23), con su
-  relieve y el velo puesto (valores provisorios). **Todavía no hay botón para
-  apagar las curvas sobre la foto**: se ven siempre.
+  relieve y el velo puesto (valores provisorios). Sobre la foto, el botón
+  «Curvas: sí / no» las prende y apaga; sin curvas la foto va sin velo.

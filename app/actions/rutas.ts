@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { FeatureCollection } from "geojson";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
+import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import { escribirRectangulo } from "@/lib/datos/rectangulo";
 import { exito, falla, traducirErrorDeBase, type Resultado } from "@/lib/datos/resultado";
 import { calcularNumerosDelRecorrido } from "@/lib/rutas/recorrido";
@@ -75,12 +76,38 @@ export async function crearRuta(
 
   const supabase = await crearClienteEnElServidor();
 
-  const { data: sectores } = await supabase
-    .from("sectores")
-    .select("id, lat_norte, lat_sur, lon_este, lon_oeste")
-    .is("eliminado_en", null);
+  /*
+    Solo los sectores que tocan el rectángulo de la ruta, y por tandas: la base
+    corta en 1000 filas sin avisar, y un sector que falte deja mal calculada la
+    distancia que la ruta recorre en él.
+  */
+  const rect = numeros.rectangulo;
+  const sectores = await traerTodasLasFilas<{
+    id: number;
+    lat_norte: number;
+    lat_sur: number;
+    lon_este: number;
+    lon_oeste: number;
+  }>((desde, hasta) =>
+    supabase
+      .from("sectores")
+      .select("id, lat_norte, lat_sur, lon_este, lon_oeste")
+      .is("eliminado_en", null)
+      .gte("lat_norte", rect.latSur)
+      .lte("lat_sur", rect.latNorte)
+      .gte("lon_este", rect.lonOeste)
+      .lte("lon_oeste", rect.lonEste)
+      .order("id", { ascending: true })
+      .range(desde, hasta),
+  );
 
-  const sectoresDominio = (sectores ?? []).map((s) => ({
+  if (!sectores.completa) {
+    return falla(
+      `No se pudieron traer los sectores que cruza la ruta: ${sectores.motivo} Probá de nuevo con mejor señal.`,
+    );
+  }
+
+  const sectoresDominio = sectores.filas.map((s) => ({
     id: s.id,
     rectangulo: {
       latNorte: s.lat_norte,

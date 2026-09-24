@@ -60,16 +60,19 @@ Ahora se hace una vez por apertura y después de guardar algo → `decisiones/02
 - Las pantallas de entrada ya no esperan al servidor: todas abren desde lo
   guardado (decisión 022).
 
+### Tercera parte (2026-09-24)
+
+- Ale aplicó el script de la base: un sector guarda una fila por tipo de mapa.
+- Botón «Curvas: sí / no» sobre la foto satelital; sin curvas, sin velo.
+- Crear una ruta trae solo los sectores que toca, por tandas, y avisa si la
+  lista vino cortada (antes, sin tope y con el error tragado).
+- Botón de sincronizar a mano: **no, por ahora** (decidió Ale).
+
 ### Pendientes para la próxima
 
-1. **Aplicar en la base** `scripts/supabase-mapas-bajados-dos-tipos.sql`: la
-   base de TrackApp no está conectada a esta sesión.
-2. Probar en el celular con modo avión: el satelital navegando y las pantallas
-   de entrada sin señal.
-3. Botón para apagar las curvas sobre la foto (decisión 013) y valores finos
-   del velo, con la prueba al sol.
-4. Botón de sincronizar a mano: sí o no (decisión 022).
-5. Crear una ruta trae todos los sectores sin tope (regla de las 1000 filas).
+1. Probar en producción con modo avión: el satelital navegando y las pantallas
+   de entrada sin señal (lo hace Ale).
+2. Valores finos del velo sobre la foto, con la prueba al sol.
 
 ---
 
