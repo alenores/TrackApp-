@@ -1,7 +1,7 @@
 # TrackApp — reglas para agentes de IA
 
 > App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
-> con guantes, sin señal y con la batería como recurso escaso.
+> sin señal y con la batería como recurso escaso.
 > Última revisión: 2026-09-21
 
 ---
@@ -85,17 +85,19 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
 
 Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
-### Guantes y una sola mano
+### Una sola mano
 
-- **Nada que dependa de pellizcar, deslizar o mantener apretado.** Todo gesto
-  fino necesita además un botón grande que haga lo mismo.
+**Los guantes no son un caso de diseño.** Se sacó la regla el 2026-09-24,
+decisión de Ale: no se exige un botón grande que repita cada gesto fino.
+
 - **No existe «tirar hacia abajo para recargar».** La app lo ignora: no sirve
   para nada y en el cerro recarga el mapa sin querer.
 - **Todo lo importante va en la mitad de abajo de la pantalla**, al alcance del
   pulgar. Nada crítico en las esquinas de arriba.
 - **Pantalla mojada = toques fantasma.** Toda acción que borre o cancele algo
   pide confirmación.
-  **todo lo de guantes y una sola mano aplica para el modulo de navegación, no para sectores, zonas y demas modulos**
+  **Todo lo de esta sección aplica al módulo de navegación, no a sectores, zonas
+  y demás módulos.**
 
 ### Mapa
 
