@@ -1,9 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Perfil, RutaResumen, Zona } from "@/types/database";
+import type { Perfil, RutaResumen, Zona, ActividadRuta } from "@/types/database";
 import { TarjetaDeRuta } from "@/components/rutas/tarjeta-de-ruta";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { seSuperponen } from "@/lib/datos/rectangulo";
+import {
+  FiltrosDeRutas,
+  FILTROS_POR_DEFECTO,
+  type FiltrosRutas,
+} from "@/components/rutas/filtros-de-rutas";
 
 type RutaListProps = {
   rutas: RutaResumen[];
@@ -31,6 +37,20 @@ function SearchIcon() {
   );
 }
 
+function FilterIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+      <path
+        d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ListaDeRutas({
   rutas,
   zonas,
@@ -47,6 +67,9 @@ export function ListaDeRutas({
   const searchHistoryPushedRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+  const [filtros, setFiltros] = useState<FiltrosRutas>(FILTROS_POR_DEFECTO);
 
   const closeSearch = useCallback((fromPopState = false) => {
     setSearchOpen(false);
@@ -75,13 +98,76 @@ export function ListaDeRutas({
   }, []);
 
   const filteredRutas = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return rutas;
+    let result = rutas;
 
-    return rutas.filter((ruta) =>
-      ruta.nombre.toLowerCase().includes(trimmed),
-    );
-  }, [query, rutas]);
+    // 1. Filtro de Búsqueda
+    const trimmed = query.trim().toLowerCase();
+    if (trimmed) {
+      result = result.filter((ruta) =>
+        ruta.nombre.toLowerCase().includes(trimmed),
+      );
+    }
+
+    // 2. Filtro de Zona
+    if (filtros.zonaId !== null) {
+      const zonaElegida = zonas.find((z) => z.id === filtros.zonaId);
+      if (zonaElegida) {
+        result = result.filter((ruta) =>
+          seSuperponen(ruta.rectangulo, zonaElegida.rectangulo),
+        );
+      }
+    }
+
+    // 3. Filtro de Actividad
+    if (filtros.actividad !== null) {
+      result = result.filter((ruta) =>
+        ruta.actividades.includes(filtros.actividad as ActividadRuta),
+      );
+    }
+
+    // 4. Filtro de Distancia
+    if (filtros.km !== "todos") {
+      result = result.filter((ruta) => {
+        const km = ruta.largoKm ?? 0;
+        if (filtros.km === "corta") return km < 5;
+        if (filtros.km === "media") return km >= 5 && km <= 20;
+        if (filtros.km === "larga") return km > 20;
+        return true;
+      });
+    }
+
+    // 5. Filtro de Dificultad
+    if (filtros.dificultad !== null) {
+      result = result.filter((ruta) => ruta.dificultadTecnica === filtros.dificultad);
+    }
+
+    // 6. Filtro de Esfuerzo
+    if (filtros.esfuerzo !== null) {
+      result = result.filter((ruta) => ruta.nivelEsfuerzo === filtros.esfuerzo);
+    }
+
+    // 7. Filtro de Estado del Mapa
+    if (filtros.mapa !== "todos") {
+      result = result.filter((ruta) => {
+        const dist = ruta.distanciasPorSector || {};
+        let total = 0;
+        let cubierto = 0;
+        for (const [k, m] of Object.entries(dist)) {
+          total += m;
+          if (k !== "sin_sector" && conMapa.has(Number(k))) {
+            cubierto += m;
+          }
+        }
+        const pct = total === 0 ? 100 : Math.round((cubierto / total) * 100);
+
+        if (filtros.mapa === "completo") return pct === 100;
+        if (filtros.mapa === "falta") return pct < 100;
+        return true;
+      });
+    }
+
+    return result;
+  }, [query, rutas, filtros, zonas, conMapa]);
 
   const toggleSearch = () => {
     if (searchOpen) {
@@ -141,21 +227,38 @@ export function ListaDeRutas({
           </div>
 
           {rutas.length > 0 ? (
-            <button
-              ref={searchToggleRef}
-              type="button"
-              aria-label={searchOpen ? "Cerrar búsqueda" : "Buscar rutas"}
-              aria-pressed={searchOpen}
-              onClick={toggleSearch}
-              className={[
-                "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
-                searchOpen
-                  ? "border-acento-borde bg-verde-fondo text-verde-texto"
-                  : "border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
-              ].join(" ")}
-            >
-              <SearchIcon />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Abrir filtros"
+                onClick={() => setFiltrosAbiertos(true)}
+                className={[
+                  "inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors",
+                  JSON.stringify(filtros) !== JSON.stringify(FILTROS_POR_DEFECTO)
+                    ? "border-acento-borde bg-verde-fondo text-verde-texto"
+                    : "border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                ].join(" ")}
+              >
+                <FilterIcon />
+                <span className="hidden sm:inline">Filtrar</span>
+              </button>
+              
+              <button
+                ref={searchToggleRef}
+                type="button"
+                aria-label={searchOpen ? "Cerrar búsqueda" : "Buscar rutas"}
+                aria-pressed={searchOpen}
+                onClick={toggleSearch}
+                className={[
+                  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                  searchOpen
+                    ? "border-acento-borde bg-verde-fondo text-verde-texto"
+                    : "border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                ].join(" ")}
+              >
+                <SearchIcon />
+              </button>
+            </div>
           ) : null}
         </div>
 
@@ -198,7 +301,7 @@ export function ListaDeRutas({
       ) : filteredRutas.length === 0 ? (
         <Tarjeta>
           <p className="text-sm leading-6 text-texto-suave">
-            No hay rutas que coincidan con &quot;{query.trim()}&quot;.
+            No hay rutas que coincidan con la búsqueda o los filtros aplicados.
           </p>
         </Tarjeta>
       ) : (
@@ -222,6 +325,13 @@ export function ListaDeRutas({
         </ul>
       )}
 
+      <FiltrosDeRutas
+        abierto={filtrosAbiertos}
+        alCerrar={() => setFiltrosAbiertos(false)}
+        filtros={filtros}
+        alAplicar={setFiltros}
+        zonas={zonas}
+      />
     </div>
   );
 }
