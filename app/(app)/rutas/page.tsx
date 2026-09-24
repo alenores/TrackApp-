@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { PantallaDeRutas } from "@/components/rutas/pantalla-de-rutas";
+import { FotoDeFondo } from "@/components/ui/foto-de-fondo";
 
 /**
  * Todas las rutas.
@@ -14,15 +14,7 @@ export default async function RutasPage() {
 
   return (
     <>
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <Image
-          src="/fondo-rutas.webp"
-          alt="Fondo de rutas"
-          fill
-          className="object-cover object-center opacity-30"
-          priority
-        />
-      </div>
+      <FotoDeFondo src="/fondo-rutas.webp" />
       <div className="relative z-10 w-full">
         <MarcaDeAppLista />
         <PantallaDeRutas miPerfilId={usuario?.id ?? null} />

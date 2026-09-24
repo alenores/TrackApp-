@@ -77,6 +77,18 @@
   /* Los puntos y trazos dibujados sobre el territorio. */
   --anotacion: #f472b6;
 
+  /* Los circulitos de la dificultad técnica. */
+  --tecnica: #60a5fa;
+  /* El velocímetro del esfuerzo: un color por nivel, de verde a rojo fuerte. */
+  --esfuerzo-bajo: #22c55e;
+  --esfuerzo-medio: #eab308;
+  --esfuerzo-alto: #ef4444;
+  --esfuerzo-muy-alto: #f87171;
+
+  /* La foto de fondo de las listas. De noche alcanza con asomarse. */
+  --foto-de-fondo-opacidad: 0.3;
+  --foto-de-fondo-degrade: none;
+
   /* El velo que tapa la app cuando hay una emergente abierta. */
   --velo: rgb(0 0 0 / 0.72);
 
@@ -129,6 +141,20 @@
   --gps: #1d4ed8;
   --anotacion: #be185d;
 
+  --tecnica: #1d4ed8;
+  --esfuerzo-bajo: #15803d;
+  --esfuerzo-medio: #a16207;
+  --esfuerzo-alto: #dc2626;
+  --esfuerzo-muy-alto: #991b1b;
+
+  /*
+   * Con sol la foto va casi entera: al 30% su cielo gris se funde con el fondo
+   * blanco y arriba se ve un lavado. El degradé la aclara hacia abajo, donde
+   * están las tarjetas.
+   */
+  --foto-de-fondo-opacidad: 0.9;
+  --foto-de-fondo-degrade: linear-gradient(to bottom, rgb(248 250 252 / 0) 0%, rgb(248 250 252 / 0.25) 45%, rgb(248 250 252 / 0.6) 100%);
+
   --velo: rgb(15 23 42 / 0.55);
 
   --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
@@ -180,6 +206,12 @@
   --color-mapa-curva: var(--mapa-curva);
   --color-gps: var(--gps);
   --color-anotacion: var(--anotacion);
+
+  --color-tecnica: var(--tecnica);
+  --color-esfuerzo-bajo: var(--esfuerzo-bajo);
+  --color-esfuerzo-medio: var(--esfuerzo-medio);
+  --color-esfuerzo-alto: var(--esfuerzo-alto);
+  --color-esfuerzo-muy-alto: var(--esfuerzo-muy-alto);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

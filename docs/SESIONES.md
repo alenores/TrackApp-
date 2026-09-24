@@ -4,6 +4,49 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-24 — El filtro de rutas, rehecho, y la foto de fondo con sol
+
+### Estado al inicio
+
+Otro agente había agregado un filtro a la lista de rutas que no filtraba:
+ofrecía actividades que la carga no tiene (bici, moto, 4x4, caballo), comparaba
+el esfuerzo como número contra una palabra, tenía dificultad del 1 al 4 contra
+una carga del 1 al 10, contaba las rutas sin largo como de 0 km y no cambiaba
+el contador de arriba. Además, con sol la foto de fondo se veía lavada arriba.
+
+### Lo que se hizo
+
+Con mockup aprobado por Ale:
+
+- **Filtro nuevo.** Zona en un desplegable; para qué sirve con las mismas
+  insignias de la tarjeta; largo en km escrito a mano, desde y hasta; dificultad
+  con los cinco circulitos de la tarjeta (cada uno vale 2 y marca el tope);
+  esfuerzo con el velocímetro y su color; y si el mapa está en el celular. El
+  botón dice cuántas rutas van a quedar antes de aplicar. Los filtros puestos
+  quedan arriba de la lista como pastillas, y el botón Filtrar dice cuántos hay.
+- **Las cuentas del filtro viven en la capa de lógica**, con su prueba.
+- **Colores de la técnica y del esfuerzo** pasaron a variables, uno por modo.
+  Antes estaban escritos a mano en la tarjeta.
+- **Foto de fondo**: pieza compartida para rutas y mapas. Con sol va casi entera
+  y encuadrada en el cerro, con un degradé detrás de las tarjetas; de noche
+  queda como estaba.
+- Piezas compartidas nuevas: el desplegable y la foto de fondo. La insignia de
+  actividad ahora se puede usar suelta y apagada.
+
+### Documentos actualizados
+
+`GLOSARIO.md` (desplegable, foto de fondo, filtro de rutas, circulitos de
+técnica, velocímetro de esfuerzo).
+
+### Deuda o inconsistencias detectadas
+
+- La tarjeta de la ruta todavía escribe a mano el celeste del largo
+  (`text-cyan-300`) y usa `text-verde`, que no existe en los colores de la app,
+  para el «MAPA OFFLINE 100%».
+- Los filtros no se recuerdan al salir de la lista: vuelven a cero.
+
+---
+
 ## Sesión 2026-09-23 — El satelital baja al celular, y la app deja de consultar en cada pantalla
 
 ### Estado al inicio

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { borrarElMapaDelSector, mostrarPeso } from "@/lib/mapas/descarga";
 import { claveDeMapa, NOMBRE_DEL_TIPO, type TipoDeMapa } from "@/lib/offline/mapas";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { FotoDeFondo } from "@/components/ui/foto-de-fondo";
 import { Boton } from "@/components/ui/boton";
 import { useDialogos } from "@/components/ui/dialogos";
 
@@ -75,15 +75,7 @@ export default function PantallaDeMapas() {
 
   return (
     <>
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <Image
-          src="/fondo-mapas-sierras.webp"
-          alt="Fondo de mapas"
-          fill
-          className="object-cover object-center opacity-30"
-          priority
-        />
-      </div>
+      <FotoDeFondo src="/fondo-mapas-sierras.webp" />
       <div className="flex flex-col gap-3 max-w-2xl mx-auto p-4 md:p-6 lg:p-8 w-full relative z-10">
         <div>
         <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
