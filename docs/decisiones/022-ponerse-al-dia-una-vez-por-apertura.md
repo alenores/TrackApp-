@@ -42,6 +42,12 @@ navegación.
 `lib/offline/puesta-al-dia.ts`, con su prueba. Las pantallas no la llaman
 directamente: la usan a través de `useDatosDeLaApp`.
 
+**La navegación no usa `useDatosDeLaApp`.** Lee lo guardado con
+`usePaqueteGuardado`, que nunca se pone al día. Y la puesta al día se niega a
+correr si la navegación está abierta, por si alguien lo olvida. Hasta el
+2026-09-24 esto estaba escrito pero no se cumplía: al reabrir la app parada en
+la navegación, la puesta al día arrancaba desde ahí.
+
 ## Lo que queda abierto
 
 - **Botón de «sincronizar a mano»: no, por ahora** (decidió Ale el 2026-09-24).

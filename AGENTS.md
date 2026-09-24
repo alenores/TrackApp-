@@ -228,6 +228,15 @@ Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
 ### El resto
 
+- **El mapa libre es navegación.** Las mismas reglas: lee solo lo guardado,
+  nunca se pone al día, nunca se recarga, y queda lista sola al abrir la app.
+- **La navegación no se pone al día.** Lee con `usePaqueteGuardado`, nunca con
+  `useDatosDeLaApp`, y la puesta al día se niega a correr con la navegación
+  abierta. Pasó el 2026-09-24: estaba escrito y no se cumplía.
+- **Lo de `public/` va en la precarga**: se guarda al instalar y nunca pregunta
+  a internet, aunque las reglas de `next.config.ts` digan otra cosa. Para
+  saber qué hace el motor offline se mira el `sw.js` publicado, no solo las
+  reglas.
 - **La pantalla de navegar lee de lo guardado en el celular, nunca de internet.**
   Internet sirve para actualizar lo guardado, no para dibujar esa pantalla.
 - **Lo que se descarga tiene que poder borrarse.** Si el usuario quita algo de

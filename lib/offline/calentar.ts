@@ -62,6 +62,7 @@ export function pantallasParaCalentar(paquete: Paquete): PantallaParaCalentar[] 
 
   return [
     ...LAS_DE_SIEMPRE.map(deEntrada),
+    delCerro("/mapa-libre"),
     ...paquete.zonas.map((zona) => deEntrada(`/zonas/${zona.id}`)),
     ...paquete.rutas.flatMap((ruta) => [
       delCerro(`/rutas/${ruta.id}`),

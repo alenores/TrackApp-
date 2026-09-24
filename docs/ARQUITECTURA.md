@@ -38,7 +38,9 @@ Dos guardados, separados por una razón de tamaño:
 La puesta al día es **automática y muda**: sin cartel de «hay novedades», sin
 botón de actualizar, sin preguntar nada. Dos límites la protegen:
 
-1. Solo ocurre con señal, y **nunca durante una navegación**.
+1. Solo ocurre con señal, y **nunca durante una navegación**. La navegación
+   lee con `usePaqueteGuardado`, nunca con `useDatosDeLaApp`, y la puesta al
+   día se niega a correr con la navegación abierta.
 2. Si falla a mitad de camino, **queda lo que había**. Una actualización
    incompleta nunca puede romper un paquete que ya servía.
 
@@ -53,6 +55,16 @@ esa fecha es más nueva que la del paquete se baja algo.
 Toda lista se trae **por tandas y ordenada por una columna única**, y se compara
 lo que llegó contra lo que informa la base. La base devuelve como máximo 1000
 filas por respuesta y no avisa: responde bien, con la lista cortada.
+
+### Lo que viene guardado con la app
+
+Todo lo que está en `public/` —letras, íconos y motor del mapa, fotos de fondo,
+íconos de la app— entra en la **precarga**: se guarda al instalar la app y se
+usa siempre desde el celular, sin preguntar a internet. Se renueva solo con una
+versión nueva de la app. La precarga contesta antes que cualquier regla de
+`runtimeCaching` en `next.config.ts`: para saber qué hace el motor offline con
+un archivo, primero hay que fijarse si está en la precarga del `sw.js` que se
+publica.
 
 ### Lo que el celular no puede recordar solo
 

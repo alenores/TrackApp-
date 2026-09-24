@@ -126,6 +126,14 @@ type MapaProps = {
   miPosicion?: PosicionEnElMapa | null;
   /** A qué encuadrar al abrir. */
   encuadre?: Rectangulo | null;
+  /**
+   * `true` para encuadrar una sola vez, al abrir.
+   *
+   * Sin esto el mapa vuelve al encuadre cada vez que cambian las líneas. En el
+   * mapa libre eso haría perder lo que se está mirando al prender o apagar
+   * una ruta.
+   */
+  encuadrarSoloAlAbrir?: boolean;
   /** El pedazo de mapa que se está definiendo ahora. */
   rectangulo?: Rectangulo | null;
   /**
@@ -283,6 +291,7 @@ export function Mapa({
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
+  encuadrarSoloAlAbrir = false,
   rectangulo = null,
   rectangulos = [],
   referencia = null,
@@ -689,7 +698,12 @@ export function Mapa({
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
       setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas));
 
-      mapa.setPaintProperty("ruta-linea", "line-color", colores.linea);
+      // Cada ruta puede traer su color; el del modo es solo para la que no.
+      mapa.setPaintProperty("ruta-linea", "line-color", [
+        "coalesce",
+        ["get", "color"],
+        colores.linea,
+      ]);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
       mapa.setPaintProperty(
         "mi-posicion-punto",
@@ -752,6 +766,7 @@ export function Mapa({
   }, [modo, tipoDeFondo, conCurvas]);
 
   // La línea de la ruta.
+  const yaEncuadroRef = useRef(false);
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa) return;
@@ -759,13 +774,14 @@ export function Mapa({
     const poner = () => {
       ponerDatos(mapa, FUENTE_RUTA, recorrido ?? VACIO);
 
-      if (encuadre) {
+      if (encuadre && !(encuadrarSoloAlAbrir && yaEncuadroRef.current)) {
         mapa.fitBounds(limitesDe(encuadre), { padding: 28, animate: false });
+        yaEncuadroRef.current = true;
       }
     };
 
     cuandoEsteListo(poner);
-  }, [recorrido, encuadre]);
+  }, [recorrido, encuadre, encuadrarSoloAlAbrir]);
 
   // Los puntos y trazos.
   useEffect(() => {

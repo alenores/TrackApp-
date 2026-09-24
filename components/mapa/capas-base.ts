@@ -50,7 +50,8 @@ export const FUENTE_DEL_FONDO = "fondo";
  * Las letras y los íconos del mapa viajan **dentro de la app**.
  *
  * Si se pidieran a internet, un mapa sin señal quedaría sin un solo nombre
- * escrito. Al estar acá, entran en el paquete que el celular guarda solo.
+ * escrito. Viven en `public/`, así que entran en la precarga: se guardan al
+ * instalar la app y se leen siempre del celular, también navegando.
  */
 const LETRAS = "/fuentes-del-mapa/{fontstack}/{range}.pbf";
 const ICONOS_DE_SOL = "/iconos-del-mapa/light";
