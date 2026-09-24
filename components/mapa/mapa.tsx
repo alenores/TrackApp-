@@ -154,6 +154,14 @@ type MapaProps = {
   /** Se llama cuando el usuario cambia el tipo de fondo. */
   alCambiarFondo?: (fondo: TipoDeFondo) => void;
   /**
+   * Qué mapas hay bajados para lo que muestra esta pantalla.
+   *
+   * El botón Simple/Satelital muestra solo esos: sin ninguno no aparece, y así
+   * se ve de un vistazo que no hay mapa bajado; con uno solo muestra ese. En
+   * vivo están siempre los dos.
+   */
+  fondosDisponibles?: TipoDeFondo[];
+  /**
    * `true` mientras el usuario está marcando el rectángulo sobre el mapa.
    *
    * Arrastrar deja de mover el mapa y pasa a dibujar. Es para la computadora,
@@ -276,6 +284,7 @@ export function Mapa({
   forzarCentradoEn,
   fondoInicial = "dibujo",
   alCambiarFondo,
+  fondosDisponibles,
   dibujando = false,
   alDibujar,
   marcandoPunto = false,
@@ -359,8 +368,15 @@ export function Mapa({
    * esperando o si se rompió algo, y quien tiene que arreglarlo tampoco.
    */
   const [armado, setArmado] = useState(false);
-  /** Dibujo o foto del terreno. La foto solo existe con internet. */
-  const [tipoDeFondo, setTipoDeFondo] = useState<TipoDeFondo>(fondoInicial);
+  /** Dibujo o foto del terreno: el que eligió el usuario. */
+  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(fondoInicial);
+  const opcionesDeFondo: TipoDeFondo[] = enVivo
+    ? ["dibujo", "satelital"]
+    : (fondosDisponibles ?? []);
+  /** El que se ve: el elegido si está bajado; si no, el que haya. */
+  const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
+    ? tipoElegido
+    : (opcionesDeFondo[0] ?? "dibujo");
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -1205,17 +1221,25 @@ export function Mapa({
       ) : null}
 
       {/*
-        Dibujo o foto del terreno. Solo aparece con el mapa en vivo: la foto no
-        se descarga nunca, así que sin internet no hay nada que elegir.
+        Simple o satelital. Solo los que hay: sin ninguno bajado el botón no
+        aparece, y con uno solo muestra ese.
       */}
-      {enVivo ? (
-        <div className="absolute left-3 top-3 flex h-14 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+      {opcionesDeFondo.length > 0 ? (
+        <div
+          className={[
+            // Navegando la zona tocable mínima es más grande: se usa caminando.
+            pantallaCompleta ? "h-16" : "h-14",
+            "absolute left-3 top-3 flex overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]",
+          ].join(" ")}
+        >
           {(
             [
               ["dibujo", "Simple"],
-              ["satelital", "Satélite"],
+              ["satelital", "Satelital"],
             ] as const
-          ).map(([cual, etiqueta]) => (
+          )
+            .filter(([cual]) => opcionesDeFondo.includes(cual))
+            .map(([cual, etiqueta]) => (
             <button
               key={cual}
               type="button"
@@ -1238,7 +1262,7 @@ export function Mapa({
       ) : null}
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
-      {enVivo && tipoDeFondo === "satelital" ? (
+      {opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
           {QUIEN_HIZO_LA_FOTO}
         </p>

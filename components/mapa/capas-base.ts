@@ -3,7 +3,10 @@ import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
 import { ajustarParaLaMontana } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
-import { DIRECCION_DE_LAS_TESELAS } from "@/lib/mapas/protocolo";
+import {
+  DIRECCION_DE_LA_FOTO_GUARDADA,
+  DIRECCION_DE_LAS_TESELAS,
+} from "@/lib/mapas/protocolo";
 import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
 import type { Modo } from "@/lib/modo";
 
@@ -101,18 +104,17 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
     glyphs: direccionCompleta(LETRAS),
     sprite: iconosDelFondo(modo),
     sources: {
-      // La foto solo existe con internet: nunca se baja.
-      ...(enVivo
-        ? {
-            [FUENTE_SATELITAL]: {
-              type: "raster" as const,
-              tiles: [FOTO_DEL_TERRENO],
-              tileSize: 256,
-              maxzoom: 17,
-              attribution: QUIEN_HIZO_LA_FOTO,
-            },
-          }
-        : {}),
+      /*
+        La foto: en vivo, de internet; si no, del celular y de ningún otro lado.
+        Donde no se bajó el satelital la foto viene vacía y se ve el fondo liso.
+      */
+      [FUENTE_SATELITAL]: {
+        type: "raster" as const,
+        tiles: [enVivo ? FOTO_DEL_TERRENO : DIRECCION_DE_LA_FOTO_GUARDADA],
+        tileSize: 256,
+        maxzoom: enVivo ? 17 : ACERCAMIENTO_MAXIMO,
+        attribution: QUIEN_HIZO_LA_FOTO,
+      },
       [FUENTE_DEL_FONDO]: {
         type: "vector",
         tiles: [enVivo ? direccionCompleta(EN_VIVO) : DIRECCION_DE_LAS_TESELAS],
@@ -160,6 +162,15 @@ export function capasDelFondo(
       id: "foto-del-terreno",
       type: "raster",
       source: FUENTE_SATELITAL,
+      /*
+        El velo: la foto baja su contraste para que las curvas de nivel se
+        recorten encima. Sigue al modo: se aclara con sol y se oscurece de
+        noche (decisión 013). Los valores finos quedan para la prueba al sol.
+      */
+      paint:
+        modo === "sol"
+          ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
+          : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 },
     },
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];

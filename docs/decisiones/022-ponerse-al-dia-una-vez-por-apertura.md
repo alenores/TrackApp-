@@ -49,6 +49,8 @@ directamente: la usan a través de `useDatosDeLaApp`.
 - **Una app que queda abierta días enteros** no se vuelve a poner al día hasta
   que se reabre. Si hace falta, se agrega una puesta al día al volver a la app
   después de varias horas. Lo decide Ale.
-- **La otra mitad de la lentitud:** las pantallas de entrada (inicio, listas y
-  zonas) le piden al servidor que se las arme cada vez, con hasta tres segundos
-  de espera. No se tocó: es el motor offline y hay que probarlo en modo avión.
+- ~~La otra mitad de la lentitud~~ **Resuelto el 2026-09-24:** las pantallas de
+  entrada (inicio, listas y zonas) esperaban hasta tres segundos al servidor en
+  cada toque. Ahora, como la ficha y la navegación, abren desde lo guardado y
+  traen la versión nueva por detrás: se ve en la próxima apertura. Todas las
+  pantallas andan igual.

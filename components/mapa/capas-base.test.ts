@@ -81,11 +81,14 @@ describe("la receta del fondo", () => {
 
   it("todas las capas leen de la fuente que la receta declara", () => {
     const estilo = estiloDelMapa("noche");
-    expect(Object.keys(estilo.sources)).toEqual([FUENTE_DEL_FONDO]);
+    const declaradas = Object.keys(estilo.sources);
+    expect(declaradas.sort()).toEqual([FUENTE_DEL_FONDO, FUENTE_SATELITAL].sort());
 
-    for (const capa of capasDelFondo("noche")) {
-      const fuente = (capa as { source?: string }).source;
-      expect(fuente).toBe(FUENTE_DEL_FONDO);
+    for (const tipo of ["dibujo", "satelital"] as const) {
+      for (const capa of capasDelFondo("noche", tipo)) {
+        const fuente = (capa as { source?: string }).source;
+        expect(declaradas).toContain(fuente);
+      }
     }
   });
 
@@ -99,15 +102,18 @@ describe("la receta del fondo", () => {
 });
 
 describe("la foto del terreno", () => {
-  it("solo existe con el mapa en vivo, nunca en lo que se descarga", () => {
-    // Si estuviera en el estilo de lo guardado, navegando el mapa saldría a
-    // pedirla a internet, que es lo único que esta app no puede hacer.
-    expect(Object.keys(estiloDelMapa("noche", false).sources)).toEqual([
-      FUENTE_DEL_FONDO,
-    ]);
-    expect(Object.keys(estiloDelMapa("noche", true).sources)).toContain(
-      FUENTE_SATELITAL,
-    );
+  it("navegando sale solo del celular, nunca de internet", () => {
+    // Si el estilo de lo guardado tuviera una dirección de internet, navegando
+    // el mapa saldría a pedirla, que es lo único que esta app no puede hacer.
+    const deLoGuardado = estiloDelMapa("noche", false).sources[FUENTE_SATELITAL];
+    expect(deLoGuardado).toBeDefined();
+    const direcciones = (deLoGuardado as { tiles: string[] }).tiles;
+    expect(direcciones.every((cada) => cada.startsWith("foto-guardada://"))).toBe(true);
+
+    const enVivo = estiloDelMapa("noche", true).sources[FUENTE_SATELITAL] as {
+      tiles: string[];
+    };
+    expect(enVivo.tiles[0]).toMatch(/^https:/);
   });
 
   it("sobre la foto van solo los nombres, no el dibujo entero", () => {

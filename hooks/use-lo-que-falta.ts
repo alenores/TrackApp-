@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useHaySenal } from "@/hooks/use-hay-senal";
-import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import {
   mapasPerdidos,
   rutasSinMapa,
   type MapaPerdido,
   type RutaSinMapa,
 } from "@/lib/mapas/lo-que-falta";
-import { losSacadosAProposito } from "@/lib/offline/sacados-a-proposito";
+import { loSacasteVos } from "@/lib/offline/sacados-a-proposito";
+import { claveDeMapa } from "@/lib/offline/mapas";
 import type { Paquete } from "@/lib/offline/paquete";
 import {
   traerLosMapasQueTenias,
@@ -46,6 +47,11 @@ type LoQueDijoLaBase =
 export function useLoQueFalta(paquete: Paquete | null): LoQueFalta {
   const haySenal = useHaySenal();
   const conMapa = useSectoresConMapaBajado();
+  const bajados = useMapasBajados();
+  const mapasEnElCelular = useMemo(
+    () => new Set(bajados.map((cada) => claveDeMapa(cada.sectorId, cada.tipo))),
+    [bajados],
+  );
   const [laBase, setLaBase] = useState<LoQueDijoLaBase>({ paso: "buscando" });
 
   useEffect(() => {
@@ -85,15 +91,14 @@ export function useLoQueFalta(paquete: Paquete | null): LoQueFalta {
      *
      * Contarlos sería ofrecerte bajar de nuevo justo lo que decidiste tirar.
      */
-    const sacados = new Set(losSacadosAProposito());
-    const tenias = laBase.mapas.filter((cada) => !sacados.has(cada.sectorId));
+    const tenias = laBase.mapas.filter((cada) => !loSacasteVos(cada.sectorId, cada.tipo));
 
-    const perdidos = mapasPerdidos(tenias, paquete.sectores, conMapa);
+    const perdidos = mapasPerdidos(tenias, paquete.sectores, mapasEnElCelular);
 
     return {
       perdidos,
       rutas: rutasSinMapa(paquete.rutas, paquete.sectores, conMapa, perdidos),
       aviso: null,
     };
-  }, [paquete, laBase, conMapa]);
+  }, [paquete, laBase, conMapa, mapasEnElCelular]);
 }

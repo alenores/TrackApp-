@@ -198,9 +198,12 @@ const withPWA = withPWAInit({
        * Pedido interno de las pantallas de entrada: inicio, lista de rutas,
        * zonas y el detalle de una zona.
        *
-       * **Primero la red, con poca paciencia.** Son la puerta por la que entra
-       * una versión nueva al celular. Pasarlas a «primero lo guardado» congela
-       * el teléfono en la versión vieja durante meses.
+       * **Lo guardado al instante, y la versión nueva por detrás.** Antes
+       * esperaban hasta tres segundos a la red en cada toque, y las del cerro
+       * no: la app andaba distinto según la pantalla (decisión 022). Ahora
+       * todas abren desde lo guardado. No congela la versión: cada apertura
+       * trae la nueva por detrás y la próxima vez ya se ve. Lo que no está
+       * guardado se pide a la red, como antes.
        */
       urlPattern: ({
         request,
@@ -214,10 +217,9 @@ const withPWA = withPWAInit({
         sameOrigin &&
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
         (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
-      handler: "NetworkFirst",
+      handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA_INTERNO,
-        networkTimeoutSeconds: SEGUNDOS_DE_ESPERA,
         expiration: {
           maxEntries: 256,
           maxAgeSeconds: OFFLINE_MEDIA_MAX_AGE_SECONDS,
@@ -227,14 +229,13 @@ const withPWA = withPWAInit({
       },
     },
     {
-      /** El documento de las pantallas de entrada. */
+      /** El documento de las pantallas de entrada: igual que su pedido interno. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
         (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
-      handler: "NetworkFirst",
+      handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA,
-        networkTimeoutSeconds: SEGUNDOS_DE_ESPERA,
         expiration: {
           maxEntries: 256,
           maxAgeSeconds: OFFLINE_MEDIA_MAX_AGE_SECONDS,

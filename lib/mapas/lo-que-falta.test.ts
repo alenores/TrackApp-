@@ -63,14 +63,14 @@ describe("los mapas que se perdieron", () => {
     const perdidos = mapasPerdidos(
       [tenias(10), tenias(11)],
       [sector(10, -64.9), sector(11, -64.7)],
-      new Set([11]),
+      new Set(["11:simple"]),
     );
 
     expect(perdidos.map((cada) => cada.sector.id)).toEqual([10]);
   });
 
   it("no inventa una pérdida cuando el mapa sigue en el celular", () => {
-    expect(mapasPerdidos([tenias(10)], [sector(10, -64.9)], new Set([10]))).toEqual(
+    expect(mapasPerdidos([tenias(10)], [sector(10, -64.9)], new Set(["10:simple"]))).toEqual(
       [],
     );
   });
@@ -89,6 +89,19 @@ describe("los mapas que se perdieron", () => {
 
     expect(perdidos[0].tipo).toBe("satelital");
     expect(perdidos[0].acercamientoMaximo).toBe(14);
+  });
+
+  it("tener el simple no tapa haber perdido el satelital del mismo sector", () => {
+    const perdidos = mapasPerdidos(
+      [
+        { sectorId: 10, tipo: "simple", acercamientoMaximo: 15 },
+        { sectorId: 10, tipo: "satelital", acercamientoMaximo: 15 },
+      ],
+      [sector(10, -64.9)],
+      new Set(["10:simple"]),
+    );
+
+    expect(perdidos.map((cada) => cada.tipo)).toEqual(["satelital"]);
   });
 });
 

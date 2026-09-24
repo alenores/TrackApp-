@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   bajarElMapaDelSector,
   borrarElMapaDelSector,
+  teselasDelMapa,
   borrarTodosLosMapasDelCelular,
   type FuenteDeTeselas,
   PESO_APROXIMADO_DE_UN_PEDAZO,
@@ -135,7 +136,7 @@ describe("bajar el mapa de un sector", () => {
     expect(resultado.estado).toBe("listo");
     expect(sectoresConMapaBajado().has(UNO.id)).toBe(true);
 
-    const anotado = mapaDelSector(UNO.id);
+    const anotado = mapaDelSector(UNO.id, "simple");
     expect(anotado?.tipo).toBe("simple");
     expect(anotado?.acercamientoMaximo).toBe(ACERCAMIENTO_MAXIMO);
     expect(anotado?.bytes).toBeGreaterThan(0);
@@ -189,7 +190,7 @@ describe("bajar el mapa de un sector", () => {
 
     expect(resultado.estado).toBe("incompleta");
     expect(sectoresConMapaBajado().has(UNO.id)).toBe(false);
-    expect(mapaDelSector(UNO.id)).toBeNull();
+    expect(mapaDelSector(UNO.id, "simple")).toBeNull();
   });
 
   it("cuando se corta, dice el motivo de verdad y no «no se pudo»", async () => {
@@ -330,18 +331,27 @@ describe("borrar el mapa de un sector", () => {
 
     await borrarElMapaDelSector(UNO.id, [UNO]);
 
-    expect(losSacadosAProposito()).toContain(UNO.id);
+    expect(losSacadosAProposito()).toEqual([{ sectorId: UNO.id, tipo: null }]);
   });
 
   it("volver a bajarlo limpia esa anotación", async () => {
     // Si quedara puesta, el próximo aviso a la base borraría la anotación del
     // mapa que el usuario acaba de bajar.
     await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+    await borrarElMapaDelSector(UNO.id, [UNO], "simple");
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
+
+    expect(losSacadosAProposito()).toEqual([]);
+  });
+
+  it("si sacaste los dos y volvés a bajar uno, el otro sigue pendiente", async () => {
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
     await borrarElMapaDelSector(UNO.id, [UNO]);
 
     await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
 
-    expect(losSacadosAProposito()).not.toContain(UNO.id);
+    expect(losSacadosAProposito()).toEqual([{ sectorId: UNO.id, tipo: "satelital" }]);
   });
 
   it("cerrar sesión se lleva también los pendientes de la cuenta anterior", async () => {
@@ -369,7 +379,7 @@ describe("las fotos de las anotaciones viajan con el mapa", () => {
     if (resultado.estado !== "listo") return;
 
     expect(resultado.fotos).toMatchObject({ bajadas: 1, total: 1, motivo: null });
-    expect(mapaDelSector(UNO.id)?.fotos).toEqual(["https://foto/a.webp"]);
+    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual(["https://foto/a.webp"]);
   });
 
   it("solo baja las del sector que se está bajando", async () => {
@@ -385,7 +395,7 @@ describe("las fotos de las anotaciones viajan con el mapa", () => {
       ],
     });
 
-    expect(mapaDelSector(UNO.id)?.fotos).toEqual(["https://foto/de-uno.webp"]);
+    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual(["https://foto/de-uno.webp"]);
   });
 
   it("una foto que no entra NO traba el mapa: el sector queda bajado igual", async () => {
@@ -404,7 +414,7 @@ describe("las fotos de las anotaciones viajan con el mapa", () => {
     // Pero no se dice que la foto está: eso es justo lo que no puede pasar.
     expect(resultado.fotos.bajadas).toBe(0);
     expect(resultado.fotos.motivo).toBeTruthy();
-    expect(mapaDelSector(UNO.id)?.fotos).toEqual([]);
+    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual([]);
   });
 
   it("sacar un sector también libera sus fotos", async () => {
@@ -480,7 +490,7 @@ describe("el mapa satelital", () => {
     });
 
     expect(resultado.estado).toBe("listo");
-    expect(mapaDelSector(UNO.id)?.tipo).toBe("satelital");
+    expect(mapaDelSector(UNO.id, "satelital")?.tipo).toBe("satelital");
 
     // Sin el dibujo no hay nombres sobre la foto, y sin relieve no hay curvas.
     const fotos = teselasDeLaFoto(UNO.rectangulo).map(claveDeTesela);
@@ -502,27 +512,33 @@ describe("el mapa satelital", () => {
     });
 
     expect(resultado.estado).toBe("incompleta");
-    expect(mapaDelSector(UNO.id)).toBeNull();
+    expect(mapaDelSector(UNO.id, "satelital")).toBeNull();
   });
 
-  it("pasar de satelital a simple libera el espacio de la foto", async () => {
+  it("un sector puede tener los dos, y bajar el satelital sobre el simple solo trae la foto", async () => {
+    const { fuente: origen, pedidas } = fuente();
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: origen });
+    pedidas.length = 0;
+    await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
+
+    expect(mapaDelSector(UNO.id, "simple")).not.toBeNull();
+    expect(mapaDelSector(UNO.id, "satelital")).not.toBeNull();
+    expect(pedidas.every((clave) => clave.startsWith("satelital/"))).toBe(true);
+    expect(pedidas.length).toBe(teselasDeLaFoto(UNO.rectangulo).length);
+  });
+
+  it("sacar el satelital deja el simple entero y libera solo la foto", async () => {
     const { fuente: origen } = fuente();
     const fotos = teselasDeLaFoto(UNO.rectangulo).map(claveDeTesela);
 
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: origen });
     await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
-    expect((await cualesEstanGuardadas(fotos)).size).toBe(fotos.length);
+    await borrarElMapaDelSector(UNO.id, [UNO, OTRO], "satelital");
 
-    const resultado = await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: origen,
-      todosLosSectores: [UNO, OTRO],
-    });
-
-    expect(resultado.estado).toBe("listo");
-    expect(mapaDelSector(UNO.id)?.tipo).toBe("simple");
+    expect(mapaDelSector(UNO.id, "satelital")).toBeNull();
+    expect(mapaDelSector(UNO.id, "simple")).not.toBeNull();
     expect((await cualesEstanGuardadas(fotos)).size).toBe(0);
-    // El dibujo y el relieve siguen: son el mapa simple.
     const delSimple = [
       ...teselasDelRectangulo(UNO.rectangulo),
       ...teselasDelRelieve(UNO.rectangulo),
@@ -530,17 +546,23 @@ describe("el mapa satelital", () => {
     expect((await cualesEstanGuardadas(delSimple)).size).toBe(delSimple.length);
   });
 
-  it("cambiar de tipo no se lleva la foto que usa el sector de al lado", async () => {
+  it("sacar el simple de un sector que tiene los dos no se lleva lo que usa el satelital", async () => {
+    const { fuente: origen } = fuente();
+
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: origen });
+    await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
+    await borrarElMapaDelSector(UNO.id, [UNO, OTRO], "simple");
+
+    const delSatelital = teselasDelMapa(UNO.rectangulo, "satelital").map(claveDeTesela);
+    expect((await cualesEstanGuardadas(delSatelital)).size).toBe(delSatelital.length);
+  });
+
+  it("sacar un satelital no se lleva la foto que usa el sector de al lado", async () => {
     const { fuente: origen } = fuente();
 
     await bajarElMapaDelSector({ sector: UNO, tipo: "satelital", fuente: origen });
     await bajarElMapaDelSector({ sector: OTRO, tipo: "satelital", fuente: origen });
-    await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: origen,
-      todosLosSectores: [UNO, OTRO],
-    });
+    await borrarElMapaDelSector(UNO.id, [UNO, OTRO], "satelital");
 
     const fotosDelOtro = teselasDeLaFoto(OTRO.rectangulo).map(claveDeTesela);
     expect((await cualesEstanGuardadas(fotosDelOtro)).size).toBe(fotosDelOtro.length);

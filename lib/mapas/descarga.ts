@@ -24,7 +24,6 @@ import {
 } from "@/lib/mapas/teselas";
 import {
   anotarMapaBajado,
-  mapaDelSector,
   mapasBajados,
   olvidarMapaDeSector,
   olvidarTodosLosMapas,
@@ -67,8 +66,9 @@ import type { Anotacion, Sector } from "@/types/database";
  *
  * El **satelital** es el simple más la foto: baja el mismo dibujo —de ahí
  * salen los nombres que van encima de la foto—, el mismo relieve y, además,
- * los pedazos de la foto. Un sector tiene un solo mapa a la vez (decisión
- * 012): cambiar de uno al otro es volver a bajarlo con el otro tipo.
+ * los pedazos de la foto. Un sector puede tener uno, el otro o los dos: bajar
+ * el satelital de un sector que ya tiene el simple solo trae la foto, porque
+ * el resto ya está.
  *
  * Y bajan también **las fotos de las anotaciones de ese sector**, que es lo
  * único pesado que llevan. Esas van por otro camino: si una foto no entra, el
@@ -147,14 +147,6 @@ export type PedidoDeDescarga = {
   /** Las anotaciones de este sector: sus fotos bajan junto con el mapa. */
   anotaciones?: Anotacion[];
   acercamientoMaximo?: number;
-  /**
-   * Todos los sectores, para limpiar al cambiar de tipo.
-   *
-   * Pasar de satelital a simple deja de usar los pedazos de la foto, y lo que
-   * se descarga tiene que poder borrarse de verdad. Sin esta lista no se puede
-   * saber si otro sector satelital los sigue usando, así que no se toca nada.
-   */
-  todosLosSectores?: Sector[];
   avisarAvance?: (avance: AvanceDeDescarga) => void;
   senal?: AbortSignal;
 };
@@ -184,7 +176,6 @@ export async function bajarElMapaDelSector({
   fuente,
   anotaciones = [],
   acercamientoMaximo = ACERCAMIENTO_MAXIMO,
-  todosLosSectores,
   avisarAvance,
   senal = new AbortController().signal,
 }: PedidoDeDescarga): Promise<ResultadoDeDescarga> {
@@ -306,8 +297,6 @@ export async function bajarElMapaDelSector({
     senal,
   });
 
-  const tipoAnterior = mapaDelSector(sector.id)?.tipo ?? null;
-
   const anotado = anotarMapaBajado({
     sectorId: sector.id,
     tipo,
@@ -332,27 +321,12 @@ export async function bajarElMapaDelSector({
    * puede borrar. Si este aviso no llega, el mapa igual está bajado: la próxima
    * apertura con señal lo pone al día sola. Por eso no frena nada ni se muestra.
    */
-  olvidarElSacado(sector.id);
+  olvidarElSacado(sector.id, tipo);
   void anotarQueBajasteElMapa({
     sectorId: sector.id,
     tipo,
     acercamientoMaximo,
   });
-
-  /**
-   * Si el sector cambió de tipo, lo que dejó de usarse se va.
-   *
-   * Recién ahora, con el nuevo ya anotado: si esto falla, lo peor que queda es
-   * espacio ocupado de gusto, nunca un sector sin mapa. Por eso no cambia el
-   * resultado.
-   */
-  if (tipoAnterior && tipoAnterior !== tipo && todosLosSectores) {
-    try {
-      await borrarTeselasQueSobran(clavesQueSiguenHaciendoFalta(todosLosSectores));
-    } catch {
-      // Queda espacio ocupado hasta el próximo borrado. El mapa nuevo está entero.
-    }
-  }
 
   if (senal.aborted) return { estado: "cancelada" };
 
@@ -413,8 +387,11 @@ export type ResultadoDeBorrado = { ok: true } | { ok: false; motivo: string };
 export async function borrarElMapaDelSector(
   sectorId: number,
   todosLosSectores: Sector[],
+  /** Cuál de los dos. Sin tipo se sacan los dos. */
+  tipo?: TipoDeMapa,
 ): Promise<ResultadoDeBorrado> {
-  olvidarMapaDeSector(sectorId);
+  olvidarMapaDeSector(sectorId, tipo);
+  const cual = tipo ?? null;
 
   /**
    * Y la base tiene que enterarse de que lo sacaste vos.
@@ -424,9 +401,9 @@ export async function borrarElMapaDelSector(
    * señal quedaría en la base como un mapa que todavía tenías, y la próxima
    * apertura te diría que lo perdiste y te ofrecería bajar lo que tiraste.
    */
-  anotarQueLoSacasteVos(sectorId);
-  void olvidarQueTeniasElMapa(sectorId).then((resultado) => {
-    if (resultado.ok) olvidarElSacado(sectorId);
+  anotarQueLoSacasteVos(sectorId, cual);
+  void olvidarQueTeniasElMapa(sectorId, cual).then((resultado) => {
+    if (resultado.ok) olvidarElSacado(sectorId, cual);
   });
 
   try {

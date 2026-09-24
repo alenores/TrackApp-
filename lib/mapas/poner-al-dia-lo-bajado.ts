@@ -1,4 +1,4 @@
-import { mapasBajados } from "@/lib/offline/mapas";
+import { claveDeMapa, mapasBajados } from "@/lib/offline/mapas";
 import {
   losSacadosAProposito,
   olvidarElSacado,
@@ -40,22 +40,24 @@ export async function ponerAlDiaLoBajado(): Promise<ResultadoDePonerAlDia> {
   // es la anotación nueva, y anotarla después del aviso la deja en pie.
   let avisados = 0;
 
-  for (const sectorId of losSacadosAProposito()) {
-    const resultado = await olvidarQueTeniasElMapa(sectorId);
+  for (const { sectorId, tipo } of losSacadosAProposito()) {
+    const resultado = await olvidarQueTeniasElMapa(sectorId, tipo);
     if (!resultado.ok) continue;
 
-    olvidarElSacado(sectorId);
+    olvidarElSacado(sectorId, tipo);
     avisados += 1;
   }
 
   const loQueTenias = await traerLosMapasQueTenias();
   if (loQueTenias.clase === "no_se_pudo") return { anotadas: 0, avisados };
 
-  const yaAnotados = new Set(loQueTenias.mapas.map((cada) => cada.sectorId));
+  const yaAnotados = new Set(
+    loQueTenias.mapas.map((cada) => claveDeMapa(cada.sectorId, cada.tipo)),
+  );
   let anotadas = 0;
 
   for (const mapa of mapasBajados()) {
-    if (yaAnotados.has(mapa.sectorId)) continue;
+    if (yaAnotados.has(claveDeMapa(mapa.sectorId, mapa.tipo))) continue;
 
     const resultado = await anotarQueBajasteElMapa({
       sectorId: mapa.sectorId,

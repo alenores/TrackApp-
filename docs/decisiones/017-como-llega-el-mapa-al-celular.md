@@ -88,7 +88,7 @@ Una zona entera son 3292 pedazos. **Por eso existen los sectores.**
   salen los nombres sobre la foto), el mismo relieve y además los pedazos de la
   foto, hasta el mismo acercamiento. Medido sobre el Champaquí: 11 a 22 KB por
   pedazo. Se lee con su propio candado (`foto-guardada://`), que tampoco sale a
-  internet. **El selector en pantalla y cómo se ve navegando todavía no están**:
-  esperan el mockup aprobado.
+  internet. Desde el 2026-09-24 un sector puede tener los dos (decisión 012):
+  bajar el satelital sobre el simple solo trae la foto.
 - **Las curvas de nivel** entraron el 2026-09-21 por el mismo puente, apuntando
   a otro archivo: el del relieve. Ver decisión 013.

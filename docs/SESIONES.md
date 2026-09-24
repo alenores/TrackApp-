@@ -49,13 +49,27 @@ Ahora se hace una vez por apertura y después de guardar algo → `decisiones/02
 - La prueba de los archivos del motor offline solo pasa después de compilar,
   porque revisa archivos que genera la compilación.
 
+### Segunda parte (2026-09-24), por pedido de Ale, sin mockup
+
+- «Básico» retirado: el botón dice **Simple** y **Satelital**.
+- **Un sector puede tener los dos mapas** (decisión 012 cambiada). Se baja cada
+  uno por separado desde el sector, desde la ruta y desde el inicio; se saca
+  cada uno desde «Mapas descargados».
+- Navegando, el botón Simple/Satelital muestra solo lo que está bajado en los
+  sectores de la ruta; sin nada, no aparece. La foto se lee del celular.
+- Las pantallas de entrada ya no esperan al servidor: todas abren desde lo
+  guardado (decisión 022).
+
 ### Pendientes para la próxima
 
-1. **Mockup del satelital**: dónde se elige simple o satelital al bajar, cómo se
-   ve navegando, el botón de curvas y el velo sobre la foto (decisión 013).
-2. Qué se ve navegando cuando la ruta cruza un sector simple y uno satelital.
-3. Botón de sincronizar a mano: sí o no (decisión 022).
-4. La otra mitad de la lentitud: las pantallas de entrada esperan al servidor.
+1. **Aplicar en la base** `scripts/supabase-mapas-bajados-dos-tipos.sql`: la
+   base de TrackApp no está conectada a esta sesión.
+2. Probar en el celular con modo avión: el satelital navegando y las pantallas
+   de entrada sin señal.
+3. Botón para apagar las curvas sobre la foto (decisión 013) y valores finos
+   del velo, con la prueba al sol.
+4. Botón de sincronizar a mano: sí o no (decisión 022).
+5. Crear una ruta trae todos los sectores sin tope (regla de las 1000 filas).
 
 ---
 

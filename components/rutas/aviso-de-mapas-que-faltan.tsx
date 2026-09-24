@@ -12,7 +12,7 @@ import {
 import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import { comoLista, sectoresDeLasRutas } from "@/lib/mapas/lo-que-falta";
 import type { MapaPerdido, RutaSinMapa } from "@/lib/mapas/lo-que-falta";
-import type { TipoDeMapa } from "@/lib/offline/mapas";
+import { NOMBRE_DEL_TIPO, TIPOS_DE_MAPA, type TipoDeMapa } from "@/lib/offline/mapas";
 import type { Anotacion, Sector } from "@/types/database";
 
 /**
@@ -70,13 +70,15 @@ export function AvisoDeMapasQueFaltan({
   const sectoresSinBajar = useMemo(() => sectoresDeLasRutas(rutas), [rutas]);
 
   const pesoDeLosPerdidos = perdidos.reduce(
-    (suma, cada) => suma + pesoAproximadoDelMapa(cada.sector.rectangulo),
+    (suma, cada) =>
+      suma + pesoAproximadoDelMapa(cada.sector.rectangulo, undefined, cada.tipo),
     0,
   );
-  const pesoDeLosNuevos = sectoresSinBajar.reduce(
-    (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo),
-    0,
-  );
+  const pesoDeLosNuevos = (tipo: TipoDeMapa) =>
+    sectoresSinBajar.reduce(
+      (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo, undefined, tipo),
+      0,
+    );
 
   const bajarEstos = async (pendientes: Pendiente[]) => {
     canceladorRef.current?.abort();
@@ -212,22 +214,28 @@ export function AvisoDeMapasQueFaltan({
           </div>
 
           {haySenal ? (
-            <Boton
-              variante="secundario"
-              anchoCompleto
-              disabled={enFila}
-              onClick={() =>
-                void bajarEstos(
-                  sectoresSinBajar.map((sector) => ({ sector, tipo: "simple" })),
-                )
-              }
-            >
-              {enFila
-                ? avanceEnPalabras(bajando)
-                : `Bajar ${unaSolaRuta ? "el mapa" : "los mapas"} que ${
-                    unaSolaRuta ? "falta" : "faltan"
-                  } · ${mostrarPeso(pesoDeLosNuevos)}`}
-            </Boton>
+            enFila ? (
+              <Boton variante="secundario" anchoCompleto disabled>
+                {avanceEnPalabras(bajando)}
+              </Boton>
+            ) : (
+              // El usuario elige: el simple, el satelital, o los dos tocando uno
+              // y después el otro.
+              <div className="grid grid-cols-2 gap-2">
+                {TIPOS_DE_MAPA.map((tipo) => (
+                  <Boton
+                    key={tipo}
+                    variante="secundario"
+                    anchoCompleto
+                    onClick={() =>
+                      void bajarEstos(sectoresSinBajar.map((sector) => ({ sector, tipo })))
+                    }
+                  >
+                    {`${NOMBRE_DEL_TIPO[tipo]} · ${mostrarPeso(pesoDeLosNuevos(tipo))}`}
+                  </Boton>
+                ))}
+              </div>
+            )
           ) : null}
         </Tarjeta>
       ) : null}

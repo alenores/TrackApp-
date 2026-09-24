@@ -35,8 +35,8 @@ import type { Anotacion, Sector } from "@/types/database";
 
 export type PasoDeLaDescarga =
   | { paso: "quieto" }
-  | { paso: "bajando"; resueltos: number; total: number }
-  | { paso: "fallo"; motivo: string; resueltos: number; total: number };
+  | { paso: "bajando"; tipo: TipoDeMapa; resueltos: number; total: number }
+  | { paso: "fallo"; tipo: TipoDeMapa; motivo: string; resueltos: number; total: number };
 
 const SIN_MAPAS: MapaDeSector[] = [];
 
@@ -61,7 +61,11 @@ export function useSectoresConMapaBajado(): Set<number> {
 
 export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
   const bajados = useMapasBajados();
-  const mapa = bajados.find((cada) => cada.sectorId === sector.id) ?? null;
+  // Un sector puede tener uno, el otro o los dos.
+  const mapas = useMemo(
+    () => bajados.filter((cada) => cada.sectorId === sector.id),
+    [bajados, sector.id],
+  );
 
   const [paso, setPaso] = useState<PasoDeLaDescarga>({ paso: "quieto" });
   /**
@@ -90,7 +94,7 @@ export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
       const cancelador = new AbortController();
       canceladorRef.current = cancelador;
 
-      setPaso({ paso: "bajando", resueltos: 0, total: 0 });
+      setPaso({ paso: "bajando", tipo, resueltos: 0, total: 0 });
       setFallaDeFotos(null);
 
       const resultado = await bajarElMapaDelSector({
@@ -100,7 +104,7 @@ export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
         anotaciones,
         senal: cancelador.signal,
         avisarAvance: ({ resueltos, total }) => {
-          if (montadoRef.current) setPaso({ paso: "bajando", resueltos, total });
+          if (montadoRef.current) setPaso({ paso: "bajando", tipo, resueltos, total });
         },
       });
 
@@ -109,6 +113,7 @@ export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
       if (resultado.estado === "incompleta") {
         setPaso({
           paso: "fallo",
+          tipo,
           motivo: resultado.motivo,
           resueltos: resultado.resueltos,
           total: resultado.total,
@@ -142,33 +147,37 @@ export function useMapaDelSector(sector: Sector, anotaciones: Anotacion[]) {
    * llevaría puesto el mapa del sector de al lado.
    */
   const sacar = useCallback(
-    async (todosLosSectores: Sector[]) => {
-      const resultado = await borrarElMapaDelSector(sector.id, todosLosSectores);
+    async (todosLosSectores: Sector[], tipo: TipoDeMapa) => {
+      const resultado = await borrarElMapaDelSector(sector.id, todosLosSectores, tipo);
       return resultado;
     },
     [sector],
   );
 
+  /**
+   * Bajar solo las fotos de anotación que se agregaron después del mapa.
+   *
+   * Los pedazos del mapa ya están: es solo la foto, y se anota en cada mapa del
+   * sector. Si no entra, se reintenta la próxima vez que se abra con señal.
+   */
   const bajarFotosSolo = useCallback(async () => {
-    if (!mapa) return;
+    if (mapas.length === 0) return;
     const cancelador = new AbortController();
-    
+
     const fotos = await bajarLasFotosDeLasAnotaciones({
       anotaciones: anotaciones.filter((cada) => cada.sectorId === sector.id),
       senal: cancelador.signal,
     });
 
-    if (fotos.motivo) {
-      return; // Falló silenciosamente, se reintentará luego
+    if (fotos.motivo) return;
+
+    for (const mapa of mapas) {
+      anotarMapaBajado({
+        ...mapa,
+        fotos: Array.from(new Set([...mapa.fotos, ...fotos.direcciones])),
+      });
     }
+  }, [sector.id, anotaciones, mapas]);
 
-    const fotosGuardadas = Array.from(new Set([...mapa.fotos, ...fotos.direcciones]));
-
-    anotarMapaBajado({
-      ...mapa,
-      fotos: fotosGuardadas,
-    });
-  }, [sector.id, anotaciones, mapa]);
-
-  return { mapa, paso, fallaDeFotos, bajar, bajarFotosSolo, cancelar, sacar };
+  return { mapas, paso, fallaDeFotos, bajar, bajarFotosSolo, cancelar, sacar };
 }
