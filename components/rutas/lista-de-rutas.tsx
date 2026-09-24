@@ -10,8 +10,10 @@ import {
   SIN_FILTROS,
   filtrarRutas,
   filtrosPuestos,
+  sinLoQueYaNoExiste,
   type FiltrosDeRutas as Filtros,
 } from "@/lib/rutas/filtros";
+import { useFiltrosDeRutas } from "@/hooks/use-filtros-de-rutas";
 
 type RutaListProps = {
   rutas: RutaResumen[];
@@ -70,7 +72,11 @@ export function ListaDeRutas({
   const [query, setQuery] = useState("");
 
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
-  const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS);
+  const [filtrosGuardados, setFiltros] = useFiltrosDeRutas();
+  const filtros = useMemo(
+    () => sinLoQueYaNoExiste(filtrosGuardados, zonas),
+    [filtrosGuardados, zonas],
+  );
   const cerrarFiltros = useCallback(() => setFiltrosAbiertos(false), []);
 
   const closeSearch = useCallback((fromPopState = false) => {

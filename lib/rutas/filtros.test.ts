@@ -6,6 +6,7 @@ import {
   filtrosPuestos,
   leerKm,
   problemaDelLargo,
+  sinLoQueYaNoExiste,
   type FiltrosDeRutas,
 } from "@/lib/rutas/filtros";
 import type { RutaResumen, Zona } from "@/types/database";
@@ -141,5 +142,12 @@ describe("filtrosPuestos", () => {
     const sinKayak = puestos[1].sacar(filtros);
     expect(sinKayak.actividades).toEqual(["trekking"]);
     expect(sinKayak.zonaId).toBe(1);
+  });
+});
+
+describe("sinLoQueYaNoExiste", () => {
+  it("ignora una zona recordada que ya no está", () => {
+    expect(sinLoQueYaNoExiste(con({ zonaId: 99 }), [zonaNorte]).zonaId).toBeNull();
+    expect(sinLoQueYaNoExiste(con({ zonaId: 1 }), [zonaNorte]).zonaId).toBe(1);
   });
 });

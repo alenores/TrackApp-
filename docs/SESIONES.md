@@ -32,6 +32,10 @@ Con mockup aprobado por Ale:
   queda como estaba.
 - Piezas compartidas nuevas: el desplegable y la foto de fondo. La insignia de
   actividad ahora se puede usar suelta y apagada.
+- **Los filtros se recuerdan** en el celular (pedido de Ale): al ir a una ruta
+  y volver, o al abrir la app otro día, la lista sigue filtrada. Siempre se ven
+  como pastillas arriba. Lo guardado se revisa al leerlo, y una zona que ya no
+  existe se ignora.
 
 ### Documentos actualizados
 
@@ -43,7 +47,6 @@ técnica, velocímetro de esfuerzo).
 - La tarjeta de la ruta todavía escribe a mano el celeste del largo
   (`text-cyan-300`) y usa `text-verde`, que no existe en los colores de la app,
   para el «MAPA OFFLINE 100%».
-- Los filtros no se recuerdan al salir de la lista: vuelven a cero.
 
 ---
 

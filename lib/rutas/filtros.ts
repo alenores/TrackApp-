@@ -160,6 +160,19 @@ export function filtrarRutas(
   return rutas.filter((ruta) => cumpleLosFiltros(ruta, filtros, contexto));
 }
 
+/**
+ * Los filtros recordados pueden apuntar a una zona que ya no está. Esa zona se
+ * ignora: dejarla puesta vaciaría la lista sin que se entienda por qué.
+ */
+export function sinLoQueYaNoExiste(
+  filtros: FiltrosDeRutas,
+  zonas: Zona[],
+): FiltrosDeRutas {
+  if (filtros.zonaId === null) return filtros;
+  if (zonas.some((zona) => zona.id === filtros.zonaId)) return filtros;
+  return { ...filtros, zonaId: null };
+}
+
 /** Un filtro puesto, como se muestra en la pastilla de arriba de la lista. */
 export type FiltroPuesto = {
   clave: string;
