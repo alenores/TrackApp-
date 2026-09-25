@@ -37,8 +37,9 @@ y nada que no sirva.
 - **Mapa sin bajar: un cartel chico, nada más.** Arriba a la izquierda, donde
   va Simple/Satelital, un cartel ámbar que dice «Sin mapa descargado». Sin
   más texto. Reemplaza a los carteles grandes de abajo.
-- **Simple/Satelital y las curvas, chatos**, uno debajo del otro, para no
-  tapar el mapa.
+- **Simple/Satelital, chato**, y al lado, con la foto satelital, un círculo
+  con líneas para las curvas de nivel: un toque las prende o las apaga, como
+  sol y noche. Apagado se ve deshabilitado.
 - **El mapa de la zona va sin botones propios** (ubicarme, ver en grande) y
   con el nombre de cada sector en su esquina, así no tapa tu punto azul. Es la
   única excepción a «todo mapa se puede abrir en grande».

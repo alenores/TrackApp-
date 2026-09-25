@@ -81,7 +81,7 @@ export function problemaDelLargo(filtros: FiltrosDeRutas): string | null {
 
 /**
  * Qué parte de la ruta tiene el mapa bajado, del 0 al 100.
- * La misma cuenta que muestra la tarjeta como «MAPA OFFLINE».
+ * La misma cuenta que muestra la tarjeta como «Mapas descargados».
  */
 export function porcentajeDeMapa(
   ruta: RutaResumen,

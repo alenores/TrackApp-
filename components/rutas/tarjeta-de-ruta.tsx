@@ -8,7 +8,7 @@ import {
   IndicadorTecnica,
   VelocimetroEsfuerzo,
 } from "@/components/rutas/indicadores-de-exigencia";
-import { AvatarDeQuienSubio } from "@/components/rutas/avatar-de-quien-subio";
+import { Avatar } from "@/components/ui/avatar";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FlechaRedonda } from "@/components/ui/flecha-redonda";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -114,6 +114,11 @@ export function TarjetaDeRuta({
                 <span className="text-[10px] uppercase tracking-widest text-texto-suave">
                   {fechaCorta(ruta.creadoEn)}
                 </span>
+                {/* Quién la subió, debajo de cuándo. */}
+                <div className="mt-1.5 flex items-center gap-2 text-xs">
+                  <Avatar src={avatarDelAutor} name={autor} size="sm" />
+                  <span className="font-medium text-texto">{autor}</span>
+                </div>
               </div>
 
               {nombresZonas ? (
@@ -173,21 +178,10 @@ export function TarjetaDeRuta({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1 text-xs text-texto-suave">
-              <div className="flex items-center gap-2">
-                <AvatarDeQuienSubio
-                  avatarUrl={avatarDelAutor}
-                  uploaderLabel={autor}
-                  size="sm"
-                />
-                <span className="font-medium text-texto">{autor}</span>
-              </div>
-            </div>
-
-            {/* Porcentaje de mapa offline */}
+            {/* Qué parte de la ruta tiene los mapas descargados. */}
             <div className="absolute bottom-3 right-4">
               <span className={`text-[11px] font-semibold tracking-wide ${colorCobertura}`}>
-                MAPA OFFLINE {porcentajeCobertura}%
+                Mapas descargados {porcentajeCobertura}%
               </span>
             </div>
           </Tarjeta>

@@ -29,7 +29,10 @@ a aplicar.
   respondía antes de que el mapa se armara.
 - **Mapa sin bajar**: un cartel chico «Sin mapa descargado» arriba a la
   izquierda, en lugar de los carteles grandes de abajo. En la navegación se
-  calculaba y no se veía. Simple/Satelital y las curvas, chatos.
+  calculaba y no se veía. Simple/Satelital, chato, con un círculo al lado
+  para prender y apagar las curvas de nivel.
+- **Tarjeta de ruta**: quién la subió va abajo de la fecha, y el porcentaje
+  dice «Mapas descargados».
 - **Mapa de la zona** sin botones propios y con el nombre del sector en la
   esquina, para que no tape el punto azul.
 - Pieza nueva compartida: el botón redondo con ícono.

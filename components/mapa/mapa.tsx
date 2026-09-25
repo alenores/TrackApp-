@@ -1313,61 +1313,82 @@ export function Mapa({
       ) : null}
 
       {/*
-        Arriba a la izquierda, uno debajo del otro y chatos para no tapar el
-        mapa: Simple o Satelital (solo los que hay: sin ninguno bajado no
-        aparece), las curvas sobre la foto y el cartel de que falta mapa.
+        Arriba a la izquierda y chatos, para no tapar el mapa: Simple o
+        Satelital (solo los que hay: sin ninguno bajado no aparece) con el
+        círculo de las curvas al lado, y debajo el cartel de que falta mapa.
       */}
       {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
-          {opcionesDeFondo.length > 0 ? (
-            <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
-              {(
-                [
-                  ["dibujo", "Simple"],
-                  ["satelital", "Satelital"],
-                ] as const
-              )
-                .filter(([cual]) => opcionesDeFondo.includes(cual))
-                .map(([cual, etiqueta]) => (
-                  <button
-                    key={cual}
-                    type="button"
-                    onClick={() => {
-                      setTipoDeFondo(cual);
-                      if (alCambiarFondo) alCambiarFondo(cual);
-                    }}
-                    aria-pressed={tipoDeFondo === cual}
-                    className={[
-                      "flex h-full items-center px-3 text-xs font-semibold transition-colors",
-                      tipoDeFondo === cual
-                        ? "bg-texto text-fondo"
-                        : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
-                    ].join(" ")}
-                  >
-                    {etiqueta}
-                  </button>
-                ))}
-            </div>
-          ) : null}
+          <div className="flex items-center gap-1.5">
+            {opcionesDeFondo.length > 0 ? (
+              <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+                {(
+                  [
+                    ["dibujo", "Simple"],
+                    ["satelital", "Satelital"],
+                  ] as const
+                )
+                  .filter(([cual]) => opcionesDeFondo.includes(cual))
+                  .map(([cual, etiqueta]) => (
+                    <button
+                      key={cual}
+                      type="button"
+                      onClick={() => {
+                        setTipoDeFondo(cual);
+                        if (alCambiarFondo) alCambiarFondo(cual);
+                      }}
+                      aria-pressed={tipoDeFondo === cual}
+                      className={[
+                        "flex h-full items-center px-3 text-xs font-semibold transition-colors",
+                        tipoDeFondo === cual
+                          ? "bg-texto text-fondo"
+                          : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                      ].join(" ")}
+                    >
+                      {etiqueta}
+                    </button>
+                  ))}
+              </div>
+            ) : null}
 
-          {/* Curvas sobre la foto: solo con la foto guardada; en vivo no hay curvas. */}
-          {!enVivo && tipoDeFondo === "satelital" ? (
-            <button
-              type="button"
-              onPointerDown={() => vibrarAlTocar()}
-              onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
-              aria-pressed={curvasSobreLaFoto}
-              className={[
-                CLASE_DE_RESPUESTA_AL_TOQUE,
-                "pointer-events-auto flex h-7 items-center rounded-full border border-borde-fuerte px-3 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
-                curvasSobreLaFoto
-                  ? "bg-texto text-fondo"
-                  : "bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
-              ].join(" ")}
-            >
-              {curvasSobreLaFoto ? "Curvas: sí" : "Curvas: no"}
-            </button>
-          ) : null}
+            {/*
+              Curvas sobre la foto: un toque las prende o las apaga, como sol y
+              noche. Apagado se ve deshabilitado. Solo con la foto guardada: en
+              vivo no hay curvas.
+            */}
+            {!enVivo && tipoDeFondo === "satelital" ? (
+              <button
+                type="button"
+                onPointerDown={() => vibrarAlTocar()}
+                onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
+                aria-pressed={curvasSobreLaFoto}
+                aria-label={curvasSobreLaFoto ? "Sacar las curvas de nivel" : "Mostrar las curvas de nivel"}
+                title={curvasSobreLaFoto ? "Sacar las curvas de nivel" : "Mostrar las curvas de nivel"}
+                className={[
+                  CLASE_DE_RESPUESTA_AL_TOQUE,
+                  "pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full border shadow-[var(--sombra-alta)] transition-colors",
+                  curvasSobreLaFoto
+                    ? "border-borde-fuerte bg-texto text-fondo"
+                    : "border-borde bg-superficie text-texto-suave opacity-60",
+                ].join(" ")}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M3 17c3-1 5 1 8 0s5-3 10-2" />
+                  <path d="M5 12.5c2.5-1.5 4.5 0 7-1s3.5-3 7-2.5" />
+                  <path d="M8 8c2-1.5 3.5-.5 5.5-1.2S16 5 18 5" />
+                </svg>
+              </button>
+            ) : null}
+          </div>
 
           {sinMapaDescargado ? (
             <p
