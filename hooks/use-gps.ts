@@ -72,6 +72,9 @@ export function useGps(): Gps {
           Number.isFinite(lectura.coords.accuracy) ? Math.round(lectura.coords.accuracy) : null,
         );
         setEstado("andando");
+        // Si antes falló y ahora da posición, el cartel de falla se va: si no,
+        // el usuario lee «no da posición» con el punto moviéndose.
+        setError(null);
         setUltimaNoticia(Date.now());
         setAhora(Date.now());
       },

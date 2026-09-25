@@ -80,6 +80,15 @@ señal y la pieza no existe, tira las pantallas guardadas y recarga. A pedido de
 Ale, el cartel ahora muestra todos los datos de la falla y un botón para
 copiarlos. Se miró en el navegador forzando la falla.
 
+### Antes de publicar
+
+Ale probó en el celular y encontró que el mapa se volvía solo a su posición
+cada vez que el GPS daba una novedad, aunque él lo hubiera movido para mirar
+otra zona. El centrado escuchaba cada posición nueva: ahora se centra solo al
+tocar el botón del GPS (y una vez al abrir el mapa libre). De paso, el cartel
+de «el GPS no da posición» ya no queda puesto cuando el GPS vuelve a andar.
+Mirado en el navegador moviendo el GPS simulado. A pedido de Ale, se publica.
+
 ### Pendiente
 
 - R30: la navegación de una ruta no muestra el aviso de «sin mapa».
