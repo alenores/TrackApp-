@@ -196,7 +196,6 @@ export function FormularioDeEditarRuta({ rutaId, miPerfilId }: EditarRutaFormPro
 
       <Boton
         anchoCompleto
-        paraNavegacion
         disabled={guardando}
         onClick={() => void alGuardar()}
       >

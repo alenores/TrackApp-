@@ -8,7 +8,7 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
  *
  * **Reemplaza al `<select>` del sistema**, que además de ser una pantalla del
  * sistema operativo abre una lista con renglones de veinte píxeles: imposible
- * de acertar con guantes. Acá cada opción es un botón de 56, se ven todas
+ * de acertar. Acá cada opción es un botón de tamaño normal, se ven todas
  * juntas y se ve cuál está elegida sin desplegar nada.
  */
 
@@ -86,7 +86,7 @@ export function Opciones<T extends string | number>({
               onClick={() => alElegir(opcion.valor)}
               className={[
                 CLASE_DE_RESPUESTA_AL_TOQUE,
-                "flex min-h-14 items-center justify-center gap-1.5 rounded-xl border px-2 text-sm font-semibold transition-colors",
+                "flex min-h-10 items-center justify-center gap-1.5 rounded-xl border px-2 text-sm font-semibold transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
                 elegida
                   ? "border-acento-borde bg-acento text-acento-texto"

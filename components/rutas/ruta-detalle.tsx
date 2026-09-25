@@ -350,7 +350,6 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
 
       <div className="flex justify-center">
         <Boton
-          paraNavegacion
           className="flex items-center gap-2 px-6"
           onClick={() => router.push(`/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`)}
         >

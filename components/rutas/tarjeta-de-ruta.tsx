@@ -8,7 +8,7 @@ import {
   IndicadorTecnica,
   VelocimetroEsfuerzo,
 } from "@/components/rutas/indicadores-de-exigencia";
-import { AvatarDeQuienSubio } from "@/components/rutas/avatar-de-quien-subio";
+import { Avatar } from "@/components/ui/avatar";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FlechaRedonda } from "@/components/ui/flecha-redonda";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -31,7 +31,7 @@ import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
  * Una ruta en la lista.
  *
  * La versión anterior abría editar y borrar solo manteniendo el dedo apretado.
- * Con guantes eso no se puede: **ningún gesto fino puede ser la única forma de
+ * Nadie lo descubría: **ningún gesto escondido puede ser la única forma de
  * hacer algo**, así que ahora hay un botón visible.
  */
 
@@ -114,6 +114,11 @@ export function TarjetaDeRuta({
                 <span className="text-[10px] uppercase tracking-widest text-texto-suave">
                   {fechaCorta(ruta.creadoEn)}
                 </span>
+                {/* Quién la subió, debajo de cuándo. */}
+                <div className="mt-1.5 flex items-center gap-2 text-xs">
+                  <Avatar src={avatarDelAutor} name={autor} size="sm" />
+                  <span className="font-medium text-texto">{autor}</span>
+                </div>
               </div>
 
               {nombresZonas ? (
@@ -173,21 +178,10 @@ export function TarjetaDeRuta({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1 text-xs text-texto-suave">
-              <div className="flex items-center gap-2">
-                <AvatarDeQuienSubio
-                  avatarUrl={avatarDelAutor}
-                  uploaderLabel={autor}
-                  size="sm"
-                />
-                <span className="font-medium text-texto">{autor}</span>
-              </div>
-            </div>
-
-            {/* Porcentaje de mapa offline */}
+            {/* Qué parte de la ruta tiene los mapas descargados. */}
             <div className="absolute bottom-3 right-4">
               <span className={`text-[11px] font-semibold tracking-wide ${colorCobertura}`}>
-                MAPA OFFLINE {porcentajeCobertura}%
+                Mapas descargados {porcentajeCobertura}%
               </span>
             </div>
           </Tarjeta>
@@ -198,7 +192,7 @@ export function TarjetaDeRuta({
             type="button"
             aria-label={`Opciones de ${ruta.nombre}`}
             onClick={() => setAccionesAbiertas(true)}
-            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <circle cx="12" cy="5" r="1.75" fill="currentColor" />

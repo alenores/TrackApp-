@@ -21,7 +21,7 @@ export function BotonDeSubirRuta() {
     <Link
       href="/rutas/nueva"
       aria-label="Nueva ruta"
-      className="fixed flex h-14 w-14 items-center justify-center rounded-full border border-acento-borde bg-acento text-2xl font-light leading-none text-acento-texto shadow-lg shadow-black/40 transition-transform hover:scale-105 active:scale-95 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4"
+      className="fixed flex h-10 w-10 items-center justify-center rounded-full border border-acento-borde bg-acento text-2xl font-light leading-none text-acento-texto shadow-lg shadow-black/40 transition-transform hover:scale-105 active:scale-95 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4"
       style={{ zIndex: NIVEL_DE_LOS_BOTONES_FLOTANTES }}
     >
       +

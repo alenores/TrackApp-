@@ -65,8 +65,8 @@ para que una foto que pasó por poco no quede rechazada del otro lado.
 **Recortar es parte de elegir**, no un paso aparte. Y la forma la decide el
 destino: donde la pantalla muestra un círculo, se recorta en círculo.
 
-**El zoom lleva botones grandes además del gesto de dos dedos.** Un gesto fino
-no se acierta con guantes, y esa es la regla de la app.
+**El zoom lleva botones además del gesto de dos dedos**, de tamaño normal
+(decisión 024).
 
 ## Cómo se suma un destino nuevo
 

@@ -103,6 +103,10 @@ Está escrita en inglés, tal cual la dejó el código viejo. No la toqué.
 para la cobertura, las coordenadas y los colores, y dejé sin prueba justamente la
 más crítica.
 
+
+**Anulado el 2026-09-25.** Se sacaron el cartel y la medición de desvío
+(decisión 025): no hay nada que probar.
+
 ---
 
 ## G4 — El traer listas por tandas no tiene prueba
@@ -176,6 +180,9 @@ sigue viendo chico, que es lo correcto: lo que no puede achicarse es la zona que
 responde al toque.
 
 **De quién es.** Los dos venían del código viejo. Los dejé.
+
+**Anulado el 2026-09-25.** La regla del mínimo se sacó (decisión 024): los
+botones tienen el tamaño normal.
 
 ---
 

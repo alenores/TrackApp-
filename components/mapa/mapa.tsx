@@ -50,8 +50,7 @@ type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
  * le den; si no hay fondo descargado, dibuja sobre el vacío, que es un modo
  * legítimo y no una falla.
  *
- * Se puede acercar con dos dedos, **pero además hay botones grandes**: con
- * guantes puestos un gesto de dos dedos no se acierta.
+ * Se puede acercar con dos dedos, y además hay botones de tamaño normal.
  */
 
 const FUENTE_RUTA = "ruta";
@@ -207,6 +206,17 @@ type MapaProps = {
    * ella. La única pantalla que trabaja sin señal es la de navegar.
    */
   enVivo?: boolean;
+  /**
+   * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, donde
+   * va Simple/Satelital, aparece un cartel chico: «Sin mapa descargado».
+   */
+  sinMapaDescargado?: boolean;
+  /**
+   * `true` para el mapa chico de adentro de una emergente, como el de la zona
+   * en «Rutas en el mapa»: sin botones propios (ubicarme, ver en grande) y con
+   * el nombre de cada sector en su esquina, así no tapa el punto azul.
+   */
+  miniatura?: boolean;
   className?: string;
 };
 
@@ -309,6 +319,8 @@ export function Mapa({
   alMarcarPunto,
   alTocarAnotacion,
   enVivo = false,
+  sinMapaDescargado = false,
+  miniatura = false,
   className = "",
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -528,10 +540,11 @@ export function Mapa({
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
-          "fill-opacity": 0.14,
+          "fill-opacity": ["case", ["==", ["get", "clase"], "sector_elegido"], 0.3, 0.14],
         },
       });
 
@@ -561,10 +574,11 @@ export function Mapa({
             "nuevo", colores.rectanguloNuevo,
             "sector", colores.rectanguloNuevo, // Usamos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
-          "line-width": ["case", ["==", ["get", "clase"], "nuevo"], 3, 2.4],
+          "line-width": ["match", ["get", "clase"], "nuevo", 3, "sector_elegido", 4, 2.4],
         },
       });
 
@@ -730,6 +744,7 @@ export function Mapa({
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ]);
@@ -739,6 +754,7 @@ export function Mapa({
             "nuevo", colores.rectanguloNuevo,
             "sector", colores.rectanguloNuevo, // Mantenemos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ]);
@@ -1035,7 +1051,7 @@ export function Mapa({
    *
    * **No se busca el toque exacto sobre el puntito**, sino en un cuadrado
    * grande alrededor del dedo. El punto se dibuja chico para no tapar el mapa,
-   * pero se toca caminando y con guantes: si hubiera que acertarle a siete
+   * pero se toca caminando: si hubiera que acertarle a siete
    * píxeles, nadie lo abriría nunca.
    */
   useEffect(() => {
@@ -1099,14 +1115,23 @@ export function Mapa({
       for (const cada of rectangulos) {
         if (cada.etiqueta) {
           const el = document.createElement("div");
-          el.className = "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
+          el.className = miniatura
+            ? "text-xs font-bold text-texto bg-superficie/80 px-1 rounded"
+            : "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
           el.textContent = cada.etiqueta as string;
           const { latNorte, latSur, lonEste, lonOeste } = cada.rectangulo;
-          const lon = (lonOeste + lonEste) / 2;
-          const lat = (latNorte + latSur) / 2;
-          const m = new maplibregl.Marker({ element: el })
-            .setLngLat([lon, lat])
-            .addTo(mapa);
+          // En la miniatura va en la esquina de arriba a la izquierda: en el
+          // medio tapaba el punto azul de quien está parado en ese sector.
+          const m = miniatura
+            ? new maplibregl.Marker({ element: el, anchor: "top-left", offset: [3, 3] }).setLngLat([
+                lonOeste,
+                latNorte,
+              ])
+            : new maplibregl.Marker({ element: el }).setLngLat([
+                (lonOeste + lonEste) / 2,
+                (latNorte + latSur) / 2,
+              ]);
+          m.addTo(mapa);
           marcadoresDeEtiquetasRef.current.push(m);
         }
       }
@@ -1183,11 +1208,19 @@ export function Mapa({
   }, [posicionEfectiva]);
 
   useEffect(() => {
-    const posicion = posicionParaCentrarRef.current;
-    if (!forzarCentradoEn || !posicion || !mapaRef.current) return;
-    mapaRef.current.flyTo({
-      center: [posicion.lon, posicion.lat],
-      zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14,
+    if (!forzarCentradoEn) return;
+
+    // Si el pedido llega antes de que el mapa termine de armarse —el GPS
+    // puede responder primero—, se hace apenas esté listo. Si no, el encuadre
+    // del armado lo pisaba y el mapa quedaba lejos de donde estás.
+    cuandoEsteListo(() => {
+      const mapa = mapaRef.current;
+      const posicion = posicionParaCentrarRef.current;
+      if (!mapa || !posicion) return;
+      mapa.flyTo({
+        center: [posicion.lon, posicion.lat],
+        zoom: mapa.getZoom() > 14 ? mapa.getZoom() : 14,
+      });
     });
   }, [forzarCentradoEn]);
 
@@ -1280,67 +1313,92 @@ export function Mapa({
       ) : null}
 
       {/*
-        Simple o satelital. Solo los que hay: sin ninguno bajado el botón no
-        aparece, y con uno solo muestra ese.
+        Arriba a la izquierda y chatos, para no tapar el mapa: Simple o
+        Satelital (solo los que hay: sin ninguno bajado no aparece) con el
+        círculo de las curvas al lado, y debajo el cartel de que falta mapa.
       */}
-      {opcionesDeFondo.length > 0 ? (
-        <div
-          className={[
-            // Navegando la zona tocable mínima es más grande: se usa caminando.
-            pantallaCompleta ? "h-16" : "h-14",
-            "absolute left-3 top-3 flex overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]",
-          ].join(" ")}
-        >
-          {(
-            [
-              ["dibujo", "Simple"],
-              ["satelital", "Satelital"],
-            ] as const
-          )
-            .filter(([cual]) => opcionesDeFondo.includes(cual))
-            .map(([cual, etiqueta]) => (
-            <button
-              key={cual}
-              type="button"
-              onClick={() => {
-                setTipoDeFondo(cual);
-                if (alCambiarFondo) alCambiarFondo(cual);
-              }}
-              aria-pressed={tipoDeFondo === cual}
-              className={[
-                "flex h-full items-center px-4 text-xs font-semibold transition-colors",
-                tipoDeFondo === cual
-                  ? "bg-texto text-fondo"
-                  : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
-              ].join(" ")}
-            >
-              {etiqueta}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
+        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          <div className="flex items-center gap-1.5">
+            {opcionesDeFondo.length > 0 ? (
+              <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+                {(
+                  [
+                    ["dibujo", "Simple"],
+                    ["satelital", "Satelital"],
+                  ] as const
+                )
+                  .filter(([cual]) => opcionesDeFondo.includes(cual))
+                  .map(([cual, etiqueta]) => (
+                    <button
+                      key={cual}
+                      type="button"
+                      onClick={() => {
+                        setTipoDeFondo(cual);
+                        if (alCambiarFondo) alCambiarFondo(cual);
+                      }}
+                      aria-pressed={tipoDeFondo === cual}
+                      className={[
+                        "flex h-full items-center px-3 text-xs font-semibold transition-colors",
+                        tipoDeFondo === cual
+                          ? "bg-texto text-fondo"
+                          : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                      ].join(" ")}
+                    >
+                      {etiqueta}
+                    </button>
+                  ))}
+              </div>
+            ) : null}
 
-      {/*
-        Curvas sobre la foto: se prenden y apagan. Va debajo del botón
-        Simple/Satelital, y solo con la foto guardada: en vivo no hay curvas.
-      */}
-      {!enVivo && tipoDeFondo === "satelital" ? (
-        <button
-          type="button"
-          onPointerDown={() => vibrarAlTocar()}
-          onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
-          aria-pressed={curvasSobreLaFoto}
-          className={[
-            CLASE_DE_RESPUESTA_AL_TOQUE,
-            pantallaCompleta ? "top-[5.25rem] h-16" : "top-[4.75rem] h-14",
-            "absolute left-3 flex items-center rounded-full border border-borde-fuerte px-4 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
-            curvasSobreLaFoto
-              ? "bg-texto text-fondo"
-              : "bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
-          ].join(" ")}
-        >
-          {curvasSobreLaFoto ? "Curvas: sí" : "Curvas: no"}
-        </button>
+            {/*
+              Curvas sobre la foto: un toque las prende o las apaga, como sol y
+              noche. Apagado se ve deshabilitado. Solo con la foto guardada: en
+              vivo no hay curvas.
+            */}
+            {!enVivo && tipoDeFondo === "satelital" ? (
+              <button
+                type="button"
+                onPointerDown={() => vibrarAlTocar()}
+                onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
+                aria-pressed={curvasSobreLaFoto}
+                aria-label={curvasSobreLaFoto ? "Sacar las curvas de nivel" : "Mostrar las curvas de nivel"}
+                title={curvasSobreLaFoto ? "Sacar las curvas de nivel" : "Mostrar las curvas de nivel"}
+                className={[
+                  CLASE_DE_RESPUESTA_AL_TOQUE,
+                  "pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full border shadow-[var(--sombra-alta)] transition-colors",
+                  curvasSobreLaFoto
+                    ? "border-borde-fuerte bg-texto text-fondo"
+                    : "border-borde bg-superficie text-texto-suave opacity-60",
+                ].join(" ")}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M3 17c3-1 5 1 8 0s5-3 10-2" />
+                  <path d="M5 12.5c2.5-1.5 4.5 0 7-1s3.5-3 7-2.5" />
+                  <path d="M8 8c2-1.5 3.5-.5 5.5-1.2S16 5 18 5" />
+                </svg>
+              </button>
+            ) : null}
+          </div>
+
+          {sinMapaDescargado ? (
+            <p
+              role="status"
+              className="rounded-full border border-ambar-borde bg-ambar-fondo px-3 py-1 text-xs font-semibold text-ambar-texto shadow-[var(--sombra-alta)]"
+            >
+              Sin mapa descargado
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
@@ -1370,7 +1428,7 @@ export function Mapa({
               }}
               className={[
                 CLASE_DE_RESPUESTA_AL_TOQUE,
-                "flex h-14 w-14 items-center justify-center rounded-full",
+                "flex h-10 w-10 items-center justify-center rounded-full",
                 "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
                 "hover:bg-superficie-alta",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
@@ -1389,20 +1447,19 @@ export function Mapa({
               </svg>
             </button>
           ) : null}
-          <BotonDeModo paraNavegacion={pantallaCompleta} />
+          <BotonDeModo />
         </div>
       ) : null}
 
       {/*
         Abrir el mapa en grande y GPS. Van abajo a la derecha, al alcance del pulgar.
       */}
-      {!pantallaCompleta ? (
+      {!pantallaCompleta && !miniatura ? (
         <div className="absolute bottom-3 right-3 flex flex-col gap-2">
           {controlesAdicionales}
 
           <BotonDelMapa
             etiqueta={gpsPrendido ? "Centrar" : "Ubicarme"}
-            grande={false}
             alTocar={alternarGps}
           >
             {gpsPrendido ? (
@@ -1421,8 +1478,7 @@ export function Mapa({
           {!enGrande ? (
             <BotonDelMapa
               etiqueta="Ver el mapa en grande"
-              grande={false}
-              alTocar={() => {
+                alTocar={() => {
                 anotarLoQueSeMira();
                 setAPantallaCompleta(true);
               }}
@@ -1452,12 +1508,10 @@ export function Mapa({
 
 function BotonDelMapa({
   etiqueta,
-  grande,
   alTocar,
   children,
 }: {
   etiqueta: string;
-  grande: boolean;
   alTocar: () => void;
   children: React.ReactNode;
 }) {
@@ -1473,12 +1527,12 @@ function BotonDelMapa({
         "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
         "hover:bg-superficie-alta",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        grande ? "h-16 w-16" : "h-14 w-14",
+        "h-10 w-10",
       ].join(" ")}
     >
       <svg
         viewBox="0 0 24 24"
-        className={grande ? "h-7 w-7" : "h-6 w-6"}
+        className="h-5 w-5"
         fill="none"
         stroke="currentColor"
         strokeWidth={2.5}

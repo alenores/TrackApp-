@@ -84,12 +84,11 @@ accesibilidad web. Ese estándar está pensado para gente con baja visión en
 condiciones normales de luz. Con sol directo, cualquiera tiene baja visión
 funcional. Por eso se usa el máximo, no el mínimo.
 
-**56 píxeles de zona tocable, 64 en navegación.** La recomendación habitual para
-dedo desnudo es 48. Caminando, la mano se mueve y el toque se corre. Se sube el
-número en vez de confiar en la puntería.
-
-Importante: el **botón puede verse más chico** que su zona tocable. Lo que no
-puede achicarse es la zona que responde al toque.
+**Botones: un solo tamaño, el normal.** Hasta el 2026-09-25 había un mínimo
+de 56 píxeles de zona tocable, y 64 en navegación. Se sacó por decisión de Ale:
+los botones grandes tapaban el mapa y entorpecían el uso. Ahora todo botón mide
+lo mismo que en las pantallas de administración, también navegando. Ver
+`decisiones/024-botones-de-tamano-normal.md`.
 
 **16 píxeles de texto, 18 en navegación.** Leer moviéndose reduce la agudeza
 visual: el ojo no se fija bien mientras el cuerpo se mueve.
@@ -123,8 +122,8 @@ acción destructiva sin confirmación se dispara sola.
 
 ## Por qué el mapa va a pantalla completa
 
-La información que importa mientras caminás es: dónde estoy, por dónde sigue el
-camino, y si me desvié. Todo lo demás compite por espacio con eso.
+La información que importa mientras caminás es: dónde estoy y por dónde sigue
+el camino. Todo lo demás compite por espacio con eso.
 
 **Consecuencia obligatoria:** si el mapa ocupa todo, tiene que haber una salida
 visible y el botón físico de atrás tiene que funcionar. Un mapa a pantalla
@@ -153,7 +152,8 @@ componentes de TrackApp; reglas y documentación de Vías de Escalada Córdoba
 `docs/ARCHITECTURE_MAP.md`, `design-qa.md`).
 
 **Definido en conversación con Ale (2026-09-17):** situación de uso real, modo
-claro/oscuro conmutable, botones grandes, mapa a pantalla completa.
+claro/oscuro conmutable, mapa a pantalla completa. (Los botones grandes se
+sacaron el 2026-09-25: decisión 024.)
 
 **Pendiente de verificación:** los valores concretos de contraste, tamaño de
 botón y tamaño de texto **no fueron probados al sol todavía**. Están fijados

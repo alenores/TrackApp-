@@ -4,7 +4,7 @@
 
 ## Contexto
 
-TrackApp se usa caminando al aire libre: sol fuerte, guantes, una sola mano,
+TrackApp se usa caminando al aire libre: sol fuerte, una sola mano,
 sin señal, batería contada, a veces pantalla mojada. El diseño anterior no
 contemplaba ninguna de esas condiciones.
 
@@ -13,7 +13,9 @@ contemplaba ninguna de esas condiciones.
 1. **Dos modos de color conmutables a mano**, no automáticos. Sol = fondo claro
    con texto oscuro. Noche = fondo oscuro con texto claro.
 2. **Contraste mínimo 7:1** para texto normal, 4.5:1 para texto grande e íconos.
-3. **Zona tocable mínima de 56 px**, 64 px en la pantalla de navegación.
+3. ~~**Zona tocable mínima de 56 px**, 64 px en la pantalla de navegación.~~
+   **Anulado el 2026-09-25** por la decisión 024: todos los botones tienen el
+   tamaño normal.
 4. **Ningún gesto fino puede ser la única forma de hacer algo.**
 5. **Lo importante va en la mitad de abajo** de la pantalla.
 6. **El mapa de navegación va a pantalla completa**, con salida visible y botón

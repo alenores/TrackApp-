@@ -39,25 +39,24 @@ export function ElegirQueAnotar({ abierto, alCerrar, alElegir }: ElegirProps) {
       alCerrar={alCerrar}
       titulo="¿Qué querés marcar?"
       acciones={
-        <BotonDeEmergente variante="fantasma" paraNavegacion onClick={alCerrar}>
+        <BotonDeEmergente variante="fantasma" onClick={alCerrar}>
           Cancelar
         </BotonDeEmergente>
       }
     >
       <div className="space-y-3">
-        <Boton anchoCompleto paraNavegacion className="min-h-20 flex-col" onClick={() => alElegir("punto")}>
-          <span className="text-lg font-bold">Un punto</span>
-          <span className="text-base font-normal">Un cruce, una fuente, un peligro</span>
+        <Boton anchoCompleto className="flex-col" onClick={() => alElegir("punto")}>
+          <span className="font-bold">Un punto</span>
+          <span className="text-xs font-normal">Un cruce, una fuente, un peligro</span>
         </Boton>
         <Boton
           variante="secundario"
           anchoCompleto
-          paraNavegacion
-          className="min-h-20 flex-col"
+          className="flex-col"
           onClick={() => alElegir("trazo")}
         >
-          <span className="text-lg font-bold">Un trazo</span>
-          <span className="text-base font-normal">Una huella o un paso que el mapa no tiene</span>
+          <span className="font-bold">Un trazo</span>
+          <span className="text-xs font-normal">Una huella o un paso que el mapa no tiene</span>
         </Boton>
       </div>
     </Emergente>
@@ -84,7 +83,7 @@ function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
 
   const texto =
     gps.estado === "apagado" || gps.estado === "pidiendo"
-      ? "El GPS está apagado: no se sabe dónde estás."
+      ? "El GPS todavía está buscando tu posición."
       : gps.posicionVieja
         ? `Hace ${gps.segundosSinNoticias} segundos que el GPS no da novedades: tu posición puede estar corrida.`
         : (gps.error ?? "El GPS no está dando tu posición.");
@@ -94,17 +93,6 @@ function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
       <p role="alert" className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-lg leading-7 text-ambar-texto">
         {texto} Marcá el lugar tocando el mapa.
       </p>
-      {gps.estado === "apagado" || gps.estado === "pidiendo" ? (
-        <Boton
-          variante="secundario"
-          anchoCompleto
-          paraNavegacion
-          disabled={gps.estado === "pidiendo"}
-          onClick={gps.prender}
-        >
-          {gps.estado === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-        </Boton>
-      ) : null}
     </div>
   );
 }
@@ -177,7 +165,7 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-bold text-texto">{titulo}</h2>
-          <Boton variante="secundario" paraNavegacion className="shrink-0 px-3 text-base" onClick={alCentrarEnMi}>
+          <Boton variante="secundario" className="shrink-0 px-3 text-base" onClick={alCentrarEnMi}>
             Ir a mí
           </Boton>
         </div>
@@ -195,11 +183,11 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
             </p>
             {marcado.gpsSirve ? (
               borrador.modo === "gps" ? (
-                <Boton variante="secundario" anchoCompleto paraNavegacion onClick={marcado.marcarAMano}>
+                <Boton variante="secundario" anchoCompleto onClick={marcado.marcarAMano}>
                   Marcar a mano en el mapa
                 </Boton>
               ) : (
-                <Boton variante="secundario" anchoCompleto paraNavegacion onClick={marcado.usarElGps}>
+                <Boton variante="secundario" anchoCompleto onClick={marcado.usarElGps}>
                   Usar mi posición del GPS
                 </Boton>
               )
@@ -217,7 +205,6 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
             <div className="grid grid-cols-2 gap-2">
               <Boton
                 variante="secundario"
-                paraNavegacion
                 disabled={!marcado.gpsSirve}
                 onClick={marcado.sumarMiPosicion}
               >
@@ -225,7 +212,6 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
               </Boton>
               <Boton
                 variante="secundario"
-                paraNavegacion
                 disabled={borrador.puntos.length === 0}
                 onClick={marcado.deshacerElUltimoPunto}
               >
@@ -257,10 +243,10 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
         ) : null}
 
         <div className="space-y-2">
-          <Boton anchoCompleto paraNavegacion disabled={!marcado.puedeGuardar} onClick={() => void guardar()}>
+          <Boton anchoCompleto disabled={!marcado.puedeGuardar} onClick={() => void guardar()}>
             {marcado.guardando ? "Guardando…" : "Guardar en el celular"}
           </Boton>
-          <Boton variante="fantasma" anchoCompleto paraNavegacion disabled={marcado.guardando} onClick={() => void cancelar(false)}>
+          <Boton variante="fantasma" anchoCompleto disabled={marcado.guardando} onClick={() => void cancelar(false)}>
             Cancelar
           </Boton>
         </div>

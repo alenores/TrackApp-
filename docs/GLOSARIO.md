@@ -66,8 +66,8 @@ cualquier usuario desde la navegación. **Ninguna es privada**: todos ven todas,
 y cada uno elige cuáles mostrar. Ver `decisiones/023`.
 
 **Anotar**
-Marcar una anotación desde los mapas del cerro, con el botón «Anotar». Queda en
-el celular y sube sola cuando hay señal.
+Marcar una anotación desde los mapas del cerro: el círculo de anotaciones y
+«Agregar una anotación». Queda en el celular y sube sola cuando hay señal.
 
 **Anotación pendiente**
 Lo que se marcó, cambió o borró sin señal y espera en el celular para subirse.
@@ -121,10 +121,6 @@ cubierto y descargado, cubierto sin descargar, o sin cobertura.
 Un tramo de ruta por el que no pasa ningún sector. No hay mapa disponible para
 esa parte del recorrido.
 
-**Desvío**
-Distancia entre la posición del usuario y la línea del recorrido. Por encima de
-50 metros se considera que el usuario está fuera de ruta y se alerta.
-
 ## Diseño
 
 **Modo sol**
@@ -132,10 +128,6 @@ Fondo claro con texto oscuro. Es el modo legible con sol directo.
 
 **Modo noche**
 Fondo oscuro con texto claro. Para poca luz.
-
-**Zona tocable**
-El área que responde al toque de un botón. Puede ser más grande que el dibujo del
-botón. Nunca baja de 56 píxeles.
 
 **Franja**
 La barra de color al costado izquierdo de una tarjeta, que la marca como aviso.
@@ -206,9 +198,14 @@ demasiado y viajan aparte.
 **Mapa libre**
 El mapa del cerro sin seguir una ruta: todos los mapas bajados, todas las
 anotaciones y las rutas que elijas (todas, ninguna o algunas), con tu punto de
-GPS. Las rutas de la zona donde estás se proponen primero. No avisa desvíos
-porque no seguís ninguna. Tiene las mismas reglas que la navegación: nunca
-consulta internet.
+GPS. Abre mostrando todas las zonas desde arriba y, cuando el GPS responde, va
+a donde estás. Tiene las mismas reglas que la navegación: nunca consulta
+internet.
+
+**Mapa de la zona**
+El mapa chico que se abre con el ícono de mapa en «Rutas en el mapa»: la zona
+con sus sectores y tu punto azul. Tocando un sector, la lista pasa a ser la de
+ese sector. Lee solo lo guardado en el celular.
 
 **Filtro de rutas**
 Lo que achica la lista de rutas según zona, para qué sirve, largo, dificultad

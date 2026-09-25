@@ -24,7 +24,9 @@ export type ClaseDeRectangulo =
   /** Un sector con el mapa ya en el celular. */
   | "sector_bajado"
   /** Un sector al que le falta bajar el mapa. */
-  | "sector_sin_bajar";
+  | "sector_sin_bajar"
+  /** El sector elegido en el mapa chico de las rutas del cerro. */
+  | "sector_elegido";
 
 export type RectanguloEnElMapa = {
   rectangulo: Rectangulo;
@@ -104,6 +106,7 @@ export function clasesDibujadas(
     "sector",
     "sector_bajado",
     "sector_sin_bajar",
+    "sector_elegido",
   ];
   const hay = new Set(rectangulos.map((cada) => cada.clase));
   return ORDEN.filter((clase) => hay.has(clase));

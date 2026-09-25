@@ -191,7 +191,6 @@ export function FormularioDeEditarZona({
 
         <Boton
           anchoCompleto
-          paraNavegacion
           disabled={guardando || !nombre.trim()}
           onClick={() => void alGuardar()}
         >

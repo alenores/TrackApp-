@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Boton } from "@/components/ui/boton";
+import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { ElegirAnotacionesDelMapa } from "@/components/navegacion/elegir-anotaciones-del-mapa";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
@@ -10,7 +10,6 @@ import { useAnotacionesDelCerro } from "@/hooks/use-anotaciones-del-cerro";
 import type { Gps } from "@/hooks/use-gps";
 import { useMarcarAnotacion } from "@/hooks/use-marcar-anotacion";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
-import { comoSeLlamaElFiltro } from "@/lib/anotaciones/filtro";
 import { anotarUnBorrado } from "@/lib/anotaciones/pendientes";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import type { Anotacion } from "@/types/database";
@@ -43,8 +42,8 @@ export type AnotacionesEnElMapa = {
   alTocarAnotacion: (anotacionId: number) => void;
   /** `true` mientras el panel de anotar ocupa la parte de abajo. */
   anotando: boolean;
-  /** Los botones de «Anotar» y de qué anotaciones ver. */
-  botones: ReactNode;
+  /** El círculo de anotaciones: abre agregar y cuáles se ven. */
+  boton: ReactNode;
   /** El panel de anotar, para poner abajo cuando `anotando`. */
   panel: ReactNode;
   /** El aviso de «guardado», para poner arriba, adentro de la pantalla del mapa. */
@@ -140,26 +139,17 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     [confirmar, avisar],
   );
 
-  // «Anotar» queda justo y el resto del ancho es para decir qué se ve: sin
-  // eso, el texto quedaba cortado a la mitad.
-  const botones = (
-    <div className="grid grid-cols-[auto_1fr] gap-3">
-      <Boton paraNavegacion className="px-6 shadow-[var(--sombra-alta)]" onClick={() => setEligiendoTipo(true)}>
-        Anotar
-      </Boton>
-      <Boton
-        variante="secundario"
-        paraNavegacion
-        className="min-w-0 px-3 shadow-[var(--sombra-alta)]"
-        onClick={() => setEligiendoFiltro(true)}
-      >
-        <span className="flex min-w-0 flex-col leading-tight">
-          <span>Anotaciones</span>
-          <span className="truncate font-normal">{comoSeLlamaElFiltro(cerro.filtro)}</span>
-        </span>
-      </Boton>
-    </div>
+  // Agregar y elegir cuáles se ven van juntos, detrás de un solo círculo.
+  const boton = (
+    <BotonRedondo etiqueta="Anotaciones" variante="principal" onClick={() => setEligiendoFiltro(true)}>
+      {ICONOS_DEL_CERRO.anotaciones}
+    </BotonRedondo>
   );
+
+  const agregar = useCallback(() => {
+    setEligiendoFiltro(false);
+    setEligiendoTipo(true);
+  }, []);
 
   const panel = (
     <PanelDeAnotar
@@ -193,6 +183,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
         filtro={cerro.filtro}
         alCambiar={cerro.cambiarFiltro}
         cuantas={cerro.cuantas}
+        alAgregar={agregar}
       />
 
       <FichaDeAnotacion
@@ -211,7 +202,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     alMarcarPunto: marcado.alTocarElMapa,
     alTocarAnotacion,
     anotando: marcado.abierto,
-    botones,
+    boton,
     panel,
     aviso,
     resto,

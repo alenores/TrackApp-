@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { areaDeLasZonas, areaDeLoBajado, rutasParaElegir, zonaDondeEstas } from "@/lib/navegacion/mapa-libre";
+import {
+  areaDeLasZonas,
+  rutasDelSector,
+  sectorDondeEstas,
+  sectorEnElLugar,
+  sectorPrincipalDeLaRuta,
+  zonaDondeEstas,
+} from "@/lib/navegacion/mapa-libre";
 import type { Rectangulo, RutaResumen, Sector, Zona } from "@/types/database";
 
 const rect = (latNorte: number, latSur: number, lonEste: number, lonOeste: number): Rectangulo => ({
@@ -55,43 +62,71 @@ describe("zonaDondeEstas", () => {
   });
 });
 
-describe("rutasParaElegir", () => {
-  const rutas = [champaqui, gigantes, uritorco];
+const sector = (id: number, zonaId: number, rectangulo: Rectangulo): Sector => ({
+  id,
+  zonaId,
+  perfilId: "p",
+  nombre: `S${id}`,
+  descripcion: null,
+  rectangulo,
+  creadoEn: "",
+  actualizadoEn: "",
+});
 
-  it("propone primero las rutas de tu zona y deja las lejanas aparte", () => {
-    const eleccion = rutasParaElegir(rutas, [punilla, traslasierra], { lat: -31.0, lon: -64.5 });
-    expect(eleccion.zona?.nombre).toBe("Punilla");
-    expect(eleccion.deTuZona.map((r) => r.nombre)).toEqual(["Uritorco"]);
-    expect(eleccion.otras.map((r) => r.nombre)).toEqual(["Champaquí", "Los Gigantes"]);
+const conMetros = (base: RutaResumen, distanciasPorSector: Record<string, number>): RutaResumen => ({
+  ...base,
+  distanciasPorSector,
+});
+
+const norte = sector(10, 1, rect(-30.8, -31.0, -64.3, -64.7));
+const sur = sector(11, 1, rect(-31.0, -31.3, -64.3, -64.7));
+
+describe("sectorDondeEstas", () => {
+  it("encuentra el sector que contiene tu posición", () => {
+    expect(sectorDondeEstas([norte, sur], { lat: -31.1, lon: -64.5 })?.id).toBe(11);
   });
 
-  it("sin GPS van todas juntas, por nombre", () => {
-    const eleccion = rutasParaElegir(rutas, [punilla], null);
-    expect(eleccion.zona).toBeNull();
-    expect(eleccion.deTuZona).toEqual([]);
-    expect(eleccion.otras.map((r) => r.nombre)).toEqual(["Champaquí", "Los Gigantes", "Uritorco"]);
+  it("sin GPS o fuera de todo sector, no hay sector", () => {
+    expect(sectorDondeEstas([norte, sur], null)).toBeNull();
+    expect(sectorDondeEstas([norte, sur], { lat: -25, lon: -60 })).toBeNull();
   });
 });
 
-describe("areaDeLoBajado", () => {
-  const sector = (id: number, rectangulo: Rectangulo): Sector => ({
-    id,
-    zonaId: 1,
-    perfilId: "p",
-    nombre: `S${id}`,
-    descripcion: null,
-    rectangulo,
-    creadoEn: "",
-    actualizadoEn: "",
+describe("sectorEnElLugar", () => {
+  it("devuelve el sector tocado en el mapa chico, o ninguno", () => {
+    expect(sectorEnElLugar([norte, sur], { lat: -30.9, lon: -64.5 })?.id).toBe(10);
+    expect(sectorEnElLugar([norte, sur], { lat: -20, lon: -60 })).toBeNull();
+  });
+});
+
+describe("sectorPrincipalDeLaRuta", () => {
+  it("elige el sector por donde pasa la mayor parte de la ruta", () => {
+    const larga = conMetros(uritorco, { "10": 300, "11": 1200, sin_sector: 5000 });
+    expect(sectorPrincipalDeLaRuta(larga, [norte, sur])?.id).toBe(11);
   });
 
-  it("abarca solo los sectores con mapa bajado", () => {
-    const sectores = [sector(1, rect(-31, -31.1, -64.4, -64.5)), sector(2, rect(-32, -32.1, -65, -65.1)), sector(3, rect(-20, -21, -60, -61))];
-    expect(areaDeLoBajado(sectores, new Set([1, 2]))).toEqual(rect(-31, -32.1, -64.4, -65.1));
+  it("sin metros anotados, el primer sector que toca su rectángulo", () => {
+    expect(sectorPrincipalDeLaRuta(uritorco, [sur, norte])?.id).toBe(10);
   });
 
-  it("sin nada bajado no hay área", () => {
-    expect(areaDeLoBajado([], new Set())).toBeNull();
+  it("una ruta afuera de todo sector no tiene sector", () => {
+    expect(sectorPrincipalDeLaRuta(champaqui, [norte, sur])).toBeNull();
+  });
+});
+
+describe("rutasDelSector", () => {
+  it("trae solo las rutas con metros adentro del sector, por nombre", () => {
+    const rutas = [
+      conMetros(uritorco, { "10": 500 }),
+      conMetros(gigantes, { "10": 20, "11": 900 }),
+      conMetros(champaqui, { "11": 100 }),
+    ];
+    expect(rutasDelSector(rutas, norte).map((r) => r.nombre)).toEqual(["Los Gigantes", "Uritorco"]);
+    expect(rutasDelSector(rutas, sur).map((r) => r.nombre)).toEqual(["Champaquí", "Los Gigantes"]);
+  });
+
+  it("una ruta sin metros anotados cae en los sectores que toca su rectángulo", () => {
+    expect(rutasDelSector([uritorco, champaqui], norte).map((r) => r.nombre)).toEqual(["Uritorco"]);
   });
 });
 

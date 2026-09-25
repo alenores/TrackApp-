@@ -22,6 +22,7 @@ const COMO_SE_LLAMA: Record<ClaseDeRectangulo, string> = {
   sector: "Sector",
   sector_bajado: "Sector bajado",
   sector_sin_bajar: "Sector sin bajar",
+  sector_elegido: "Sector elegido",
 };
 
 /**
@@ -34,6 +35,7 @@ const COMO_SE_DIBUJA: Record<ClaseDeRectangulo, string> = {
   sector: "border-mapa-linea bg-mapa-linea/15",
   sector_bajado: "border-verde-borde bg-verde-borde/15",
   sector_sin_bajar: "border-ambar-borde bg-ambar-borde/15",
+  sector_elegido: "border-verde-borde bg-verde-borde/30",
 };
 
 export function ReferenciaDelMapa({ ruta = false, clases = [] }: QueMostrar) {

@@ -181,7 +181,6 @@ export function FormularioDeEditarSector({
 
             <Boton
               anchoCompleto
-              paraNavegacion
               disabled={guardando || !armado.ok}
               onClick={() => void alGuardar()}
             >

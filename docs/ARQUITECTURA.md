@@ -98,7 +98,7 @@ mapa satelital— son ese mismo mapa con distinto fondo. No son tres pantallas.
 mapa bajado se dibuja; uno sin bajar no dibuja nada y se ve el fondo liso de la
 app. **Eso no es una falla, es un modo legítimo:** se ven igual la línea de la
 ruta, el punto del GPS, las anotaciones y los rectángulos, y con eso alcanza
-para saber si vas por el camino, porque el cálculo del desvío no mira el mapa.
+para ver dónde estás respecto de la línea.
 
 De dónde sale el fondo se decide en **un solo lugar**: ninguna pantalla lo sabe.
 
@@ -135,9 +135,9 @@ del usuario y manda.
 descargó antes de salir. El GPS no es internet: funciona por satélite y sin
 señal.
 
-Lo que hace: sigue la posición, calcula la distancia a la línea del recorrido y
-avisa —en pantalla y vibrando— al pasar los 50 metros de desvío. Avisa también
-si el GPS deja de dar novedades, porque un punto viejo que no se mueve parece un
+Lo que hace: prende el GPS solo al entrar y lo apaga al salir, y muestra tu
+posición sobre la línea de la ruta. No hay carteles de desvío (decisión 025).
+Avisa si el GPS deja de dar novedades, porque un punto viejo que no se mueve parece un
 punto bueno. Mantiene la pantalla encendida mientras se navega, y solo mientras
 se navega: la pantalla prendida consume mucha batería y en el cerro la batería
 es seguridad.

@@ -24,34 +24,62 @@ export function zonaDondeEstas(zonas: Zona[], posicion: Posicion | null): Zona |
   return zonas.find((zona) => contiene(zona.rectangulo, posicion)) ?? null;
 }
 
-export type RutasParaElegir = {
-  /** La zona donde estás, si el GPS ya respondió y estás adentro de una. */
-  zona: Zona | null;
-  /** Las rutas de tu zona: se proponen primero. */
-  deTuZona: RutaResumen[];
-  /** Todas las demás, por nombre. */
-  otras: RutaResumen[];
-};
-
 const porNombre = (a: RutaResumen, b: RutaResumen) =>
   a.nombre.localeCompare(b.nombre, "es");
 
 /**
- * Las rutas para elegir, con las de tu zona primero.
+ * El sector donde estás parado, o `null` si no estás adentro de ninguno.
  *
- * Sin GPS, o fuera de toda zona, no hay «tu zona» y van todas juntas.
+ * Es el que queda elegido en el mapa libre cuando el GPS responde.
  */
-export function rutasParaElegir(
-  rutas: RutaResumen[],
-  zonas: Zona[],
-  posicion: Posicion | null,
-): RutasParaElegir {
-  const zona = zonaDondeEstas(zonas, posicion);
-  if (!zona) return { zona: null, deTuZona: [], otras: [...rutas].sort(porNombre) };
+export function sectorDondeEstas(sectores: Sector[], posicion: Posicion | null): Sector | null {
+  if (!posicion) return null;
+  return sectores.find((sector) => contiene(sector.rectangulo, posicion)) ?? null;
+}
 
-  const deTuZona = rutas.filter((ruta) => seSuperponen(ruta.rectangulo, zona.rectangulo));
-  const otras = rutas.filter((ruta) => !deTuZona.includes(ruta));
-  return { zona, deTuZona: deTuZona.sort(porNombre), otras: otras.sort(porNombre) };
+/**
+ * El sector de una ruta: por donde pasa la mayor parte de su línea.
+ *
+ * Una ruta puede cruzar varios sectores. Al navegarla, la lista de rutas abre
+ * en el que tiene más metros de ella.
+ */
+export function sectorPrincipalDeLaRuta(ruta: RutaResumen, sectores: Sector[]): Sector | null {
+  let elegido: Sector | null = null;
+  let masMetros = 0;
+
+  for (const sector of sectores) {
+    const metros = ruta.distanciasPorSector?.[String(sector.id)] ?? 0;
+    if (metros > masMetros) {
+      masMetros = metros;
+      elegido = sector;
+    }
+  }
+
+  // Sin metros anotados, el primer sector que toca su rectángulo.
+  return elegido ?? sectores.find((sector) => seSuperponen(sector.rectangulo, ruta.rectangulo)) ?? null;
+}
+
+/**
+ * Las rutas de un sector, por nombre: las que tienen metros adentro.
+ *
+ * Una ruta sin metros anotados cae en los sectores que toca su rectángulo:
+ * si no, no aparecería en ninguna lista y no habría forma de prenderla.
+ */
+export function rutasDelSector(rutas: RutaResumen[], sector: Sector): RutaResumen[] {
+  return rutas
+    .filter((ruta) => {
+      const distancias = ruta.distanciasPorSector ?? {};
+      if (Object.keys(distancias).length === 0) {
+        return seSuperponen(ruta.rectangulo, sector.rectangulo);
+      }
+      return (distancias[String(sector.id)] ?? 0) > 0;
+    })
+    .sort(porNombre);
+}
+
+/** El sector que contiene el lugar tocado en el mapa chico, si hay uno. */
+export function sectorEnElLugar(sectores: Sector[], lugar: Posicion): Sector | null {
+  return sectores.find((sector) => contiene(sector.rectangulo, lugar)) ?? null;
 }
 
 function abarcar(rectangulos: Rectangulo[]): Rectangulo | null {
@@ -69,20 +97,11 @@ function abarcar(rectangulos: Rectangulo[]): Rectangulo | null {
 }
 
 /**
- * El rectángulo que abarca todos los sectores con mapa bajado.
+ * El rectángulo que abarca todas las zonas.
  *
- * Es a donde abre el mapa mientras el GPS no responde.
+ * Es a donde abre el mapa libre mientras el GPS no responde: se ven todas las
+ * zonas desde arriba, y cuando llega la posición el mapa va a donde estás.
  */
-export function areaDeLoBajado(
-  sectores: Sector[],
-  conMapa: Set<number>,
-): Rectangulo | null {
-  return abarcar(
-    sectores.filter((sector) => conMapa.has(sector.id)).map((sector) => sector.rectangulo),
-  );
-}
-
-/** Sin ningún mapa bajado, el mapa abre sobre todas las zonas. */
 export function areaDeLasZonas(zonas: Zona[]): Rectangulo | null {
   return abarcar(zonas.map((zona) => zona.rectangulo));
 }

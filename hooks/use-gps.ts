@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { mensajeDeErrorDelGps, type EstadoDelGps } from "@/lib/navegacion/desvio";
+import { mensajeDeErrorDelGps, type EstadoDelGps } from "@/lib/navegacion/gps";
 
 /**
  * El GPS del celular, para las pantallas del cerro: navegar y el mapa libre.

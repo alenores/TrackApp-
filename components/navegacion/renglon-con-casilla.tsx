@@ -7,8 +7,7 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 /**
  * Un renglón con casilla, para prender y apagar lo que se ve en el mapa.
  *
- * Es del cerro: cada renglón mide 64 de alto y se toca entero, no solo la
- * casilla. Lo usan la elección de rutas y la de anotaciones del mapa.
+ * Se toca el renglón entero, no solo la casilla. Tamaño normal (decisión 024). Lo usan la elección de rutas y la de anotaciones del mapa.
  */
 
 type Props = {
@@ -29,7 +28,7 @@ export function RenglonConCasilla({ prendido, alTocar, muestra, children }: Prop
         onClick={alTocar}
         className={[
           CLASE_DE_RESPUESTA_AL_TOQUE,
-          "flex min-h-16 w-full items-center gap-3 px-3 text-left text-lg text-texto",
+          "flex min-h-10 w-full items-center gap-3 px-3 py-2 text-left text-lg text-texto",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-acento-borde",
         ].join(" ")}
       >
