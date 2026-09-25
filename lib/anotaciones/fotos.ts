@@ -24,6 +24,14 @@ export function rutaDeLaFotoDeAnotacion(
   return `${perfilId}/${anotacionId}.webp`;
 }
 
+/** La copia chica, la que viaja al cerro, al lado de la grande. */
+export function rutaDeLaFotoChicaDeAnotacion(
+  perfilId: string,
+  anotacionId: number,
+): string {
+  return `${perfilId}/${anotacionId}-chica.webp`;
+}
+
 /** Devuelve `null` cuando está bien, o qué pasó y qué hacer cuando no. */
 export function revisarLaFotoDeAnotacion(archivo: File): string | null {
   if (archivo.type !== FORMATO) {

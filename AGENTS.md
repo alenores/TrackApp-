@@ -1,7 +1,7 @@
 # TrackApp — reglas para agentes de IA
 
 > App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
-> con guantes, sin señal y con la batería como recurso escaso.
+> sin señal y con la batería como recurso escaso.
 > Última revisión: 2026-09-21
 
 ---
@@ -85,17 +85,19 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
 
 Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
 
-### Guantes y una sola mano
+### Una sola mano
 
-- **Nada que dependa de pellizcar, deslizar o mantener apretado.** Todo gesto
-  fino necesita además un botón grande que haga lo mismo.
+**Los guantes no son un caso de diseño.** Se sacó la regla el 2026-09-24,
+decisión de Ale: no se exige un botón grande que repita cada gesto fino.
+
 - **No existe «tirar hacia abajo para recargar».** La app lo ignora: no sirve
   para nada y en el cerro recarga el mapa sin querer.
 - **Todo lo importante va en la mitad de abajo de la pantalla**, al alcance del
   pulgar. Nada crítico en las esquinas de arriba.
 - **Pantalla mojada = toques fantasma.** Toda acción que borre o cancele algo
   pide confirmación.
-  **todo lo de guantes y una sola mano aplica para el modulo de navegación, no para sectores, zonas y demas modulos**
+  **Todo lo de esta sección aplica al módulo de navegación, no a sectores, zonas
+  y demás módulos.**
 
 ### Mapa
 
@@ -226,6 +228,18 @@ que es la única memoria que el navegador no puede borrar.
 
 Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
+### Lo que se anota en el cerro
+
+- **Anotar desde la navegación no sale a internet.** Lo marcado, cambiado o
+  borrado queda en el celular y sube solo **con señal y la navegación
+  cerrada**. Primero los datos, después la foto: si la foto falla, lo demás ya
+  subió y la ficha dice que la foto no. Ver
+  `docs/decisiones/023-anotar-desde-la-navegacion.md`.
+- **En el cerro solo se ve la foto chica.** Baja sola con las anotaciones; la
+  grande nunca baja y se mira con internet en zonas y sectores.
+- **Manda el punto del GPS**, caiga o no en un sector. Dónde se muestra una
+  anotación sale de dónde está, no de a qué sector se la anotó.
+
 ### El resto
 
 - **El mapa libre es navegación.** Las mismas reglas: lee solo lo guardado,
@@ -290,6 +304,17 @@ nueva.** La versión nueva toma el mando al instante y la pantalla vieja que
 quedó abierta pide archivos que ya no están. La red de rescate lo reconoce y
 recarga la página sola, una vez. No reintentar por dentro: reintenta lo mismo
 y falla igual. Pasó el 2026-09-21.
+
+**Antes de recargar, la red de rescate le pregunta a internet por la pieza.**
+Si contesta que no existe, hay señal y salió una versión nueva: se tiran las
+pantallas guardadas —las del cerro se abren siempre desde el celular y
+volverían a pedir la pieza vieja— y se recarga. **Si no contesta, no se tira
+nada**: puede ser el cerro sin señal, donde lo guardado es lo único que deja
+navegar. Pasó el 2026-09-24 en el mapa libre.
+
+**El cartel de la red de rescate muestra todos los datos de la falla**, con un
+botón para copiarlos. Pedido de Ale: se arregla con una captura, no a las
+adivinanzas. No se sacan ni se esconden.
 
 ---
 

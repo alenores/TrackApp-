@@ -8,6 +8,7 @@ import {
   type ResultadoDeSincronizacion,
 } from "@/lib/offline/sincronizacion";
 import { ponerAlDiaLoBajado } from "@/lib/mapas/poner-al-dia-lo-bajado";
+import { ponerAlDiaLasFotosChicas } from "@/lib/anotaciones/descarga";
 
 /**
  * Cuándo se pone al día el paquete: **una vez por apertura, y después de
@@ -77,6 +78,14 @@ function trabajosDeFondo(resultado: Resultado): void {
       .catch(() => {
         // Es trabajo de fondo: la pantalla se guarda igual cuando se visite.
       });
+  }
+
+  // La foto chica de cada anotación baja sola, sin que nadie la pida. La
+  // lista viene completa: la puesta al día no guarda un paquete cortado.
+  if (paquete) {
+    void ponerAlDiaLasFotosChicas(paquete.anotaciones).catch(() => {
+      // Se reintenta la próxima vez; el inicio avisa cuántas faltan.
+    });
   }
 
   // La base queda al día con lo que de verdad hay bajado en el celular.

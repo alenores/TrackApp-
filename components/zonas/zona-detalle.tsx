@@ -13,6 +13,7 @@ import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Rectangulo } from "@/types/database";
 import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
 import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
+import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
 
 /**
  * Una zona con sus sectores.
@@ -79,9 +80,9 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
 
   const soyElAutor = puedeAdministrar && miPerfilId === zona.perfilId;
 
-  const anotacionesDeLaZona = anotaciones.filter((anotacion) =>
-    sectores.some((sector) => sector.id === anotacion.sectorId)
-  );
+  // Las anotadas a sus sectores y las marcadas desde la navegación que caen
+  // dentro de la zona: manda dónde está, no a qué sector se la anotó.
+  const anotacionesDeLaZona = anotacionesDelLugar(anotaciones, sectores, zona.rectangulo);
 
   return (
     <div className="space-y-5">
@@ -171,7 +172,6 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
                 key={sector.id}
                 sector={sector}
                 todosLosSectores={todosLosSectores}
-                anotaciones={anotaciones}
                 soyAdministrador={puedeAdministrar && miPerfilId === sector.perfilId}
               />
             ))}

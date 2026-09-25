@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   abrirFoto,
   AJUSTES_POR_DESTINO,
+  COPIA_CHICA_POR_DESTINO,
   FORMATO_DE_FOTO,
   medidasQueEntran,
   pareceHeic,
@@ -58,6 +59,26 @@ describe("los topes tienen que coincidir con los de la base", () => {
       expect(ajuste.ladoLargo, `el destino ${destino}`).toBeGreaterThan(100);
       expect(ajuste.ladoLargo, `el destino ${destino}`).toBeLessThanOrEqual(4000);
     }
+  });
+});
+
+describe("la copia chica de la foto de una anotación", () => {
+  it("existe: es la única que se ve en el cerro", () => {
+    expect(COPIA_CHICA_POR_DESTINO.anotacion).toBeDefined();
+  });
+
+  it("es bastante más chica y liviana que la grande", () => {
+    const chica = COPIA_CHICA_POR_DESTINO.anotacion!;
+    const grande = AJUSTES_POR_DESTINO.anotacion;
+    expect(chica.ladoLargo).toBeLessThan(grande.ladoLargo);
+    // Baja sola con las anotaciones de todos: tiene que pesar poco de verdad.
+    expect(chica.topeBytes).toBeLessThanOrEqual(150 * 1024);
+    expect(chica.topeBytes).toBeLessThan(grande.topeBytes);
+  });
+
+  it("tiene escalones de calidad de mayor a menor", () => {
+    const { calidades } = COPIA_CHICA_POR_DESTINO.anotacion!;
+    expect([...calidades]).toEqual([...calidades].sort((a, b) => b - a));
   });
 });
 

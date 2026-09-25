@@ -3,8 +3,7 @@
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { Boton } from "@/components/ui/boton";
 import { CLASE_DE_TITULO_DE_SECCION } from "@/components/ui/opciones";
-import { vibrarAlTocar } from "@/lib/vibracion";
-import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
+import { RenglonConCasilla } from "@/components/navegacion/renglon-con-casilla";
 import { hexDeLaRuta } from "@/lib/rutas/colores";
 import type { RutasParaElegir } from "@/lib/navegacion/mapa-libre";
 import type { RutaResumen } from "@/types/database";
@@ -13,7 +12,7 @@ import type { RutaResumen } from "@/types/database";
  * Qué rutas se ven en el mapa libre: todas, ninguna o algunas.
  *
  * Las de la zona donde estás van primero; las de zonas lejanas, después.
- * Es del cerro: cada renglón es de 64, para tocarlo con guantes.
+ * Es del cerro: cada renglón es de 64, para tocarlo caminando.
  */
 
 type Props = {
@@ -23,52 +22,6 @@ type Props = {
   apagadas: Set<number>;
   alCambiar: (apagadas: Set<number>) => void;
 };
-
-function Renglon({
-  ruta,
-  prendida,
-  alTocar,
-}: {
-  ruta: RutaResumen;
-  prendida: boolean;
-  alTocar: () => void;
-}) {
-  return (
-    <li className="border-b border-borde last:border-b-0">
-      <button
-        type="button"
-        aria-pressed={prendida}
-        onPointerDown={() => vibrarAlTocar()}
-        onClick={alTocar}
-        className={[
-          CLASE_DE_RESPUESTA_AL_TOQUE,
-          "flex min-h-16 w-full items-center gap-3 px-3 text-left text-lg text-texto",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-acento-borde",
-        ].join(" ")}
-      >
-        <span
-          aria-hidden
-          className={[
-            "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2",
-            prendida ? "border-acento-borde bg-acento text-acento-texto" : "border-borde-fuerte",
-          ].join(" ")}
-        >
-          {prendida ? (
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-              <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          ) : null}
-        </span>
-        <span
-          aria-hidden
-          className="h-1.5 w-6 shrink-0 rounded-full"
-          style={{ backgroundColor: hexDeLaRuta(ruta.color) }}
-        />
-        <span className="min-w-0 flex-1 truncate">{ruta.nombre}</span>
-      </button>
-    </li>
-  );
-}
 
 function Grupo({
   titulo,
@@ -88,12 +41,21 @@ function Grupo({
       <h3 className={CLASE_DE_TITULO_DE_SECCION}>{titulo}</h3>
       <ul className="overflow-hidden rounded-xl border border-borde-fuerte bg-fondo">
         {rutas.map((ruta) => (
-          <Renglon
+          <RenglonConCasilla
             key={ruta.id}
-            ruta={ruta}
-            prendida={!apagadas.has(ruta.id)}
+            prendido={!apagadas.has(ruta.id)}
             alTocar={() => alternar(ruta.id)}
-          />
+            muestra={
+              <span
+                aria-hidden
+                className="h-1.5 w-6 shrink-0 rounded-full"
+                // El color de cada ruta es un dato de la ruta, no del tema.
+                style={{ backgroundColor: hexDeLaRuta(ruta.color) }}
+              />
+            }
+          >
+            {ruta.nombre}
+          </RenglonConCasilla>
         ))}
       </ul>
     </section>

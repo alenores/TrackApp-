@@ -51,6 +51,9 @@ el sector, como los mapas.
 
 ## Quién las crea
 
+> **Cambió el 2026-09-24:** cualquier usuario anota desde la navegación, y cada
+> uno cambia y borra lo suyo. Ver `023-anotar-desde-la-navegacion.md`.
+
 **Solo el administrador**, igual que las zonas y los sectores.
 
 La experiencia de dibujar tiene que ser **muy cómoda en la computadora**. En el

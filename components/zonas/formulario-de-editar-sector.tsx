@@ -16,6 +16,7 @@ import {
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
+import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
 
 type EditarSectorFormProps = {
   zonaId: number;
@@ -43,9 +44,9 @@ export function FormularioDeEditarSector({
   const hermanos = (paquete?.sectores ?? []).filter(
     (cada) => cada.zonaId === zonaId && cada.id !== sectorId,
   );
-  const anotacionesDentro = (paquete?.anotaciones ?? []).filter(
-    (anotacion) => anotacion.sectorId === sectorId,
-  );
+  const anotacionesDentro = sector
+    ? anotacionesDelLugar(paquete?.anotaciones ?? [], [sector])
+    : [];
 
   // Cuando aparece el sector guardado, se cargan los campos una sola vez.
   if (sector && semilla !== sector.id) {

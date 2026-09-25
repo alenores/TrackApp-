@@ -24,9 +24,28 @@
 /** ¿Quedó una entrada puesta por una emergente que ya se cerró? */
 let entradaDeSobra = false;
 
+/**
+ * Cuántas emergentes hay abiertas ahora.
+ *
+ * La navegación también escucha el atrás, para preguntar si querés salir. Con
+ * una emergente abierta, ese atrás es para cerrarla y nada más: sin esta
+ * cuenta, cerrar la ficha de una anotación abría además el cartel de salir.
+ */
+let abiertas = 0;
+
+export function hayEmergenteAbierta(): boolean {
+  return abiertas > 0;
+}
+
+/** Se llama cuando una emergente deja de estar abierta, se cierre como se cierre. */
+export function soltarEmergente(): void {
+  abiertas = Math.max(0, abiertas - 1);
+}
+
 /** Solo para las pruebas: vuelve a dejar todo como recién arrancado. */
 export function olvidarLaEntradaDeSobra(): void {
   entradaDeSobra = false;
+  abiertas = 0;
 }
 
 export function hayEntradaDeSobra(): boolean {
@@ -40,6 +59,7 @@ export function hayEntradaDeSobra(): boolean {
  * carteles diez veces no puede dejar diez entradas muertas en el historial.
  */
 export function abrirEnElHistorial(): void {
+  abiertas += 1;
   const marca = { ...window.history.state, emergenteAbierta: true };
 
   if (entradaDeSobra) {

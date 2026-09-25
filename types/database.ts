@@ -163,10 +163,19 @@ export type Ruta = RutaSinRecorrido & {
 
 export type Anotacion = {
   id: number;
-  sectorId: number;
+  /**
+   * El sector donde se marcó, si se marcó desde uno. Vacío cuando se marcó
+   * desde la navegación: ahí manda el punto del GPS, caiga o no en un sector.
+   */
+  sectorId: number | null;
   perfilId: string;
+  /**
+   * `true` si la hizo el administrador. Sale de la categoría del autor en la
+   * base, no de algo que se guarde aparte: así nunca queda desactualizado.
+   */
+  deAdministrador: boolean;
   tipo: TipoAnotacion;
-  origen: "manual" | "google_earth" | "openstreetmap";
+  origen: "manual" | "google_earth" | "openstreetmap" | "navegacion";
   /** Solo cuando `tipo` es `punto`. */
   icono: IconoPunto | null;
   /** Solo cuando `tipo` es `trazo`. */
@@ -179,7 +188,19 @@ export type Anotacion = {
    * desvío existe, cómo es el cruce de verdad. Viaja con el paquete offline.
    */
   fotoUrl: string | null;
+  /**
+   * La misma foto, achicada para la pantalla del celular.
+   *
+   * **Es la única que se ve en el cerro.** Baja sola con las anotaciones, sin
+   * que nadie la pida. La grande queda para mirarla con internet, en las
+   * pantallas de zonas y sectores.
+   */
+  fotoChicaUrl: string | null;
   geometria: Point | LineString;
+  /** Cuándo se marcó de verdad. Puede haberse subido días después, sin señal. */
+  marcadaEn: string;
+  /** Cuánto podía errar el GPS al marcarla. Vacío si se marcó a mano o es un trazo. */
+  precisionGpsMetros: number | null;
   creadoEn: string;
   actualizadoEn: string;
 };

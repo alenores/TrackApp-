@@ -77,3 +77,29 @@ export async function tirarLasPantallasDeOtraVersion(): Promise<boolean> {
   anotarLaVersionDeLasPantallas(memoria, SELLO_DE_VERSION);
   return true;
 }
+
+/**
+ * Tira todas las pantallas guardadas, sin mirar de qué versión son.
+ *
+ * **Solo para la red de rescate, y solo cuando internet confirmó que la pieza
+ * que faltó ya no existe**: eso prueba que hay señal y que salió una versión
+ * nueva. Una pantalla guardada de la versión vieja se abre siempre desde el
+ * celular y vuelve a pedir la pieza que no está; sin tirarla, recargar no
+ * sirve. Pasó el 2026-09-24 en el mapa libre. El calentador las vuelve a
+ * guardar solo, de la versión nueva.
+ */
+export async function tirarTodasLasPantallasGuardadas(): Promise<void> {
+  if (typeof caches === "undefined") return;
+  await Promise.all(
+    DEPOSITOS_DE_PANTALLAS.map((deposito) => caches.delete(deposito).catch(() => false)),
+  );
+}
+
+/** La versión con la que se guardaron las pantallas, para diagnosticar. */
+export function versionDeLasPantallasGuardadas(): string | null {
+  try {
+    return window.localStorage.getItem(LLAVE);
+  } catch {
+    return null;
+  }
+}

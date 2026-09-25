@@ -4,10 +4,8 @@ import Link from "next/link";
 import { BajarLosMapasQueFaltan } from "@/components/rutas/bajar-los-mapas-que-faltan";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { coberturaCompleta, type Cobertura } from "@/lib/cobertura";
-import { sectoresConFotosSinBajar } from "@/lib/anotaciones/descarga";
 import { useHaySenal } from "@/hooks/use-hay-senal";
-import type { MapaDeSector } from "@/lib/offline/mapas";
-import type { Anotacion, Zona } from "@/types/database";
+import type { Zona } from "@/types/database";
 
 /**
  * El mapa de una ruta: qué sectores cruza y si están en el celular.
@@ -23,10 +21,6 @@ import type { Anotacion, Zona } from "@/types/database";
 
 type BloqueDeCoberturaProps = {
   cobertura: Cobertura;
-  /** Todas las anotaciones del celular, para saber qué fotos hacen falta. */
-  anotaciones: Anotacion[];
-  /** Los mapas bajados, con la lista de qué fotos trajo cada uno. */
-  mapasBajados: MapaDeSector[];
   /** Las zonas que la ruta toca. Puede no tocar ninguna, o tocar cinco. */
   zonas: Zona[];
   /** El id de zona al que mandar para crear el sector que falta, si se sabe. */
@@ -39,8 +33,6 @@ function enKm(metros: number): string {
 
 export function BloqueDeCobertura({
   cobertura,
-  anotaciones,
-  mapasBajados,
   zonas,
   zonaParaCrearSector = null,
 }: BloqueDeCoberturaProps) {
@@ -53,17 +45,9 @@ export function BloqueDeCobertura({
     .map((cada) => cada.sector);
   const listo = coberturaCompleta(cobertura);
 
-  // Un sector puede estar bajado y aun así faltarle una foto que se agregó
-  // después. Eso se sabe acá, en casa, no en el cerro.
-  const fotosPendientes = sectoresConFotosSinBajar(
-    cobertura.sectores.map((cada) => cada.sector),
-    anotaciones,
-    mapasBajados,
-  );
-
   const franja = hayHueco
     ? "rojo"
-    : listo && fotosPendientes.length === 0
+    : listo
       ? "verde"
       : "ambar";
   const metrosCubiertos = Math.max(
@@ -80,7 +64,7 @@ export function BloqueDeCobertura({
       <div className="flex items-start gap-3">
         {hayHueco ? (
           <IconoProblema />
-        ) : listo && fotosPendientes.length === 0 ? (
+        ) : listo ? (
           <IconoListo />
         ) : (
           <IconoAviso />
@@ -98,16 +82,6 @@ export function BloqueDeCobertura({
                 </strong>{" "}
                 de esta ruta caen fuera de todo sector. Ahí el punto azul se va a
                 ver igual, pero sin mapa atrás.
-              </p>
-            </>
-          ) : listo && fotosPendientes.length > 0 ? (
-            <>
-              <p className="text-base font-semibold text-ambar-texto">
-                Te faltan fotos de anotación
-              </p>
-              <p className="mt-1 text-sm leading-6 text-texto-suave">
-                Los mapas están bajados, pero hay fotos que todavía no están en
-                el celular. Bajalas ahora, desde casa.
               </p>
             </>
           ) : listo ? (
@@ -183,8 +157,6 @@ export function BloqueDeCobertura({
 
       <BajarLosMapasQueFaltan
         sectoresNecesarios={cobertura.sectores}
-        anotaciones={anotaciones}
-        fotosPendientes={fotosPendientes}
       />
 
       {haySenal && hayHueco && zonaParaCrearSector !== null ? (

@@ -9,6 +9,11 @@ import {
   type Paquete,
 } from "@/lib/offline/paquete";
 import {
+  COLUMNAS_DE_ANOTACION,
+  leerFilaDeAnotacion,
+  type FilaDeAnotacion,
+} from "@/lib/anotaciones/fila";
+import {
   borrarRecorridosQueSobran,
   guardarRecorrido,
 } from "@/lib/offline/recorridos";
@@ -202,32 +207,22 @@ async function bajarAnotaciones(): Promise<{
 }> {
   const supabase = crearClienteEnElNavegador();
 
-  const resultado = await traerTodasLasFilas<Record<string, unknown>>(
+  // Con la categoría del autor en la misma consulta: de ahí sale si es del
+  // administrador o de un usuario, sin guardarlo aparte.
+  const resultado = await traerTodasLasFilas<FilaDeAnotacion>(
     (desde, hasta) =>
       supabase
         .from("anotaciones")
-        .select("*")
+        .select(COLUMNAS_DE_ANOTACION)
         .is("eliminado_en", null)
         .order("id", { ascending: true })
         .range(desde, hasta),
   );
 
-  const anotaciones: Anotacion[] = resultado.filas.map((fila) => ({
-    id: Number(fila.id),
-    sectorId: Number(fila.sector_id),
-    perfilId: String(fila.perfil_id),
-    tipo: fila.tipo as Anotacion["tipo"],
-    origen: (fila.origen as Anotacion["origen"]) ?? "manual",
-    icono: (fila.icono as Anotacion["icono"]) ?? null,
-    color: (fila.color as string | null) ?? null,
-    comentario: (fila.comentario as string | null) ?? null,
-    fotoUrl: (fila.foto_url as string | null) ?? null,
-    geometria: fila.geometria as Anotacion["geometria"],
-    creadoEn: String(fila.creado_en),
-    actualizadoEn: String(fila.actualizado_en),
-  }));
-
-  return { anotaciones, completa: resultado.completa };
+  return {
+    anotaciones: resultado.filas.map(leerFilaDeAnotacion),
+    completa: resultado.completa,
+  };
 }
 
 /**

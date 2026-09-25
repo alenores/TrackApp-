@@ -21,10 +21,7 @@ import {
   rectangulosDeLaRuta,
   zonasQueCruza,
 } from "@/lib/mapas/rectangulos";
-import {
-  useMapasBajados,
-  useSectoresConMapaBajado,
-} from "@/hooks/use-mapa-del-sector";
+import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import {
   FORMATOS_ACEPTADOS,
   leerArchivoDeRuta,
@@ -122,7 +119,6 @@ export function FormularioDeNuevaRuta() {
   };
 
   const sectoresBajados = useSectoresConMapaBajado();
-  const mapasBajados = useMapasBajados();
   const sectores = paquete?.sectores ?? [];
   const cobertura = recorrido
     ? calcularCobertura(recorrido.geometria, sectores, sectoresBajados)
@@ -248,8 +244,6 @@ export function FormularioDeNuevaRuta() {
       {cobertura ? (
         <BloqueDeCobertura
           cobertura={cobertura}
-          anotaciones={paquete?.anotaciones ?? []}
-          mapasBajados={mapasBajados}
           zonas={zonas}
           zonaParaCrearSector={zonaDeLaRuta?.id ?? null}
         />

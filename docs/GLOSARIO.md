@@ -60,8 +60,24 @@ Lo mismo, con las imágenes de la cartografía descargadas.
 Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sendero).
 
 **Anotación**
-Algo que el administrador agrega encima del mapa para enriquecerlo. Puede ser
-un punto o un trazo. Siempre admite un comentario escrito.
+Algo que se agrega encima del mapa para enriquecerlo. Puede ser un punto o un
+trazo, con comentario y foto. La hace el administrador desde la computadora o
+cualquier usuario desde la navegación. **Ninguna es privada**: todos ven todas,
+y cada uno elige cuáles mostrar. Ver `decisiones/023`.
+
+**Anotar**
+Marcar una anotación desde los mapas del cerro, con el botón «Anotar». Queda en
+el celular y sube sola cuando hay señal.
+
+**Anotación pendiente**
+Lo que se marcó, cambió o borró sin señal y espera en el celular para subirse.
+Sube sola con señal y la navegación cerrada. Mientras espera se ve en tu mapa
+con un aviso, y el inicio dice cuántas quedan y por qué falló la última vez.
+
+**Casillas de anotaciones**
+Las tres opciones de qué anotaciones ver en los mapas del cerro: las tuyas, las
+del administrador y las de otros usuarios. Se combinan como quieras y se
+recuerdan en el celular.
 
 **Mapa perdido**
 Un mapa que la base dice que el usuario había bajado y que ya no está en el
@@ -229,11 +245,19 @@ entrega pedazos a un navegador. Ver `decisiones/017`.
 
 **Depósito**
 Donde el celular guarda lo pesado: las líneas de los recorridos, los pedazos de
-mapa y las fotos de las anotaciones. Es distinto del **paquete**, que es lo
+mapa, las fotos chicas de las anotaciones y las anotaciones pendientes. Es distinto del **paquete**, que es lo
 liviano y dibuja las pantallas al instante.
 
 **Foto de anotación**
 La foto del lugar que marca una anotación: para lo que el mapa no puede mostrar
-—si el vado se cruza, cuál de los dos senderos es el bueno—. **Baja con el mapa
-del sector**, no con el paquete, porque pesa. En el cerro se lee del celular,
-nunca de internet. Ver `decisiones/019`.
+—si el vado se cruza, cuál de los dos senderos es el bueno—. Tiene dos tamaños:
+la **foto grande** y la **foto chica**. Ver `decisiones/023`.
+
+**Foto grande**
+La foto de una anotación en tamaño completo, hasta 2 MB. Se ve con internet, en
+las pantallas de zonas y sectores. **Nunca baja al celular.**
+
+**Foto chica**
+La misma foto, achicada para la pantalla del celular: unos 120 KB como máximo.
+Se arma en el teléfono al elegir la foto. **Es la única que se ve en el cerro**,
+y baja sola con cada puesta al día, sin que nadie la pida.

@@ -1,81 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
-import { leerFoto } from "@/lib/anotaciones/deposito";
+import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
-import type { Anotacion } from "@/types/database";
+import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
 /**
  * La ficha de una anotación, abierta desde el mapa mientras se navega.
  *
  * **Es el momento para el que existe la foto.** La persona está parada en el
- * cruce, sin señal, y necesita ver cómo es de verdad el lugar. Por eso la foto
- * sale del celular y nunca de internet.
+ * cruce, sin señal, y necesita ver cómo es de verdad el lugar. Por eso se
+ * muestra la foto chica, que está en el celular, y nunca se sale a internet.
  *
- * Tiene tres estados y **ninguno queda mudo**: mientras busca la foto, cuando
- * la encuentra, y cuando no está bajada. Ese último es el que importa: un
- * recuadro vacío haría pensar que la foto no existe, cuando lo que pasa es que
- * quedó en casa.
+ * **Nada queda mudo**: mientras busca la foto, cuando no está bajada, y cuando
+ * algo de esta anotación todavía no se subió —con el motivo si falló—.
  */
 
 type PropiedadesDeLaFicha = {
-  anotacion: Anotacion | null;
+  anotacion: AnotacionEnPantalla | null;
   alCerrar: () => void;
+  miPerfilId: string | null;
+  /** Aparece solo si la podés cambiar: las tuyas, o todas si sos administrador. */
+  alCambiar?: (anotacion: AnotacionEnPantalla) => void;
+  alBorrar?: (anotacion: AnotacionEnPantalla) => void;
 };
 
-type Foto =
-  | { paso: "buscando" }
-  | { paso: "esta"; direccion: string }
-  | { paso: "no_esta" }
-  | { paso: "no_tiene" };
+function deQuien(anotacion: AnotacionEnPantalla, miPerfilId: string | null): string {
+  if (miPerfilId !== null && anotacion.perfilId === miPerfilId) return "Tuya";
+  return anotacion.deAdministrador ? "Del administrador" : "De otro usuario";
+}
 
-/**
- * Lo encontrado, junto con **de qué foto era**.
- *
- * Van pegados a propósito: mientras no coincidan, lo que se muestra es
- * «buscando». Guardar el paso por separado haría que, al abrir la segunda
- * anotación, por un instante se viera la foto de la primera.
- */
-type LoEncontrado = { para: string; direccion: string | null };
+function cuando(fecha: string): string | null {
+  const momento = new Date(fecha);
+  if (Number.isNaN(momento.getTime())) return null;
+  return momento.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+}
 
-export function FichaDeAnotacion({ anotacion, alCerrar }: PropiedadesDeLaFicha) {
-  const [encontrado, setEncontrado] = useState<LoEncontrado | null>(null);
-  const fotoUrl = anotacion?.fotoUrl ?? null;
-
-  useEffect(() => {
-    if (!fotoUrl) return;
-
-    let vigente = true;
-    let direccionCreada: string | null = null;
-
-    void (async () => {
-      const guardada = await leerFoto(fotoUrl);
-
-      if (!vigente) return;
-
-      direccionCreada = guardada ? URL.createObjectURL(guardada) : null;
-      setEncontrado({ para: fotoUrl, direccion: direccionCreada });
-    })();
-
-    return () => {
-      vigente = false;
-      // La dirección de la foto ocupa memoria hasta que se suelta.
-      if (direccionCreada) URL.revokeObjectURL(direccionCreada);
-    };
-  }, [fotoUrl]);
-
-  const foto: Foto = !fotoUrl
-    ? { paso: "no_tiene" }
-    : encontrado?.para !== fotoUrl
-      ? { paso: "buscando" }
-      : encontrado.direccion
-        ? { paso: "esta", direccion: encontrado.direccion }
-        : { paso: "no_esta" };
+export function FichaDeAnotacion({
+  anotacion,
+  alCerrar,
+  miPerfilId,
+  alCambiar,
+  alBorrar,
+}: PropiedadesDeLaFicha) {
+  const foto = useFotoDelCelular(anotacion?.fotoChicaUrl ?? null);
 
   const titulo = anotacion?.icono
     ? COMO_SE_LLAMA[anotacion.icono]
-    : "Anotación";
+    : anotacion?.tipo === "trazo"
+      ? "Trazo"
+      : "Anotación";
+
+  // Tiene foto grande pero no chica: se subió antes de que existiera la chica.
+  const tieneSoloLaGrande = Boolean(anotacion?.fotoUrl) && !anotacion?.fotoChicaUrl;
+  const marcadaEl = anotacion ? cuando(anotacion.marcadaEn) : null;
 
   return (
     <Emergente
@@ -83,18 +61,66 @@ export function FichaDeAnotacion({ anotacion, alCerrar }: PropiedadesDeLaFicha) 
       alCerrar={alCerrar}
       titulo={titulo}
       ancho="amplio"
-      acciones={<BotonDeEmergente onClick={alCerrar}>Cerrar</BotonDeEmergente>}
+      acciones={
+        <div className="w-full space-y-2">
+          {anotacion && alCambiar ? (
+            <div className="grid grid-cols-2 gap-2">
+              <BotonDeEmergente
+                variante="secundario"
+                paraNavegacion
+                onClick={() => alCambiar(anotacion)}
+              >
+                Cambiar
+              </BotonDeEmergente>
+              <BotonDeEmergente
+                variante="destructivo"
+                paraNavegacion
+                onClick={() => alBorrar?.(anotacion)}
+              >
+                Borrar
+              </BotonDeEmergente>
+            </div>
+          ) : null}
+          <BotonDeEmergente paraNavegacion onClick={alCerrar}>
+            Cerrar
+          </BotonDeEmergente>
+        </div>
+      }
     >
       <div className="space-y-3">
+        {anotacion ? (
+          <p className="text-base text-texto-suave">
+            {deQuien(anotacion, miPerfilId)}
+            {marcadaEl ? ` · marcada el ${marcadaEl}` : ""}
+            {anotacion.precisionGpsMetros !== null
+              ? ` · GPS ±${anotacion.precisionGpsMetros} m`
+              : ""}
+          </p>
+        ) : null}
+
+        {anotacion?.subida ? (
+          <p
+            role="status"
+            className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto"
+          >
+            {anotacion.subida.clase === "sin_subir"
+              ? "Todavía no se subió: está guardada en este celular y se sube sola cuando tengas señal."
+              : anotacion.subida.clase === "foto_sin_subir"
+                ? "La anotación ya se subió, pero la foto todavía no. Se reintenta sola cuando tengas señal."
+                : "Este cambio todavía no se subió. Se sube solo cuando tengas señal."}
+            {anotacion.subida.motivo ? ` Último intento: ${anotacion.subida.motivo}` : ""}
+          </p>
+        ) : null}
+
         {foto.paso === "buscando" ? (
-          <div className="flex min-h-40 items-center justify-center rounded-xl border border-borde-suave bg-fondo px-3 text-base text-texto-suave">
+          <div className="flex min-h-40 items-center justify-center rounded-xl border border-borde-suave bg-fondo px-3 text-lg text-texto-suave">
             Buscando la foto en el celular…
           </div>
         ) : null}
 
         {foto.paso === "esta" ? (
-          // Se usa la etiqueta de siempre y no la del framework: esta foto sale
-          // del celular, no de internet, y no hay nada que optimizar ni servir.
+          // La etiqueta de siempre y no la del framework: esta foto sale del
+          // celular, no de internet, y no hay nada que optimizar.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={foto.direccion}
@@ -110,17 +136,25 @@ export function FichaDeAnotacion({ anotacion, alCerrar }: PropiedadesDeLaFicha) 
         {foto.paso === "no_esta" ? (
           <p
             role="alert"
-            className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-base leading-6 text-ambar-texto"
+            className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto"
           >
-            Esta anotación tiene una foto, pero no está bajada en el celular.
-            Desde casa, con señal, entrá al sector y bajá las fotos que faltan.
+            Esta anotación tiene una foto, pero no está en el celular. Desde
+            casa, con señal, abrí el inicio y bajá las fotos que faltan.
+          </p>
+        ) : null}
+
+        {tieneSoloLaGrande ? (
+          <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto">
+            Esta anotación tiene una foto que solo se ve con internet, en la
+            pantalla del sector. Hay que volver a cargarla para que viaje al
+            celular.
           </p>
         ) : null}
 
         {anotacion?.comentario ? (
           <p className="text-lg leading-7 text-texto">{anotacion.comentario}</p>
-        ) : foto.paso === "no_tiene" ? (
-          <p className="text-base leading-6 text-texto-suave">
+        ) : foto.paso === "no_tiene" && !tieneSoloLaGrande ? (
+          <p className="text-lg leading-7 text-texto-suave">
             Esta anotación no tiene ni foto ni comentario: marca nomás el lugar.
           </p>
         ) : null}

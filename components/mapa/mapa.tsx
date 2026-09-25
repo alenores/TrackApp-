@@ -1045,7 +1045,12 @@ export function Mapa({
     const MITAD_DEL_DEDO = 22;
 
     const tocar = (evento: maplibregl.MapMouseEvent) => {
-      if (!mapa.getLayer("anotaciones-punto")) return;
+      // Los puntos primero: si el dedo cae sobre un punto y un trazo, se abre
+      // el punto, que es lo más chico y lo más difícil de acertar.
+      const capas = ["anotaciones-punto", "anotaciones-trazo"].filter((capa) =>
+        Boolean(mapa.getLayer(capa)),
+      );
+      if (capas.length === 0) return;
 
       const { x, y } = evento.point;
       const encontradas = mapa.queryRenderedFeatures(
@@ -1053,7 +1058,11 @@ export function Mapa({
           [x - MITAD_DEL_DEDO, y - MITAD_DEL_DEDO],
           [x + MITAD_DEL_DEDO, y + MITAD_DEL_DEDO],
         ],
-        { layers: ["anotaciones-punto"] },
+        { layers: capas },
+      );
+      encontradas.sort(
+        (a, b) =>
+          Number(a.layer.id !== "anotaciones-punto") - Number(b.layer.id !== "anotaciones-punto"),
       );
 
       const id = encontradas[0]?.properties?.id;
@@ -1160,14 +1169,27 @@ export function Mapa({
     cuandoEsteListo(poner);
   }, [miPosicion]);
 
-  // Forzar centrado a pedido
+  /**
+   * Centrar en mi posición, **solo cuando se pide**.
+   *
+   * Se centra una vez por pedido (el botón del GPS) y nada más. Antes el
+   * centrado escuchaba también cada novedad del GPS, que llega cada uno o dos
+   * segundos: el que deslizaba el mapa para mirar otra zona era llevado de
+   * vuelta solo. El punto azul se mueve; el mapa queda donde el usuario lo dejó.
+   */
+  const posicionParaCentrarRef = useRef(posicionEfectiva);
   useEffect(() => {
-    if (!forzarCentradoEn || !posicionEfectiva || !mapaRef.current) return;
-    mapaRef.current.flyTo({ 
-      center: [posicionEfectiva.lon, posicionEfectiva.lat], 
-      zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14 
+    posicionParaCentrarRef.current = posicionEfectiva;
+  }, [posicionEfectiva]);
+
+  useEffect(() => {
+    const posicion = posicionParaCentrarRef.current;
+    if (!forzarCentradoEn || !posicion || !mapaRef.current) return;
+    mapaRef.current.flyTo({
+      center: [posicion.lon, posicion.lat],
+      zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14,
     });
-  }, [forzarCentradoEn, posicionEfectiva]);
+  }, [forzarCentradoEn]);
 
   /**
    * El mapa abierto en grande, tapando la pantalla.

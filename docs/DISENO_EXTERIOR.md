@@ -15,7 +15,6 @@ TrackApp no se usa sentado en un escritorio. Se usa:
 - **Caminando**, con la mochila puesta y una sola mano libre.
 - **Con sol de frente**, que es la peor condición de lectura que existe en un
   celular.
-- **Con guantes**, cuando hace frío o hay roca.
 - **Sin señal**, en el medio del cerro.
 - **Con la batería contada**: quedarse sin batería en la montaña no es una
   molestia, es un problema de seguridad.
@@ -86,8 +85,8 @@ condiciones normales de luz. Con sol directo, cualquiera tiene baja visión
 funcional. Por eso se usa el máximo, no el mínimo.
 
 **56 píxeles de zona tocable, 64 en navegación.** La recomendación habitual para
-dedo desnudo es 48. Un guante agrega imprecisión: el punto de contacto se corre
-y se agranda. Se sube el número en vez de confiar en la puntería.
+dedo desnudo es 48. Caminando, la mano se mueve y el toque se corre. Se sube el
+número en vez de confiar en la puntería.
 
 Importante: el **botón puede verse más chico** que su zona tocable. Lo que no
 puede achicarse es la zona que responde al toque.
@@ -97,14 +96,11 @@ visual: el ojo no se fija bien mientras el cuerpo se mueve.
 
 ---
 
-## Por qué nada de gestos finos
+## Gestos finos: sin regla de guantes
 
-Con guantes no se puede pellizcar para hacer zoom, y mantener apretado medio
-segundo es poco confiable. Deslizar funciona a medias.
-
-**Regla: todo gesto fino tiene que tener un botón grande que haga lo mismo.** El
-gesto se puede dejar como atajo para quien tiene la mano libre, pero nunca puede
-ser la única forma de hacer algo.
+**Se sacó el 2026-09-24, decisión de Ale.** Los guantes dejaron de ser un caso
+de diseño: ya no se exige que cada gesto fino (pellizcar, deslizar, mantener
+apretado) tenga además un botón grande que haga lo mismo.
 
 **No existe «tirar hacia abajo para recargar».** Chrome en el celular recarga
 la página entera con ese gesto. Acá no sirve para nada —la app se pone al día
@@ -157,7 +153,7 @@ componentes de TrackApp; reglas y documentación de Vías de Escalada Córdoba
 `docs/ARCHITECTURE_MAP.md`, `design-qa.md`).
 
 **Definido en conversación con Ale (2026-09-17):** situación de uso real, modo
-claro/oscuro conmutable, botones grandes por guantes, mapa a pantalla completa.
+claro/oscuro conmutable, botones grandes, mapa a pantalla completa.
 
 **Pendiente de verificación:** los valores concretos de contraste, tamaño de
 botón y tamaño de texto **no fueron probados al sol todavía**. Están fijados

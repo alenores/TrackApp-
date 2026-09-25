@@ -64,6 +64,21 @@ export const AJUSTES_POR_DESTINO = {
   anotacion: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
 } as const satisfies Record<string, Ajuste>;
 
+/**
+ * La copia chica que algunos destinos necesitan además de la foto.
+ *
+ * **La de una anotación es la que viaja al cerro.** La grande se mira con
+ * internet en zonas y sectores; en la pantalla del celular, sin señal, se ve
+ * esta. Pesa unas veinte veces menos y baja sola con las anotaciones de todos,
+ * sin que nadie la pida, así que tiene que ser liviana de verdad.
+ *
+ * Sale del mismo recorte que la grande, en el mismo momento: la foto se lee
+ * del celular una sola vez.
+ */
+export const COPIA_CHICA_POR_DESTINO: Partial<Record<DestinoDeFoto, Ajuste>> = {
+  anotacion: { ladoLargo: 720, topeBytes: 120 * 1024, calidades: [0.7, 0.6, 0.5, 0.4] },
+};
+
 export type DestinoDeFoto = keyof typeof AJUSTES_POR_DESTINO;
 
 /** Un pedazo de la foto, en píxeles de la foto original. */
@@ -341,6 +356,27 @@ export async function prepararFoto(
   );
 
   return new File([blob], "foto.webp", {
+    type: FORMATO_DE_FOTO,
+    lastModified: Date.now(),
+  });
+}
+
+/**
+ * La copia chica de la misma foto y el mismo recorte, si el destino la usa.
+ *
+ * `null` cuando el destino no lleva copia chica.
+ */
+export async function prepararCopiaChica(
+  foto: FotoAbierta,
+  destino: DestinoDeFoto,
+  recorte?: Recorte,
+): Promise<File | null> {
+  const ajuste = COPIA_CHICA_POR_DESTINO[destino];
+  if (!ajuste) return null;
+
+  const blob = await comprimirHastaQueEntre(foto.imagen, ajuste, recorte);
+
+  return new File([blob], "foto-chica.webp", {
     type: FORMATO_DE_FOTO,
     lastModified: Date.now(),
   });

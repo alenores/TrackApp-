@@ -31,9 +31,16 @@ Dos guardados, separados por una razón de tamaño:
   navegador. Una sola ruta puede traer miles de puntos; unas decenas de rutas
   desbordan el guardado simple, y cuando eso pasa **la app no puede guardar nada
   más**, ni siquiera lo liviano.
-- **Los pedazos de mapa y las fotos de las anotaciones.** También en el depósito
-  grande, y también por peso. A diferencia de lo anterior, **estos los elige el
-  usuario**: bajan cuando pide el mapa de un sector, y se van cuando lo saca.
+- **Los pedazos de mapa.** También en el depósito grande, y también por peso.
+  A diferencia de lo anterior, **estos los elige el usuario**: bajan cuando pide
+  el mapa de un sector, y se van cuando lo saca.
+- **Las fotos chicas de las anotaciones.** En el depósito grande. Bajan solas
+  después de cada puesta al día, sin que nadie las pida: son livianas. La foto
+  grande nunca baja (decisión 023).
+- **Las anotaciones pendientes.** Lo que se marcó, cambió o borró sin señal
+  desde la navegación, con sus fotos. Sube solo con señal y **con la navegación
+  cerrada**; lo hace el armazón de la app, en cualquier otra pantalla. Ver
+  `lib/anotaciones/pendientes.ts` y `lib/anotaciones/subir-pendientes.ts`.
 
 La puesta al día es **automática y muda**: sin cartel de «hay novedades», sin
 botón de actualizar, sin preguntar nada. Dos límites la protegen:

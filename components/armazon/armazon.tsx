@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { borrarLoGuardadoEnElCelular } from "@/lib/offline/salir";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { SelloDeVersion } from "@/components/armazon/sello-de-version";
@@ -14,8 +14,15 @@ import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progre
 import { MenuLateral } from "@/components/armazon/menu-lateral";
 import { BotonDeSubirRuta } from "@/components/rutas/boton-de-subir-ruta";
 import { useDialogos } from "@/components/ui/dialogos";
+import { usePendientes } from "@/hooks/use-pendientes";
+import { useSubirPendientes } from "@/hooks/use-subir-pendientes";
+import { cuantosPendientesQuedan } from "@/lib/anotaciones/en-pantalla";
+import { anotarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 
 type AppShellProps = {
+  /** El id de quien usa la app. Se guarda en el celular para usarlo sin señal. */
+  miPerfilId: string;
+  soyAdministrador: boolean;
   userName: string;
   userEmail: string;
   userAvatarUrl?: string | null;
@@ -23,6 +30,8 @@ type AppShellProps = {
 };
 
 export function Armazon({
+  miPerfilId,
+  soyAdministrador,
   userName,
   userEmail,
   userAvatarUrl,
@@ -32,6 +41,16 @@ export function Armazon({
   const pathname = usePathname();
   const { confirmar } = useDialogos();
   const [loggingOut, setLoggingOut] = useState(false);
+  const pendientes = usePendientes();
+  const sinSubir = cuantosPendientesQuedan(pendientes);
+
+  // Quién sos, guardado para la navegación, que no le pregunta a la base.
+  useEffect(() => {
+    anotarMiPerfil(miPerfilId, soyAdministrador);
+  }, [miPerfilId, soyAdministrador]);
+
+  // Lo marcado sin señal sube solo apenas hay señal y no estás navegando.
+  useSubirPendientes(miPerfilId);
   const showNewRouteFab = pathname === "/rutas" || pathname === "/";
 
   /**
@@ -47,7 +66,9 @@ export function Armazon({
     const seguro = await confirmar({
       titulo: "¿Cerrar sesión?",
       mensaje:
-        "Se borra de este celular todo lo bajado: las rutas, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
+        sinSubir > 0
+          ? `Se borra de este celular todo lo bajado, y también ${sinSubir === 1 ? "una anotación que marcaste sin señal y todavía no se subió" : `${sinSubir} anotaciones que marcaste sin señal y todavía no se subieron`}: esas se pierden. Si podés, esperá a que se suban.`
+          : "Se borra de este celular todo lo bajado: las rutas, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
       textoDeAceptar: "Cerrar sesión",
       destructivo: true,
     });

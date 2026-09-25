@@ -4,6 +4,98 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-24 (noche) — Anotar desde la navegación, sin señal
+
+### Estado al inicio
+
+Las anotaciones las creaba solo el administrador, con señal, desde la
+computadora, y cada una tenía que estar en un sector. Su foto bajaba con el
+mapa del sector. No había forma de marcar nada desde el cerro.
+
+### Lo que se hizo
+
+Definido con Ale, paso a paso (decisión 023):
+
+- **Botón «Anotar» en los dos mapas del cerro** —navegar una ruta y el mapa
+  libre—: un punto o un trazo, con ícono o color, comentario y foto de la
+  galería. Misma pieza de campos que la pantalla del sector.
+- **Manda el punto del GPS.** El panel abre centrado en tu posición y dice cómo
+  está el GPS; si no anda o no da novedades, se marca tocando el mapa.
+- **Todo queda en el celular y sube solo**, con señal y la navegación cerrada.
+  Primero los datos, después la foto; si la foto falla, se dice en la ficha y en
+  el inicio, con el motivo. Un código del celular evita duplicados.
+- **Cualquier usuario anota; nada es privado.** Cada uno cambia y borra lo suyo
+  —también desde el cerro—; el administrador, todo.
+- **Casillas** para ver las tuyas, las del administrador y las de otros.
+- **Dos tamaños de foto.** La chica se arma en el celular y baja sola con cada
+  puesta al día; es la única que se ve en el cerro. Las fotos ya no bajan con el
+  mapa del sector.
+- **La base:** sector opcional, foto chica, código del celular, fecha real de
+  marcado y precisión del GPS; permisos para que cada usuario cree y cambie lo
+  suyo. Tres scripts en `scripts/`, los tres corridos por Ale en el editor y
+  verificados con la fila de control que devuelve cada uno.
+- **Se quitó la regla de guantes** (pedido de Ale). Quedan el resto de las
+  reglas de una sola mano y los tamaños mínimos.
+- **Arreglos encontrados en el camino:** el perfil de un usuario nuevo no se
+  creaba (una función vieja escribía en una tabla que ya no existe); un borrado
+  no llegaba a los celulares de los demás (R29); cerrar una emergente con el
+  botón de atrás en la navegación abría además el cartel de salir.
+
+### Pruebas nuevas
+
+Subida de lo pendiente (datos antes que foto, foto que falla, sin duplicados,
+cambios y borrados), lo que se ve en pantalla con lo pendiente, las casillas,
+dónde cae una anotación sin sector, la foto chica y el formato del paquete.
+
+### Lo que se miró en el navegador
+
+Sin acceso a la base de TrackApp, la app se levantó con una sesión y datos de
+mentira, con el celular emulado y un GPS simulado, **en el mapa libre**: el
+botón «Anotar», el panel con el estado del GPS, un punto guardado con la
+posición y la precisión del GPS, un trazo dibujado tocando el mapa, la
+confirmación al cancelar, las casillas, la ficha con «Todavía no se subió», el
+atrás que cierra la ficha sin abrir el cartel de salir, el modo sol y el aviso
+del inicio con el motivo del fallo. Mirando así aparecieron dos cosas que se
+arreglaron en el momento: el texto cortado del botón de las casillas y un fallo
+de subida que no quedaba anotado (ahora tiene su prueba).
+
+### Lo que no se pudo verificar
+
+- **La subida de verdad a la base**, porque esta sesión no llega a la base de
+  TrackApp. Las pruebas automáticas la cubren con una base de mentira.
+- **Elegir una foto de la galería** en el celular.
+- **La pantalla de navegar una ruta**: usa la misma pieza que el mapa libre,
+  pero no se miró.
+- **Con el modo avión** de un celular real.
+
+Queda para que Ale lo pruebe en la versión de prueba del borrador.
+
+### Después, probando Ale
+
+Al abrir la versión de prueba justo mientras se publicaba otra, el mapa libre
+quedó en «Esta pantalla se rompió» y recargar no lo arreglaba (R31). Se confirmó
+con una prueba de Ale (pasar por el inicio lo destrababa) y se arregló de raíz:
+la red de rescate le pregunta a internet por la pieza que faltó y, solo si hay
+señal y la pieza no existe, tira las pantallas guardadas y recarga. A pedido de
+Ale, el cartel ahora muestra todos los datos de la falla y un botón para
+copiarlos. Se miró en el navegador forzando la falla.
+
+### Antes de publicar
+
+Ale probó en el celular y encontró que el mapa se volvía solo a su posición
+cada vez que el GPS daba una novedad, aunque él lo hubiera movido para mirar
+otra zona. El centrado escuchaba cada posición nueva: ahora se centra solo al
+tocar el botón del GPS (y una vez al abrir el mapa libre). De paso, el cartel
+de «el GPS no da posición» ya no queda puesto cuando el GPS vuelve a andar.
+Mirado en el navegador moviendo el GPS simulado. A pedido de Ale, se publica.
+
+### Pendiente
+
+- R30: la navegación de una ruta no muestra el aviso de «sin mapa».
+- Revisar si rutas, zonas y sectores tienen el mismo problema de R29.
+
+---
+
 ## Sesión 2026-09-24 — El filtro de rutas, rehecho, y la foto de fondo con sol
 
 ### Estado al inicio

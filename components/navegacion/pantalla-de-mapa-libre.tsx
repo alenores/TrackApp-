@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
-import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
+import { useAnotacionesEnElMapa } from "@/components/navegacion/anotaciones-en-el-mapa";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { ElegirRutasDelMapa } from "@/components/navegacion/elegir-rutas-del-mapa";
 import { Boton } from "@/components/ui/boton";
@@ -14,7 +14,6 @@ import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { useGps } from "@/hooks/use-gps";
 import { useRecorridosDeRutas } from "@/hooks/use-rutas-en-area";
 import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
-import { vibrarAlTocar } from "@/lib/vibracion";
 import { areaDeLasZonas, areaDeLoBajado, rutasParaElegir } from "@/lib/navegacion/mapa-libre";
 
 /**
@@ -32,6 +31,7 @@ export function PantallaDeMapaLibre() {
   const paquete = usePaqueteGuardado();
   const mapasBajados = useMapasBajados();
   const sectoresConMapa = useSectoresConMapaBajado();
+  const gps = useGps();
   const {
     estado: estadoDelGps,
     error: errorDelGps,
@@ -39,18 +39,20 @@ export function PantallaDeMapaLibre() {
     prender: prenderGps,
     segundosSinNoticias,
     posicionVieja,
-  } = useGps();
+  } = gps;
 
   const [apagadas, setApagadas] = useState<Set<number>>(() => new Set());
   const [eligiendoRutas, setEligiendoRutas] = useState(false);
-  const [anotacionTocada, setAnotacionTocada] = useState<number | null>(null);
   const [centrarGps, setCentrarGps] = useState(0);
 
   usePantallaDespierta(estadoDelGps === "andando");
 
   const rutas = useMemo(() => paquete?.rutas ?? [], [paquete]);
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
-  const anotaciones = paquete?.anotaciones ?? [];
+  const anotaciones = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
+  const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
+  // Todas las anotaciones: el mapa libre muestra todo lo bajado.
+  const deAnotaciones = useAnotacionesEnElMapa({ delPaquete: anotaciones, gps, centrarEnMi });
 
   const idsEncendidos = useMemo(
     () => rutas.filter((ruta) => !apagadas.has(ruta.id)).map((ruta) => ruta.id),
@@ -78,11 +80,6 @@ export function PantallaDeMapaLibre() {
     setCentrarGps(Date.now());
   }, [posicion]);
 
-  const abrirLaAnotacion = useCallback((anotacionId: number) => {
-    vibrarAlTocar();
-    setAnotacionTocada(anotacionId);
-  }, []);
-  const cerrarLaAnotacion = useCallback(() => setAnotacionTocada(null), []);
   const cerrarElegir = useCallback(() => setEligiendoRutas(false), []);
 
   if (!paquete) {
@@ -115,7 +112,9 @@ export function PantallaDeMapaLibre() {
         <div className="absolute inset-0">
           <CargadorDeMapa
             recorrido={recorridos}
-            anotaciones={anotaciones}
+            anotaciones={deAnotaciones.enElMapa}
+            marcandoPunto={deAnotaciones.marcandoPunto}
+            alMarcarPunto={deAnotaciones.alMarcarPunto}
             miPosicion={posicion}
             encuadre={encuadre}
             encuadrarSoloAlAbrir
@@ -124,10 +123,15 @@ export function PantallaDeMapaLibre() {
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
             alCerrarPantallaCompleta={requestExit}
-            alTocarAnotacion={abrirLaAnotacion}
+            alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           />
         </div>
 
+        {deAnotaciones.aviso}
+
+        {deAnotaciones.anotando ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
+        ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
           {mapasBajados.length === 0 ? (
             <div
@@ -196,8 +200,11 @@ export function PantallaDeMapaLibre() {
                   : `Rutas: ${cuantasSeVen === rutas.length ? "todas" : cuantasSeVen === 0 ? "ninguna" : `${cuantasSeVen} de ${rutas.length}`}`}
               </Boton>
             </div>
+
+            {deAnotaciones.botones}
           </div>
         </div>
+        )}
       </div>
 
       <ElegirRutasDelMapa
@@ -208,10 +215,7 @@ export function PantallaDeMapaLibre() {
         alCambiar={setApagadas}
       />
 
-      <FichaDeAnotacion
-        anotacion={anotaciones.find((cada) => cada.id === anotacionTocada) ?? null}
-        alCerrar={cerrarLaAnotacion}
-      />
+      {deAnotaciones.resto}
 
       <ModalDeSalida
         open={open}

@@ -5,6 +5,7 @@ import {
   abrirEnElHistorial,
   cerrarEnElHistorial,
   seguirDeLargoSiSobra,
+  soltarEmergente,
 } from "@/lib/emergentes/historial";
 
 /**
@@ -54,6 +55,7 @@ export function useCerrarConAtras(abierto: boolean, cerrar: () => void): void {
       window.removeEventListener("popstate", alVolver);
       window.removeEventListener("keydown", alPresionarEscape);
       cerrarEnElHistorial();
+      soltarEmergente();
     };
   }, [abierto, cerrar]);
 }

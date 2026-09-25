@@ -22,8 +22,8 @@ import {
 } from "@/lib/mapas/teselas";
 import { mapaDelSector, sectoresConMapaBajado } from "@/lib/offline/mapas";
 import { losSacadosAProposito } from "@/lib/offline/sacados-a-proposito";
-import { cualesFotosEstanGuardadas } from "@/lib/anotaciones/deposito";
-import type { Anotacion, Sector } from "@/types/database";
+import { cualesFotosEstanGuardadas, guardarFotos } from "@/lib/anotaciones/deposito";
+import type { Sector } from "@/types/database";
 
 /**
  * Las pruebas de la descarga de mapas.
@@ -78,32 +78,6 @@ function fuente(comportamiento: Comportamiento = () => new Uint8Array([1, 2, 3])
   };
 
   return { fuente, pedidas };
-}
-
-function anotacionConFoto(id: number, sectorId: number, fotoUrl: string): Anotacion {
-  return {
-    id,
-    sectorId,
-    perfilId: "alguien",
-    tipo: "punto",
-    origen: "manual",
-    icono: "cruce",
-    color: null,
-    comentario: null,
-    fotoUrl,
-    geometria: { type: "Point", coordinates: [-64.9, -31.9] },
-    creadoEn: "2026-09-01T10:00:00Z",
-    actualizadoEn: "2026-09-01T10:00:00Z",
-  };
-}
-
-/** Un servidor de fotos de mentira, para que la descarga tenga de dónde traerlas. */
-function servidorDeFotos(): void {
-  vi.stubGlobal("fetch", async () => ({
-    ok: true,
-    status: 200,
-    arrayBuffer: async () => new Uint8Array([9, 9, 9]).buffer,
-  }) as unknown as Response);
 }
 
 /** Todo lo que hace falta para un sector: el dibujo y el relieve. */
@@ -364,109 +338,42 @@ describe("borrar el mapa de un sector", () => {
   });
 });
 
-describe("las fotos de las anotaciones viajan con el mapa", () => {
-  it("bajan junto con el sector y quedan anotadas", async () => {
-    servidorDeFotos();
+describe("las fotos de las anotaciones ya no viajan con el mapa", () => {
+  // Decisión de Ale del 2026-09-24: la foto chica baja sola con las
+  // anotaciones, estén o no dentro de un sector. El mapa es solo el mapa.
+
+  it("bajar un mapa no pide ninguna foto", async () => {
+    const pedidas: string[] = [];
+    vi.stubGlobal("fetch", async (direccion: string) => {
+      pedidas.push(direccion);
+      return { ok: false, status: 500 } as unknown as Response;
+    });
 
     const resultado = await bajarElMapaDelSector({
       sector: UNO,
       tipo: "simple",
       fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(1, UNO.id, "https://foto/a.webp")],
     });
 
     expect(resultado.estado).toBe("listo");
-    if (resultado.estado !== "listo") return;
-
-    expect(resultado.fotos).toMatchObject({ bajadas: 1, total: 1, motivo: null });
-    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual(["https://foto/a.webp"]);
+    expect(pedidas).toEqual([]);
   });
 
-  it("solo baja las del sector que se está bajando", async () => {
-    servidorDeFotos();
-
-    await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [
-        anotacionConFoto(1, UNO.id, "https://foto/de-uno.webp"),
-        anotacionConFoto(2, OTRO.id, "https://foto/de-otro.webp"),
-      ],
-    });
-
-    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual(["https://foto/de-uno.webp"]);
-  });
-
-  it("una foto que no entra NO traba el mapa: el sector queda bajado igual", async () => {
-    vi.stubGlobal("fetch", async () => ({ ok: false, status: 404 }) as unknown as Response);
-
-    const resultado = await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(1, UNO.id, "https://foto/rota.webp")],
-    });
-
-    expect(resultado.estado).toBe("listo");
-    if (resultado.estado !== "listo") return;
-
-    // Pero no se dice que la foto está: eso es justo lo que no puede pasar.
-    expect(resultado.fotos.bajadas).toBe(0);
-    expect(resultado.fotos.motivo).toBeTruthy();
-    expect(mapaDelSector(UNO.id, "simple")?.fotos).toEqual([]);
-  });
-
-  it("sacar un sector también libera sus fotos", async () => {
-    servidorDeFotos();
-
-    await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(1, UNO.id, "https://foto/a.webp")],
-    });
+  it("sacar un sector NO se lleva las fotos de las anotaciones", async () => {
+    await guardarFotos([{ direccion: "https://foto/a-chica.webp", bytes: new Uint8Array([1]) }]);
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: fuente().fuente });
 
     await borrarElMapaDelSector(UNO.id, [UNO]);
 
-    expect((await cualesFotosEstanGuardadas(["https://foto/a.webp"])).size).toBe(0);
-  });
-
-  it("sacar un sector NO se lleva la foto del sector de al lado", async () => {
-    servidorDeFotos();
-
-    await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(1, UNO.id, "https://foto/de-uno.webp")],
-    });
-    await bajarElMapaDelSector({
-      sector: OTRO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(2, OTRO.id, "https://foto/de-otro.webp")],
-    });
-
-    await borrarElMapaDelSector(UNO.id, [UNO, OTRO]);
-
-    expect((await cualesFotosEstanGuardadas(["https://foto/de-otro.webp"])).size).toBe(1);
-    expect((await cualesFotosEstanGuardadas(["https://foto/de-uno.webp"])).size).toBe(0);
+    expect((await cualesFotosEstanGuardadas(["https://foto/a-chica.webp"])).size).toBe(1);
   });
 
   it("cerrar sesión no deja fotos de la cuenta anterior", async () => {
-    servidorDeFotos();
-
-    await bajarElMapaDelSector({
-      sector: UNO,
-      tipo: "simple",
-      fuente: fuente().fuente,
-      anotaciones: [anotacionConFoto(1, UNO.id, "https://foto/a.webp")],
-    });
+    await guardarFotos([{ direccion: "https://foto/a-chica.webp", bytes: new Uint8Array([1]) }]);
 
     await borrarTodosLosMapasDelCelular();
 
-    expect((await cualesFotosEstanGuardadas(["https://foto/a.webp"])).size).toBe(0);
+    expect((await cualesFotosEstanGuardadas(["https://foto/a-chica.webp"])).size).toBe(0);
   });
 });
 

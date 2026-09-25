@@ -17,6 +17,8 @@ export type Gps = {
   /** Qué pasó cuando el GPS falla. Se muestra: nunca se traga. */
   error: string | null;
   posicion: { lat: number; lon: number } | null;
+  /** Cuántos metros puede errar la última posición, según el propio GPS. */
+  precision: number | null;
   prender: () => void;
   segundosSinNoticias: number;
   /** `true` cuando el GPS anda pero hace rato que no da novedades. */
@@ -28,6 +30,7 @@ export function useGps(): Gps {
   const [estado, setEstado] = useState<EstadoDelGps>("apagado");
   const [error, setError] = useState<string | null>(null);
   const [posicion, setPosicion] = useState<{ lat: number; lon: number } | null>(null);
+  const [precision, setPrecision] = useState<number | null>(null);
   const [ultimaNoticia, setUltimaNoticia] = useState<number | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
 
@@ -65,7 +68,13 @@ export function useGps(): Gps {
     vigilanciaRef.current = navigator.geolocation.watchPosition(
       (lectura) => {
         setPosicion({ lat: lectura.coords.latitude, lon: lectura.coords.longitude });
+        setPrecision(
+          Number.isFinite(lectura.coords.accuracy) ? Math.round(lectura.coords.accuracy) : null,
+        );
         setEstado("andando");
+        // Si antes falló y ahora da posición, el cartel de falla se va: si no,
+        // el usuario lee «no da posición» con el punto moviéndose.
+        setError(null);
         setUltimaNoticia(Date.now());
         setAhora(Date.now());
       },
@@ -84,6 +93,7 @@ export function useGps(): Gps {
     estado,
     error,
     posicion,
+    precision,
     prender,
     segundosSinNoticias,
     posicionVieja:

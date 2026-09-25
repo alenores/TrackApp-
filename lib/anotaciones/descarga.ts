@@ -1,23 +1,25 @@
 import {
+  borrarFotosQueSobran,
   cualesFotosEstanGuardadas,
   guardarFotos,
   type FotoGuardada,
 } from "@/lib/anotaciones/deposito";
-import type { MapaDeSector } from "@/lib/offline/mapas";
-import type { Anotacion, Sector } from "@/types/database";
+import type { Anotacion } from "@/types/database";
 
 /**
- * Bajar al celular las fotos de las anotaciones de un sector.
+ * Bajar al celular la foto chica de todas las anotaciones.
  *
- * Van pegadas a la descarga del mapa del sector porque **pesan**, y lo que pesa
- * lo elige el usuario: los datos de las anotaciones —el ícono, el comentario,
- * las coordenadas— viajan siempre con el paquete, pero la foto no.
+ * **Baja sola, con las anotaciones, sin que nadie la pida.** Es la versión
+ * pensada para la pantalla del celular: pesa unas veinte veces menos que la
+ * grande, así que no hace falta que el usuario elija gastar datos en ella. La
+ * grande nunca baja: se mira con internet en zonas y sectores.
  *
- * **Una foto que falla no arruina el mapa.** El mapa es una promesa: sector en
- * verde quiere decir que se puede navegar con fondo. La foto es un extra, y si
- * una no entró, se dice cuántas faltan y se ofrece reintentar, que es un toque.
- * Trabar el mapa entero porque una foto quedó colgada sería cambiar un problema
- * chico por uno grave.
+ * Antes las fotos bajaban pegadas al mapa del sector. Eso se descartó el
+ * 2026-09-24: una anotación marcada desde la navegación puede caer fuera de
+ * todo sector, y su foto no llegaba nunca al celular de nadie.
+ *
+ * **Una foto que falla no frena nada.** Se dice cuántas faltan y se reintenta
+ * la próxima vez que la app se ponga al día con señal.
  */
 
 export type AvanceDeFotos = {
@@ -32,11 +34,11 @@ export type AvanceDeFotos = {
 /** Cuántas fotos se piden a la vez. Pesan más que un pedazo de mapa. */
 const A_LA_VEZ = 3;
 
-/** Las direcciones de foto de estas anotaciones, sin repetir y sin vacías. */
+/** Las direcciones de foto chica de estas anotaciones, sin repetir y sin vacías. */
 export function fotosDeLasAnotaciones(anotaciones: Anotacion[]): string[] {
   const direcciones = new Set<string>();
   for (const anotacion of anotaciones) {
-    if (anotacion.fotoUrl) direcciones.add(anotacion.fotoUrl);
+    if (anotacion.fotoChicaUrl) direcciones.add(anotacion.fotoChicaUrl);
   }
   return [...direcciones];
 }
@@ -154,35 +156,47 @@ export async function bajarLasFotosDeLasAnotaciones({
   };
 }
 
-/** Un sector que tiene el mapa bajado pero le falta alguna foto. */
-export type SectorConFotosSinBajar = { sector: Sector; cuantas: number };
+/**
+ * Deja el celular con la foto chica de cada anotación, y nada más.
+ *
+ * Baja las que falten y tira las que ya no son de ninguna anotación: una foto
+ * reemplazada o de una anotación borrada deja de ocupar lugar sola.
+ *
+ * **Solo se tira si la lista de anotaciones está completa**, que es lo que
+ * garantiza la puesta al día del paquete antes de llamar acá. Con una lista a
+ * medias se borrarían fotos que sí hacen falta.
+ */
+export async function ponerAlDiaLasFotosChicas(
+  anotaciones: Anotacion[],
+  senal?: AbortSignal,
+): Promise<AvanceDeFotos> {
+  const avance = await bajarLasFotosDeLasAnotaciones({ anotaciones, senal });
+
+  try {
+    await borrarFotosQueSobran(new Set(fotosDeLasAnotaciones(anotaciones)));
+  } catch {
+    // Espacio ocupado de gusto: se reintenta la próxima vez.
+  }
+
+  return avance;
+}
 
 /**
- * Qué sectores ya bajados tienen fotos de anotación sin bajar.
+ * Cuántas fotos chicas faltan en el celular.
  *
- * **Esto se pregunta en casa, con señal.** Una foto agregada después de bajar
- * el mapa no está en el celular, y sin este aviso el usuario se enteraría
- * parado en el cruce, que es justo el lugar donde no se puede hacer nada.
- *
- * Los sectores **sin** mapa bajado no aparecen acá: para esos el aviso ya es
- * otro y más grande, que les falta el mapa.
+ * **Se pregunta en casa, con señal**, para avisar antes de salir. Lee solo el
+ * depósito del celular: no sale a internet.
  */
-export function sectoresConFotosSinBajar(
-  sectores: Sector[],
+export async function cuantasFotosChicasFaltan(
   anotaciones: Anotacion[],
-  mapas: MapaDeSector[],
-): SectorConFotosSinBajar[] {
-  const porSector = new Map(mapas.map((mapa) => [mapa.sectorId, new Set(mapa.fotos)]));
+): Promise<number> {
+  const necesita = fotosDeLasAnotaciones(anotaciones);
+  if (necesita.length === 0) return 0;
 
-  return sectores.flatMap((sector) => {
-    const bajadas = porSector.get(sector.id);
-    if (!bajadas) return [];
-
-    const necesita = fotosDeLasAnotaciones(
-      anotaciones.filter((cada) => cada.sectorId === sector.id),
-    );
-    const cuantas = necesita.filter((direccion) => !bajadas.has(direccion)).length;
-
-    return cuantas > 0 ? [{ sector, cuantas }] : [];
-  });
+  try {
+    const estan = await cualesFotosEstanGuardadas(necesita);
+    return necesita.length - estan.size;
+  } catch {
+    return necesita.length;
+  }
 }

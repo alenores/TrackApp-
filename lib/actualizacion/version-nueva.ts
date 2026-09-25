@@ -21,6 +21,58 @@ export function esUnArchivoDeLaAppQueYaNoExiste(error: { name?: string; message?
   return /loading chunk .* failed/i.test(error.message ?? "");
 }
 
+/** La dirección de la pieza que no se pudo traer, si el error la dice. */
+export function direccionDelArchivoQueFalta(error: { message?: string }): string | null {
+  // La dirección puede tener paréntesis adentro —las pantallas se llaman
+  // «(app)»—: se toma hasta el último paréntesis del mensaje.
+  const encontrada = /\(error: (\S+)\)\s*$/.exec(error.message ?? "");
+  return encontrada ? encontrada[1] : null;
+}
+
+/**
+ * Qué contesta internet cuando se le pregunta por la pieza que faltó.
+ *
+ * - `no_existe`: hay señal y la pieza ya no está. **Salió una versión nueva.**
+ * - `existe`: hay señal y la pieza está. Fue un corte pasajero.
+ * - `sin_respuesta`: no contestó. Sin señal —el caso del cerro— o muy lenta.
+ */
+export type RespuestaSobreElArchivo = "no_existe" | "existe" | "sin_respuesta";
+
+/** Lo máximo que se espera la respuesta. Todo lo que tapa tiene tope. */
+export const TOPE_DE_LA_CONSULTA_MS = 6000;
+
+type Pedir = (direccion: string, opciones: RequestInit) => Promise<{ status: number }>;
+
+/**
+ * Pregunta a internet si la pieza existe.
+ *
+ * **Solo con esta respuesta se puede saber si hay una versión nueva.** Sin
+ * señal, la pieza tampoco se puede traer y el error es el mismo; pero ahí las
+ * pantallas guardadas son lo único que deja navegar, y no se pueden tirar.
+ */
+export async function preguntarPorElArchivo(
+  direccion: string,
+  pedir: Pedir = (url, opciones) => fetch(url, opciones),
+  topeMs: number = TOPE_DE_LA_CONSULTA_MS,
+): Promise<RespuestaSobreElArchivo> {
+  const cancelador = new AbortController();
+  const reloj = setTimeout(() => cancelador.abort(), topeMs);
+  try {
+    const respuesta = await pedir(direccion, {
+      method: "HEAD",
+      cache: "no-store",
+      signal: cancelador.signal,
+    });
+    if (respuesta.status === 404 || respuesta.status === 410) return "no_existe";
+    if (respuesta.status >= 200 && respuesta.status < 400) return "existe";
+    return "sin_respuesta";
+  } catch {
+    return "sin_respuesta";
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
 const MARCA = "trackapp-recargado-por-version-nueva";
 
 /** Cuánto tiene que pasar para volver a probar una recarga automática. */

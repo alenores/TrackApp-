@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   abrirFoto,
   cerrarFoto,
+  prepararCopiaChica,
   prepararFoto,
   type DestinoDeFoto,
   type FotoAbierta,
@@ -46,6 +47,11 @@ export type FotoDeFormulario = {
   error: string | null;
   /** El WebP listo para subir. Solo cuando está lista. */
   archivo: File | null;
+  /**
+   * La copia chica del mismo recorte, para los destinos que la usan (la foto
+   * de una anotación). `null` en los demás.
+   */
+  archivoChico: File | null;
   /** Dirección de ese archivo, para mostrarlo. Solo cuando está lista. */
   vistaPrevia: string | null;
   /** La foto tal como vino, para volver a recortarla. */
@@ -67,6 +73,7 @@ export function useFoto(
   const [progreso, setProgreso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [archivoChico, setArchivoChico] = useState<File | null>(null);
   const [vistaPrevia, setVistaPrevia] = useState<string | null>(null);
   const [abierta, setAbierta] = useState<FotoAbierta | null>(null);
 
@@ -82,6 +89,7 @@ export function useFoto(
     vistaPreviaRef.current = null;
     setVistaPrevia(null);
     setArchivo(null);
+    setArchivoChico(null);
   }, []);
 
   const liberarAbierta = useCallback(() => {
@@ -166,8 +174,11 @@ export function useFoto(
       const turno = turnoRef.current;
       setEstado("preparando");
 
-      prepararFoto(foto, destino, recorte)
-        .then((listo) => {
+      Promise.all([
+        prepararFoto(foto, destino, recorte),
+        prepararCopiaChica(foto, destino, recorte),
+      ])
+        .then(([listo, chico]) => {
           if (turno !== turnoRef.current) return;
 
           if (vistaPreviaRef.current) URL.revokeObjectURL(vistaPreviaRef.current);
@@ -176,6 +187,7 @@ export function useFoto(
 
           setVistaPrevia(url);
           setArchivo(listo);
+          setArchivoChico(chico);
           setError(null);
           setEstado("lista");
         })
@@ -193,6 +205,7 @@ export function useFoto(
     progreso,
     error,
     archivo,
+    archivoChico,
     vistaPrevia,
     abierta,
     forma,
