@@ -116,7 +116,8 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si la ruta queda adentro de un
   sector. Al agrandarse y al cerrarse se vuelve a encuadrar lo que hay que
-  mirar, no lo que se estaba mirando.
+  mirar, no lo que se estaba mirando. **Única excepción:** el mapa de la zona
+  adentro de «Rutas en el mapa», que va sin botones propios (decisión 025).
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al

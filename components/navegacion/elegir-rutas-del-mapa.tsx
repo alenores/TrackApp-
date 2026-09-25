@@ -167,6 +167,8 @@ function Contenido({
               fondoInicial={fondosDisponibles[0] ?? "dibujo"}
               fondosDisponibles={fondosDisponibles}
               marcandoPunto
+              miniatura
+              sinMapaDescargado={fondosDisponibles.length === 0}
               alMarcarPunto={(lon, lat) => {
                 const tocado = sectorEnElLugar(sectoresDeLaZona, { lat, lon });
                 if (tocado) alElegirSector(tocado.id);
@@ -177,9 +179,6 @@ function Contenido({
               {sectoresDeLaZona.length === 0
                 ? "Esta zona no tiene sectores guardados."
                 : "Tocá un sector para ver sus rutas. El punto azul sos vos."}
-              {fondosDisponibles.length === 0
-                ? " No tenés mapa bajado: los sectores se ven sobre fondo liso."
-                : ""}
             </p>
           </div>
         )

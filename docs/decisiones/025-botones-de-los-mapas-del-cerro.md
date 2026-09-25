@@ -33,12 +33,19 @@ y nada que no sirva.
   - En el mapa libre, el sector donde estás, según el GPS. Mientras el GPS no
     responde, no hay sector elegido y el mapa muestra todas las zonas desde
     arriba; cuando responde, el mapa va a donde estás.
-- **Todo sale de lo guardado en el celular**, también el mapa de la zona. Sin
-  mapa bajado, los sectores se ven sobre fondo liso y la pantalla lo dice.
+- **Todo sale de lo guardado en el celular**, también el mapa de la zona.
+- **Mapa sin bajar: un cartel chico, nada más.** Arriba a la izquierda, donde
+  va Simple/Satelital, un cartel ámbar que dice «Sin mapa descargado». Sin
+  más texto. Reemplaza a los carteles grandes de abajo.
+- **Simple/Satelital y las curvas, chatos**, uno debajo del otro, para no
+  tapar el mapa.
+- **El mapa de la zona va sin botones propios** (ubicarme, ver en grande) y
+  con el nombre de cada sector en su esquina, así no tapa tu punto azul. Es la
+  única excepción a «todo mapa se puede abrir en grande».
 
 ## Lo que se corrigió en el camino
 
 - El mapa libre no iba a tu posición si el GPS respondía antes de que el mapa
   terminara de armarse: el encuadre del armado pisaba el centrado.
-- El aviso de «te falta bajar el mapa de este sector» se calculaba en la
-  navegación pero nunca se mostraba. Ahora se muestra.
+- El aviso de que falta mapa se calculaba en la navegación pero nunca se
+  mostraba. Ahora se muestra, como el cartel chico.

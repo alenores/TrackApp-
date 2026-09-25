@@ -206,6 +206,17 @@ type MapaProps = {
    * ella. La única pantalla que trabaja sin señal es la de navegar.
    */
   enVivo?: boolean;
+  /**
+   * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, donde
+   * va Simple/Satelital, aparece un cartel chico: «Sin mapa descargado».
+   */
+  sinMapaDescargado?: boolean;
+  /**
+   * `true` para el mapa chico de adentro de una emergente, como el de la zona
+   * en «Rutas en el mapa»: sin botones propios (ubicarme, ver en grande) y con
+   * el nombre de cada sector en su esquina, así no tapa el punto azul.
+   */
+  miniatura?: boolean;
   className?: string;
 };
 
@@ -308,6 +319,8 @@ export function Mapa({
   alMarcarPunto,
   alTocarAnotacion,
   enVivo = false,
+  sinMapaDescargado = false,
+  miniatura = false,
   className = "",
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -1102,14 +1115,23 @@ export function Mapa({
       for (const cada of rectangulos) {
         if (cada.etiqueta) {
           const el = document.createElement("div");
-          el.className = "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
+          el.className = miniatura
+            ? "text-xs font-bold text-texto bg-superficie/80 px-1 rounded"
+            : "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
           el.textContent = cada.etiqueta as string;
           const { latNorte, latSur, lonEste, lonOeste } = cada.rectangulo;
-          const lon = (lonOeste + lonEste) / 2;
-          const lat = (latNorte + latSur) / 2;
-          const m = new maplibregl.Marker({ element: el })
-            .setLngLat([lon, lat])
-            .addTo(mapa);
+          // En la miniatura va en la esquina de arriba a la izquierda: en el
+          // medio tapaba el punto azul de quien está parado en ese sector.
+          const m = miniatura
+            ? new maplibregl.Marker({ element: el, anchor: "top-left", offset: [3, 3] }).setLngLat([
+                lonOeste,
+                latNorte,
+              ])
+            : new maplibregl.Marker({ element: el }).setLngLat([
+                (lonOeste + lonEste) / 2,
+                (latNorte + latSur) / 2,
+              ]);
+          m.addTo(mapa);
           marcadoresDeEtiquetasRef.current.push(m);
         }
       }
@@ -1291,66 +1313,71 @@ export function Mapa({
       ) : null}
 
       {/*
-        Simple o satelital. Solo los que hay: sin ninguno bajado el botón no
-        aparece, y con uno solo muestra ese.
+        Arriba a la izquierda, uno debajo del otro y chatos para no tapar el
+        mapa: Simple o Satelital (solo los que hay: sin ninguno bajado no
+        aparece), las curvas sobre la foto y el cartel de que falta mapa.
       */}
-      {opcionesDeFondo.length > 0 ? (
-        <div
-          className={[
-            "h-10",
-            "absolute left-3 top-3 flex overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]",
-          ].join(" ")}
-        >
-          {(
-            [
-              ["dibujo", "Simple"],
-              ["satelital", "Satelital"],
-            ] as const
-          )
-            .filter(([cual]) => opcionesDeFondo.includes(cual))
-            .map(([cual, etiqueta]) => (
+      {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
+        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {opcionesDeFondo.length > 0 ? (
+            <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
+              {(
+                [
+                  ["dibujo", "Simple"],
+                  ["satelital", "Satelital"],
+                ] as const
+              )
+                .filter(([cual]) => opcionesDeFondo.includes(cual))
+                .map(([cual, etiqueta]) => (
+                  <button
+                    key={cual}
+                    type="button"
+                    onClick={() => {
+                      setTipoDeFondo(cual);
+                      if (alCambiarFondo) alCambiarFondo(cual);
+                    }}
+                    aria-pressed={tipoDeFondo === cual}
+                    className={[
+                      "flex h-full items-center px-3 text-xs font-semibold transition-colors",
+                      tipoDeFondo === cual
+                        ? "bg-texto text-fondo"
+                        : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                    ].join(" ")}
+                  >
+                    {etiqueta}
+                  </button>
+                ))}
+            </div>
+          ) : null}
+
+          {/* Curvas sobre la foto: solo con la foto guardada; en vivo no hay curvas. */}
+          {!enVivo && tipoDeFondo === "satelital" ? (
             <button
-              key={cual}
               type="button"
-              onClick={() => {
-                setTipoDeFondo(cual);
-                if (alCambiarFondo) alCambiarFondo(cual);
-              }}
-              aria-pressed={tipoDeFondo === cual}
+              onPointerDown={() => vibrarAlTocar()}
+              onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
+              aria-pressed={curvasSobreLaFoto}
               className={[
-                "flex h-full items-center px-4 text-xs font-semibold transition-colors",
-                tipoDeFondo === cual
+                CLASE_DE_RESPUESTA_AL_TOQUE,
+                "pointer-events-auto flex h-7 items-center rounded-full border border-borde-fuerte px-3 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
+                curvasSobreLaFoto
                   ? "bg-texto text-fondo"
-                  : "bg-superficie-baja text-texto-suave hover:bg-superficie-alta hover:text-texto",
+                  : "bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
               ].join(" ")}
             >
-              {etiqueta}
+              {curvasSobreLaFoto ? "Curvas: sí" : "Curvas: no"}
             </button>
-          ))}
-        </div>
-      ) : null}
+          ) : null}
 
-      {/*
-        Curvas sobre la foto: se prenden y apagan. Va debajo del botón
-        Simple/Satelital, y solo con la foto guardada: en vivo no hay curvas.
-      */}
-      {!enVivo && tipoDeFondo === "satelital" ? (
-        <button
-          type="button"
-          onPointerDown={() => vibrarAlTocar()}
-          onClick={() => setCurvasSobreLaFoto((antes) => !antes)}
-          aria-pressed={curvasSobreLaFoto}
-          className={[
-            CLASE_DE_RESPUESTA_AL_TOQUE,
-            "top-[3.75rem] h-10",
-            "absolute left-3 flex items-center rounded-full border border-borde-fuerte px-4 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
-            curvasSobreLaFoto
-              ? "bg-texto text-fondo"
-              : "bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
-          ].join(" ")}
-        >
-          {curvasSobreLaFoto ? "Curvas: sí" : "Curvas: no"}
-        </button>
+          {sinMapaDescargado ? (
+            <p
+              role="status"
+              className="rounded-full border border-ambar-borde bg-ambar-fondo px-3 py-1 text-xs font-semibold text-ambar-texto shadow-[var(--sombra-alta)]"
+            >
+              Sin mapa descargado
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
@@ -1406,7 +1433,7 @@ export function Mapa({
       {/*
         Abrir el mapa en grande y GPS. Van abajo a la derecha, al alcance del pulgar.
       */}
-      {!pantallaCompleta ? (
+      {!pantallaCompleta && !miniatura ? (
         <div className="absolute bottom-3 right-3 flex flex-col gap-2">
           {controlesAdicionales}
 

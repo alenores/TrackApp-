@@ -27,8 +27,11 @@ a aplicar.
 - **Mapa libre sin GPS**: todas las zonas desde arriba; cuando el GPS
   responde, va a donde estás. Se arregló que el centrado se perdía si el GPS
   respondía antes de que el mapa se armara.
-- Se muestra el aviso de mapa sin bajar en la navegación, que se calculaba y
-  no se veía.
+- **Mapa sin bajar**: un cartel chico «Sin mapa descargado» arriba a la
+  izquierda, en lugar de los carteles grandes de abajo. En la navegación se
+  calculaba y no se veía. Simple/Satelital y las curvas, chatos.
+- **Mapa de la zona** sin botones propios y con el nombre del sector en la
+  esquina, para que no tape el punto azul.
 - Pieza nueva compartida: el botón redondo con ícono.
 
 ### Pruebas nuevas

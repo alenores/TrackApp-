@@ -132,6 +132,7 @@ export function PantallaDeMapaLibre() {
             fondoInicial={fondosDisponibles[0] ?? "dibujo"}
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
+            sinMapaDescargado={mapasBajados.length === 0}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           />
         </div>
@@ -142,16 +143,6 @@ export function PantallaDeMapaLibre() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
         ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
-          {mapasBajados.length === 0 ? (
-            <div
-              role="status"
-              className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-lg text-ambar-texto"
-            >
-              No tenés ningún mapa bajado: las rutas y las anotaciones se ven
-              sobre fondo liso.
-            </div>
-          ) : null}
-
           {posicionVieja ? (
             <div
               role="alert"
