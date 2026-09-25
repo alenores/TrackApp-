@@ -94,8 +94,8 @@ cuatro convenciones se cumple. Los ids además son uuid y no seriales. Ver
 ## 🟡 R5 — Sin GPS en segundo plano
 
 **Qué pasa.** Siendo una app web, el GPS deja de seguirte cuando la pantalla se
-apaga o la app pasa a segundo plano. La alerta de desvío solo funciona con la app
-abierta y la pantalla encendida.
+apaga o la app pasa a segundo plano. El punto azul solo se mueve con la app abierta
+y la pantalla encendida.
 
 **Mitigación decidida.** Empaquetar la app para Android al final del desarrollo
 (ver `decisiones/002-pwa-y-empaquetado-android.md`). Es opcional y descartable.

@@ -122,8 +122,8 @@ acción destructiva sin confirmación se dispara sola.
 
 ## Por qué el mapa va a pantalla completa
 
-La información que importa mientras caminás es: dónde estoy, por dónde sigue el
-camino, y si me desvié. Todo lo demás compite por espacio con eso.
+La información que importa mientras caminás es: dónde estoy y por dónde sigue
+el camino. Todo lo demás compite por espacio con eso.
 
 **Consecuencia obligatoria:** si el mapa ocupa todo, tiene que haber una salida
 visible y el botón físico de atrás tiene que funcionar. Un mapa a pantalla

@@ -83,7 +83,7 @@ function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
 
   const texto =
     gps.estado === "apagado" || gps.estado === "pidiendo"
-      ? "El GPS está apagado: no se sabe dónde estás."
+      ? "El GPS todavía está buscando tu posición."
       : gps.posicionVieja
         ? `Hace ${gps.segundosSinNoticias} segundos que el GPS no da novedades: tu posición puede estar corrida.`
         : (gps.error ?? "El GPS no está dando tu posición.");
@@ -93,16 +93,6 @@ function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
       <p role="alert" className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-lg leading-7 text-ambar-texto">
         {texto} Marcá el lugar tocando el mapa.
       </p>
-      {gps.estado === "apagado" || gps.estado === "pidiendo" ? (
-        <Boton
-          variante="secundario"
-          anchoCompleto
-          disabled={gps.estado === "pidiendo"}
-          onClick={gps.prender}
-        >
-          {gps.estado === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-        </Boton>
-      ) : null}
     </div>
   );
 }

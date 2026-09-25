@@ -4,19 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { FeatureCollection } from "geojson";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
-import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
+import { useRecorridosDeRutas } from "@/hooks/use-rutas-en-area";
+import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { useAnotacionesEnElMapa } from "@/components/navegacion/anotaciones-en-el-mapa";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
+import { ElegirRutasDelMapa } from "@/components/navegacion/elegir-rutas-del-mapa";
+import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
-import { vibrarAlTocar } from "@/lib/vibracion";
-import {
-  distanciaALaRutaEnMetros,
-  hayQueAvisarDelDesvio,
-} from "@/lib/navegacion/desvio";
 import { useGps } from "@/hooks/use-gps";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
@@ -24,6 +22,7 @@ import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
 import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
+import { sectorPrincipalDeLaRuta } from "@/lib/navegacion/mapa-libre";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
 /**
@@ -33,6 +32,9 @@ import type { Anotacion, Rectangulo } from "@/types/database";
  * descargó antes de salir; el GPS funciona por satélite y no necesita señal.
  *
  * Ver la regla «La navegación es 100% sin conexión» en AGENTS.md.
+ *
+ * **El GPS se prende solo al entrar y se apaga solo al salir**: quien entra
+ * acá es porque está navegando. No hay botón para prenderlo.
  */
 
 type NavegacionViewProps = {
@@ -46,7 +48,6 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
   const searchParams = useSearchParams();
   const fondoInicial = (searchParams.get("fondo") as TipoDeFondo) || "dibujo";
   const rutasParams = searchParams.get("rutas");
-  const rutasExtrasIds = rutasParams ? rutasParams.split(",").map(Number) : [];
 
   const sectoresBajados = useSectoresConMapaBajado();
   const mapasBajados = useMapasBajados();
@@ -66,12 +67,38 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     segundosSinNoticias,
     posicionVieja,
   } = gps;
+
+  // Se prende solo al entrar. Al salir se apaga: el GPS deja de vigilar
+  // cuando la pantalla se cierra.
+  useEffect(() => {
+    prenderGps();
+  }, [prenderGps]);
   const [avisoDelMapa, setAvisoDelMapa] = useState<string | null>(null);
   const [centrarGps, setCentrarGps] = useState<number>(0);
   const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
   const deAnotaciones = useAnotacionesEnElMapa({ delPaquete: anotaciones, gps, centrarEnMi });
 
-  const { recorridoCombinado } = useRutasEnArea(rectangulo || { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 }, rutaId, rutasExtrasIds);
+  // Las otras rutas que se ven, además de la que se navega. Todo del celular.
+  const paquete = usePaqueteGuardado();
+  const rutasGuardadas = useMemo(() => paquete?.rutas ?? [], [paquete]);
+  const zonasGuardadas = useMemo(() => paquete?.zonas ?? [], [paquete]);
+  const sectoresGuardados = useMemo(() => paquete?.sectores ?? [], [paquete]);
+  const [otrasPrendidas, setOtrasPrendidas] = useState<Set<number>>(
+    () => new Set(rutasParams ? rutasParams.split(",").map(Number).filter((id) => id !== rutaId) : []),
+  );
+  const idsDeLasOtras = useMemo(
+    () => [...otrasPrendidas].filter((id) => id !== rutaId),
+    [otrasPrendidas, rutaId],
+  );
+  const recorridoCombinado = useRecorridosDeRutas(rutasGuardadas, idsDeLasOtras);
+  const [eligiendoRutas, setEligiendoRutas] = useState(false);
+  const cerrarElegirRutas = useCallback(() => setEligiendoRutas(false), []);
+
+  // La lista de rutas abre en el sector por donde pasa la mayor parte de esta.
+  const [sectorElegido, setSectorElegido] = useState<number | null>(null);
+  const estaRuta = rutasGuardadas.find((cada) => cada.id === rutaId) ?? null;
+  const sectorDeLaRuta = estaRuta ? sectorPrincipalDeLaRuta(estaRuta, sectoresGuardados) : null;
+  const sectorDeLaLista = sectorElegido ?? sectorDeLaRuta?.id ?? null;
 
   usePantallaDespierta(estadoDelGps === "andando");
 
@@ -131,24 +158,6 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
     };
   }, [rutaId, sectoresBajados]);
 
-  const metrosDeDesvio = useMemo(
-    () =>
-      posicion && recorrido
-        ? distanciaALaRutaEnMetros(posicion.lat, posicion.lon, recorrido)
-        : null,
-    [posicion, recorrido],
-  );
-
-  const estoyFueraDeRuta =
-    estadoDelGps === "andando" &&
-    metrosDeDesvio !== null &&
-    hayQueAvisarDelDesvio(metrosDeDesvio);
-
-  // Avisar vibrando: yendo por el sendero, nadie está mirando la pantalla.
-  useEffect(() => {
-    if (estoyFueraDeRuta) vibrarAlTocar(220);
-  }, [estoyFueraDeRuta]);
-
   if (cargandoRecorrido) {
     return (
       <Tarjeta className="py-8 text-center text-base text-texto-suave">
@@ -207,7 +216,6 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             fondoInicial={fondoInicial}
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
-            alCerrarPantallaCompleta={requestExit}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           />
         </div>
@@ -217,75 +225,77 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         {deAnotaciones.anotando ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
         ) : (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
-
-          {estoyFueraDeRuta ? (
-            <div
-              role="alert"
-              className="rounded-xl bg-rojo-fondo px-3 py-3 text-center text-lg font-bold text-rojo-texto ring-1 ring-rojo-borde pointer-events-auto"
-            >
-              Fuera de ruta
-            </div>
-          ) : null}
-
-          {posicionVieja ? (
-            <div
-              role="alert"
-              className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-sm text-ambar-texto pointer-events-auto"
-            >
-              Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
-              punto puede estar desactualizado.
-            </div>
-          ) : null}
-
-          <div className="space-y-2 pointer-events-auto">
-            {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
-              <Boton
-                anchoCompleto
-                disabled={estadoDelGps === "pidiendo"}
-                onClick={prenderGps}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
+            {avisoDelMapa ? (
+              <p
+                role="status"
+                className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-lg text-ambar-texto"
               >
-                {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-              </Boton>
+                {avisoDelMapa}
+              </p>
+            ) : null}
+
+            {posicionVieja ? (
+              <p
+                role="alert"
+                className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-lg text-ambar-texto"
+              >
+                Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
+                punto puede estar desactualizado.
+              </p>
+            ) : null}
+
+            {estadoDelGps === "pidiendo" ? (
+              <p
+                role="status"
+                className="pointer-events-auto rounded-xl border border-borde bg-superficie px-3 py-2 text-center text-lg text-texto"
+              >
+                Buscando tu posición con el GPS…
+              </p>
             ) : null}
 
             {errorDelGps ? (
-              <p role="alert" className="text-base leading-6 text-rojo bg-superficie/90 p-2 rounded-xl border border-rojo/20">
+              <p
+                role="alert"
+                className="pointer-events-auto rounded-xl border border-rojo-borde bg-superficie p-2 text-lg leading-7 text-rojo-texto"
+              >
                 {errorDelGps}
               </p>
             ) : null}
 
-            <div className="flex items-center gap-3">
+            <div className="pointer-events-auto flex items-center gap-2">
+              <BotonRedondo etiqueta="Salir de la navegación" onClick={() => requestExit()}>
+                {ICONOS_DEL_CERRO.salir}
+              </BotonRedondo>
+              {deAnotaciones.boton}
+              <BotonRedondo etiqueta="Rutas en el mapa" onClick={() => setEligiendoRutas(true)}>
+                {ICONOS_DEL_CERRO.rutas}
+              </BotonRedondo>
+              <span className="flex-1" />
               {estadoDelGps === "andando" ? (
-                <button
-                  type="button"
-                  aria-label="Centrar en mi ubicación"
-                  onClick={() => setCentrarGps(Date.now())}
-                  className="pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)] hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
-                >
-                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-                    <circle cx="12" cy="10" r="3" fill="currentColor" />
-                  </svg>
-                </button>
+                <BotonRedondo etiqueta="Centrar en mi ubicación" onClick={() => setCentrarGps(Date.now())}>
+                  {ICONOS_DEL_CERRO.centrar}
+                </BotonRedondo>
               ) : null}
-
-              {estadoDelGps === "andando" && metrosDeDesvio !== null ? (
-                <p className="flex-1 text-center text-lg font-medium text-texto-suave bg-superficie/80 py-2 rounded-xl backdrop-blur-sm border border-borde">
-                  {!hayQueAvisarDelDesvio(metrosDeDesvio)
-                    ? `Vas por la ruta · a ${Math.round(metrosDeDesvio)} m de la línea`
-                    : `Te desviaste ${Math.round(metrosDeDesvio)} m de la línea`}
-                </p>
-              ) : (
-                <span className="flex-1" />
-              )}
             </div>
-
-            {deAnotaciones.botones}
           </div>
-        </div>
         )}
       </div>
+
+      <ElegirRutasDelMapa
+        abierto={eligiendoRutas}
+        alCerrar={cerrarElegirRutas}
+        zonas={zonasGuardadas}
+        sectores={sectoresGuardados}
+        rutas={rutasGuardadas}
+        sectorId={sectorDeLaLista}
+        alElegirSector={setSectorElegido}
+        prendidas={otrasPrendidas}
+        alCambiar={setOtrasPrendidas}
+        fija={rutaId}
+        posicion={posicion}
+        fondosDisponibles={fondosDisponibles}
+      />
 
       {deAnotaciones.resto}
 

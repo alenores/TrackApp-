@@ -527,10 +527,11 @@ export function Mapa({
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
-          "fill-opacity": 0.14,
+          "fill-opacity": ["case", ["==", ["get", "clase"], "sector_elegido"], 0.3, 0.14],
         },
       });
 
@@ -560,10 +561,11 @@ export function Mapa({
             "nuevo", colores.rectanguloNuevo,
             "sector", colores.rectanguloNuevo, // Usamos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ],
-          "line-width": ["case", ["==", ["get", "clase"], "nuevo"], 3, 2.4],
+          "line-width": ["match", ["get", "clase"], "nuevo", 3, "sector_elegido", 4, 2.4],
         },
       });
 
@@ -729,6 +731,7 @@ export function Mapa({
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ]);
@@ -738,6 +741,7 @@ export function Mapa({
             "nuevo", colores.rectanguloNuevo,
             "sector", colores.rectanguloNuevo, // Mantenemos el color llamativo (dato) para el sector
             "sector_bajado", colores.rectanguloBajado,
+            "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
             colores.rectanguloExistente,
           ]);
@@ -1182,11 +1186,19 @@ export function Mapa({
   }, [posicionEfectiva]);
 
   useEffect(() => {
-    const posicion = posicionParaCentrarRef.current;
-    if (!forzarCentradoEn || !posicion || !mapaRef.current) return;
-    mapaRef.current.flyTo({
-      center: [posicion.lon, posicion.lat],
-      zoom: mapaRef.current.getZoom() > 14 ? mapaRef.current.getZoom() : 14,
+    if (!forzarCentradoEn) return;
+
+    // Si el pedido llega antes de que el mapa termine de armarse —el GPS
+    // puede responder primero—, se hace apenas esté listo. Si no, el encuadre
+    // del armado lo pisaba y el mapa quedaba lejos de donde estás.
+    cuandoEsteListo(() => {
+      const mapa = mapaRef.current;
+      const posicion = posicionParaCentrarRef.current;
+      if (!mapa || !posicion) return;
+      mapa.flyTo({
+        center: [posicion.lon, posicion.lat],
+        zoom: mapa.getZoom() > 14 ? mapa.getZoom() : 14,
+      });
     });
   }, [forzarCentradoEn]);
 

@@ -7,8 +7,7 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 /**
  * Un renglón con casilla, para prender y apagar lo que se ve en el mapa.
  *
- * Es del cerro: cada renglón mide 64 de alto y se toca entero, no solo la
- * casilla. Lo usan la elección de rutas y la de anotaciones del mapa.
+ * Se toca el renglón entero, no solo la casilla. Tamaño normal (decisión 024). Lo usan la elección de rutas y la de anotaciones del mapa.
  */
 
 type Props = {

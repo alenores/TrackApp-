@@ -8,9 +8,9 @@ import {
 /**
  * Las pruebas de la fórmula de distancia.
  *
- * Ahora todo el resto de la app la usa: el largo de una ruta, el desvío que
- * dispara «Fuera de ruta» y el tramo sin cobertura. Si esta se equivoca, se
- * equivocan los tres a la vez y ninguno avisa.
+ * Ahora todo el resto de la app la usa: el largo de una ruta y el tramo sin
+ * cobertura. Si esta se equivoca, se equivocan los dos a la vez y ninguno
+ * avisa.
  */
 
 describe("distancia entre dos puntos", () => {

@@ -119,6 +119,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   mirar, no lo que se estaba mirando.
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
+- **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
+  salir.** No hay botón para prenderlo. Abajo a la izquierda van salir,
+  anotaciones y rutas; no hay carteles de desvío. Ver `docs/decisiones/025`.
 - **La pantalla no se apaga mientras se está navegando.**
 
 ---

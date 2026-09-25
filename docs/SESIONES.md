@@ -4,6 +4,49 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-25 — Botones normales y mapas del cerro despejados
+
+### Estado al inicio
+
+Los mapas del cerro tenían botones grandes que tapaban el mapa: «Prender el
+GPS», «Anotar», «Anotaciones» y la X arriba. La regla de guantes se había
+sacado, pero el tamaño mínimo de 56 y 64 seguía vivo y los agentes lo volvían
+a aplicar.
+
+### Lo que se hizo
+
+- **Botones de tamaño normal en toda la app** (decisión 024). Se borró el
+  mínimo de las reglas, la guía de diseño, el glosario y el botón único, y
+  quedó escrita la regla al revés. Todos los botones redondos miden 40.
+- **Mapas del cerro** (decisión 025): el GPS se prende solo al entrar y se
+  apaga al salir; abajo a la izquierda, salir, anotaciones y rutas; a la
+  derecha, centrar. Sin carteles de desvío: se sacaron junto con sus cuentas.
+- **Anotaciones en un círculo**: agregar y elegir cuáles se ven, juntos.
+- **Rutas por sector**, con el mapa de la zona para cambiar de sector. En la
+  navegación abre en el sector de la ruta; en el mapa libre, en el tuyo.
+- **Mapa libre sin GPS**: todas las zonas desde arriba; cuando el GPS
+  responde, va a donde estás. Se arregló que el centrado se perdía si el GPS
+  respondía antes de que el mapa se armara.
+- Se muestra el aviso de mapa sin bajar en la navegación, que se calculaba y
+  no se veía.
+- Pieza nueva compartida: el botón redondo con ícono.
+
+### Pruebas nuevas
+
+Qué sector queda elegido (por GPS, por la ruta, por el toque en el mapa de la
+zona) y qué rutas son de cada sector. Los mensajes del GPS pasaron a su propio
+archivo con sus pruebas; las del desvío se fueron con el desvío.
+
+### Lo que se miró en el navegador
+
+Con una sesión y datos de mentira, celular emulado y GPS simulado: el mapa
+libre sin permiso de GPS (todas las zonas y el cartel con el motivo) y con GPS
+(va a tu posición), el panel de rutas, el mapa de la zona, el cambio de
+sector, el círculo de anotaciones con «Agregar», la navegación con su sector y
+la ruta fija, la salida con confirmación, y los modos sol y noche.
+
+---
+
 ## Sesión 2026-09-24 (noche) — Anotar desde la navegación, sin señal
 
 ### Estado al inicio

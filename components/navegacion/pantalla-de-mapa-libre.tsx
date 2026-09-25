@@ -7,14 +7,15 @@ import { useAnotacionesEnElMapa } from "@/components/navegacion/anotaciones-en-e
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
 import { ElegirRutasDelMapa } from "@/components/navegacion/elegir-rutas-del-mapa";
 import { Boton } from "@/components/ui/boton";
+import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
 import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { useGps } from "@/hooks/use-gps";
 import { useRecorridosDeRutas } from "@/hooks/use-rutas-en-area";
-import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
-import { areaDeLasZonas, areaDeLoBajado, rutasParaElegir } from "@/lib/navegacion/mapa-libre";
+import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
+import { areaDeLasZonas, sectorDondeEstas } from "@/lib/navegacion/mapa-libre";
 
 /**
  * El mapa libre: todos los mapas bajados, todas las anotaciones y las rutas
@@ -22,6 +23,10 @@ import { areaDeLasZonas, areaDeLoBajado, rutasParaElegir } from "@/lib/navegacio
  *
  * **No consulta internet. Nunca. Por ningún motivo.** Es una pantalla del
  * cerro, con las mismas reglas que la navegación: todo sale del celular.
+ *
+ * **El GPS se prende solo al entrar y se apaga solo al salir.** Mientras no da
+ * posición, el mapa muestra todas las zonas desde arriba; cuando responde, va
+ * a donde estás y la lista de rutas queda en tu sector.
  */
 
 const SALIDA = "/";
@@ -30,7 +35,6 @@ export function PantallaDeMapaLibre() {
   const { open, requestExit, cancelExit, confirmExit } = useSalidaDeNavegacion(SALIDA);
   const paquete = usePaqueteGuardado();
   const mapasBajados = useMapasBajados();
-  const sectoresConMapa = useSectoresConMapaBajado();
   const gps = useGps();
   const {
     estado: estadoDelGps,
@@ -41,6 +45,10 @@ export function PantallaDeMapaLibre() {
     posicionVieja,
   } = gps;
 
+  useEffect(() => {
+    prenderGps();
+  }, [prenderGps]);
+
   const [apagadas, setApagadas] = useState<Set<number>>(() => new Set());
   const [eligiendoRutas, setEligiendoRutas] = useState(false);
   const [centrarGps, setCentrarGps] = useState(0);
@@ -49,6 +57,7 @@ export function PantallaDeMapaLibre() {
 
   const rutas = useMemo(() => paquete?.rutas ?? [], [paquete]);
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
+  const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
   const anotaciones = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
   const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
   // Todas las anotaciones: el mapa libre muestra todo lo bajado.
@@ -60,17 +69,20 @@ export function PantallaDeMapaLibre() {
   );
   const recorridos = useRecorridosDeRutas(rutas, idsEncendidos);
 
-  const encuadre = useMemo(
-    () =>
-      areaDeLoBajado(paquete?.sectores ?? [], sectoresConMapa) ??
-      areaDeLasZonas(paquete?.zonas ?? []),
-    [paquete, sectoresConMapa],
+  // Mientras el GPS no responde, todas las zonas desde arriba.
+  const encuadre = useMemo(() => areaDeLasZonas(zonas), [zonas]);
+
+  const prendidas = useMemo(() => new Set(idsEncendidos), [idsEncendidos]);
+  const alCambiarPrendidas = useCallback(
+    (nuevas: Set<number>) =>
+      setApagadas(new Set(rutas.filter((ruta) => !nuevas.has(ruta.id)).map((ruta) => ruta.id))),
+    [rutas],
   );
 
-  const eleccion = useMemo(
-    () => rutasParaElegir(rutas, zonas, posicion),
-    [rutas, zonas, posicion],
-  );
+  // La lista de rutas abre en el sector donde estás, cuando el GPS lo sabe.
+  // Si ya elegiste otro a mano, manda lo que elegiste.
+  const [sectorAMano, setSectorAMano] = useState<number | null>(null);
+  const sectorElegido = sectorAMano ?? sectorDondeEstas(sectores, posicion)?.id ?? null;
 
   // Con la primera posición del GPS, el mapa va a donde estás.
   const yaCentroRef = useRef(false);
@@ -104,8 +116,6 @@ export function PantallaDeMapaLibre() {
   if (tiposBajados.has("simple")) fondosDisponibles.push("dibujo");
   if (tiposBajados.has("satelital")) fondosDisponibles.push("satelital");
 
-  const cuantasSeVen = idsEncendidos.length;
-
   return (
     <>
       <div className="fixed inset-0 z-50 flex flex-col bg-mapa-fondo">
@@ -122,7 +132,6 @@ export function PantallaDeMapaLibre() {
             fondoInicial={fondosDisponibles[0] ?? "dibujo"}
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
-            alCerrarPantallaCompleta={requestExit}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           />
         </div>
@@ -153,53 +162,38 @@ export function PantallaDeMapaLibre() {
             </div>
           ) : null}
 
-          <div className="pointer-events-auto space-y-2">
-            {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
-              <Boton
-                anchoCompleto
-                disabled={estadoDelGps === "pidiendo"}
-                onClick={prenderGps}
-              >
-                {estadoDelGps === "pidiendo" ? "Prendiendo el GPS…" : "Prender el GPS"}
-              </Boton>
+          {estadoDelGps === "pidiendo" ? (
+            <p
+              role="status"
+              className="pointer-events-auto rounded-xl border border-borde bg-superficie px-3 py-2 text-center text-lg text-texto"
+            >
+              Buscando tu posición con el GPS…
+            </p>
+          ) : null}
+
+          {errorDelGps ? (
+            <p
+              role="alert"
+              className="pointer-events-auto rounded-xl border border-rojo-borde bg-superficie p-2 text-lg leading-7 text-rojo-texto"
+            >
+              {errorDelGps}
+            </p>
+          ) : null}
+
+          <div className="pointer-events-auto flex items-center gap-2">
+            <BotonRedondo etiqueta="Salir del mapa libre" onClick={() => requestExit()}>
+              {ICONOS_DEL_CERRO.salir}
+            </BotonRedondo>
+            {deAnotaciones.boton}
+            <BotonRedondo etiqueta="Rutas en el mapa" onClick={() => setEligiendoRutas(true)}>
+              {ICONOS_DEL_CERRO.rutas}
+            </BotonRedondo>
+            <span className="flex-1" />
+            {estadoDelGps === "andando" ? (
+              <BotonRedondo etiqueta="Centrar en mi ubicación" onClick={() => setCentrarGps(Date.now())}>
+                {ICONOS_DEL_CERRO.centrar}
+              </BotonRedondo>
             ) : null}
-
-            {errorDelGps ? (
-              <p
-                role="alert"
-                className="rounded-xl border border-rojo-borde bg-superficie p-2 text-lg leading-7 text-rojo-texto"
-              >
-                {errorDelGps}
-              </p>
-            ) : null}
-
-            <div className="flex items-center gap-3">
-              {estadoDelGps === "andando" ? (
-                <button
-                  type="button"
-                  aria-label="Centrar en mi ubicación"
-                  onClick={() => setCentrarGps(Date.now())}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)] hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
-                >
-                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-                    <circle cx="12" cy="10" r="3" fill="currentColor" />
-                  </svg>
-                </button>
-              ) : null}
-
-              <Boton
-                variante="secundario"
-                className="flex-1 shadow-[var(--sombra-alta)]"
-                onClick={() => setEligiendoRutas(true)}
-              >
-                {rutas.length === 0
-                  ? "Rutas: no hay guardadas"
-                  : `Rutas: ${cuantasSeVen === rutas.length ? "todas" : cuantasSeVen === 0 ? "ninguna" : `${cuantasSeVen} de ${rutas.length}`}`}
-              </Boton>
-            </div>
-
-            {deAnotaciones.botones}
           </div>
         </div>
         )}
@@ -208,9 +202,15 @@ export function PantallaDeMapaLibre() {
       <ElegirRutasDelMapa
         abierto={eligiendoRutas}
         alCerrar={cerrarElegir}
-        eleccion={eleccion}
-        apagadas={apagadas}
-        alCambiar={setApagadas}
+        zonas={zonas}
+        sectores={sectores}
+        rutas={rutas}
+        sectorId={sectorElegido}
+        alElegirSector={setSectorAMano}
+        prendidas={prendidas}
+        alCambiar={alCambiarPrendidas}
+        posicion={posicion}
+        fondosDisponibles={fondosDisponibles}
       />
 
       {deAnotaciones.resto}
