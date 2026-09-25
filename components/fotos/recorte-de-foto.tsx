@@ -18,8 +18,7 @@ import type { DestinoDeFoto, FotoAbierta, Recorte } from "@/lib/fotos/preparar";
  * forma. Donde la foto se ve como vino, se puede elegir, con «Como vino»
  * primero.
  *
- * Se puede hacer zoom con dos dedos, pero **además hay botones grandes**: con
- * guantes puestos, un gesto de dos dedos no se acierta.
+ * Se puede hacer zoom con dos dedos, y además hay botones de tamaño normal.
  */
 
 export type ProporcionElegible = {
@@ -164,8 +163,8 @@ function RecorteAbierto({
           />
 
           {/*
-            El zoom de dos dedos es un gesto fino: con guantes no se acierta.
-            Por eso están estos, y son grandes.
+            Además del zoom de dos dedos, estos botones. Tamaño normal
+            (decisión 024).
           */}
           <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-3">
             <BotonDeZoom
@@ -197,7 +196,7 @@ function RecorteAbierto({
                 onClick={() => setOpcion(indice)}
                 className={[
                   CLASE_DE_RESPUESTA_AL_TOQUE,
-                  "min-h-14 rounded-xl border px-5 text-sm font-semibold transition-colors",
+                  "min-h-10 rounded-xl border px-4 text-sm font-semibold transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
                   "disabled:opacity-50",
                   indice === opcion
@@ -235,7 +234,7 @@ function BotonDeZoom({
       onClick={alTocar}
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
-        "pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full",
+        "pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full",
         "border border-white/25 bg-black/65 text-white backdrop-blur",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
         "disabled:opacity-40",

@@ -196,7 +196,7 @@ export function FiltrosDeRutas({
                   onClick={() =>
                     cambiar({ actividades: alternar(borrador.actividades, tipo) })
                   }
-                  className={`flex min-h-14 items-center rounded-full px-0.5 ${CLASE_DE_TOQUE}`}
+                  className={`flex min-h-10 items-center rounded-full px-0.5 ${CLASE_DE_TOQUE}`}
                 >
                   <InsigniaDeActividad tipo={tipo} tamano="mediano" apagada={!elegida} />
                 </button>
@@ -249,7 +249,7 @@ export function FiltrosDeRutas({
                         borrador.circulosDeTecnica === circulo ? 0 : circulo,
                     })
                   }
-                  className={`flex h-14 w-14 items-center justify-center rounded-full ${CLASE_DE_TOQUE}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${CLASE_DE_TOQUE}`}
                 >
                   <CirculoDeTecnica
                     lleno={circulo <= borrador.circulosDeTecnica}

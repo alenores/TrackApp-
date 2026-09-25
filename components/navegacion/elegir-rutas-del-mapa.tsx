@@ -78,7 +78,7 @@ export function ElegirRutasDelMapa({ abierto, alCerrar, eleccion, apagadas, alCa
       alCerrar={alCerrar}
       titulo="Rutas en el mapa"
       acciones={
-        <BotonDeEmergente variante="principal" paraNavegacion onClick={alCerrar}>
+        <BotonDeEmergente variante="principal" onClick={alCerrar}>
           Listo
         </BotonDeEmergente>
       }
@@ -90,12 +90,11 @@ export function ElegirRutasDelMapa({ abierto, alCerrar, eleccion, apagadas, alCa
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-2 gap-2">
-            <Boton variante="secundario" paraNavegacion onClick={() => alCambiar(new Set())}>
+            <Boton variante="secundario" onClick={() => alCambiar(new Set())}>
               Todas
             </Boton>
             <Boton
               variante="secundario"
-              paraNavegacion
               onClick={() => alCambiar(new Set(todas.map((ruta) => ruta.id)))}
             >
               Ninguna

@@ -673,7 +673,6 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
 
             <Boton
               anchoCompleto
-              paraNavegacion
               disabled={guardando || faltanPuntos}
               onClick={() => void alGuardar()}
             >
@@ -710,7 +709,6 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
             ) : null}
             <Boton
               anchoCompleto
-              paraNavegacion
               disabled={guardando || trayendo.importacion.dentro.length === 0}
               onClick={() => void agregarLoTraido()}
             >

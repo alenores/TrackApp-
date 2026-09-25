@@ -11,8 +11,9 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
  * variante que no está, se agrega acá. Así una regla de diseño se cambia en un
  * solo lugar y no en dieciséis.
  *
- * La zona tocable nunca baja de 56 píxeles, y de 64 en la pantalla de
- * navegación: se toca caminando, con guantes, y el dedo no apunta fino.
+ * **Un solo tamaño, el normal, en toda la app.** También en la navegación: los
+ * botones grandes tapan el mapa. Prohibido agregar un tamaño más grande
+ * (decisión 024).
  */
 
 export type VarianteDeBoton =
@@ -36,14 +37,11 @@ const CLASES_POR_VARIANTE: Record<VarianteDeBoton, string> = {
 type PropiedadesDeBoton = ButtonHTMLAttributes<HTMLButtonElement> & {
   variante?: VarianteDeBoton;
   anchoCompleto?: boolean;
-  /** `true` en la pantalla de navegación, donde la zona tocable sube a 64. */
-  paraNavegacion?: boolean;
 };
 
 export function Boton({
   variante = "principal",
   anchoCompleto = false,
-  paraNavegacion = false,
   className = "",
   type = "button",
   disabled,
@@ -64,7 +62,7 @@ export function Boton({
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
         "inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors",
-        paraNavegacion ? "min-h-16 py-4 text-lg" : "min-h-10 py-2 text-sm",
+        "min-h-10 py-2 text-sm",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
         "disabled:cursor-not-allowed disabled:opacity-50",
         anchoCompleto ? "w-full" : "",

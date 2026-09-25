@@ -97,7 +97,7 @@ export function Emergente({
             type="button"
             onClick={alCerrar}
             aria-label="Cerrar"
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             ×
           </button>

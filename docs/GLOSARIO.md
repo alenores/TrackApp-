@@ -133,10 +133,6 @@ Fondo claro con texto oscuro. Es el modo legible con sol directo.
 **Modo noche**
 Fondo oscuro con texto claro. Para poca luz.
 
-**Zona tocable**
-El área que responde al toque de un botón. Puede ser más grande que el dibujo del
-botón. Nunca baja de 56 píxeles.
-
 **Franja**
 La barra de color al costado izquierdo de una tarjeta, que la marca como aviso.
 Hay tres: verde (está listo), ámbar (falta algo y todavía estás a tiempo) y rojo

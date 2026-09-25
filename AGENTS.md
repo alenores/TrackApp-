@@ -72,18 +72,29 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
   fijo en una pantalla.** Si un lado del par fondo/texto queda fijo, en el otro
   modo queda letra clara sobre fondo claro.
 
-### Contraste y tamaños (mínimos, no objetivos)
+### Contraste y texto (mínimos, no objetivos)
 
 | Qué | Mínimo |
 |---|---|
 | Contraste de texto normal | 7:1 |
 | Contraste de texto grande, íconos y bordes | 4.5:1 |
-| Zona tocable de cualquier botón | 56 × 56 px |
-| Zona tocable en la pantalla de navegación | 64 × 64 px |
 | Texto de cuerpo | 16 px |
 | Texto en la pantalla de navegación | 18 px |
 
-Un botón puede verse chico, pero su zona tocable nunca baja de esos números.
+### Botones: un solo tamaño, el normal. Tema cerrado.
+
+**Decisión de Ale, 2026-09-25.** Los botones grandes tapan el mapa y entorpecen
+el uso. No sirven.
+
+- **Todo botón de la app tiene el tamaño normal**: el de las pantallas de
+  administración. **También en la navegación y en el mapa libre.** No existe un
+  tamaño «para navegar» ni «para el cerro».
+- **Prohibido agrandar un botón por encima de ese tamaño.** Ni la zona que
+  responde al toque, ni el dibujo, ni la letra.
+- Los botones redondos con ícono miden lo mismo que el alto de un botón normal.
+- **Prohibido a los agentes volver a plantear este tema.** Nada de «zona
+  tocable mínima», «caminando el dedo no apunta fino» ni «botones grandes para
+  el cerro». Ya está respondido: no.
 
 ### Una sola mano
 
@@ -339,7 +350,7 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
   entra, se bajan las medidas hasta que entre.
 - **Recortar es parte de elegir.** La forma la decide el destino, no la persona:
   donde la pantalla muestra un círculo, se recorta en círculo.
-- Se puede hacer zoom con dos dedos, **pero siempre hay además botones grandes**.
+- Se puede hacer zoom con dos dedos, y además hay botones de tamaño normal.
 
 ## Pantallas emergentes
 
@@ -415,7 +426,7 @@ once puntos.**
 1. Usa las piezas compartidas. No inventó ninguna.
 2. Colores, tamaños y espaciados salen de las variables. Ninguno escrito a mano.
 3. Se ve bien en modo sol **y** en modo noche. Se probaron los dos.
-4. Todas las zonas tocables cumplen el mínimo.
+4. Todos los botones tienen el tamaño normal. Ninguno agrandado.
 5. Las emergentes usan la pieza única y cierran con el botón físico de atrás.
 6. Los botones de volver vuelven, no van.
 7. Tiene resuelto **qué se ve cuando no hay nada**, **mientras carga** y **cuando

@@ -35,7 +35,7 @@ export default function OfflinePage() {
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a
           href="/"
-          className="flex min-h-14 w-full items-center justify-center rounded-xl border border-acento-borde bg-acento px-5 text-base font-semibold text-acento-texto"
+          className="flex min-h-10 w-full items-center justify-center rounded-xl border border-acento-borde bg-acento px-4 text-sm font-semibold text-acento-texto"
         >
           Ir al inicio
         </a>

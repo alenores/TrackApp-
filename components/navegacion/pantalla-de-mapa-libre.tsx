@@ -92,7 +92,7 @@ export function PantallaDeMapaLibre() {
           Abrí la app una vez con conexión y las rutas, las anotaciones y los
           mapas que bajes quedan guardados para usarlos sin señal.
         </p>
-        <Boton variante="secundario" anchoCompleto paraNavegacion onClick={() => requestExit()}>
+        <Boton variante="secundario" anchoCompleto onClick={() => requestExit()}>
           Volver al inicio
         </Boton>
       </Tarjeta>
@@ -157,7 +157,6 @@ export function PantallaDeMapaLibre() {
             {estadoDelGps === "apagado" || estadoDelGps === "pidiendo" ? (
               <Boton
                 anchoCompleto
-                paraNavegacion
                 disabled={estadoDelGps === "pidiendo"}
                 onClick={prenderGps}
               >
@@ -180,7 +179,7 @@ export function PantallaDeMapaLibre() {
                   type="button"
                   aria-label="Centrar en mi ubicación"
                   onClick={() => setCentrarGps(Date.now())}
-                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)] hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)] hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
                 >
                   <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
                     <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
@@ -191,7 +190,6 @@ export function PantallaDeMapaLibre() {
 
               <Boton
                 variante="secundario"
-                paraNavegacion
                 className="flex-1 shadow-[var(--sombra-alta)]"
                 onClick={() => setEligiendoRutas(true)}
               >

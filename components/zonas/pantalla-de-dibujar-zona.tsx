@@ -50,7 +50,6 @@ export function PantallaDeDibujarZona() {
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full px-4 max-w-md">
           <Boton
             anchoCompleto
-            paraNavegacion
             disabled={!rectangulo}
             onClick={alContinuar}
             className="shadow-lg"

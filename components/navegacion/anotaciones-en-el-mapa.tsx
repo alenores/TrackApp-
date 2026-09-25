@@ -144,12 +144,11 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   // eso, el texto quedaba cortado a la mitad.
   const botones = (
     <div className="grid grid-cols-[auto_1fr] gap-3">
-      <Boton paraNavegacion className="px-6 shadow-[var(--sombra-alta)]" onClick={() => setEligiendoTipo(true)}>
+      <Boton className="px-6 shadow-[var(--sombra-alta)]" onClick={() => setEligiendoTipo(true)}>
         Anotar
       </Boton>
       <Boton
         variante="secundario"
-        paraNavegacion
         className="min-w-0 px-3 shadow-[var(--sombra-alta)]"
         onClick={() => setEligiendoFiltro(true)}
       >

@@ -54,7 +54,7 @@ export function BotonVolver({
       }}
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
-        "flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
         className,
       ]

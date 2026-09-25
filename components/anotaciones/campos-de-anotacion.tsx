@@ -19,8 +19,8 @@ import { ICONOS_PUNTO, type IconoPunto } from "@/types/database";
  * forma de elegir el ícono, el color, escribir el comentario y sumar la foto:
  * cambiar una regla de cómo se anota se cambia acá y vale para las dos.
  *
- * En la navegación va con `delCerro`: botones de 64 y letra de 18, que es lo
- * que pide esa pantalla.
+ * En la navegación va con `delCerro`: letra de 18, que es lo que pide esa
+ * pantalla. Los botones tienen el tamaño normal (decisión 024).
  */
 
 type Props = {
@@ -56,7 +56,7 @@ export function CamposDeAnotacion({
 }: Props) {
   const claseDeOpcion = (elegida: boolean) =>
     [
-      delCerro ? "min-h-16 px-4 text-lg" : "min-h-14 px-4 text-base",
+      "min-h-10 px-4 text-sm",
       "rounded-xl border font-semibold transition-colors",
       elegida
         ? "border-acento-borde bg-acento text-acento-texto"
@@ -132,7 +132,6 @@ export function CamposDeAnotacion({
         <Boton
           variante="destructivo"
           anchoCompleto
-          paraNavegacion={delCerro}
           disabled={guardando}
           onClick={alQuitarFotoActual}
         >

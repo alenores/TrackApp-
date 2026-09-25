@@ -31,7 +31,7 @@ import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
  * Una ruta en la lista.
  *
  * La versión anterior abría editar y borrar solo manteniendo el dedo apretado.
- * Con guantes eso no se puede: **ningún gesto fino puede ser la única forma de
+ * Nadie lo descubría: **ningún gesto escondido puede ser la única forma de
  * hacer algo**, así que ahora hay un botón visible.
  */
 
@@ -198,7 +198,7 @@ export function TarjetaDeRuta({
             type="button"
             aria-label={`Opciones de ${ruta.nombre}`}
             onClick={() => setAccionesAbiertas(true)}
-            className="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
               <circle cx="12" cy="5" r="1.75" fill="currentColor" />

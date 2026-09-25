@@ -50,8 +50,7 @@ type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
  * le den; si no hay fondo descargado, dibuja sobre el vacío, que es un modo
  * legítimo y no una falla.
  *
- * Se puede acercar con dos dedos, **pero además hay botones grandes**: con
- * guantes puestos un gesto de dos dedos no se acierta.
+ * Se puede acercar con dos dedos, y además hay botones de tamaño normal.
  */
 
 const FUENTE_RUTA = "ruta";
@@ -1035,7 +1034,7 @@ export function Mapa({
    *
    * **No se busca el toque exacto sobre el puntito**, sino en un cuadrado
    * grande alrededor del dedo. El punto se dibuja chico para no tapar el mapa,
-   * pero se toca caminando y con guantes: si hubiera que acertarle a siete
+   * pero se toca caminando: si hubiera que acertarle a siete
    * píxeles, nadie lo abriría nunca.
    */
   useEffect(() => {
@@ -1286,8 +1285,7 @@ export function Mapa({
       {opcionesDeFondo.length > 0 ? (
         <div
           className={[
-            // Navegando la zona tocable mínima es más grande: se usa caminando.
-            pantallaCompleta ? "h-16" : "h-14",
+            "h-10",
             "absolute left-3 top-3 flex overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]",
           ].join(" ")}
         >
@@ -1332,7 +1330,7 @@ export function Mapa({
           aria-pressed={curvasSobreLaFoto}
           className={[
             CLASE_DE_RESPUESTA_AL_TOQUE,
-            pantallaCompleta ? "top-[5.25rem] h-16" : "top-[4.75rem] h-14",
+            "top-[3.75rem] h-10",
             "absolute left-3 flex items-center rounded-full border border-borde-fuerte px-4 text-xs font-semibold shadow-[var(--sombra-alta)] transition-colors",
             curvasSobreLaFoto
               ? "bg-texto text-fondo"
@@ -1370,7 +1368,7 @@ export function Mapa({
               }}
               className={[
                 CLASE_DE_RESPUESTA_AL_TOQUE,
-                "flex h-14 w-14 items-center justify-center rounded-full",
+                "flex h-10 w-10 items-center justify-center rounded-full",
                 "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
                 "hover:bg-superficie-alta",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
@@ -1389,7 +1387,7 @@ export function Mapa({
               </svg>
             </button>
           ) : null}
-          <BotonDeModo paraNavegacion={pantallaCompleta} />
+          <BotonDeModo />
         </div>
       ) : null}
 
@@ -1402,7 +1400,6 @@ export function Mapa({
 
           <BotonDelMapa
             etiqueta={gpsPrendido ? "Centrar" : "Ubicarme"}
-            grande={false}
             alTocar={alternarGps}
           >
             {gpsPrendido ? (
@@ -1421,8 +1418,7 @@ export function Mapa({
           {!enGrande ? (
             <BotonDelMapa
               etiqueta="Ver el mapa en grande"
-              grande={false}
-              alTocar={() => {
+                alTocar={() => {
                 anotarLoQueSeMira();
                 setAPantallaCompleta(true);
               }}
@@ -1452,12 +1448,10 @@ export function Mapa({
 
 function BotonDelMapa({
   etiqueta,
-  grande,
   alTocar,
   children,
 }: {
   etiqueta: string;
-  grande: boolean;
   alTocar: () => void;
   children: React.ReactNode;
 }) {
@@ -1473,12 +1467,12 @@ function BotonDelMapa({
         "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
         "hover:bg-superficie-alta",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        grande ? "h-16 w-16" : "h-14 w-14",
+        "h-10 w-10",
       ].join(" ")}
     >
       <svg
         viewBox="0 0 24 24"
-        className={grande ? "h-7 w-7" : "h-6 w-6"}
+        className="h-5 w-5"
         fill="none"
         stroke="currentColor"
         strokeWidth={2.5}

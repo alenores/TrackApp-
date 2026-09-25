@@ -9,23 +9,22 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
  *
  * **Tiene que estar a un toque desde el mapa.** Se usa caminando: si el sol
  * gira y la pantalla deja de leerse, no se puede pedir que el usuario entre a
- * un menú de ajustes con guantes puestos.
+ * un menú de ajustes.
+ *
+ * Tiene el tamaño normal de un botón redondo, también navegando (decisión 024).
  */
 
 type BotonDeModoProps = {
-  /** `true` en la pantalla de navegación, donde la zona tocable sube a 64. */
-  paraNavegacion?: boolean;
   className?: string;
 };
 
 export function BotonDeModo({
-  paraNavegacion = false,
   className = "",
 }: BotonDeModoProps) {
   const { modo, cambiar } = useModo();
   const vaASol = modo === "noche";
 
-  const tamanoBase = paraNavegacion ? "h-16 w-16" : "h-8 w-8";
+  const tamanoBase = "h-10 w-10";
   const tieneTamanoPersonalizado = /\b(h-|w-)/.test(className);
 
   return (
@@ -49,7 +48,7 @@ export function BotonDeModo({
       {vaASol ? (
         <svg
           viewBox="0 0 24 24"
-          className={paraNavegacion ? "h-7 w-7" : "h-4 w-4"}
+          className="h-5 w-5"
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -62,7 +61,7 @@ export function BotonDeModo({
       ) : (
         <svg
           viewBox="0 0 24 24"
-          className={paraNavegacion ? "h-7 w-7" : "h-4 w-4"}
+          className="h-5 w-5"
           fill="none"
           stroke="currentColor"
           strokeWidth={2}

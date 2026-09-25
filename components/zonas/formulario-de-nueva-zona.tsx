@@ -224,7 +224,6 @@ export function FormularioDeNuevaZona() {
             <div className="pb-2">
               <Boton
                 anchoCompleto
-                paraNavegacion
                 disabled={guardando || !armado.ok || !seleccion}
                 onClick={() => void alGuardar()}
               >

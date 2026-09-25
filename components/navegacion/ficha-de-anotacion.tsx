@@ -67,21 +67,19 @@ export function FichaDeAnotacion({
             <div className="grid grid-cols-2 gap-2">
               <BotonDeEmergente
                 variante="secundario"
-                paraNavegacion
                 onClick={() => alCambiar(anotacion)}
               >
                 Cambiar
               </BotonDeEmergente>
               <BotonDeEmergente
                 variante="destructivo"
-                paraNavegacion
                 onClick={() => alBorrar?.(anotacion)}
               >
                 Borrar
               </BotonDeEmergente>
             </div>
           ) : null}
-          <BotonDeEmergente paraNavegacion onClick={alCerrar}>
+          <BotonDeEmergente onClick={alCerrar}>
             Cerrar
           </BotonDeEmergente>
         </div>

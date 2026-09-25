@@ -130,7 +130,6 @@ export function FormularioDeNuevoSector({ zonaId }: NuevaSectorFormProps) {
             <div className="pb-2">
               <Boton
                 anchoCompleto
-                paraNavegacion
                 disabled={guardando || !armado.ok}
                 onClick={() => void alGuardar()}
               >

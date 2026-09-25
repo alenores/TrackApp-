@@ -29,7 +29,7 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
         onClick={() => setAbierto(true)}
         className={[
           CLASE_DE_RESPUESTA_AL_TOQUE,
-          "flex items-center justify-center rounded-full h-14 w-14 relative",
+          "flex items-center justify-center rounded-full h-10 w-10 relative",
           "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
           "hover:bg-superficie-alta",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",

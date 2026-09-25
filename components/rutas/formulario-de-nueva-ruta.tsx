@@ -262,7 +262,6 @@ export function FormularioDeNuevaRuta() {
       <div className="pb-2">
         <Boton
           anchoCompleto
-          paraNavegacion
           disabled={guardando || !recorrido}
           onClick={() => void alGuardar()}
         >

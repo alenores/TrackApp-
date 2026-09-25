@@ -36,7 +36,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
       alCerrar={alCerrar}
       titulo="Anotaciones en el mapa"
       acciones={
-        <BotonDeEmergente variante="principal" paraNavegacion onClick={alCerrar}>
+        <BotonDeEmergente variante="principal" onClick={alCerrar}>
           Listo
         </BotonDeEmergente>
       }

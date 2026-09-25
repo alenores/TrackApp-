@@ -177,6 +177,9 @@ responde al toque.
 
 **De quién es.** Los dos venían del código viejo. Los dejé.
 
+**Anulado el 2026-09-25.** La regla del mínimo se sacó (decisión 024): los
+botones tienen el tamaño normal.
+
 ---
 
 ## M9 — Código muerto exportado
