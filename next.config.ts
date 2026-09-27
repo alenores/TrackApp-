@@ -105,6 +105,21 @@ const withPWA = withPWAInit({
   },
   runtimeCaching: [
     {
+      /**
+       * Prueba de señal (`lib/conexion.ts`): **siempre a internet**, y primera
+       * de la lista. Sin esta regla caía en la de `/api/` que trae la librería
+       * (primero la red, con 10 s de espera y copia guardada de respaldo), que
+       * con señal débil respondería lo guardado: la app creería que hay señal
+       * justo cuando no la hay.
+       *
+       * Autónoma, sin nada de afuera: estas reglas viajan al motor como texto.
+       */
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+        sameOrigin && url.pathname === "/api/senal",
+      handler: "NetworkOnly",
+      options: {},
+    },
+    {
       /** Cocina interna de la app que no es un archivo: nunca se guarda. */
       urlPattern: ({ url }: { url: URL }) =>
         url.pathname.startsWith("/_next/") && !url.pathname.startsWith("/_next/static/"),

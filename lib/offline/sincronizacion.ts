@@ -1,5 +1,6 @@
 import type { FeatureCollection } from "geojson";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
+import { esperarConexion } from "@/lib/conexion";
 import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import { leerRectangulo } from "@/lib/datos/rectangulo";
 import {
@@ -233,7 +234,8 @@ async function bajarAnotaciones(): Promise<{
 export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
   const guardado = leerPaquete();
 
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
+  // Señal que sirve, no red enganchada: con la rayita del cerro es «sin señal».
+  if (!(await esperarConexion())) {
     return { clase: "sin_senal", paquete: guardado };
   }
 

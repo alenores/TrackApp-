@@ -26,6 +26,11 @@ sin nubes (EOX, datos de Copernicus): diez metros por píxel, se ven bosques,
 agua y roca, no senderos. Baja por el mismo tipo de puente que el mapa y se
 guarda en el mismo depósito, con su propio nombre.
 
+**Señal débil**
+El teléfono dice que hay red pero no pasa nada por ahí: la rayita del cerro. Para
+la app es exactamente lo mismo que no tener señal. Se detecta preguntándole al
+servidor si responde a tiempo (decisión 026).
+
 **Puesta al día**
 Cuando la app le pregunta a la base si hay novedades y, si hay, las baja al
 celular. Automática y muda. Pasa una vez por apertura y después de guardar
