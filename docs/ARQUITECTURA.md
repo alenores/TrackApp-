@@ -45,7 +45,8 @@ Dos guardados, separados por una razón de tamaño:
 La puesta al día es **automática y muda**: sin cartel de «hay novedades», sin
 botón de actualizar, sin preguntar nada. Dos límites la protegen:
 
-1. Solo ocurre con señal, y **nunca durante una navegación**. La navegación
+1. Solo ocurre con señal **que sirve** (`hayConexion()`, decisión 026: con la
+   rayita del cerro es «sin señal»), y **nunca durante una navegación**. La navegación
    lee con `usePaqueteGuardado`, nunca con `useDatosDeLaApp`, y la puesta al
    día se niega a correr con la navegación abierta.
 2. Si falla a mitad de camino, **queda lo que había**. Una actualización

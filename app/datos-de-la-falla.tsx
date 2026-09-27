@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { hayConexion, haySenalDebil } from "@/lib/conexion";
 
 /**
  * Los datos de una falla, a la vista, para poder arreglarla sin adivinar.
@@ -125,6 +126,10 @@ export function juntarLosDatos({
     {
       etiqueta: "Señal según el navegador",
       valor: hayVentana ? (navigator.onLine ? "hay" : "no hay") : "?",
+    },
+    {
+      etiqueta: "Señal que sirve",
+      valor: hayVentana ? (hayConexion() ? "sí" : haySenalDebil() ? "no: señal débil" : "no") : "?",
     },
     {
       etiqueta: "Motor sin señal",

@@ -7,6 +7,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // La prueba de señal (`lib/conexion.ts`) no pasa por acá: tiene que
+    // contestar al toque, sin mirar la sesión.
+    "/((?!_next/static|_next/image|favicon.ico|api/senal|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

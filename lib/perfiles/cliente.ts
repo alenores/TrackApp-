@@ -1,6 +1,7 @@
 "use client";
 
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
+import { esperarConexion } from "@/lib/conexion";
 import type { Perfil } from "@/types/database";
 
 /**
@@ -15,6 +16,8 @@ export async function traerPerfilesPorId(
 ): Promise<Record<string, Perfil>> {
   const unicos = [...new Set(ids.filter(Boolean))];
   if (unicos.length === 0) return {};
+  // Con la rayita del cerro no se espera nada: es lo mismo que sin señal.
+  if (!(await esperarConexion())) return {};
 
   try {
     const supabase = crearClienteEnElNavegador();

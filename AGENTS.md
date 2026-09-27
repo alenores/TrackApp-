@@ -179,6 +179,25 @@ entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
   mapa no está descargado, porque el usuario nunca se queda sin saber qué pasa.
   Decirlo, sí. Diseñar alrededor de eso, no.
 
+### Señal que sirve, no red enganchada
+
+**Pasó el 2026-09-27.** Con una rayita de cobertura el teléfono dice que hay red
+aunque no pase nada: la app mostraba botones que fallaban y la puesta al día
+quedaba esperando minutos. Ver `docs/decisiones/026-senal-que-sirve.md`.
+
+- **Para decidir «intento internet o uso lo guardado» se pregunta
+  `hayConexion()`** (`lib/conexion.ts`) o, en pantalla, `useHaySenal()`.
+  **Nunca `navigator.onLine`.**
+- **Señal débil = sin señal**, exactamente el modo de siempre. No se inventa un
+  tercer modo.
+- **El detector no prueba con la navegación abierta.** Probar es salir a
+  internet.
+- Todo pedido a la base tiene tope de 15 s (`lib/supabase/navegador.ts`), salvo
+  las subidas de fotos.
+- `/api/senal` va **siempre a internet** en el motor offline, con regla propia y
+  primera. Si cae en la regla de `/api/` de la librería, contesta una copia
+  guardada y la app cree que hay señal sin haberla.
+
 ### Sin señal no se muestra lo que no funciona
 
 **Un botón que al tocarlo falla es información basura.** Sin señal desaparece:

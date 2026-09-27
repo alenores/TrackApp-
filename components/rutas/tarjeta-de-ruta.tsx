@@ -122,7 +122,7 @@ export function TarjetaDeRuta({
               </div>
 
               {nombresZonas ? (
-                <p className="text-sm font-medium text-acento">
+                <p className="text-sm font-medium text-acento-tenue">
                   {nombresZonas}
                 </p>
               ) : null}

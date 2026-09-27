@@ -4,6 +4,7 @@ import { SinZoom } from "@/components/sin-zoom";
 import { ProveedorDeDialogos } from "@/components/ui/dialogos";
 import { PantallaDeArranque } from "@/components/armazon/pantalla-de-arranque";
 import { ServiceWorkerRegister } from "./sw-register";
+import { VigilanciaDeConexion } from "@/components/armazon/vigilancia-de-conexion";
 import { GUION_DE_ARRANQUE } from "@/lib/modo";
 import {
   ID_DE_LA_PANTALLA_DE_ARRANQUE,
@@ -86,6 +87,7 @@ export default function RootLayout({
         <SinZoom />
         <PantallaDeArranque />
         <ServiceWorkerRegister />
+        <VigilanciaDeConexion />
         {/*
           Los carteles de confirmar y avisar los dibuja la app, nunca el sistema
           operativo. Por eso esto envuelve TODA la app: si faltara en algún lado,

@@ -4,6 +4,47 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-27 — Señal que sirve, no red enganchada
+
+### Estado al inicio
+
+La app decidía si había señal con lo que decía el teléfono. Con una rayita de
+cobertura el teléfono dice que hay red aunque no pase nada: aparecían botones
+que al tocarlos fallaban y la puesta al día quedaba esperando minutos.
+
+### Lo que se hizo
+
+- **Detector de señal** (decisión 026), traído de Vías de Escalada: le pregunta
+  al servidor si responde a tiempo; dos fallas seguidas = señal débil = sin
+  señal. Vuelve solo con una respuesta a tiempo.
+- La pieza de señal de las pantallas, la puesta al día y los nombres de quién
+  subió cada cosa usan el detector.
+- Si la señal vuelve con una pantalla abierta, la puesta al día corre ahí mismo.
+- Tope de 15 s a los pedidos a la base, salvo fotos.
+- Regla propia de la prueba en el motor offline y fuera del control de sesión.
+- El cartel de la falla dice si la señal sirve.
+
+### Decisiones tomadas
+
+- Mientras no se sabe si la señal sirve, no hay (regla de siempre de la app).
+- El detector no prueba nunca con la navegación abierta.
+
+### Pruebas nuevas
+
+El detector: sin probar da «no», dos fallas = débil, una falla no alcanza, una
+respuesta alcanza para volver, sin red no pregunta, navegando no pregunta.
+
+### Documentos actualizados
+
+`AGENTS.md`, `ARQUITECTURA.md`, `GLOSARIO.md`, decisión 026.
+
+### Pendientes para la próxima
+
+Probarlo en el celular con señal floja de verdad (o con el navegador limitando
+la red) antes de publicar.
+
+---
+
 ## Sesión 2026-09-25 — Botones normales y mapas del cerro despejados
 
 ### Estado al inicio

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Paquete } from "@/lib/offline/paquete";
 import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
+import { EVENTO_CONEXION, hayConexion } from "@/lib/conexion";
 import {
   mirarLaPuestaAlDia,
   ponerAlDiaUnaVezPorApertura,
@@ -70,9 +71,17 @@ export function useDatosDeLaApp(): DatosDeLaApp {
     const dejarDeMirar = mirarLaPuestaAlDia(anotar);
     void ponerAlDiaUnaVezPorApertura().then(anotar);
 
+    // Si la señal vuelve a servir con la pantalla abierta, se pone al día sin
+    // esperar a la próxima pantalla. Si ya estaba hecha, no sale a la base.
+    const alCambiarLaSenal = () => {
+      if (hayConexion()) void ponerAlDiaUnaVezPorApertura().then(anotar);
+    };
+    window.addEventListener(EVENTO_CONEXION, alCambiarLaSenal);
+
     return () => {
       vigente = false;
       dejarDeMirar();
+      window.removeEventListener(EVENTO_CONEXION, alCambiarLaSenal);
     };
   }, []);
 
