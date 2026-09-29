@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { Tarjeta } from "@/components/ui/tarjeta";
-import { Boton } from "@/components/ui/boton";
+import { vibrarAlTocar } from "@/lib/vibracion";
+import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { linkDeWhatsApp } from "@/lib/perfiles/invitacion";
 
@@ -68,33 +68,59 @@ export function InvitarAUnAmigo() {
     setQrAbierto(true);
   };
 
+  const clase =
+    "flex h-10 w-10 items-center justify-center rounded-full text-texto-suave hover:bg-superficie-alta hover:text-texto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde";
+
   return (
     <>
-      <Tarjeta>
-        <h2 className="text-base font-bold text-texto">Invitá a un amigo</h2>
-        <p className="mt-1 text-sm leading-6 text-texto-suave">
-          Pasale la app por WhatsApp o mostrale el código QR para que lo
-          escanee.
-        </p>
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-          <Boton
-            variante="principal"
-            anchoCompleto
-            className="min-h-14"
-            onClick={compartirPorWhatsApp}
+      <div className="flex shrink-0 items-center">
+        <button
+          type="button"
+          onClick={compartirPorWhatsApp}
+          onPointerDown={() => vibrarAlTocar()}
+          aria-label="Compartir TrackApp por WhatsApp"
+          title="Compartir por WhatsApp"
+          className={[CLASE_DE_RESPUESTA_AL_TOQUE, clase].join(" ")}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            aria-hidden
           >
-            Compartir por WhatsApp
-          </Boton>
-          <Boton
-            variante="secundario"
-            anchoCompleto
-            className="min-h-14"
-            onClick={verQR}
+            <circle cx="18" cy="5" r="2.5" />
+            <circle cx="6" cy="12" r="2.5" />
+            <circle cx="18" cy="19" r="2.5" />
+            <path d="m8.3 10.8 7.4-4.6M8.3 13.2l7.4 4.6" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={verQR}
+          onPointerDown={() => vibrarAlTocar()}
+          aria-label="Ver código QR de TrackApp"
+          title="Ver código QR"
+          className={[CLASE_DE_RESPUESTA_AL_TOQUE, clase].join(" ")}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            aria-hidden
           >
-            Ver código QR
-          </Boton>
-        </div>
-      </Tarjeta>
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <path d="M14 14h3v3h-3zM20 14v1M14 20h1M18 20h3v-2" />
+          </svg>
+        </button>
+      </div>
 
       <Emergente
         abierto={qrAbierto}
@@ -102,10 +128,7 @@ export function InvitarAUnAmigo() {
         titulo="Código QR de TrackApp"
         descripcion="Tu amigo lo escanea con la cámara del celular y se le abre la app."
         acciones={
-          <BotonDeEmergente
-            className="min-h-14"
-            onClick={() => setQrAbierto(false)}
-          >
+          <BotonDeEmergente onClick={() => setQrAbierto(false)}>
             Cerrar
           </BotonDeEmergente>
         }

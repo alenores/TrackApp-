@@ -31,7 +31,10 @@ export function PantallaDePerfiles({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold uppercase text-texto">PERFILES</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold uppercase text-texto">PERFILES</h1>
+          <InvitarAUnAmigo />
+        </div>
         <p className="mt-1 text-sm text-texto-suave">
           Usuarios de TrackApp y tu cuenta.
         </p>
@@ -44,8 +47,6 @@ export function PantallaDePerfiles({
         avatarUrl={avatarUrl}
         portadaUrl={portadaUrl}
       />
-
-      <InvitarAUnAmigo />
 
       {avisoDeListaIncompleta ? (
         <Tarjeta franja="ambar">
