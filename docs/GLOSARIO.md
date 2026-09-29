@@ -263,9 +263,6 @@ las pantallas de zonas y sectores. **Nunca baja al celular.**
 La misma foto, achicada para la pantalla del celular: unos 120 KB como máximo.
 Se arma en el teléfono al elegir la foto. **Es la única que se ve en el cerro**,
 y baja sola con cada puesta al día, sin que nadie la pida.
-—si el vado se cruza, cuál de los dos senderos es el bueno—. **Baja con el mapa
-del sector**, no con el paquete, porque pesa. En el cerro se lee del celular,
-nunca de internet. Ver `decisiones/019`.
 
 **Invitación**
 Lo que se le pasa a un amigo para que abra TrackApp: un texto con el link, por
