@@ -1,6 +1,7 @@
 import { Tarjeta } from "@/components/ui/tarjeta";
 import type { Perfil } from "@/types/database";
 import { FormularioDePerfil } from "@/components/perfil/formulario-de-perfil";
+import { InvitarAUnAmigo } from "@/components/perfil/invitar-a-un-amigo";
 import { TarjetaDePerfil } from "@/components/perfil/tarjeta-de-perfil";
 
 type PerfilesViewProps = {
@@ -43,6 +44,8 @@ export function PantallaDePerfiles({
         avatarUrl={avatarUrl}
         portadaUrl={portadaUrl}
       />
+
+      <InvitarAUnAmigo />
 
       {avisoDeListaIncompleta ? (
         <Tarjeta franja="ambar">
