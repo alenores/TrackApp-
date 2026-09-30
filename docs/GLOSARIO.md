@@ -101,7 +101,12 @@ ofrecería recuperar justo lo que él decidió tirar.
 
 **Punto**
 Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
-puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada).
+puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera).
+Puede llevar comentario y foto. No necesita pertenecer a un sector: el
+administrador también lo carga desde **Zonas → Puntos**, pegando una coordenada
+de Google Earth. Desde el mapa de esa pantalla lo edita o lo borra. Se descarga
+con las demás anotaciones, aunque no se haya bajado el mapa de un sector.
+Ver decisión 027.
 
 **Trazo**
 Anotación de una línea dibujada a mano uniendo varios puntos, con color

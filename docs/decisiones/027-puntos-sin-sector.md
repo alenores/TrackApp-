@@ -53,8 +53,17 @@ igual se orienta con los puntos.
 4. [ ] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,
    campo para pegar la coordenada, el mapa salta al punto, ícono, texto,
    guardar, formulario vacío para el siguiente.
-5. [ ] Botón en Zonas, solo administrador y solo con señal.
-6. [ ] Glosario, `docs/SESIONES.md`, estado de esta decisión a «vigente».
+   **Implementado y probado en pantalla el 2026-09-30:** mapa, coordenada de
+   Google Earth, ícono, texto, foto compartida, edición desde el mapa, borrado
+   con confirmación y formulario que vuelve a la coordenada al guardar.
+   Pruebas automáticas de guardado, fallos, reintento de foto sin duplicados,
+   edición, borrado y acceso por dirección. Revisión visual en sol y noche;
+   mapa grande y cierre con Atrás comprobados.
+   **Falta la prueba real de guardar/editar/borrar:** la revisión automática de
+   permisos rechazó guardar la ubicación precisa. Se pidió autorización a Ale;
+   no se escribió ningún punto de prueba. No tildar hasta comprobar el guardado.
+5. [x] Botón en Zonas, solo administrador y solo con señal.
+6. [ ] Glosario y `docs/SESIONES.md` actualizados; falta pasar a «vigente» cuando se confirme el guardado real del paso 4.
 
 - **Arreglar y borrar se hace en la misma pantalla**, tocando el punto en el
   mapa. Borrar pide confirmación.

@@ -33,6 +33,12 @@ pantalla del sector, con la computadora, sigue siendo del administrador.
 
 Ver `decisiones/023-anotar-desde-la-navegacion.md`.
 
+**Sobre puntos sin sector (2026-09-30):** solo el administrador puede entrar
+por **Zonas → Puntos** para cargarlos pegando coordenadas, editarlos y borrarlos.
+El acceso aparece solo con señal; conocer la dirección no habilita a las otras
+categorías. Los puntos siguen siendo visibles para todos en sus mapas.
+Ver `decisiones/027-puntos-sin-sector.md`.
+
 ## Lo que NO está definido
 
 **Qué puede hacer cada categoría.** Y no se inventa.

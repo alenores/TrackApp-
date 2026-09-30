@@ -4,6 +4,46 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-09-30 — Puntos sin sector: pantalla y acceso desde Zonas
+
+### Estado al inicio
+La decisión 027 tenía los pasos 1 a 3 tildados. Faltaban la pantalla, el acceso
+administrativo y el cierre de documentación. El guardado real del paso 3 seguía
+pendiente de confirmación.
+
+### Lo que se hizo
+- Pantalla `/zonas/puntos`, con mapa general, coordenada pegada, ícono,
+  comentario y foto usando las piezas existentes.
+- Al guardar, se vacía el formulario y vuelve el foco a la coordenada.
+- Editar tocando el mapa, cambiar la coordenada y borrar con confirmación.
+- Guardado de punto antes de subir la foto: si falla la foto, se conserva el
+  número creado para reintentar sin duplicar. Los errores mantienen lo escrito.
+- Acceso solo administrador; botón en Zonas solo con señal, con el estilo
+  compartido de botones. Una dirección escrita a mano no saltea el permiso.
+- El cartel de mapa vacío ahora también tiene en cuenta los puntos.
+- 532 pruebas generales pasaron; las 6 nuevas de acceso también pasaron.
+  Tipos sin errores; lint sin errores, con 44 avisos previos en otros módulos.
+- Revisión en Chrome con la sesión de administrador: mapa, coordenada, modo
+  sol/noche, mapa grande y cierre con Atrás. Acceso visible desde Zonas.
+
+### Decisiones tomadas
+Se siguió el borrador aprobado de la decisión 027. Sin nuevas decisiones de
+producto ni cambios en la base o en la navegación offline.
+
+### Documentos actualizados
+Decisión 027, glosario, usuarios y este registro.
+
+### Deuda o inconsistencias detectadas
+La revisión automática bloqueó el clic de guardar el punto temporal porque
+transmite una ubicación precisa. Se pidió autorización explícita a Ale; no se
+escribió ese punto. No dar por verificados los permisos reales de guardado.
+
+### Pendientes para la próxima
+Con la autorización de Ale, guardar el punto temporal en la coordenada de la
+027, editarlo y borrarlo. Comprobar también foto real y formulario vacío tras
+guardar. Luego tildar los pasos 4 y 6 y pasar la decisión a vigente.
+
+---
 ## Sesión 2026-09-27 — Señal que sirve, no red enganchada
 
 ### Estado al inicio
