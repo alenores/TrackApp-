@@ -45,6 +45,11 @@ igual se orienta con los puntos.
 3. [x] Guardar un punto sin sector desde la computadora: acción del servidor
    que inserta con `sector_id` nulo y `origen = 'manual'`. Verificar contra la
    base que la regla de seguridad lo acepta para el administrador.
+   Hecho en `crearAnotacion` (`sectorId: null`, solo punto, solo administrador).
+   La base no se pudo consultar desde la sesión (sin permiso); se verificó con
+   `scripts/supabase-anotaciones-desde-la-navegacion.sql`: sector opcional, sin
+   regla que ate el sector al origen. **Confirmarlo guardando un punto de
+   verdad en el paso 4.**
 4. [ ] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,
    campo para pegar la coordenada, el mapa salta al punto, ícono, texto,
    guardar, formulario vacío para el siguiente.
