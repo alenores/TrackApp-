@@ -42,7 +42,7 @@ igual se orienta con los puntos.
 
 1. [x] Borrador de la pantalla aprobado por Ale.
 2. [x] Prueba automática: `leerCoordenada` con el formato de Google Earth.
-3. [ ] Guardar un punto sin sector desde la computadora: acción del servidor
+3. [x] Guardar un punto sin sector desde la computadora: acción del servidor
    que inserta con `sector_id` nulo y `origen = 'manual'`. Verificar contra la
    base que la regla de seguridad lo acepta para el administrador.
 4. [ ] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,

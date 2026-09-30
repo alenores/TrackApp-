@@ -7,6 +7,7 @@ import {
   quitarLasFotosDeLaAnotacion,
   subirLasFotosDeLaAnotacion,
 } from "@/lib/anotaciones/subir-fotos";
+import { soyAdministrador } from "@/lib/perfiles/datos";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
   escribirRectangulo,
@@ -364,7 +365,11 @@ const NO_ES_TUYA =
   "No se cambió nada: esa anotación ya no está o la hizo otra persona. Cada uno puede editar y borrar solo las suyas.";
 
 export type DatosDeAnotacion = {
-  sectorId: number;
+  /**
+   * `null` para los puntos que el administrador carga sin sector, pegando la
+   * coordenada (decisión 027). Manda dónde está, no a qué sector se lo anotó.
+   */
+  sectorId: number | null;
   tipo: TipoAnotacion;
   /** Obligatorio cuando el tipo es `punto`. */
   icono: IconoPunto | null;
@@ -409,6 +414,15 @@ export async function crearAnotacion(
 
   const problema = revisarAnotacion(datos);
   if (problema) return falla(problema);
+
+  if (datos.sectorId === null) {
+    if (datos.tipo !== "punto") {
+      return falla("Sin sector solo se cargan puntos. Los trazos se dibujan adentro de un sector.");
+    }
+    if (!(await soyAdministrador())) {
+      return falla("Cargar puntos sin sector lo puede hacer solo el administrador.");
+    }
+  }
 
   const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
