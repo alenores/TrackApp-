@@ -40,8 +40,8 @@ igual se orienta con los puntos.
 
 ## Pasos (cada uno, un commit)
 
-1. [ ] Borrador de la pantalla aprobado por Ale.
-2. [ ] Prueba automática: `leerCoordenada` con el formato de Google Earth.
+1. [x] Borrador de la pantalla aprobado por Ale.
+2. [x] Prueba automática: `leerCoordenada` con el formato de Google Earth.
 3. [ ] Guardar un punto sin sector desde la computadora: acción del servidor
    que inserta con `sector_id` nulo y `origen = 'manual'`. Verificar contra la
    base que la regla de seguridad lo acepta para el administrador.
@@ -51,6 +51,12 @@ igual se orienta con los puntos.
 5. [ ] Botón en Zonas, solo administrador y solo con señal.
 6. [ ] Glosario, `docs/SESIONES.md`, estado de esta decisión a «vigente».
 
-## Pendiente de definir con Ale
+- **Arreglar y borrar se hace en la misma pantalla**, tocando el punto en el
+  mapa. Borrar pide confirmación.
+- **Lleva foto, igual que en los sectores** (módulo compartido de fotos).
 
-Ver la respuesta al borrador (paso 1).
+## Borrador
+
+Aprobado por Ale el 2026-09-30: tres pasos (botón «Puntos» en Zonas → mapa con
+todos los puntos + formulario de pegar coordenada, ícono, texto → al guardar,
+aviso y formulario vacío). Con foto, y con arreglar y borrar desde el mapa.

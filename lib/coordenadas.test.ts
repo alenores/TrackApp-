@@ -68,6 +68,17 @@ describe("leer una coordenada de lo que pegue el usuario", () => {
     expect(leida.lon).toBeLessThan(0);
   });
 
+  it("lee la coordenada tal cual la copia Google Earth", () => {
+    // Pegada por Ale el 2026-09-30 (decisión 027).
+    const leida = leerCoordenada(`31°16'31.0"S 64°19'13.3"W`);
+
+    expect(leida.clase).toBe("leida");
+    if (leida.clase !== "leida") return;
+    expect(leida.lat).toBeCloseTo(-31.27528, 5);
+    expect(leida.lon).toBeCloseTo(-64.32036, 5);
+    expect(leida.aviso).toBeNull();
+  });
+
   it("lee un link de place con los números adentro", () => {
     const leida = leerCoordenada("https://www.google.com/maps/place/-31.9542,-64.9402");
 
