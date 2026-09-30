@@ -34,6 +34,18 @@ const CLASES_POR_VARIANTE: Record<VarianteDeBoton, string> = {
     "bg-transparent text-texto-suave hover:bg-superficie-alta hover:text-texto",
 };
 
+/** También los enlaces con aspecto de botón usan las mismas variantes. */
+export function clasesDeBoton(variante: VarianteDeBoton = "principal", anchoCompleto = false): string {
+  return [
+    CLASE_DE_RESPUESTA_AL_TOQUE,
+    "inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors",
+    "min-h-10 py-2 text-sm",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    anchoCompleto ? "w-full" : "",
+    CLASES_POR_VARIANTE[variante],
+  ].filter(Boolean).join(" ");
+}
 type PropiedadesDeBoton = ButtonHTMLAttributes<HTMLButtonElement> & {
   variante?: VarianteDeBoton;
   anchoCompleto?: boolean;
@@ -59,18 +71,7 @@ export function Boton({
       type={type}
       disabled={disabled}
       onPointerDown={alTocar}
-      className={[
-        CLASE_DE_RESPUESTA_AL_TOQUE,
-        "inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors",
-        "min-h-10 py-2 text-sm",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        anchoCompleto ? "w-full" : "",
-        CLASES_POR_VARIANTE[variante],
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={[clasesDeBoton(variante, anchoCompleto), className].filter(Boolean).join(" ")}
       {...props}
     >
       {children}

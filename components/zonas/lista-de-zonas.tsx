@@ -32,15 +32,18 @@ export function ListaDeZonas({
         <h1 className="text-2xl font-bold uppercase text-texto">ZONAS</h1>
 
         {soyAdministrador ? (
-          <Enlace
-            href="/zonas/dibujar"
-            aria-label="Nueva zona"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </Enlace>
+          <div className="flex items-center gap-2">
+            <Enlace href="/zonas/puntos" variante="secundario">Puntos</Enlace>
+            <Enlace
+              href="/zonas/dibujar"
+              aria-label="Nueva zona"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </Enlace>
+            </div>
         ) : null}
       </div>
 

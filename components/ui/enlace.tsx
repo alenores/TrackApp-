@@ -5,13 +5,15 @@ import type { ComponentProps } from "react";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
-type TapLinkProps = ComponentProps<typeof Link>;
+import { clasesDeBoton, type VarianteDeBoton } from "@/components/ui/boton";
 
-export function Enlace({ className = "", onPointerDown, ...props }: TapLinkProps) {
+type TapLinkProps = ComponentProps<typeof Link> & { variante?: VarianteDeBoton };
+
+export function Enlace({ className = "", variante, onPointerDown, ...props }: TapLinkProps) {
   return (
     <Link
       {...props}
-      className={[CLASE_DE_RESPUESTA_AL_TOQUE, className].filter(Boolean).join(" ")}
+      className={[variante ? clasesDeBoton(variante) : CLASE_DE_RESPUESTA_AL_TOQUE, className].filter(Boolean).join(" ")}
       onPointerDown={(event) => {
         vibrarAlTocar();
         onPointerDown?.(event);
