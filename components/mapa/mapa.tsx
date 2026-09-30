@@ -1306,7 +1306,7 @@ export function Mapa({
           El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
           ruta, tu posición y los recuadros— sigue siendo correcto.
         </p>
-      ) : dibujado === 0 && !recorrido ? (
+      ) : dibujado === 0 && !recorrido && anotaciones.length === 0 ? (
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           El mapa está armado pero no hay nada que dibujar todavía.
         </p>
