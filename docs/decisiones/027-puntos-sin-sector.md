@@ -1,6 +1,6 @@
 # 027 — Cargar puntos sin sector, pegando la coordenada
 
-**Fecha:** 2026-09-30 · **Estado:** en curso
+**Fecha:** 2026-09-30 · **Estado:** vigente
 **Amplía la 010 y la 023.**
 
 ---
@@ -46,11 +46,10 @@ igual se orienta con los puntos.
    que inserta con `sector_id` nulo y `origen = 'manual'`. Verificar contra la
    base que la regla de seguridad lo acepta para el administrador.
    Hecho en `crearAnotacion` (`sectorId: null`, solo punto, solo administrador).
-   La base no se pudo consultar desde la sesión (sin permiso); se verificó con
-   `scripts/supabase-anotaciones-desde-la-navegacion.sql`: sector opcional, sin
-   regla que ate el sector al origen. **Confirmarlo guardando un punto de
-   verdad en el paso 4.**
-4. [ ] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,
+   Confirmado con guardado real desde la pantalla, con la cuenta del
+   administrador. El punto sin sector se reabrió en otra sesión, se editó
+   y se borró con confirmación.
+4. [x] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,
    campo para pegar la coordenada, el mapa salta al punto, ícono, texto,
    guardar, formulario vacío para el siguiente.
    **Implementado y probado en pantalla el 2026-09-30:** mapa, coordenada de
@@ -59,11 +58,12 @@ igual se orienta con los puntos.
    Pruebas automáticas de guardado, fallos, reintento de foto sin duplicados,
    edición, borrado y acceso por dirección. Revisión visual en sol y noche;
    mapa grande y cierre con Atrás comprobados.
-   **Falta la prueba real de guardar/editar/borrar:** la revisión automática de
-   permisos rechazó guardar la ubicación precisa. Se pidió autorización a Ale;
-   no se escribió ningún punto de prueba. No tildar hasta comprobar el guardado.
+   **Prueba real completada el 2026-10-01, autorizada por Ale:** guardar,
+   reabrir desde el mapa, cambiar texto e ícono, guardar la edición, confirmar
+   su persistencia y borrar. El formulario se vacía y el foco vuelve a la
+   coordenada. El punto temporal quedó borrado.
 5. [x] Botón en Zonas, solo administrador y solo con señal.
-6. [ ] Glosario y `docs/SESIONES.md` actualizados; falta pasar a «vigente» cuando se confirme el guardado real del paso 4.
+6. [x] Glosario y `docs/SESIONES.md` actualizados; decisión vigente.
 
 - **Arreglar y borrar se hace en la misma pantalla**, tocando el punto en el
   mapa. Borrar pide confirmación.
@@ -74,3 +74,12 @@ igual se orienta con los puntos.
 Aprobado por Ale el 2026-09-30: tres pasos (botón «Puntos» en Zonas → mapa con
 todos los puntos + formulario de pegar coordenada, ícono, texto → al guardar,
 aviso y formulario vacío). Con foto, y con arreglar y borrar desde el mapa.
+
+## Alcance de la verificación
+
+- Guardado, edición y borrado reales comprobados con la cuenta administradora.
+- Fotos: módulo compartido implementado y reintento sin duplicados cubierto por
+  pruebas automáticas. La prueba de adjuntar una imagen sintética desde Chrome
+  no pudo ejecutarse: la herramienta rechazó `fileChooser.setFiles` con
+  `Not allowed`. No se subió una imagen ni se cambió la configuración del
+  navegador. La carga real de foto queda como comprobación manual adicional.

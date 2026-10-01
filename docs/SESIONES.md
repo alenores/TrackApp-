@@ -4,6 +4,40 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-01 — Decisión 027 cerrada con prueba real
+
+### Estado al inicio
+La pantalla y el acceso estaban implementados y subidos. Ale autorizó
+expresamente guardar, editar y borrar el punto temporal para verificar el cierre.
+
+### Lo que se hizo
+- Guardado real de un punto sin sector en la coordenada de la decisión 027.
+- Reapertura desde el mapa en una nueva sesión: el punto siguió guardado.
+- Cambio de texto e ícono, guardado y reapertura que confirmó la edición.
+- Borrado con confirmación: la app mostró «Punto borrado».
+- Corrección del foco tras guardar: espera a que se habilite el formulario y
+  vuelve a la coordenada. Comprobado en el navegador.
+- Tipos y lint de la pantalla sin errores; 15 pruebas de puntos y permisos
+  pasaron nuevamente. Se conserva la verificación anterior de 538 pruebas.
+
+### Decisiones tomadas
+Sin nuevas decisiones de producto. Se completó el alcance aprobado de la 027.
+
+### Documentos actualizados
+Decisión 027: pasos completos y estado vigente. Este registro.
+
+### Deuda o inconsistencias detectadas
+La prueba de adjuntar una imagen sintética no pudo realizarse: Chrome rechazó
+la herramienta de carga con «Not allowed». No es evidencia de una falla de la
+app. No se cambió ningún permiso del navegador ni se subió una foto. Las fotos
+usan el módulo compartido; sus reintentos están cubiertos automáticamente.
+
+### Pendientes para la próxima
+No quedan cambios de implementación de la decisión 027. Como comprobación
+manual adicional, el usuario puede guardar un punto con foto desde su navegador.
+El punto temporal usado por el agente quedó borrado.
+
+---
 ## Sesión 2026-09-30 — Puntos sin sector: pantalla y acceso desde Zonas
 
 ### Estado al inicio

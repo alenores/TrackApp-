@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { useEffect, useRef, type FormEvent } from "react";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { BotonVolver } from "@/components/ui/boton-volver";
@@ -16,10 +16,17 @@ export function PantallaDePuntos() {
   const { confirmar } = useDialogos();
   const fotoLista = puntos.foto.estado === "vacio" || puntos.foto.estado === "lista";
 
+  const formulario = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    // Espera a que el formulario deje de estar deshabilitado tras guardar.
+    if (!puntos.mensaje || puntos.guardando) return;
+    const entrada = formulario.current?.elements.namedItem("coordenada-del-punto");
+    if (entrada instanceof HTMLElement) entrada.focus();
+  }, [puntos.mensaje, puntos.guardando]);
+
   async function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    const entrada = evento.currentTarget.elements.namedItem("coordenada-del-punto");
-    if (await puntos.guardar() && entrada instanceof HTMLElement) entrada.focus();
+    await puntos.guardar();
   }
 
   async function confirmarBorrado() {
@@ -60,7 +67,7 @@ export function PantallaDePuntos() {
           {puntos.error ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-rojo-texto">{puntos.error}</p></Tarjeta> : null}
           <Tarjeta className="space-y-3">
             <h2 className="text-lg font-semibold text-texto">{puntos.seleccionado ? "Editar el punto" : "Punto nuevo"}</h2>
-            <form onSubmit={(evento) => void alEnviar(evento)}>
+            <form ref={formulario} onSubmit={(evento) => void alEnviar(evento)}>
               <fieldset disabled={puntos.guardando || !puntos.haySenal} className="min-w-0 space-y-3">
                 <Campo label="Pegá la coordenada" id="coordenada-del-punto"
                   value={puntos.coordenada} onChange={(evento) => puntos.setCoordenada(evento.target.value)}
