@@ -79,7 +79,7 @@ export default function PantallaDeMapas() {
       <div className="flex flex-col gap-3 max-w-2xl mx-auto p-4 md:p-6 lg:p-8 w-full relative z-10">
         <div>
         <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
-          Mapas descargados
+          Descargas
         </h1>
       </div>
 

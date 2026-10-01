@@ -4,6 +4,36 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-01 — Nombres de navegación y descargas
+
+### Estado al inicio
+La navegación sin ruta aparecía como «Mapa libre» y la pantalla de mapas
+guardados como «Mapas». Ale planteó una futura vista general de Córdoba con
+zonas y anotaciones.
+
+### Lo que se hizo
+- Se cambió el nombre visible de la navegación a «Navegación libre» en los dos
+  menús, el título de la página y la confirmación para salir.
+- Por elección de Ale, la pantalla de mapas guardados pasó a llamarse «Descargas»
+  en los menús y el encabezado.
+
+### Decisiones tomadas
+Se reservará «Mapas» para la vista general del territorio. Su diseño todavía
+no está aprobado ni implementado.
+
+### Documentos actualizados
+Glosario, diseño exterior, decisión 028, reglas para agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+La navegación libre no tiene encabezado visible porque el mapa ocupa la pantalla
+completa. El título de la página sí cambió.
+
+### Pendientes para la próxima
+Definir y aprobar la presentación de las pestañas Zonas y Mapa, incluida la
+información que muestra cada zona y las anotaciones sobre el mapa general.
+
+---
+
 ## Sesión 2026-10-01 — Decisión 027 cerrada con prueba real
 
 ### Estado al inicio

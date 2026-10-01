@@ -172,7 +172,7 @@ export function PantallaDeMapaLibre() {
           ) : null}
 
           <div className="pointer-events-auto flex items-center gap-2">
-            <BotonRedondo etiqueta="Salir del mapa libre" onClick={() => requestExit()}>
+            <BotonRedondo etiqueta="Salir de la navegación libre" onClick={() => requestExit()}>
               {ICONOS_DEL_CERRO.salir}
             </BotonRedondo>
             {deAnotaciones.boton}
@@ -208,7 +208,7 @@ export function PantallaDeMapaLibre() {
 
       <ModalDeSalida
         open={open}
-        titulo="¿Salir del mapa libre?"
+        titulo="¿Salir de la navegación libre?"
         onCancel={cancelExit}
         onConfirm={confirmExit}
       />

@@ -20,8 +20,14 @@ TrackApp no se usa sentado en un escritorio. Se usa:
   molestia, es un problema de seguridad.
 - **A veces con lluvia o sudor**, con la pantalla mojada.
 
-Cada regla sale de una de esas seis condiciones. Si una regla no se puede
-justificar contra una de ellas, sobra.
+Cada regla sale de esas condiciones. Si una regla no se puede justificar contra
+una de ellas, sobra.
+
+### Nombres de los mapas
+
+«Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
+la pantalla que muestra los mapas guardados en el celular. Así, «Mapas» queda
+disponible para la vista general de Córdoba que se está definiendo.
 
 ---
 

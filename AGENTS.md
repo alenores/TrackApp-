@@ -87,7 +87,7 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
 el uso. No sirven.
 
 - **Todo botón de la app tiene el tamaño normal**: el de las pantallas de
-  administración. **También en la navegación y en el mapa libre.** No existe un
+  administración. **También al navegar una ruta y en la navegación libre.** No existe un
   tamaño «para navegar» ni «para el cerro».
 - **Prohibido agrandar un botón por encima de ese tamaño.** Ni la zona que
   responde al toque, ni el dibujo, ni la letra.
@@ -276,7 +276,7 @@ Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
 ### El resto
 
-- **El mapa libre es navegación.** Las mismas reglas: lee solo lo guardado,
+- **La navegación libre sigue las mismas reglas de navegación:** lee solo lo guardado,
   nunca se pone al día, nunca se recarga, y queda lista sola al abrir la app.
 - **La navegación no se pone al día.** Lee con `usePaqueteGuardado`, nunca con
   `useDatosDeLaApp`, y la puesta al día se niega a correr con la navegación
@@ -344,7 +344,7 @@ Si contesta que no existe, hay señal y salió una versión nueva: se tiran las
 pantallas guardadas —las del cerro se abren siempre desde el celular y
 volverían a pedir la pieza vieja— y se recarga. **Si no contesta, no se tira
 nada**: puede ser el cerro sin señal, donde lo guardado es lo único que deja
-navegar. Pasó el 2026-09-24 en el mapa libre.
+navegar. Pasó el 2026-09-24 en la navegación libre.
 
 **El cartel de la red de rescate muestra todos los datos de la falla**, con un
 botón para copiarlos. Pedido de Ale: se arregla con una captura, no a las

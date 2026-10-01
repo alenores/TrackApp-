@@ -5,6 +5,9 @@
 
 ## Mapas y offline
 
+**Descargas**
+La pantalla que muestra los mapas guardados en este celular y el espacio que ocupan.
+
 **Imagen de mapa (tile)**
 El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamiento
 tiene su propio juego. Cada nivel adicional multiplica por cuatro la cantidad.
@@ -205,7 +208,7 @@ rutas con sus textos, las zonas, los sectores y las anotaciones. Se actualiza
 solo, sin preguntar nada. **Las líneas de los recorridos no van adentro**: pesan
 demasiado y viajan aparte.
 
-**Mapa libre**
+**Navegación libre**
 El mapa del cerro sin seguir una ruta: todos los mapas bajados, todas las
 anotaciones y las rutas que elijas (todas, ninguna o algunas), con tu punto de
 GPS. Abre mostrando todas las zonas desde arriba y, cuando el GPS responde, va

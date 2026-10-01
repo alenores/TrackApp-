@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/mapa-libre",
-    label: "Mapa libre",
+    label: "Navegación libre",
     necesitaSenal: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/mapas",
-    label: "Mapas",
+    label: "Descargas",
     necesitaSenal: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
