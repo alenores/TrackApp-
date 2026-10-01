@@ -1093,3 +1093,32 @@ que en celular: clic o toque sobre una zona; el pellizco queda para zoom.
 ### Pendientes
 
 - Ninguno.
+
+## Sesión 2026-10-01 — Abrir el detalle de los puntos en todos los mapas
+
+### Pedido
+
+Ale pidió que tocar un punto de cualquier mapa muestre su nombre, comentario y
+foto disponible, y que en PC el cursor indique que el punto se puede abrir.
+
+### Lo que se hizo
+
+- El mapa compartido abre la ficha de la anotación seleccionada y mantiene el
+  toque amplio alrededor del ícono para que sea fácil de acertar.
+- En mapas de administración, si la copia local de la foto falta, se abre la
+  foto completa disponible con conexión y se informa si no carga.
+- El cursor cambia a una mano sobre los puntos en todas las pantallas que usan
+  el mapa compartido.
+- La navegación libre y la navegación de rutas mantienen la ficha completa que
+  ya tenían, sin duplicarla.
+- En el mapa general, tocar una anotación cierra la ficha de zona si estaba
+  abierta.
+
+### Verificación
+
+- En `localhost:3005/zonas`, tocar un punto abrió su ficha con el nombre del
+  ícono. Se corrieron TypeScript, lint y la suite completa.
+
+### Documentos actualizados
+
+`AGENTS.md`, `DISENO_EXTERIOR.md`, `GLOSARIO.md` y la decisión `029`.

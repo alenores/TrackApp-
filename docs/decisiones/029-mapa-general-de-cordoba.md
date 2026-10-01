@@ -21,6 +21,14 @@ En PC y celular, la ficha se cierra al hacer clic o tocar afuera o en **Cerrar**
 Mover el cursor no la abre; pasar el cursor por encima de otra zona no cambia la
 ficha. Pellizcar el mapa solo cambia el zoom y no abre la ficha.
 
+En todos los mapas, tocar una anotación de tipo punto abre su ficha con el
+nombre del ícono, el comentario y la foto disponible. En PC el cursor cambia a
+una mano al pasar por un punto. Las pantallas de navegación conservan su ficha
+completa, que además permite administrar las anotaciones propias cuando
+corresponde. En los mapas de administración se puede abrir la foto completa si
+la copia del celular todavía no está; en navegación se usa solo la copia chica
+guardada localmente.
+
 Los perímetros usan los rectángulos reales de las zonas. El mockup mostraba la
 idea visual, pero no cambia cómo se guardan las zonas.
 

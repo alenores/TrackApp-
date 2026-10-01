@@ -34,7 +34,9 @@ el territorio. Al hacer clic o tocar una zona aparece una ficha breve con
 el acceso «Ver zona»; los sectores se ven en esa ficha detallada. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
 no se muestran y los íconos que se pisan se ocultan. Ver
-`decisiones/029-mapa-general-de-cordoba.md`.
+`decisiones/029-mapa-general-de-cordoba.md`. En cualquier mapa, tocar un punto
+abre su ficha con el nombre del ícono, el comentario y la foto disponible. En
+PC, el cursor cambia a una mano al pasar por encima.
 
 ---
 

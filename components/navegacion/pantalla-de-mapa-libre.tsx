@@ -134,6 +134,7 @@ export function PantallaDeMapaLibre() {
             forzarCentradoEn={centrarGps}
             sinMapaDescargado={mapasBajados.length === 0}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
+            mostrarFichaAnotacion={false}
           />
         </div>
 

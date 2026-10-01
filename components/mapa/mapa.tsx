@@ -35,6 +35,8 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
+import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
+import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
 /** Toque o clic sobre el mapa: los dos traen dónde fue, en el mapa y en pantalla. */
 type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
@@ -198,6 +200,8 @@ type MapaProps = {
   alMarcarPunto?: (lon: number, lat: number) => void;
   /** Se llama con el número de la anotación que el usuario tocó. */
   alTocarAnotacion?: (anotacionId: number) => void;
+  /** `false` cuando quien lo llama ya muestra la ficha compartida por su cuenta. */
+  mostrarFichaAnotacion?: boolean;
   /** Abrir o cerrar la ficha de zona con un clic o toque en el mapa. */
   alSenalarZona?: (zonaId: number | null) => void;
   /** Ficha que aparece sobre el mapa, también cuando se abre en grande. */
@@ -307,6 +311,7 @@ export function Mapa({
   marcandoPunto = false,
   alMarcarPunto,
   alTocarAnotacion,
+  mostrarFichaAnotacion = true,
   alSenalarZona,
   fichaSobreElMapa,
   enVivo = false,
@@ -325,11 +330,21 @@ export function Mapa({
 
   const [gpsPrendido, setGpsPrendido] = useState(false);
   const [posicionPropia, setPosicionPropia] = useState<PosicionEnElMapa | null>(null);
+  const [anotacionTocadaId, setAnotacionTocadaId] = useState<number | null>(null);
   const vigilanciaRef = useRef<number | null>(null);
   
   const primeraVezRef = useRef(true);
 
   const posicionEfectiva = miPosicion || posicionPropia;
+  const cerrarFichaAnotacion = useCallback(() => setAnotacionTocadaId(null), []);
+  const anotacionTocada = anotaciones.find((cada) => cada.id === anotacionTocadaId);
+  const anotacionDeLaFicha: AnotacionEnPantalla | null = anotacionTocada
+    ? {
+        ...anotacionTocada,
+        subida: (anotacionTocada as Partial<AnotacionEnPantalla>).subida ?? null,
+        codigoDeLaMarca: (anotacionTocada as Partial<AnotacionEnPantalla>).codigoDeLaMarca ?? null,
+      }
+    : null;
 
   // Apagar el GPS al cerrar el mapa
   useEffect(() => {
@@ -1043,83 +1058,67 @@ export function Mapa({
     };
   }, [marcandoPunto, alMarcarPunto]);
 
-  /**
-   * Abrir una anotación tocándola en el mapa.
-   *
-   * **No se busca el toque exacto sobre el puntito**, sino en un cuadrado
-   * grande alrededor del dedo. El punto se dibuja chico para no tapar el mapa,
-   * pero se toca caminando: si hubiera que acertarle a siete
-   * píxeles, nadie lo abriría nunca.
-   */
+  /** Puntos: clic/toque abre sus datos; el cursor avisa en computadora. */
   useEffect(() => {
     const mapa = mapaRef.current;
-    if (!mapa || !alTocarAnotacion || marcandoPunto) return;
+    if (!mapa || marcandoPunto) return;
 
     const MITAD_DEL_DEDO = 22;
-
-    const tocar = (evento: maplibregl.MapMouseEvent) => {
-      // Los puntos primero: si el dedo cae sobre un punto y un trazo, se abre
-      // el punto, que es lo más chico y lo más difícil de acertar.
-      const capas = ["anotaciones-punto", "anotaciones-trazo"].filter((capa) =>
-        Boolean(mapa.getLayer(capa)),
-      );
-      if (capas.length === 0) return;
-
+    const capasAnotacion = () => ["anotaciones-punto", "anotaciones-trazo"].filter((capa) =>
+      Boolean(mapa.getLayer(capa)),
+    );
+    const buscarAnotacion = (evento: maplibregl.MapMouseEvent) => {
+      const capas = capasAnotacion();
+      if (capas.length === 0) return null;
       const { x, y } = evento.point;
       const encontradas = mapa.queryRenderedFeatures(
-        [
-          [x - MITAD_DEL_DEDO, y - MITAD_DEL_DEDO],
-          [x + MITAD_DEL_DEDO, y + MITAD_DEL_DEDO],
-        ],
+        [[x - MITAD_DEL_DEDO, y - MITAD_DEL_DEDO], [x + MITAD_DEL_DEDO, y + MITAD_DEL_DEDO]],
         { layers: capas },
       );
       encontradas.sort(
         (a, b) =>
           Number(a.layer.id !== "anotaciones-punto") - Number(b.layer.id !== "anotaciones-punto"),
       );
-
       const id = encontradas[0]?.properties?.id;
-      if (typeof id === "number") alTocarAnotacion(id);
+      return typeof id === "number" ? id : null;
     };
-
-    mapa.on("click", tocar);
-    return () => {
-      mapa.off("click", tocar);
-    };
-  }, [alTocarAnotacion, marcandoPunto]);
-
-  useEffect(() => {
-    const mapa = mapaRef.current;
-    if (!mapa || !alSenalarZona) return;
-
-    const buscar = (evento: maplibregl.MapMouseEvent) => {
+    const buscarZona = (evento: maplibregl.MapMouseEvent) => {
       const zonas = rectangulosParaDibujo.current.filter(
         (cada) => cada.clase === "zona_general" && typeof cada.id === "number",
       );
       return zonaEnElLugar(zonas, evento.lngLat.lng, evento.lngLat.lat)?.id ?? null;
     };
-
     const mover = (evento: maplibregl.MapMouseEvent) => {
-      const id = buscar(evento);
-      mapa.getCanvas().style.cursor = id === null ? "" : "pointer";
+      const sobrePunto = mapa.getLayer("anotaciones-punto")
+        ? mapa.queryRenderedFeatures(evento.point, { layers: ["anotaciones-punto"] }).length > 0
+        : false;
+      const sobreZona = alSenalarZona ? buscarZona(evento) !== null : false;
+      mapa.getCanvas().style.cursor = sobrePunto || sobreZona ? "pointer" : "";
     };
     const tocar = (evento: maplibregl.MapMouseEvent) => {
-      alSenalarZona(buscar(evento));
+      const id = buscarAnotacion(evento);
+      if (id !== null) {
+        setAnotacionTocadaId(id);
+        alTocarAnotacion?.(id);
+        alSenalarZona?.(null);
+        return;
+      }
+      if (alSenalarZona) alSenalarZona(buscarZona(evento));
     };
     const salir = () => {
       mapa.getCanvas().style.cursor = "";
     };
 
     mapa.on("mousemove", mover);
-    mapa.on("click", tocar);
     mapa.on("mouseout", salir);
+    mapa.on("click", tocar);
     return () => {
       mapa.off("mousemove", mover);
-      mapa.off("click", tocar);
       mapa.off("mouseout", salir);
+      mapa.off("click", tocar);
       mapa.getCanvas().style.cursor = "";
     };
-  }, [alSenalarZona]);
+  }, [alSenalarZona, alTocarAnotacion, marcandoPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {
@@ -1572,6 +1571,15 @@ export function Mapa({
         <div className="shrink-0 border-t border-borde bg-superficie px-3 py-2">
           {referencia}
         </div>
+      ) : null}
+      {mostrarFichaAnotacion ? (
+        <FichaDeAnotacion
+          anotacion={anotacionDeLaFicha}
+          alCerrar={cerrarFichaAnotacion}
+          miPerfilId={null}
+          mostrarAutor={false}
+          fotoRemotaAlFaltar
+        />
       ) : null}
     </div>
   );

@@ -218,6 +218,7 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
             forzarCentradoEn={centrarGps}
             sinMapaDescargado={avisoDelMapa !== null}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
+            mostrarFichaAnotacion={false}
           />
         </div>
 

@@ -1,16 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
 /**
- * La ficha de una anotación, abierta desde el mapa mientras se navega.
+ * La ficha compartida de una anotación, abierta desde un mapa.
  *
- * **Es el momento para el que existe la foto.** La persona está parada en el
- * cruce, sin señal, y necesita ver cómo es de verdad el lugar. Por eso se
- * muestra la foto chica, que está en el celular, y nunca se sale a internet.
+ * Durante la navegación muestra la foto chica guardada en el celular y nunca
+ * sale a internet. En otros mapas puede abrir la foto completa si la copia
+ * local falta y esa pantalla tiene conexión.
  *
  * **Nada queda mudo**: mientras busca la foto, cuando no está bajada, y cuando
  * algo de esta anotación todavía no se subió —con el motivo si falló—.
@@ -20,6 +21,9 @@ type PropiedadesDeLaFicha = {
   anotacion: AnotacionEnPantalla | null;
   alCerrar: () => void;
   miPerfilId: string | null;
+  mostrarAutor?: boolean;
+  /** Solo en mapas de administración con conexión, nunca durante navegación. */
+  fotoRemotaAlFaltar?: boolean;
   /** Aparece solo si la podés cambiar: las tuyas, o todas si sos administrador. */
   alCambiar?: (anotacion: AnotacionEnPantalla) => void;
   alBorrar?: (anotacion: AnotacionEnPantalla) => void;
@@ -40,10 +44,13 @@ export function FichaDeAnotacion({
   anotacion,
   alCerrar,
   miPerfilId,
+  mostrarAutor = true,
+  fotoRemotaAlFaltar = false,
   alCambiar,
   alBorrar,
 }: PropiedadesDeLaFicha) {
   const foto = useFotoDelCelular(anotacion?.fotoChicaUrl ?? null);
+  const [fotoRemotaFallida, setFotoRemotaFallida] = useState<string | null>(null);
 
   const titulo = anotacion?.icono
     ? COMO_SE_LLAMA[anotacion.icono]
@@ -53,6 +60,10 @@ export function FichaDeAnotacion({
 
   // Tiene foto grande pero no chica: se subió antes de que existiera la chica.
   const tieneSoloLaGrande = Boolean(anotacion?.fotoUrl) && !anotacion?.fotoChicaUrl;
+  const fotoRemotaNecesaria = Boolean(
+    anotacion?.fotoUrl && (tieneSoloLaGrande || foto.paso === "no_esta") && fotoRemotaAlFaltar,
+  );
+  const falloDeFotoRemota = fotoRemotaNecesaria && fotoRemotaFallida === anotacion?.fotoUrl;
   const marcadaEl = anotacion ? cuando(anotacion.marcadaEn) : null;
 
   return (
@@ -63,6 +74,9 @@ export function FichaDeAnotacion({
       ancho="amplio"
       acciones={
         <div className="w-full space-y-2">
+          {anotacion && fotoRemotaNecesaria && falloDeFotoRemota ? (
+            <BotonDeEmergente onClick={() => setFotoRemotaFallida(null)}>Volver a intentar</BotonDeEmergente>
+          ) : null}
           {anotacion && alCambiar ? (
             <div className="grid grid-cols-2 gap-2">
               <BotonDeEmergente
@@ -86,7 +100,7 @@ export function FichaDeAnotacion({
       }
     >
       <div className="space-y-3">
-        {anotacion ? (
+        {anotacion && mostrarAutor ? (
           <p className="text-base text-texto-suave">
             {deQuien(anotacion, miPerfilId)}
             {marcadaEl ? ` · marcada el ${marcadaEl}` : ""}
@@ -131,7 +145,17 @@ export function FichaDeAnotacion({
           />
         ) : null}
 
-        {foto.paso === "no_esta" ? (
+        {fotoRemotaNecesaria && !falloDeFotoRemota ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={anotacion?.fotoUrl ?? undefined}
+            alt={anotacion?.comentario ? `Foto de ${titulo}: ${anotacion.comentario}` : `Foto de ${titulo}`}
+            onError={() => setFotoRemotaFallida(anotacion?.fotoUrl ?? null)}
+            className="w-full rounded-xl border border-borde-suave bg-fondo"
+          />
+        ) : null}
+
+        {foto.paso === "no_esta" && !fotoRemotaNecesaria ? (
           <p
             role="alert"
             className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto"
@@ -141,11 +165,17 @@ export function FichaDeAnotacion({
           </p>
         ) : null}
 
-        {tieneSoloLaGrande ? (
+        {tieneSoloLaGrande && !fotoRemotaNecesaria ? (
           <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto">
             Esta anotación tiene una foto que solo se ve con internet, en la
             pantalla del sector. Hay que volver a cargarla para que viaje al
             celular.
+          </p>
+        ) : null}
+
+        {fotoRemotaNecesaria && falloDeFotoRemota ? (
+          <p role="alert" className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto">
+            No se pudo abrir la foto. Revisá la conexión y volvé a intentar.
           </p>
         ) : null}
 

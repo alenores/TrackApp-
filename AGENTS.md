@@ -117,6 +117,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   clic o tocar una zona aparece su ficha breve con «Ver zona»; los sectores
   quedan en el detalle de esa zona. Nombres e íconos aparecen gradualmente al
   acercarse y no se amontonan con poco zoom. Ver `docs/decisiones/029`.
+- **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
+  comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
+  puntos. Navegación libre y navegación de rutas conservan su ficha completa.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si la ruta queda adentro de un
