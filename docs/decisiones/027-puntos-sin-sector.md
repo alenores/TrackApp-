@@ -21,8 +21,8 @@ igual se orienta con los puntos.
 - **Lo de adentro del sector queda como está** (marcar tocando el mapa, traer
   de Google Earth y de OpenStreetMap). La pantalla nueva se suma aparte.
 - **Solo el administrador.** Premium y normal no ven el botón ni la pantalla.
-- **El botón va en la pantalla de Zonas**, visible solo para el administrador y
-  solo con señal (es una pantalla de administración).
+- **La pestaña Puntos está en Mapas**, visible solo para el administrador. El
+  botón para guardar solo aparece con señal (es una pantalla de administración).
 - **Al guardar, el formulario queda vacío y listo para el siguiente punto.**
 - **Se pega tal cual sale de Google Earth**: `31°16'31.0"S 64°19'13.3"W`.
   `leerCoordenada` (`lib/coordenadas.ts`) ya lo entiende; se probó el
@@ -49,9 +49,9 @@ igual se orienta con los puntos.
    Confirmado con guardado real desde la pantalla, con la cuenta del
    administrador. El punto sin sector se reabrió en otra sesión, se editó
    y se borró con confirmación.
-4. [x] Pantalla nueva `/zonas/puntos`: mapa general con todos los puntos,
-   campo para pegar la coordenada, el mapa salta al punto, ícono, texto,
-   guardar, formulario vacío para el siguiente.
+4. [x] Pantalla de puntos integrada en la pestaña **Puntos** de Mapas: mapa
+   general con todos los puntos, filtros, lista y formulario para pegar la
+   coordenada, elegir ícono, escribir texto y guardar. Ver decisión 030.
    **Implementado y probado en pantalla el 2026-09-30:** mapa, coordenada de
    Google Earth, ícono, texto, foto compartida, edición desde el mapa, borrado
    con confirmación y formulario que vuelve a la coordenada al guardar.
@@ -71,9 +71,10 @@ igual se orienta con los puntos.
 
 ## Borrador
 
-Aprobado por Ale el 2026-09-30: tres pasos (botón «Puntos» en Zonas → mapa con
-todos los puntos + formulario de pegar coordenada, ícono, texto → al guardar,
-aviso y formulario vacío). Con foto, y con arreglar y borrar desde el mapa.
+Aprobado por Ale el 2026-09-30: mapa con todos los puntos + formulario para
+pegar coordenada, ícono, texto y foto; al guardar, aviso y formulario vacío.
+Con arreglar y borrar desde el mapa. El 2026-10-01 se aprobó integrar el mapa,
+la lista y los filtros en una tercera pestaña del módulo Mapas (decisión 030).
 
 ## Alcance de la verificación
 

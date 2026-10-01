@@ -10,7 +10,7 @@ vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/zonas/tarjeta-de-zona", () => ({ TarjetaDeZona: () => null }));
 vi.mock("@/components/zonas/mapa-general-de-zonas", () => ({ MapaGeneralDeZonas: () => null }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-describe("botón de puntos en Zonas", () => {
+describe("pestaña de puntos en Mapas", () => {
   it.each([
     [true, true, true], [true, false, false], [false, true, false], [false, false, false],
   ])("administrador %s y señal %s: visible %s", async (administrador, senal, visible) => {
@@ -19,10 +19,7 @@ describe("botón de puntos en Zonas", () => {
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(<PantallaDeZonas soyAdministrador={administrador} />));
-      await act(async () => {
-        (contenedor.querySelector('#pestana-zonas') as HTMLButtonElement).click();
-      });
-      expect(Boolean(contenedor.querySelector('a[href="/zonas/puntos"]'))).toBe(visible);
+      expect(Boolean(contenedor.querySelector('#pestana-puntos'))).toBe(visible);
     } finally { act(() => raiz.unmount()); }
   });
 });

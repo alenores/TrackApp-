@@ -49,6 +49,7 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, sectoresPorZona }: Prop
       <CargadorDeMapa
         enVivo
         principal
+        alturaExtendida
         encuadre={CORDOBA_COMPLETA}
         rectangulos={rectangulos}
         anotaciones={puntos}

@@ -33,7 +33,6 @@ export function ListaDeZonas({
 
         {soyAdministrador ? (
           <div className="flex items-center gap-2">
-            <Enlace href="/zonas/puntos" variante="secundario">Puntos</Enlace>
             <Enlace
               href="/zonas/dibujar"
               aria-label="Nueva zona"

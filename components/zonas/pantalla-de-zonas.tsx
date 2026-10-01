@@ -8,15 +8,17 @@ import { MapaGeneralDeZonas } from "@/components/zonas/mapa-general-de-zonas";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresPorZona } from "@/lib/mapas/general";
+import { PantallaDePuntos } from "@/components/anotaciones/pantalla-de-puntos";
 
-type Propiedades = { soyAdministrador: boolean };
-type Pestana = "zonas" | "mapa";
+type Propiedades = { soyAdministrador: boolean; pestañaInicial?: Pestana };
+type Pestana = "zonas" | "mapa" | "puntos";
 
 /** El módulo Mapas: lista de zonas y vista general de Córdoba. */
-export function PantallaDeZonas({ soyAdministrador }: Propiedades) {
+export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: Propiedades) {
   const puedeAdministrar = usePuedeAdministrar(soyAdministrador);
   const { paquete, estado, aviso } = useDatosDeLaApp();
-  const [pestana, setPestana] = useState<Pestana>("mapa");
+  const [pestana, setPestana] = useState<Pestana>(pestañaInicial);
+  const pestanaActiva = pestana === "puntos" && !puedeAdministrar ? "mapa" : pestana;
 
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
   const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
@@ -24,13 +26,17 @@ export function PantallaDeZonas({ soyAdministrador }: Propiedades) {
   const cantidades = useMemo(() => sectoresPorZona(sectores), [sectores]);
 
   const alMoverEntrePestanas = (evento: KeyboardEvent<HTMLDivElement>) => {
-    const siguiente = evento.key === "ArrowRight" || evento.key === "ArrowLeft"
-      ? pestana === "mapa" ? "zonas" : "mapa"
-      : evento.key === "End"
-        ? "mapa"
-        : evento.key === "Home"
-          ? "zonas"
-          : null;
+    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "puntos"] : ["zonas", "mapa"];
+    const indice = pestanas.indexOf(pestanaActiva);
+    const siguiente = evento.key === "ArrowRight"
+      ? pestanas[(indice + 1) % pestanas.length]
+      : evento.key === "ArrowLeft"
+        ? pestanas[(indice - 1 + pestanas.length) % pestanas.length]
+        : evento.key === "End"
+          ? pestanas[pestanas.length - 1]
+          : evento.key === "Home"
+            ? pestanas[0]
+            : null;
     if (!siguiente) return;
     evento.preventDefault();
     setPestana(siguiente);
@@ -41,16 +47,23 @@ export function PantallaDeZonas({ soyAdministrador }: Propiedades) {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold uppercase text-texto">Mapas</h1>
       <div role="tablist" aria-label="Vistas de mapas" className="flex gap-2" onKeyDown={alMoverEntrePestanas}>
-        <Boton role="tab" id="pestana-zonas" aria-controls="panel-zonas" aria-selected={pestana === "zonas"}
-          tabIndex={pestana === "zonas" ? 0 : -1}
-          variante={pestana === "zonas" ? "principal" : "fantasma"} onClick={() => setPestana("zonas")}>
+        <Boton role="tab" id="pestana-zonas" aria-controls="panel-zonas" aria-selected={pestanaActiva === "zonas"}
+          tabIndex={pestanaActiva === "zonas" ? 0 : -1}
+          variante={pestanaActiva === "zonas" ? "principal" : "fantasma"} onClick={() => setPestana("zonas")}>
           Zonas
         </Boton>
-        <Boton role="tab" id="pestana-mapa" aria-controls="panel-mapa" aria-selected={pestana === "mapa"}
-          tabIndex={pestana === "mapa" ? 0 : -1}
-          variante={pestana === "mapa" ? "principal" : "fantasma"} onClick={() => setPestana("mapa")}>
+        <Boton role="tab" id="pestana-mapa" aria-controls="panel-mapa" aria-selected={pestanaActiva === "mapa"}
+          tabIndex={pestanaActiva === "mapa" ? 0 : -1}
+          variante={pestanaActiva === "mapa" ? "principal" : "fantasma"} onClick={() => setPestana("mapa")}>
           Mapa
         </Boton>
+        {puedeAdministrar ? (
+          <Boton role="tab" id="pestana-puntos" aria-controls="panel-puntos" aria-selected={pestanaActiva === "puntos"}
+            tabIndex={pestanaActiva === "puntos" ? 0 : -1}
+            variante={pestanaActiva === "puntos" ? "principal" : "fantasma"} onClick={() => setPestana("puntos")}>
+            Puntos
+          </Boton>
+        ) : null}
       </div>
 
       {estado === "abriendo" ? (
@@ -73,7 +86,7 @@ export function PantallaDeZonas({ soyAdministrador }: Propiedades) {
               </p>
             </Tarjeta>
           ) : null}
-          {pestana === "zonas" ? (
+          {pestanaActiva === "zonas" ? (
             <div role="tabpanel" id="panel-zonas" aria-labelledby="pestana-zonas" className="max-w-3xl">
               {estado === "sin_senal" ? (
                 <Tarjeta className="mb-4">
@@ -83,9 +96,13 @@ export function PantallaDeZonas({ soyAdministrador }: Propiedades) {
               <ListaDeZonas zonas={zonas} soyAdministrador={puedeAdministrar}
                 sectoresPorZona={cantidades} />
             </div>
-          ) : (
+          ) : pestanaActiva === "mapa" ? (
             <div role="tabpanel" id="panel-mapa" aria-labelledby="pestana-mapa">
               <MapaGeneralDeZonas zonas={zonas} anotaciones={anotaciones} sectoresPorZona={cantidades} />
+            </div>
+          ) : (
+            <div role="tabpanel" id="panel-puntos" aria-labelledby="pestana-puntos">
+              <PantallaDePuntos soyAdministrador={puedeAdministrar} />
             </div>
           )}
         </>

@@ -21,7 +21,7 @@ import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
 import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { leerPaquete } from "@/lib/offline/paquete";
 import { leerRecorrido } from "@/lib/offline/recorridos";
-import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
+import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 import { sectorPrincipalDeLaRuta } from "@/lib/navegacion/mapa-libre";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
@@ -125,10 +125,10 @@ export function PantallaDeNavegacion({ rutaId }: NavegacionViewProps) {
         const idsQueLaCruzan = sectoresQueLaCruzan.map((sector) => sector.id);
         setSectoresDeLaRuta(idsQueLaCruzan);
 
-        // Las de los sectores que cruza y las marcadas sin sector cerca de
-        // la ruta: manda dónde están, no a qué sector se las anotó.
+        // Todos los puntos marcados aparecen en cualquier mapa. Los trazos
+        // quedan limitados a los sectores y territorio que cruza la ruta.
         setAnotaciones(
-          anotacionesDelLugar(
+          anotacionesParaMapaDelLugar(
             paquete?.anotaciones ?? [],
             sectoresQueLaCruzan,
             ruta.rectangulo,

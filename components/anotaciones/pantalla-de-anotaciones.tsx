@@ -19,7 +19,7 @@ import { useFoto } from "@/hooks/use-foto";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
-import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
+import { anotacionesDelLugar, anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 import {
   FORMATOS_DE_GOOGLE_EARTH,
   leerArchivoDeGoogleEarth,
@@ -188,6 +188,9 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
   // adentro: manda dónde está, no a qué sector se la anotó.
   const anotaciones = sector
     ? anotacionesDelLugar(paquete?.anotaciones ?? [], [sector])
+    : [];
+  const anotacionesDelMapa = sector
+    ? anotacionesParaMapaDelLugar(paquete?.anotaciones ?? [], [sector])
     : [];
 
   const tieneTranquerasOAlambrados = anotaciones.some(
@@ -512,7 +515,7 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       // Lo que se va a agregar, dibujado antes de guardarlo. Los números
       // negativos son de mentira: no existen en la base todavía.
       return [
-        ...anotaciones,
+        ...anotacionesDelMapa,
         ...trayendo.importacion.dentro.map((cada, indice) => ({
           ...cada,
           id: -(indice + 1),
@@ -530,9 +533,9 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
       ];
     }
     const previa = vistaPrevia();
-    if (!previa) return anotaciones;
+    if (!previa) return anotacionesDelMapa;
     // Si se está redibujando un trazo guardado, se muestra el nuevo en su lugar.
-    const sinElQueSeEdita = anotaciones.filter((cada) => cada.id !== editando?.id);
+    const sinElQueSeEdita = anotacionesDelMapa.filter((cada) => cada.id !== editando?.id);
     return [...sinElQueSeEdita, previa];
   })();
 

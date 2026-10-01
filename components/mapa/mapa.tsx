@@ -161,6 +161,8 @@ type MapaProps = {
    * hasta ocupar casi toda la altura, que es donde se necesita ver.
    */
   principal?: boolean;
+  /** Usa el doble de alto habitual en las vistas generales de territorio. */
+  alturaExtendida?: boolean;
   /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
   controlesAdicionales?: ReactNode;
   /** Función para cerrar cuando está en pantalla completa externa (ej. navegación). */
@@ -300,6 +302,7 @@ export function Mapa({
   referencia = null,
   pantallaCompleta = false,
   principal = false,
+  alturaExtendida = false,
   controlesAdicionales = null,
   alCerrarPantallaCompleta,
   forzarCentradoEn,
@@ -1342,7 +1345,9 @@ export function Mapa({
           : pantallaCompleta
             ? "relative h-full w-full"
             : principal
-              ? "relative h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
+              ? alturaExtendida
+                ? "relative h-144 w-full rounded-xl border border-borde sm:h-192 lg:h-[calc(100vh-13rem)]"
+                : "relative h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-[calc(100vh-13rem)]"
               : // La referencia se come alto: si no se lo devolvemos, el mapa
                 // queda una franja donde no se ve si la ruta cae adentro.
                 referencia

@@ -177,7 +177,8 @@ export function usePuntos() {
   }
 
   return {
-    estado, aviso, haySenal, puntos, seleccionado, coordenada, setCoordenada,
+    estado, aviso, haySenal, puntos, zonas: paquete?.zonas ?? [], sectores: paquete?.sectores ?? [],
+    seleccionado, coordenada, setCoordenada,
     icono, setIcono, comentario, setComentario, foto, quitarLaFoto, setQuitarLaFoto,
     guardando, error, mensaje, lectura, encuadre, enElMapa, abrir, limpiar, guardar, borrar,
   };

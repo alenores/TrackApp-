@@ -8,13 +8,14 @@ import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/mapa/cargador-de-mapa", () => ({
-  CargadorDeMapa: ({ rectangulos, anotaciones, alSenalarZona, fichaSobreElMapa }: {
+  CargadorDeMapa: ({ rectangulos, anotaciones, alSenalarZona, fichaSobreElMapa, alturaExtendida }: {
     rectangulos: RectanguloEnElMapa[];
     anotaciones: Anotacion[];
     alSenalarZona: (id: number | null) => void;
     fichaSobreElMapa: React.ReactNode;
+    alturaExtendida: boolean;
   }) => (
-    <div data-clases={rectangulos.map((cada) => cada.clase).join(",")} data-puntos={anotaciones.length}>
+    <div data-clases={rectangulos.map((cada) => cada.clase).join(",")} data-puntos={anotaciones.length} data-altura-extendida={alturaExtendida}>
       <button onClick={() => alSenalarZona(1)}>Señalar zona</button>
       {fichaSobreElMapa}
     </div>
@@ -40,6 +41,7 @@ describe("mapa general", () => {
       ));
       expect(contenedor.querySelector("[data-clases]")?.getAttribute("data-clases")).toBe("zona_general");
       expect(contenedor.querySelector("[data-puntos]")?.getAttribute("data-puntos")).toBe("1");
+      expect(contenedor.querySelector("[data-altura-extendida]")?.getAttribute("data-altura-extendida")).toBe("true");
       await act(async () => {
         (contenedor.querySelector("button") as HTMLButtonElement).click();
       });

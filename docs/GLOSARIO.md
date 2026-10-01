@@ -6,8 +6,9 @@
 ## Mapas y offline
 
 **Mapas**
-El módulo para explorar Córdoba. Tiene una pestaña con la lista de zonas y otra
-con el mapa general de todas las zonas y los puntos marcados.
+El módulo para explorar Córdoba. Tiene una pestaña con la lista de zonas, otra
+con el mapa general de todas las zonas y los puntos marcados, y para el
+administrador una tercera pestaña para filtrar y gestionar los puntos.
 
 **Mapa general**
 La vista de Córdoba dentro de Mapas. Dibuja solamente el perímetro y el nombre

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anotacionesDelLugar, caeDentroDe } from "@/lib/anotaciones/lugar";
+import { anotacionesDelLugar, anotacionesParaMapaDelLugar, caeDentroDe } from "@/lib/anotaciones/lugar";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
 /**
@@ -80,5 +80,23 @@ describe("las anotaciones de un lugar", () => {
     const cerca = anotacion(5, null, { type: "Point", coordinates: [-60.5, -30.5] });
     const ruta: Rectangulo = { latNorte: -30, latSur: -31, lonOeste: -61, lonEste: -60 };
     expect(anotacionesDelLugar([cerca], [], ruta)).toHaveLength(1);
+  });
+});
+
+describe("las anotaciones que se dibujan en un mapa de lugar", () => {
+  const sector = { id: 7, rectangulo: RECTANGULO };
+
+  it("incluye los puntos aunque estén anotados a otro sector o fuera del territorio", () => {
+    const puntos = [
+      anotacion(1, 99, { type: "Point", coordinates: [-80, -40] }),
+      anotacion(2, null, { type: "Point", coordinates: [-60, -30] }),
+    ];
+    expect(anotacionesParaMapaDelLugar(puntos, [sector]).map((cada) => cada.id)).toEqual([1, 2]);
+  });
+
+  it("mantiene los trazos dentro del sector o territorio actual", () => {
+    const dentro = anotacion(3, 7, { type: "LineString", coordinates: [[-70, -40], [-71, -41]] });
+    const afuera = anotacion(4, 99, { type: "LineString", coordinates: [[-70, -40], [-71, -41]] });
+    expect(anotacionesParaMapaDelLugar([dentro, afuera], [sector]).map((cada) => cada.id)).toEqual([3]);
   });
 });

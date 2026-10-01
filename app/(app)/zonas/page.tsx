@@ -11,13 +11,19 @@ export const metadata: Metadata = { title: "Mapas" };
  * Dibuja desde lo guardado en el celular, igual que la lista de rutas: la
  * pantalla tiene que aparecer sin señal.
  */
-export default async function ZonasPage() {
+export default async function ZonasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vista?: string | string[] }>;
+}) {
   const esAdministrador = await soyAdministrador();
+  const parametros = await searchParams;
+  const pestañaInicial = parametros.vista === "puntos" ? "puntos" : "mapa";
 
   return (
     <>
       <MarcaDeAppLista />
-      <PantallaDeZonas soyAdministrador={esAdministrador} />
+      <PantallaDeZonas soyAdministrador={esAdministrador} pestañaInicial={pestañaInicial} />
     </>
   );
 }

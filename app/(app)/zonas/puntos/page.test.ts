@@ -10,8 +10,8 @@ describe("acceso a puntos por su dirección", () => {
     permiso.administrador = false;
     await expect(PuntosPage()).rejects.toThrow("redireccion:/zonas");
   });
-  it("deja entrar al administrador", async () => {
+  it("lleva al administrador a la pestaña integrada de puntos", async () => {
     permiso.administrador = true;
-    await expect(PuntosPage()).resolves.toBeTruthy();
+    await expect(PuntosPage()).rejects.toThrow("redireccion:/zonas?vista=puntos");
   });
 });

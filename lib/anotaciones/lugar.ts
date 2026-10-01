@@ -47,3 +47,19 @@ export function anotacionesDelLugar(
       : rectangulos.some((rectangulo) => caeDentroDe(anotacion, rectangulo)),
   );
 }
+
+/**
+ * Para dibujar un lugar, los puntos marcados se muestran en todos los mapas.
+ * Los trazos, en cambio, siguen correspondiendo al sector o territorio donde
+ * caen.
+ */
+export function anotacionesParaMapaDelLugar(
+  anotaciones: Anotacion[],
+  sectores: Array<{ id: number; rectangulo: Rectangulo }>,
+  rectanguloExtra?: Rectangulo | null,
+): Anotacion[] {
+  const locales = anotacionesDelLugar(anotaciones, sectores, rectanguloExtra);
+  const puntos = anotaciones.filter((anotacion) => anotacion.geometria.type === "Point");
+  const trazosLocales = locales.filter((anotacion) => anotacion.geometria.type !== "Point");
+  return [...puntos, ...trazosLocales];
+}

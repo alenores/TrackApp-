@@ -4,9 +4,11 @@
 
 ## Decisión
 
-El módulo **Mapas** tiene dos pestañas: **Zonas**, con la lista de siempre, y
+El módulo **Mapas** tiene las pestañas **Zonas**, con la lista de siempre, y
 **Mapa**, con una vista general de Córdoba. La vista del mapa abre encuadrando
-la provincia y muestra todas las zonas y las anotaciones de tipo punto.
+la provincia y muestra todas las zonas y las anotaciones de tipo punto. Para
+el administrador, **Puntos** permite consultar y gestionar todos los puntos en
+la misma pantalla. Ver la decisión 030.
 
 En el mapa general, cada zona se dibuja solo con su perímetro y un nombre. No se
 dibujan los límites internos ni los nombres de sus sectores. Al hacer clic en

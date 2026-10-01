@@ -4,6 +4,58 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-01 — Pestaña Puntos y mapa más alto
+
+### Estado al inicio
+En Mapas había una lista de zonas y una vista general. La gestión de puntos
+estaba en otra pantalla, separada del mapa y de su listado.
+
+### Lo que se hizo
+- Se agregó la pestaña Puntos para administrar los puntos junto al mapa general.
+- Se incorporaron filtros por zona o sector y por tipo de ícono, más una lista
+  con la información de cada punto.
+- El botón para agregar abre el formulario existente; elegir un punto del mapa
+  o de la lista permite editarlo.
+- Se duplicó la altura habitual inicial del mapa en las pestañas Mapa y Puntos.
+- El acceso anterior a la pantalla de puntos ahora lleva a la nueva pestaña.
+- Se actualizaron las pruebas y las decisiones de diseño 027, 029 y 030.
+
+### Decisiones tomadas
+Mockup aprobado por Ale. Puntos conserva el acceso exclusivo del administrador;
+el botón de agregar aparece con señal.
+
+### Documentos actualizados
+Glosario, diseño exterior, decisiones 027, 029 y 030, y este registro.
+
+### Deuda o inconsistencias detectadas
+La verificación de la experiencia en distintos tamaños de celular se completará
+después de publicar.
+
+---
+
+## Sesión 2026-10-01 — Puntos visibles en todos los mapas
+
+### Estado al inicio
+En los mapas de zona, sector y navegación por ruta, las anotaciones se filtraban
+por el territorio actual. Eso ocultaba puntos que estaban marcados en otras
+partes.
+
+### Lo que se hizo
+- Todos los puntos marcados que están guardados ahora se dibujan también en los
+  mapas de zona, sector y navegación por ruta.
+- Los trazos siguen limitados al lugar que corresponde, y las rutas visibles no
+  cambiaron.
+- Se agregó una prueba para comprobar ambos comportamientos.
+
+### Documentos actualizados
+Este registro.
+
+### Deuda o inconsistencias detectadas
+La vista encuadra el lugar actual; un punto que queda fuera de lo que alcanza a
+mostrar el encuadre no se verá hasta mover o alejar el mapa.
+
+---
+
 ## Sesión 2026-10-01 — Vista general de Córdoba en Mapas
 
 ### Estado al inicio
@@ -1122,3 +1174,19 @@ foto disponible, y que en PC el cursor indique que el punto se puede abrir.
 ### Documentos actualizados
 
 `AGENTS.md`, `DISENO_EXTERIOR.md`, `GLOSARIO.md` y la decisión `029`.
+
+## Sesión 2026-10-01 — Corregir el icono de Descargas en celular
+
+### Estado al inicio
+
+Ale observó que «Descargas» mostraba el icono de mapa en la barra inferior del
+celular, aunque en PC ya tenía el icono de descarga.
+
+### Lo que se hizo
+
+- Se cambió el icono de la barra inferior para que «Descargas» use el símbolo
+  de bajar que ya aparece en el menú de PC.
+
+### Pendientes para la próxima
+
+- No se subió el cambio; quedan otras observaciones por revisar.
