@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CORDOBA_COMPLETA,
+  opacidadDelNombreDeZona,
   puntosDelMapaGeneral,
   sectoresPorZona,
   zonaEnElLugar,
@@ -39,6 +40,13 @@ describe("mapa general de Córdoba", () => {
   it("elige la zona más precisa en una superposición", () => {
     expect(zonaEnElLugar([zonaGrande, zonaChica], -64.5, -31.5)?.id).toBe(2);
     expect(zonaEnElLugar([zonaGrande], -60, -31.5)).toBeNull();
+  });
+
+  it("hace aparecer los nombres al acercarse sin mostrarlos en el mapa provincial", () => {
+    expect(opacidadDelNombreDeZona(5)).toBe(0);
+    expect(opacidadDelNombreDeZona(6.5)).toBe(1 / 3);
+    expect(opacidadDelNombreDeZona(8.5)).toBe(1);
+    expect(opacidadDelNombreDeZona(12)).toBe(1);
   });
 
   it("cuenta sectores sin dibujarlos", () => {

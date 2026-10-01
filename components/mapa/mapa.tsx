@@ -33,7 +33,7 @@ import {
 } from "@/components/mapa/capas-de-relieve";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
-import { zonaEnElLugar } from "@/lib/mapas/general";
+import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
 
 /** Toque o clic sobre el mapa: los dos traen dónde fue, en el mapa y en pantalla. */
@@ -603,10 +603,12 @@ export function Mapa({
         source: FUENTE_ANOTACIONES,
         filter: ["==", ["geometry-type"], "Point"],
         paint: {
-          "circle-radius": 7,
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.5, 7, 1, 9, 2.5, 11, 5, 13, 7],
           "circle-color": ["coalesce", ["get", "color"], colores.anotacion],
           "circle-stroke-width": 2,
           "circle-stroke-color": colores.contorno,
+          "circle-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.1, 7, 0.25, 9, 0.55, 11, 0.85, 13, 1],
+          "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.1, 7, 0.25, 9, 0.55, 11, 0.85, 13, 1],
         },
       });
 
@@ -633,8 +635,11 @@ export function Mapa({
             "tranquera", "tranquera",
             "none"
           ],
-          "icon-size": 1.2,
-          "icon-allow-overlap": true,
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],
+          "icon-allow-overlap": false,
+        },
+        paint: {
+          "icon-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.1, 7, 0.25, 9, 0.6, 11, 1],
         },
       });
 
@@ -1147,6 +1152,7 @@ export function Mapa({
           "px-1", "px-2", "py-0", "py-0.5", "py-1",
         );
         titulo.classList.add(...clasesDeTamano);
+        titulo.style.opacity = String(opacidadDelNombreDeZona(zoom));
       }
     };
     mapa.on("zoom", actualizarEscalaDeEtiquetas);
@@ -1177,7 +1183,7 @@ export function Mapa({
           if (cada.clase === "zona_general") {
             const titulo = document.createElement("span");
             titulo.dataset.etiquetaZonaGeneral = "true";
-            titulo.className = "inline-block rounded bg-superficie/90 px-1 py-0 text-xs font-bold text-verde-texto transition-[font-size]";
+            titulo.className = "inline-block rounded bg-superficie/90 px-1 py-0 text-xs font-bold text-verde-texto transition-[font-size,opacity]";
             titulo.textContent = cada.etiqueta;
             el.appendChild(titulo);
           } else {

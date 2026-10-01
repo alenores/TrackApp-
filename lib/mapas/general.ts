@@ -35,6 +35,11 @@ export function puntosDelMapaGeneral(anotaciones: Anotacion[]): Anotacion[] {
   return anotaciones.filter((anotacion) => anotacion.tipo === "punto");
 }
 
+/** Los nombres se disuelven con el mapa provincial y aparecen al acercarse. */
+export function opacidadDelNombreDeZona(zoom: number): number {
+  return Math.min(1, Math.max(0, (zoom - 5.5) / 3));
+}
+
 /** Si dos zonas se pisan, elegir la más pequeña evita tapar la ficha de abajo. */
 export function zonaEnElLugar<T extends { rectangulo: Rectangulo }>(
   zonas: T[],

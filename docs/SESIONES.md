@@ -1034,3 +1034,36 @@ que la ficha de hover no se cerraba al sacar el cursor.
 ### Pendientes para la próxima
 
 - Ninguno para los dos ajustes solicitados.
+
+## Sesión 2026-10-01 — Mostrar nombres y puntos según el zoom
+
+### Estado al inicio
+
+Ale informó que los rótulos seguían grandes y que los iconos de muchas
+anotaciones podían cubrir el mapa al abrir Córdoba completa. También vio
+«Abriendo el mapa» en `localhost:3000`.
+
+### Lo que se hizo
+
+- Los rótulos se desvanecen en la vista provincial y aparecen al acercarse.
+- El tamaño y la opacidad de los puntos e íconos cambian con el zoom; los iconos
+  superpuestos no se dibujan.
+- Se confirmó que el servidor local activo está en el puerto 3005. El 3000 no
+  tenía servidor, y Next rechazó iniciar una segunda copia del mismo proyecto.
+
+### Decisiones tomadas
+
+- El encuadre provincial prioriza leer los límites; los nombres y las
+  anotaciones se vuelven visibles al acercarse.
+
+### Documentos actualizados
+
+`AGENTS.md`, `DISENO_EXTERIOR.md`, `design-qa.md` y la decisión `029`.
+
+### Deuda o inconsistencias detectadas
+
+- Ninguna para este cambio.
+
+### Pendientes para la próxima
+
+- Ninguno.

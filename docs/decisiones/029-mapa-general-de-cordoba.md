@@ -14,7 +14,9 @@ sobre la zona, o tocarla por primera vez, aparece una ficha breve con su nombre,
 cantidad de sectores, descripción si tiene, y el acceso **Ver zona**. Ese acceso
 abre el detalle existente, donde sí se ven todos los sectores y sus datos.
 
-El rótulo se reduce al alejarse y recupera su tamaño normal al acercarse. En
+El rótulo se desvanece al alejarse y aparece gradualmente al acercarse; los
+íconos y puntos de anotación siguen la misma regla de tamaño y visibilidad. Los
+íconos que se pisan se ocultan para que muchas anotaciones no cubran el mapa. En
 computadora, la ficha se cierra enseguida al sacar el cursor; un clic la deja
 fija para poder usar **Ver zona**. En celular, el primer toque la deja fija y se
 cierra al tocar afuera o en **Cerrar**.
