@@ -22,51 +22,21 @@ type Propiedades = {
 export function MapaGeneralDeZonas({ zonas, anotaciones, sectoresPorZona }: Propiedades) {
   const [zonaId, setZonaId] = useState<number | null>(null);
   const zonaIdRef = useRef<number | null>(null);
-  const zonaFijadaRef = useRef(false);
-  const cierrePendienteRef = useRef<number | null>(null);
   const rectangulos = useMemo(() => zonasEnElMapaGeneral(zonas), [zonas]);
   const puntos = useMemo(() => puntosDelMapaGeneral(anotaciones), [anotaciones]);
   const zonaElegida = zonas.find((zona) => zona.id === zonaId) ?? null;
-  const cancelarCierre = useCallback(() => {
-    if (cierrePendienteRef.current !== null) {
-      window.clearTimeout(cierrePendienteRef.current);
-      cierrePendienteRef.current = null;
-    }
-  }, []);
   const guardarZona = useCallback((id: number | null) => {
     zonaIdRef.current = id;
     setZonaId(id);
   }, []);
-  const senalarZona = useCallback((id: number | null, fijar: boolean) => {
-    if (fijar) {
-      if (cierrePendienteRef.current !== null) window.clearTimeout(cierrePendienteRef.current);
-      cierrePendienteRef.current = null;
-      zonaFijadaRef.current = id !== null;
-      guardarZona(id);
-    } else if (!zonaFijadaRef.current && id !== null) {
-      if (cierrePendienteRef.current !== null) window.clearTimeout(cierrePendienteRef.current);
-      cierrePendienteRef.current = null;
-      guardarZona(id);
-    } else if (!zonaFijadaRef.current && zonaIdRef.current !== null) {
-      if (cierrePendienteRef.current !== null) window.clearTimeout(cierrePendienteRef.current);
-      cierrePendienteRef.current = window.setTimeout(() => {
-        guardarZona(null);
-        cierrePendienteRef.current = null;
-      }, 100);
-    }
-  }, [guardarZona]);
+  const senalarZona = guardarZona;
   const cerrarFicha = useCallback(() => {
-    cancelarCierre();
-    zonaFijadaRef.current = false;
     guardarZona(null);
-  }, [cancelarCierre, guardarZona]);
-  const alSalirDeFicha = useCallback(() => {
-    if (!zonaFijadaRef.current) senalarZona(null, false);
-  }, [senalarZona]);
+  }, [guardarZona]);
 
   useEffect(() => {
     const cerrarAlTocarAfuera = (evento: PointerEvent) => {
-      if (evento.pointerType !== "touch" || !zonaFijadaRef.current) return;
+      if (zonaIdRef.current === null) return;
       if ((evento.target as Element | null)?.closest("[data-ficha-zona]")) return;
       cerrarFicha();
     };
@@ -84,7 +54,7 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, sectoresPorZona }: Prop
         anotaciones={puntos}
         alSenalarZona={senalarZona}
         fichaSobreElMapa={zonaElegida ? (
-          <div data-ficha-zona onMouseEnter={cancelarCierre} onMouseLeave={alSalirDeFicha}>
+          <div data-ficha-zona>
               <Tarjeta className="space-y-3 shadow-[var(--sombra-alta)]">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="line-clamp-2 min-w-0 text-lg font-bold text-texto">{zonaElegida.nombre}</h2>

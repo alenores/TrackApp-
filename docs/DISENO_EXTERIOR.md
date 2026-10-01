@@ -30,7 +30,7 @@ la pantalla que muestra los mapas guardados en el celular. «Mapas» reúne dos
 pestañas: Zonas y Mapa. El mapa general abre encuadrando Córdoba y muestra cada
 zona con su perímetro y un solo nombre, además de los puntos marcados. No dibuja
 las divisiones ni los nombres de los sectores: con varias zonas juntas taparían
-el territorio. Al pasar el cursor o tocar una zona aparece una ficha breve con
+el territorio. Al hacer clic o tocar una zona aparece una ficha breve con
 el acceso «Ver zona»; los sectores se ven en esa ficha detallada. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
 no se muestran y los íconos que se pisan se ocultan. Ver

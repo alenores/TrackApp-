@@ -12,7 +12,7 @@ con el mapa general de todas las zonas y los puntos marcados.
 **Mapa general**
 La vista de Córdoba dentro de Mapas. Dibuja solamente el perímetro y el nombre
 de cada zona y todos los puntos marcados; los sectores se ven al abrir una zona.
-Al pasar el cursor o tocar una zona muestra su ficha breve y el acceso «Ver zona».
+Al hacer clic o tocar una zona muestra su ficha breve y el acceso «Ver zona».
 
 **Descargas**
 La pantalla que muestra los mapas guardados en este celular y el espacio que ocupan.

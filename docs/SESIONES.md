@@ -1067,3 +1067,29 @@ anotaciones podían cubrir el mapa al abrir Córdoba completa. También vio
 ### Pendientes para la próxima
 
 - Ninguno.
+
+## Sesión 2026-10-01 — Abrir ficha de zona con clic o toque
+
+### Pedido
+
+Ale pidió que en PC la ficha informativa no aparezca al pasar el cursor, para
+evitar aperturas involuntarias al recorrer el mapa. El gesto debe ser el mismo
+que en celular: clic o toque sobre una zona; el pellizco queda para zoom.
+
+### Lo que se hizo
+
+- El movimiento del cursor solo cambia el indicador de selección; ya no abre la
+  ficha. El clic en PC y el toque en celular la abren.
+- Un clic o toque fuera de la ficha la cierra en ambos dispositivos. El botón
+  **Cerrar** también sigue disponible.
+- Se agregó una prueba automática del cierre con ambos tipos de interacción y
+  del toque dentro de la ficha.
+
+### Documentos actualizados
+
+`AGENTS.md`, `DISENO_EXTERIOR.md`, `GLOSARIO.md`, `design-qa.md` y la decisión
+`029`.
+
+### Pendientes
+
+- Ninguno.

@@ -198,8 +198,8 @@ type MapaProps = {
   alMarcarPunto?: (lon: number, lat: number) => void;
   /** Se llama con el número de la anotación que el usuario tocó. */
   alTocarAnotacion?: (anotacionId: number) => void;
-  /** Señalar una zona del mapa general con mouse o con el primer toque. */
-  alSenalarZona?: (zonaId: number | null, fijar: boolean) => void;
+  /** Abrir o cerrar la ficha de zona con un clic o toque en el mapa. */
+  alSenalarZona?: (zonaId: number | null) => void;
   /** Ficha que aparece sobre el mapa, también cuando se abre en grande. */
   fichaSobreElMapa?: ReactNode;
   /**
@@ -1099,24 +1099,15 @@ export function Mapa({
       return zonaEnElLugar(zonas, evento.lngLat.lng, evento.lngLat.lat)?.id ?? null;
     };
 
-    let ultimaZona: number | null = null;
     const mover = (evento: maplibregl.MapMouseEvent) => {
       const id = buscar(evento);
       mapa.getCanvas().style.cursor = id === null ? "" : "pointer";
-      if (id !== ultimaZona) {
-        ultimaZona = id;
-        alSenalarZona(id, false);
-      }
     };
     const tocar = (evento: maplibregl.MapMouseEvent) => {
-      const id = buscar(evento);
-      ultimaZona = id;
-      alSenalarZona(id, true);
+      alSenalarZona(buscar(evento));
     };
     const salir = () => {
       mapa.getCanvas().style.cursor = "";
-      ultimaZona = null;
-      alSenalarZona(null, false);
     };
 
     mapa.on("mousemove", mover);

@@ -11,13 +11,11 @@ vi.mock("@/components/mapa/cargador-de-mapa", () => ({
   CargadorDeMapa: ({ rectangulos, anotaciones, alSenalarZona, fichaSobreElMapa }: {
     rectangulos: RectanguloEnElMapa[];
     anotaciones: Anotacion[];
-    alSenalarZona: (id: number | null, fijar: boolean) => void;
+    alSenalarZona: (id: number | null) => void;
     fichaSobreElMapa: React.ReactNode;
   }) => (
     <div data-clases={rectangulos.map((cada) => cada.clase).join(",")} data-puntos={anotaciones.length}>
-      <button onClick={() => alSenalarZona(1, true)}>Señalar zona</button>
-      <button onClick={() => alSenalarZona(1, false)}>Pasar cursor</button>
-      <button onClick={() => alSenalarZona(null, false)}>Sacar cursor</button>
+      <button onClick={() => alSenalarZona(1)}>Señalar zona</button>
       {fichaSobreElMapa}
     </div>
   ),
@@ -53,8 +51,7 @@ describe("mapa general", () => {
     }
   });
 
-  it("cierra sola la ficha al sacar el cursor de la zona", async () => {
-    vi.useFakeTimers();
+  it("cierra la ficha al hacer clic o tocar afuera, pero no al interactuar dentro", async () => {
     const zona = {
       id: 1,
       nombre: "Zona de prueba",
@@ -67,14 +64,25 @@ describe("mapa general", () => {
       await act(async () => raiz.render(
         <MapaGeneralDeZonas zonas={[zona]} anotaciones={[]} sectoresPorZona={{ 1: 4 }} />,
       ));
-      await act(async () => (contenedor.querySelector("button:nth-of-type(2)") as HTMLButtonElement).click());
+      await act(async () => (contenedor.querySelector("button") as HTMLButtonElement).click());
       expect(contenedor.querySelector("[data-ficha-zona]")).not.toBeNull();
-      await act(async () => (contenedor.querySelector("button:nth-of-type(3)") as HTMLButtonElement).click());
-      await act(async () => vi.advanceTimersByTimeAsync(120));
+      const ficha = contenedor.querySelector("[data-ficha-zona]") as HTMLElement;
+      const adentro = new Event("pointerdown", { bubbles: true });
+      Object.defineProperty(adentro, "pointerType", { value: "mouse" });
+      await act(async () => ficha.dispatchEvent(adentro));
+      expect(contenedor.querySelector("[data-ficha-zona]")).not.toBeNull();
+      const afuera = new Event("pointerdown", { bubbles: true });
+      Object.defineProperty(afuera, "pointerType", { value: "mouse" });
+      await act(async () => document.body.dispatchEvent(afuera));
+      expect(contenedor.querySelector("[data-ficha-zona]")).toBeNull();
+
+      await act(async () => (contenedor.querySelector("button") as HTMLButtonElement).click());
+      const toqueAfuera = new Event("pointerdown", { bubbles: true });
+      Object.defineProperty(toqueAfuera, "pointerType", { value: "touch" });
+      await act(async () => document.body.dispatchEvent(toqueAfuera));
       expect(contenedor.querySelector("[data-ficha-zona]")).toBeNull();
     } finally {
       act(() => raiz.unmount());
-      vi.useRealTimers();
     }
   });
 });

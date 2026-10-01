@@ -9,17 +9,17 @@ El módulo **Mapas** tiene dos pestañas: **Zonas**, con la lista de siempre, y
 la provincia y muestra todas las zonas y las anotaciones de tipo punto.
 
 En el mapa general, cada zona se dibuja solo con su perímetro y un nombre. No se
-dibujan los límites internos ni los nombres de sus sectores. Al pasar el cursor
-sobre la zona, o tocarla por primera vez, aparece una ficha breve con su nombre,
+dibujan los límites internos ni los nombres de sus sectores. Al hacer clic en
+la zona (PC) o tocarla una vez (celular), aparece una ficha breve con su nombre,
 cantidad de sectores, descripción si tiene, y el acceso **Ver zona**. Ese acceso
 abre el detalle existente, donde sí se ven todos los sectores y sus datos.
 
 El rótulo se desvanece al alejarse y aparece gradualmente al acercarse; los
 íconos y puntos de anotación siguen la misma regla de tamaño y visibilidad. Los
 íconos que se pisan se ocultan para que muchas anotaciones no cubran el mapa. En
-computadora, la ficha se cierra enseguida al sacar el cursor; un clic la deja
-fija para poder usar **Ver zona**. En celular, el primer toque la deja fija y se
-cierra al tocar afuera o en **Cerrar**.
+En PC y celular, la ficha se cierra al hacer clic o tocar afuera o en **Cerrar**.
+Mover el cursor no la abre; pasar el cursor por encima de otra zona no cambia la
+ficha. Pellizcar el mapa solo cambia el zoom y no abre la ficha.
 
 Los perímetros usan los rectángulos reales de las zonas. El mockup mostraba la
 idea visual, pero no cambia cómo se guardan las zonas.
@@ -38,5 +38,5 @@ la información de cada zona.
 - Inferido: usar los rectángulos de zona ya existentes para el perímetro y
   mantener los sectores en la pantalla de detalle.
 - Verificado: mapa local abierto con sesión iniciada, rótulos comprobados en
-  escritorio en ambos modos y con distintos niveles de acercamiento; cierre del
-  hover cubierto por prueba automática.
+  escritorio en ambos modos y con distintos niveles de acercamiento; apertura
+  explícita y cierre afuera cubiertos por prueba automática.
