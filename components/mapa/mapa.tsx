@@ -33,8 +33,8 @@ import {
 } from "@/components/mapa/capas-de-relieve";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
+import { zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
-import "maplibre-gl/dist/maplibre-gl.css";
 
 /** Toque o clic sobre el mapa: los dos traen dónde fue, en el mapa y en pantalla. */
 type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
@@ -198,6 +198,10 @@ type MapaProps = {
   alMarcarPunto?: (lon: number, lat: number) => void;
   /** Se llama con el número de la anotación que el usuario tocó. */
   alTocarAnotacion?: (anotacionId: number) => void;
+  /** Señalar una zona del mapa general con mouse o con el primer toque. */
+  alSenalarZona?: (zonaId: number | null, fijar: boolean) => void;
+  /** Ficha que aparece sobre el mapa, también cuando se abre en grande. */
+  fichaSobreElMapa?: ReactNode;
   /**
    * `true` para traer el fondo en vivo.
    *
@@ -240,21 +244,6 @@ function comoPoligono(
           [lonOeste, latNorte],
         ],
       ],
-    },
-  };
-}
-
-function comoPuntoEtiqueta(
-  rectangulo: Rectangulo,
-  etiqueta: string,
-): Feature<Point> {
-  const { latNorte, latSur, lonEste, lonOeste } = rectangulo;
-  return {
-    type: "Feature",
-    properties: { etiqueta },
-    geometry: {
-      type: "Point",
-      coordinates: [(lonOeste + lonEste) / 2, (latNorte + latSur) / 2],
     },
   };
 }
@@ -318,6 +307,8 @@ export function Mapa({
   marcandoPunto = false,
   alMarcarPunto,
   alTocarAnotacion,
+  alSenalarZona,
+  fichaSobreElMapa,
   enVivo = false,
   sinMapaDescargado = false,
   miniatura = false,
@@ -514,7 +505,6 @@ export function Mapa({
       const colores = coloresDelMapa();
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
-      mapa.addSource("etiquetas", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
@@ -533,7 +523,7 @@ export function Mapa({
         source: FUENTE_RECTANGULOS,
         // La zona y el sector no se rellenan: son referencias territoriales, y un relleno
         // taparía el terreno que justamente se quiere mirar.
-        filter: ["all", ["!=", ["get", "clase"], "zona"], ["!=", ["get", "clase"], "sector"]],
+        filter: ["all", ["!=", ["get", "clase"], "zona"], ["!=", ["get", "clase"], "zona_general"], ["!=", ["get", "clase"], "sector"]],
         paint: {
           "fill-color": [
             "match",
@@ -576,9 +566,10 @@ export function Mapa({
             "sector_bajado", colores.rectanguloBajado,
             "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
+            "zona_general", colores.rectanguloBajado,
             colores.rectanguloExistente,
           ],
-          "line-width": ["match", ["get", "clase"], "nuevo", 3, "sector_elegido", 4, 2.4],
+          "line-width": ["match", ["get", "clase"], "nuevo", 3, "sector_elegido", 4, "zona_general", 2.4, 2.4],
         },
       });
 
@@ -756,6 +747,7 @@ export function Mapa({
             "sector_bajado", colores.rectanguloBajado,
             "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
+            "zona_general", colores.rectanguloBajado,
             colores.rectanguloExistente,
           ]);
       mapa.setPaintProperty(
@@ -1091,10 +1083,73 @@ export function Mapa({
     };
   }, [alTocarAnotacion, marcandoPunto]);
 
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !alSenalarZona) return;
+
+    const buscar = (evento: maplibregl.MapMouseEvent) => {
+      const zonas = rectangulosParaDibujo.current.filter(
+        (cada) => cada.clase === "zona_general" && typeof cada.id === "number",
+      );
+      return zonaEnElLugar(zonas, evento.lngLat.lng, evento.lngLat.lat)?.id ?? null;
+    };
+
+    let ultimaZona: number | null = null;
+    const mover = (evento: maplibregl.MapMouseEvent) => {
+      const id = buscar(evento);
+      mapa.getCanvas().style.cursor = id === null ? "" : "pointer";
+      if (id !== ultimaZona) {
+        ultimaZona = id;
+        alSenalarZona(id, false);
+      }
+    };
+    const tocar = (evento: maplibregl.MapMouseEvent) => {
+      const id = buscar(evento);
+      ultimaZona = id;
+      alSenalarZona(id, true);
+    };
+    const salir = () => {
+      mapa.getCanvas().style.cursor = "";
+      ultimaZona = null;
+      alSenalarZona(null, false);
+    };
+
+    mapa.on("mousemove", mover);
+    mapa.on("click", tocar);
+    mapa.on("mouseout", salir);
+    return () => {
+      mapa.off("mousemove", mover);
+      mapa.off("click", tocar);
+      mapa.off("mouseout", salir);
+      mapa.getCanvas().style.cursor = "";
+    };
+  }, [alSenalarZona]);
+
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa) return;
+
+    const actualizarEscalaDeEtiquetas = () => {
+      const zoom = mapa.getZoom();
+      const clasesDeTamano = zoom < 7
+        ? ["text-xs", "px-1", "py-0"]
+        : zoom < 9
+          ? ["text-sm", "px-1", "py-0.5"]
+          : zoom < 11
+            ? ["text-base", "px-2", "py-0.5"]
+            : ["text-lg", "px-2", "py-1"];
+      for (const marcador of marcadoresDeEtiquetasRef.current) {
+        const titulo = marcador.getElement().querySelector<HTMLElement>("[data-etiqueta-zona-general]");
+        if (!titulo) continue;
+        titulo.classList.remove(
+          "text-xs", "text-sm", "text-base", "text-lg",
+          "px-1", "px-2", "py-0", "py-0.5", "py-1",
+        );
+        titulo.classList.add(...clasesDeTamano);
+      }
+    };
+    mapa.on("zoom", actualizarEscalaDeEtiquetas);
 
     const poner = () => {
       const features = [
@@ -1106,7 +1161,6 @@ export function Mapa({
         type: "FeatureCollection",
         features,
       });
-
       for (const m of marcadoresDeEtiquetasRef.current) {
         m.remove();
       }
@@ -1115,10 +1169,20 @@ export function Mapa({
       for (const cada of rectangulos) {
         if (cada.etiqueta) {
           const el = document.createElement("div");
-          el.className = miniatura
-            ? "text-xs font-bold text-texto bg-superficie/80 px-1 rounded"
-            : "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
-          el.textContent = cada.etiqueta as string;
+          el.className = cada.clase === "zona_general"
+            ? "pointer-events-none"
+            : miniatura
+              ? "text-xs font-bold text-texto bg-superficie/80 px-1 rounded"
+              : "text-base font-bold text-texto bg-superficie/80 px-2 rounded";
+          if (cada.clase === "zona_general") {
+            const titulo = document.createElement("span");
+            titulo.dataset.etiquetaZonaGeneral = "true";
+            titulo.className = "inline-block rounded bg-superficie/90 px-1 py-0 text-xs font-bold text-verde-texto transition-[font-size]";
+            titulo.textContent = cada.etiqueta;
+            el.appendChild(titulo);
+          } else {
+            el.textContent = cada.etiqueta as string;
+          }
           const { latNorte, latSur, lonEste, lonOeste } = cada.rectangulo;
           // En la miniatura va en la esquina de arriba a la izquierda: en el
           // medio tapaba el punto azul de quien está parado en ese sector.
@@ -1135,6 +1199,7 @@ export function Mapa({
           marcadoresDeEtiquetasRef.current.push(m);
         }
       }
+      actualizarEscalaDeEtiquetas();
 
       setDibujado(features.length);
 
@@ -1163,6 +1228,9 @@ export function Mapa({
     };
 
     cuandoEsteListo(poner);
+    return () => {
+      mapa.off("zoom", actualizarEscalaDeEtiquetas);
+    };
   }, [rectangulo, rectangulos]);
 
   // Dónde estoy.
@@ -1310,6 +1378,12 @@ export function Mapa({
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           El mapa está armado pero no hay nada que dibujar todavía.
         </p>
+      ) : null}
+
+      {fichaSobreElMapa ? (
+        <div className="pointer-events-auto absolute left-3 right-3 top-14 z-10 max-w-xs">
+          {fichaSobreElMapa}
+        </div>
       ) : null}
 
       {/*

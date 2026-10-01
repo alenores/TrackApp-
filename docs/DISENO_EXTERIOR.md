@@ -26,8 +26,13 @@ una de ellas, sobra.
 ### Nombres de los mapas
 
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
-la pantalla que muestra los mapas guardados en el celular. Así, «Mapas» queda
-disponible para la vista general de Córdoba que se está definiendo.
+la pantalla que muestra los mapas guardados en el celular. «Mapas» reúne dos
+pestañas: Zonas y Mapa. El mapa general abre encuadrando Córdoba y muestra cada
+zona con su perímetro y un solo nombre, además de los puntos marcados. No dibuja
+las divisiones ni los nombres de los sectores: con varias zonas juntas taparían
+el territorio. Al pasar el cursor o tocar una zona aparece una ficha breve con
+el acceso «Ver zona»; los sectores se ven en esa ficha detallada. Ver
+`decisiones/029-mapa-general-de-cordoba.md`.
 
 ---
 

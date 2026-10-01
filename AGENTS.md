@@ -112,6 +112,10 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 ### Mapa
 
+- **El mapa general de «Mapas» dibuja solo perímetros y nombres de zonas, más
+  los puntos marcados.** Nunca divisiones ni etiquetas de sectores. Al pasar el
+  cursor o tocar una zona aparece su ficha breve con «Ver zona»; los sectores
+  quedan en el detalle de esa zona. Ver `docs/decisiones/029`.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si la ruta queda adentro de un

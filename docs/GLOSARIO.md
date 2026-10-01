@@ -5,6 +5,15 @@
 
 ## Mapas y offline
 
+**Mapas**
+El módulo para explorar Córdoba. Tiene una pestaña con la lista de zonas y otra
+con el mapa general de todas las zonas y los puntos marcados.
+
+**Mapa general**
+La vista de Córdoba dentro de Mapas. Dibuja solamente el perímetro y el nombre
+de cada zona y todos los puntos marcados; los sectores se ven al abrir una zona.
+Al pasar el cursor o tocar una zona muestra su ficha breve y el acceso «Ver zona».
+
 **Descargas**
 La pantalla que muestra los mapas guardados en este celular y el espacio que ocupan.
 
@@ -106,7 +115,7 @@ ofrecería recuperar justo lo que él decidió tirar.
 Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera).
 Puede llevar comentario y foto. No necesita pertenecer a un sector: el
-administrador también lo carga desde **Zonas → Puntos**, pegando una coordenada
+administrador también lo carga desde **Mapas → Zonas → Puntos**, pegando una coordenada
 de Google Earth. Desde el mapa de esa pantalla lo edita o lo borra. Se descarga
 con las demás anotaciones, aunque no se haya bajado el mapa de un sector.
 Ver decisión 027.

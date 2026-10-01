@@ -4,6 +4,40 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-01 — Vista general de Córdoba en Mapas
+
+### Estado al inicio
+El módulo Zonas solo mostraba una lista y el detalle de una zona dibujaba todos
+sus sectores. Ale aprobó el primer mockup del mapa general y precisó que esa
+vista debía mostrar solamente el perímetro y el nombre de cada zona.
+
+### Lo que se hizo
+- Se renombró el módulo a Mapas y se dividió en las pestañas Zonas y Mapa.
+- Se agregó una vista de Córdoba con los perímetros de las zonas y todas las
+  anotaciones puntuales, sin límites ni nombres de sectores.
+- El cursor o el primer toque sobre una zona muestra una ficha breve con sus
+  datos y el acceso Ver zona. El detalle existente conserva sus sectores.
+- Se distinguieron los íconos de Mapas y Descargas.
+- Se agregaron pruebas para el contenido del mapa, la selección de zonas y la
+  ficha de acceso.
+
+### Decisiones tomadas
+La vista general es territorial y despejada; la información sectorial se lee
+al entrar en una zona. Decisión 029.
+
+### Documentos actualizados
+Glosario, diseño exterior, decisiones 028 y 029, reglas para agentes y este
+registro.
+
+### Deuda o inconsistencias detectadas
+Pendiente de revisión visual con sesión iniciada en la aplicación local.
+
+### Pendientes para la próxima
+Cerrar la revisión visual de los dos modos de color y en celular antes de dar
+por finalizada la implementación.
+
+---
+
 ## Sesión 2026-10-01 — Nombres de navegación y descargas
 
 ### Estado al inicio
@@ -966,3 +1000,37 @@ decisiones `014` y `015`.
 3. Las anotaciones sobre el mapa: la base y la lógica están, falta la pantalla
    para dibujarlas.
 4. Empaquetado para Android, al final y si conviene.
+
+## Sesión 2026-10-01 — Ajustes de lectura del mapa general
+
+### Estado al inicio
+
+Ale señaló que los nombres de las zonas ocupaban demasiado lugar al alejarse y
+que la ficha de hover no se cerraba al sacar el cursor.
+
+### Lo que se hizo
+
+- El nombre de cada zona baja de tamaño y reduce su marco en el mapa alejado; al
+  acercarse vuelve a crecer.
+- La ficha de hover se cierra al salir de la zona. Un clic la deja fija; en
+  celular se conserva el cierre por toque afuera o por **Cerrar**.
+- Los estilos de MapLibre se cargan desde el marco común de la app para mantener
+  los marcadores alineados con el mapa.
+- Se revisó el mapa en escritorio con los modos sol y noche.
+
+### Decisiones tomadas
+
+- El cierre del hover tiene una espera breve de 100 ms para evitar parpadeos al
+  cambiar de zona; la ficha fijada no se cierra al mover el cursor.
+
+### Documentos actualizados
+
+`design-qa.md` y la decisión `029`.
+
+### Deuda o inconsistencias detectadas
+
+- La vista móvil no se capturó en esta sesión.
+
+### Pendientes para la próxima
+
+- Ninguno para los dos ajustes solicitados.

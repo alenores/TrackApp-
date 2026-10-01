@@ -19,6 +19,7 @@ type QueMostrar = {
 const COMO_SE_LLAMA: Record<ClaseDeRectangulo, string> = {
   nuevo: "El que estás marcando",
   zona: "Zona",
+  zona_general: "Zona",
   sector: "Sector",
   sector_bajado: "Sector bajado",
   sector_sin_bajar: "Sector sin bajar",
@@ -32,6 +33,7 @@ const COMO_SE_LLAMA: Record<ClaseDeRectangulo, string> = {
 const COMO_SE_DIBUJA: Record<ClaseDeRectangulo, string> = {
   nuevo: "border-dato bg-dato/15",
   zona: "border-borde-fuerte border-dashed",
+  zona_general: "border-verde-borde",
   sector: "border-mapa-linea bg-mapa-linea/15",
   sector_bajado: "border-verde-borde bg-verde-borde/15",
   sector_sin_bajar: "border-ambar-borde bg-ambar-borde/15",

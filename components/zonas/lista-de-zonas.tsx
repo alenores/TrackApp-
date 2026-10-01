@@ -29,7 +29,7 @@ export function ListaDeZonas({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold uppercase text-texto">ZONAS</h1>
+        <h2 className="text-xl font-bold uppercase text-texto">Zonas</h2>
 
         {soyAdministrador ? (
           <div className="flex items-center gap-2">

@@ -12,6 +12,7 @@ import {
   ESTILOS_DE_LA_PANTALLA_DE_ARRANQUE,
 } from "@/lib/pwa/pantalla-de-arranque";
 import "./globals.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

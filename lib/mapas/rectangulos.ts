@@ -19,6 +19,8 @@ export type ClaseDeRectangulo =
   | "nuevo"
   /** La zona: territorio ya organizado. Es referencia, no promesa. */
   | "zona"
+  /** La zona en el mapa general, sin sus sectores. */
+  | "zona_general"
   /** Un sector, sin decir nada de su mapa. Lo usan las pantallas de armar. */
   | "sector"
   /** Un sector con el mapa ya en el celular. */
@@ -29,6 +31,7 @@ export type ClaseDeRectangulo =
   | "sector_elegido";
 
 export type RectanguloEnElMapa = {
+  id?: number;
   rectangulo: Rectangulo;
   clase: ClaseDeRectangulo;
   etiqueta?: string;
@@ -103,6 +106,7 @@ export function clasesDibujadas(
   const ORDEN: ClaseDeRectangulo[] = [
     "nuevo",
     "zona",
+    "zona_general",
     "sector",
     "sector_bajado",
     "sector_sin_bajar",

@@ -8,6 +8,7 @@ vi.mock("@/hooks/use-hay-senal", () => ({ useHaySenal: () => estado.senal }));
 vi.mock("@/hooks/use-datos-de-la-app", () => ({ useDatosDeLaApp: () => ({ paquete: { zonas: [], sectores: [] }, estado: "listo", aviso: null }) }));
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/zonas/tarjeta-de-zona", () => ({ TarjetaDeZona: () => null }));
+vi.mock("@/components/zonas/mapa-general-de-zonas", () => ({ MapaGeneralDeZonas: () => null }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 describe("botón de puntos en Zonas", () => {
   it.each([
@@ -18,6 +19,9 @@ describe("botón de puntos en Zonas", () => {
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(<PantallaDeZonas soyAdministrador={administrador} />));
+      await act(async () => {
+        (contenedor.querySelector('#pestana-zonas') as HTMLButtonElement).click();
+      });
       expect(Boolean(contenedor.querySelector('a[href="/zonas/puntos"]'))).toBe(visible);
     } finally { act(() => raiz.unmount()); }
   });

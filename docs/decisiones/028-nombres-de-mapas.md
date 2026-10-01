@@ -8,9 +8,8 @@ La navegación que no sigue una ruta se llama **Navegación libre** en el menú,
 el título de la página y el aviso para salir. La pantalla que muestra los mapas
 guardados en el celular se llama **Descargas**.
 
-**Mapas** queda disponible como nombre del módulo para explorar el territorio.
-Su nueva vista general de Córdoba, las zonas y las anotaciones sigue en diseño:
-esta decisión no da por aprobada su presentación ni cambia su funcionamiento.
+**Mapas** es el módulo para explorar el territorio. Su vista general quedó
+definida después en la decisión 029.
 
 ## Motivo
 
@@ -23,5 +22,4 @@ confusas.
 - Leído en tiempo real: menú lateral, barra inferior, navegación libre, pantalla
   de mapas guardados y glosario.
 - Inferido: los nombres de las entradas describen mejor sus acciones actuales.
-- Pendiente de verificación: presentación y contenido de la futura vista general
-  de Córdoba.
+- Pendiente de verificación: ninguna para esta decisión de nombres.
