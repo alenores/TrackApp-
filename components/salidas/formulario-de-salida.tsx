@@ -87,7 +87,7 @@ export function FormularioDeSalida({ perfiles, alTerminar, alCancelar }: Props) 
     setGuardando(false);
 
     if (!resultado.ok) {
-      await avisar({ titulo: "No se pudo registrar", mensaje: resultado.motivo });
+      await avisar({ titulo: "No se pudo registrar", mensaje: resultado.error });
       return;
     }
 
@@ -208,7 +208,7 @@ export function FormularioDeSalida({ perfiles, alTerminar, alCancelar }: Props) 
                     seleccionado ? "border-acento bg-acento/10 text-acento" : "border-borde hover:border-acento-borde"
                   ].join(" ")}
                 >
-                  <Avatar src={p.avatarUrl} name={p.nombre || "U"} size="xs" />
+                  <Avatar src={p.avatarUrl} name={p.nombre || "U"} size="sm" />
                   <span className="text-sm">{p.nombre}</span>
                 </button>
               );

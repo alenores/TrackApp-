@@ -9,7 +9,7 @@ export default async function SalidasPage() {
   return (
     <>
       <MarcaDeAppLista />
-      <PantallaDeSalidas miPerfilId={miPerfil?.id} perfiles={perfiles.ok ? perfiles.filas : []} />
+      <PantallaDeSalidas miPerfilId={miPerfil?.id} perfiles={perfiles.filas} />
     </>
   );
 }

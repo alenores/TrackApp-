@@ -8,8 +8,9 @@ import { useHaySenal } from "@/hooks/use-hay-senal";
 import { FormularioDeSalida } from "@/components/salidas/formulario-de-salida";
 import { traerSalidas } from "@/app/actions/salidas";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
+import type { Perfil } from "@/types/database";
 
-export function PantallaDeSalidas({ miPerfilId }: { miPerfilId?: string }) {
+export function PantallaDeSalidas({ perfiles }: { miPerfilId?: string; perfiles: Perfil[] }) {
   const haySenal = useHaySenal();
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false);
   
@@ -59,7 +60,8 @@ export function PantallaDeSalidas({ miPerfilId }: { miPerfilId?: string }) {
 
       {mostrandoFormulario ? (
         <Tarjeta>
-          <FormularioDeSalida 
+          <FormularioDeSalida
+            perfiles={perfiles}
             alCancelar={() => setMostrandoFormulario(false)}
             alTerminar={() => setMostrandoFormulario(false)}
           />
