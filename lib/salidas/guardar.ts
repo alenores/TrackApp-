@@ -9,32 +9,51 @@ import {
 import { MAXIMO_DE_FOTOS, revisarLaSalida, type DatosDeSalida } from "@/lib/salidas/reglas";
 
 /**
- * Guardar una salida nueva. **Es la única forma de cargar una.**
+ * Cargar y editar salidas. **Es el único camino para escribirlas.**
  *
  * Corre en el navegador, con la conexión del usuario: las fotos y el archivo
  * suben directo a su depósito, sin pasar por el servidor de la app, que corta
  * los envíos grandes.
  *
- * El orden importa:
+ * Al cargar, el orden importa:
  *   1. La salida.
  *   2. El archivo GPS. Si falla, la salida se da de baja y se avisa: guardarla
  *      sin el archivo que el usuario eligió sería mentirle.
  *   3. Los compañeros y las fotos. Si alguno falla, **la salida queda** y se
  *      dice exactamente qué no entró y por qué.
+ *
+ * Al editar, los datos van primero; lo que falle después se avisa igual.
  */
 
 export const DEPOSITO_DE_FOTOS_DE_SALIDA = "fotos-salidas";
 const DEPOSITO_DE_ARCHIVOS = "archivos-ruta";
 
-/** La carpeta arranca con el id del usuario: la base exige que cada uno escriba en la suya. */
-export function rutaDeLaFotoDeSalida(perfilId: string, salidaId: number, orden: number): string {
-  return `${perfilId}/${salidaId}/${orden}.webp`;
+/**
+ * La carpeta arranca con el id del usuario: la base exige que cada uno escriba
+ * en la suya. Cada foto nueva lleva un nombre nuevo, así nunca pisa a una que
+ * se mantiene al editar.
+ */
+export function rutaDeLaFotoDeSalida(
+  perfilId: string,
+  salidaId: number,
+  marca: string,
+): string {
+  return `${perfilId}/${salidaId}/${marca}.webp`;
 }
 
 export function rutaDelArchivoDeSalida(perfilId: string, salidaId: number, nombre: string): string {
   const extension = nombre.toLowerCase().split(".").pop() ?? "gpx";
   return `${perfilId}/salida-${salidaId}.${extension}`;
 }
+
+/** Una foto del formulario: la dirección de una que ya estaba, o un archivo nuevo. */
+export type FotoDeSalida = string | File;
+
+/** Qué hacer con el archivo GPS al editar. */
+export type CambioDeArchivo =
+  | { tipo: "mantener" }
+  | { tipo: "quitar" }
+  | { tipo: "nuevo"; archivo: File };
 
 export type SalidaGuardada = {
   salidaId: number;
@@ -44,43 +63,57 @@ export type SalidaGuardada = {
 
 const NOMBRES_DE_FOTO = ["La portada", "La segunda foto", "La tercera foto", "La cuarta foto"];
 
+function filaDeDatos(datos: DatosDeSalida) {
+  return {
+    titulo: datos.titulo.trim(),
+    fecha: datos.fecha,
+    descripcion: datos.descripcion.trim() || null,
+    actividades: datos.actividades,
+    nivel_esfuerzo: datos.nivelEsfuerzo,
+    largo_km: datos.largoKm,
+    desnivel_positivo_m: datos.desnivelPositivoM === null ? null : Math.round(datos.desnivelPositivoM),
+    desnivel_negativo_m: datos.desnivelNegativoM === null ? null : Math.round(datos.desnivelNegativoM),
+  };
+}
+
+function revisarTodo(datos: DatosDeSalida, fotos: FotoDeSalida[]): string | null {
+  const problema = revisarLaSalida(datos);
+  if (problema) return problema;
+
+  if (fotos.length > MAXIMO_DE_FOTOS) {
+    return `Se pueden subir hasta ${MAXIMO_DE_FOTOS} fotos. Sacá alguna.`;
+  }
+  for (const foto of fotos) {
+    if (typeof foto === "string") continue;
+    const problemaDeFoto = revisarLaFoto(foto);
+    if (problemaDeFoto) return problemaDeFoto;
+  }
+  return null;
+}
+
+async function quienSoy(supabase: SupabaseClient): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
+}
+
+const SESION_CERRADA = "Tu sesión se cerró. Volvé a entrar con tu cuenta y probá de nuevo.";
+
 export async function guardarSalida(
   supabase: SupabaseClient,
   datos: DatosDeSalida,
-  fotos: File[],
+  fotos: FotoDeSalida[],
   archivo: File | null,
 ): Promise<Resultado<SalidaGuardada>> {
-  const problema = revisarLaSalida(datos);
+  const problema = revisarTodo(datos, fotos);
   if (problema) return falla(problema);
 
-  if (fotos.length > MAXIMO_DE_FOTOS) {
-    return falla(`Se pueden subir hasta ${MAXIMO_DE_FOTOS} fotos. Sacá alguna.`);
-  }
-  for (const foto of fotos) {
-    const problemaDeFoto = revisarLaFoto(foto);
-    if (problemaDeFoto) return falla(problemaDeFoto);
-  }
-
-  const { data: sesion } = await supabase.auth.getSession();
-  const perfilId = sesion.session?.user.id;
-  if (!perfilId) {
-    return falla("Tu sesión se cerró. Volvé a entrar con tu cuenta y cargá la salida de nuevo.");
-  }
+  const perfilId = await quienSoy(supabase);
+  if (!perfilId) return falla(SESION_CERRADA);
 
   // 1. La salida.
   const { data: fila, error: errorDeSalida } = await supabase
     .from("salidas")
-    .insert({
-      perfil_id: perfilId,
-      titulo: datos.titulo.trim(),
-      fecha: datos.fecha,
-      descripcion: datos.descripcion.trim() || null,
-      actividades: datos.actividades,
-      nivel_esfuerzo: datos.nivelEsfuerzo,
-      largo_km: datos.largoKm,
-      desnivel_positivo_m: datos.desnivelPositivoM === null ? null : Math.round(datos.desnivelPositivoM),
-      desnivel_negativo_m: datos.desnivelNegativoM === null ? null : Math.round(datos.desnivelNegativoM),
-    })
+    .insert({ perfil_id: perfilId, ...filaDeDatos(datos) })
     .select("id")
     .single();
 
@@ -104,53 +137,188 @@ export async function guardarSalida(
     }
   }
 
-  const avisos: string[] = [];
-
-  // 3a. Los compañeros.
-  const companeros = [...new Set(datos.companeros)].filter((id) => id !== perfilId);
-  if (companeros.length > 0) {
-    const { error } = await supabase
-      .from("salidas_companeros")
-      .insert(companeros.map((id) => ({ salida_id: salidaId, perfil_id: id })));
-    if (error) {
-      avisos.push(`No se pudieron anotar los compañeros: ${traducirErrorDeBase(error.message)}`);
-    }
-  }
-
-  // 3b. Las fotos, en orden: la primera es la portada.
-  for (const [orden, foto] of fotos.entries()) {
-    const motivo = await subirUnaFoto(supabase, perfilId, salidaId, orden, foto);
-    if (motivo) avisos.push(`${NOMBRES_DE_FOTO[orden]} no se subió: ${motivo}`);
-  }
+  // 3. Compañeros y fotos.
+  const avisos = [
+    ...(await escribirCompaneros(supabase, salidaId, perfilId, datos.companeros)),
+    ...(await escribirFotos(supabase, perfilId, salidaId, fotos)),
+  ];
 
   return exito({ salidaId, avisos });
 }
 
-/** Devuelve `null` si entró, o el motivo si no. */
-async function subirUnaFoto(
+export async function editarSalida(
+  supabase: SupabaseClient,
+  salidaId: number,
+  datos: DatosDeSalida,
+  fotos: FotoDeSalida[],
+  archivo: CambioDeArchivo,
+): Promise<Resultado<SalidaGuardada>> {
+  const problema = revisarTodo(datos, fotos);
+  if (problema) return falla(problema);
+
+  const perfilId = await quienSoy(supabase);
+  if (!perfilId) return falla(SESION_CERRADA);
+
+  const { data: filas, error } = await supabase
+    .from("salidas")
+    .update(filaDeDatos(datos))
+    .eq("id", salidaId)
+    .eq("perfil_id", perfilId)
+    .is("eliminado_en", null)
+    .select("id");
+
+  if (error) return falla(`No se guardaron los cambios: ${traducirErrorDeBase(error.message)}`);
+  if (!filas || filas.length === 0) {
+    return falla(
+      "No se guardaron los cambios: la salida ya no existe o no la cargaste vos. Volvé a la lista para verla al día.",
+    );
+  }
+
+  const avisos: string[] = [];
+
+  if (archivo.tipo === "nuevo") {
+    const subida = await subirElArchivo(supabase, perfilId, salidaId, archivo.archivo);
+    if (!subida.ok) avisos.push(`El archivo GPS nuevo no se subió: ${subida.error}`);
+  } else if (archivo.tipo === "quitar") {
+    const { error: errorAlQuitar } = await supabase
+      .from("salidas")
+      .update({ archivo_url: null })
+      .eq("id", salidaId);
+    if (errorAlQuitar) {
+      avisos.push(`No se pudo quitar el archivo GPS: ${traducirErrorDeBase(errorAlQuitar.message)}`);
+    }
+  }
+
+  avisos.push(
+    ...(await escribirCompaneros(supabase, salidaId, perfilId, datos.companeros)),
+    ...(await escribirFotos(supabase, perfilId, salidaId, fotos)),
+  );
+
+  return exito({ salidaId, avisos });
+}
+
+/**
+ * Deja los compañeros como dice la lista: da de baja a los que salieron y
+ * suma a los nuevos. Nada se borra de verdad.
+ */
+async function escribirCompaneros(
+  supabase: SupabaseClient,
+  salidaId: number,
+  perfilId: string,
+  elegidos: string[],
+): Promise<string[]> {
+  const queridos = new Set(elegidos.filter((id) => id !== perfilId));
+
+  const { data, error } = await supabase
+    .from("salidas_companeros")
+    .select("id, perfil_id")
+    .eq("salida_id", salidaId)
+    .is("eliminado_en", null);
+  if (error) return [`No se pudieron anotar los compañeros: ${traducirErrorDeBase(error.message)}`];
+
+  const actuales = (data ?? []) as { id: number; perfil_id: string }[];
+  const queSalen = actuales.filter((fila) => !queridos.has(fila.perfil_id)).map((fila) => fila.id);
+  const yaEstan = new Set(actuales.map((fila) => fila.perfil_id));
+  const queEntran = [...queridos].filter((id) => !yaEstan.has(id));
+
+  if (queSalen.length > 0) {
+    const { error: errorAlSacar } = await supabase
+      .from("salidas_companeros")
+      .update({ eliminado_en: new Date().toISOString() })
+      .in("id", queSalen);
+    if (errorAlSacar) {
+      return [`No se pudieron sacar compañeros: ${traducirErrorDeBase(errorAlSacar.message)}`];
+    }
+  }
+
+  if (queEntran.length > 0) {
+    const { error: errorAlSumar } = await supabase
+      .from("salidas_companeros")
+      .insert(queEntran.map((id) => ({ salida_id: salidaId, perfil_id: id })));
+    if (errorAlSumar) {
+      return [`No se pudieron sumar compañeros: ${traducirErrorDeBase(errorAlSumar.message)}`];
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Deja las fotos como dice la lista, en ese orden: la primera es la portada.
+ *
+ * Primero sube las nuevas. Recién cuando están arriba da de baja las filas
+ * viejas y anota las nuevas: si una subida falla, las fotos que ya había no
+ * se pierden por el camino.
+ */
+async function escribirFotos(
   supabase: SupabaseClient,
   perfilId: string,
   salidaId: number,
-  orden: number,
-  foto: File,
-): Promise<string | null> {
-  const donde = rutaDeLaFotoDeSalida(perfilId, salidaId, orden);
+  fotos: FotoDeSalida[],
+): Promise<string[]> {
+  const avisos: string[] = [];
+  const direcciones: string[] = [];
+  const marca = Date.now();
 
-  const { error: errorDeSubida } = await supabase.storage
-    .from(DEPOSITO_DE_FOTOS_DE_SALIDA)
-    .upload(donde, foto, { contentType: foto.type, upsert: true });
-  if (errorDeSubida) return traducirErrorDeBase(errorDeSubida.message);
+  for (const [indice, foto] of fotos.entries()) {
+    if (typeof foto === "string") {
+      direcciones.push(foto);
+      continue;
+    }
+    const donde = rutaDeLaFotoDeSalida(perfilId, salidaId, `${marca}-${indice}`);
+    const { error } = await supabase.storage
+      .from(DEPOSITO_DE_FOTOS_DE_SALIDA)
+      .upload(donde, foto, { contentType: foto.type, upsert: true });
+    if (error) {
+      avisos.push(`${NOMBRES_DE_FOTO[indice]} no se subió: ${traducirErrorDeBase(error.message)}`);
+      continue;
+    }
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(DEPOSITO_DE_FOTOS_DE_SALIDA).getPublicUrl(donde);
+    direcciones.push(publicUrl);
+  }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(DEPOSITO_DE_FOTOS_DE_SALIDA).getPublicUrl(donde);
-
-  const { error } = await supabase
+  const { data: actuales, error: errorAlLeer } = await supabase
     .from("salidas_fotos")
-    .insert({ salida_id: salidaId, orden, foto_url: publicUrl });
-  if (error) return traducirErrorDeBase(error.message);
+    .select("id, orden, foto_url")
+    .eq("salida_id", salidaId)
+    .is("eliminado_en", null);
+  if (errorAlLeer) {
+    return [...avisos, `No se pudieron acomodar las fotos: ${traducirErrorDeBase(errorAlLeer.message)}`];
+  }
 
-  return null;
+  const filas = (actuales ?? []) as { id: number; orden: number; foto_url: string }[];
+  const igualQueAntes =
+    filas.length === direcciones.length &&
+    [...filas]
+      .sort((a, b) => a.orden - b.orden)
+      .every((fila, indice) => fila.foto_url === direcciones[indice]);
+  if (igualQueAntes) return avisos;
+
+  if (filas.length > 0) {
+    const { error } = await supabase
+      .from("salidas_fotos")
+      .update({ eliminado_en: new Date().toISOString() })
+      .in(
+        "id",
+        filas.map((fila) => fila.id),
+      );
+    if (error) {
+      return [...avisos, `No se pudieron cambiar las fotos: ${traducirErrorDeBase(error.message)}`];
+    }
+  }
+
+  if (direcciones.length > 0) {
+    const { error } = await supabase
+      .from("salidas_fotos")
+      .insert(direcciones.map((foto_url, orden) => ({ salida_id: salidaId, orden, foto_url })));
+    if (error) {
+      return [...avisos, `No se pudieron anotar las fotos: ${traducirErrorDeBase(error.message)}`];
+    }
+  }
+
+  return avisos;
 }
 
 async function subirElArchivo(
@@ -182,9 +350,10 @@ async function subirElArchivo(
     data: { publicUrl },
   } = supabase.storage.from(DEPOSITO_DE_ARCHIVOS).getPublicUrl(donde);
 
+  // El agregado obliga a bajar el archivo nuevo si se reemplazó uno con el mismo nombre.
   const { error: errorAlAnotar } = await supabase
     .from("salidas")
-    .update({ archivo_url: publicUrl })
+    .update({ archivo_url: `${publicUrl}?v=${Date.now()}` })
     .eq("id", salidaId);
   if (errorAlAnotar) return falla(traducirErrorDeBase(errorAlAnotar.message));
 

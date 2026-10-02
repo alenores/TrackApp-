@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { borrarSalida } from "@/app/actions/salidas";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
 import { BotonVolver } from "@/components/ui/boton-volver";
@@ -15,7 +16,12 @@ import { useFoto } from "@/hooks/use-foto";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { ACTIVIDADES, mostrarEsfuerzo } from "@/lib/rutas/actividades";
 import { FORMATOS_ACEPTADOS, leerArchivoDeRuta } from "@/lib/rutas/archivo";
-import { guardarSalida } from "@/lib/salidas/guardar";
+import {
+  editarSalida,
+  guardarSalida,
+  type CambioDeArchivo,
+  type FotoDeSalida,
+} from "@/lib/salidas/guardar";
 import { hoyEnCordoba, leerNumero, LARGO_MAXIMO_DEL_TITULO } from "@/lib/salidas/reglas";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import {
@@ -24,20 +30,26 @@ import {
   type ActividadRuta,
   type NivelEsfuerzo,
   type Perfil,
+  type Salida,
 } from "@/types/database";
 
 /**
- * Cargar una salida. **Solo con internet**, como todo el módulo.
+ * Cargar o editar una salida. **Solo con internet**, como todo el módulo.
  *
  * Si se sube el archivo GPS, el largo y los desniveles salen de ahí y no se
  * escriben: igual que en rutas, un número tipeado a mano se equivoca. Sin
  * archivo, se pueden escribir.
  *
- * Si la señal se va mientras se completa, lo escrito queda en pantalla y el
- * botón de guardar se traba hasta que vuelva.
+ * Borrar la salida está acá, al editar, y pide confirmación. Nunca está a un
+ * toque desde la lista.
+ *
+ * Si la señal se va mientras se completa, lo escrito queda en pantalla y los
+ * botones de guardar y borrar se traban hasta que vuelva.
  */
 
 type Props = {
+  /** La salida a editar. Sin ella, se carga una nueva. */
+  salida?: Salida;
   /** Los demás usuarios, para elegir con quién fuiste. */
   perfiles: Perfil[];
   avisoDeListaIncompleta: string | null;
@@ -55,31 +67,50 @@ const OPCIONES_DE_ESFUERZO: Opcion<NivelEsfuerzo>[] = NIVELES_ESFUERZO.map((nive
 
 const ETIQUETAS_DE_FOTO = ["Elegir la portada", "Sumar otra foto", "Sumar otra foto", "Sumar otra foto"];
 
-type NumerosDelArchivo = { largoKm: number; desnivelPositivoM: number; desnivelNegativoM: number };
+type Numeros = { largoKm: number | null; desnivelPositivoM: number | null; desnivelNegativoM: number | null };
 
-export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) {
+function comoTexto(numero: number | null): string {
+  return numero === null ? "" : String(numero).replace(".", ",");
+}
+
+export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }: Props) {
   const router = useRouter();
   const haySenal = useHaySenal();
-  const { avisar } = useDialogos();
+  const { avisar, confirmar } = useDialogos();
   const entradaDeArchivo = useRef<HTMLInputElement>(null);
+  const editando = salida !== undefined;
 
-  const [titulo, setTitulo] = useState("");
-  const [fecha, setFecha] = useState(() => hoyEnCordoba());
-  const [descripcion, setDescripcion] = useState("");
-  const [actividades, setActividades] = useState<ActividadRuta[]>([]);
-  const [nivelEsfuerzo, setNivelEsfuerzo] = useState<NivelEsfuerzo | null>(null);
-  const [largo, setLargo] = useState("");
-  const [subida, setSubida] = useState("");
-  const [bajada, setBajada] = useState("");
-  const [companeros, setCompaneros] = useState<string[]>([]);
+  const [titulo, setTitulo] = useState(salida?.titulo ?? "");
+  const [fecha, setFecha] = useState(() => salida?.fecha ?? hoyEnCordoba());
+  const [descripcion, setDescripcion] = useState(salida?.descripcion ?? "");
+  const [actividades, setActividades] = useState<ActividadRuta[]>(salida?.actividades ?? []);
+  const [nivelEsfuerzo, setNivelEsfuerzo] = useState<NivelEsfuerzo | null>(salida?.nivelEsfuerzo ?? null);
+  const [companeros, setCompaneros] = useState<string[]>(
+    salida?.companeros.map((companero) => companero.id) ?? [],
+  );
 
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [delArchivo, setDelArchivo] = useState<NumerosDelArchivo | null>(null);
+  // Con archivo, los números son los del archivo; sin archivo, los escritos.
+  const [archivoNuevo, setArchivoNuevo] = useState<File | null>(null);
+  const [tieneArchivoGuardado, setTieneArchivoGuardado] = useState(Boolean(salida?.archivoUrl));
+  const [delArchivo, setDelArchivo] = useState<Numeros | null>(
+    salida?.archivoUrl
+      ? {
+          largoKm: salida.largoKm,
+          desnivelPositivoM: salida.desnivelPositivoM,
+          desnivelNegativoM: salida.desnivelNegativoM,
+        }
+      : null,
+  );
+  const [largo, setLargo] = useState(salida?.archivoUrl ? "" : comoTexto(salida?.largoKm ?? null));
+  const [subida, setSubida] = useState(salida?.archivoUrl ? "" : comoTexto(salida?.desnivelPositivoM ?? null));
+  const [bajada, setBajada] = useState(salida?.archivoUrl ? "" : comoTexto(salida?.desnivelNegativoM ?? null));
   const [leyendo, setLeyendo] = useState(false);
   const [errorDelArchivo, setErrorDelArchivo] = useState<string | null>(null);
 
   const [guardando, setGuardando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const [errorAlGuardar, setErrorAlGuardar] = useState<string | null>(null);
+  const ocupado = guardando || borrando;
 
   // Siempre cuatro, en el mismo orden: así lo piden los hooks.
   const fotos = [
@@ -88,13 +119,21 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
     useFoto("salida", FORMAS_DE_RECORTE.salida),
     useFoto("salida", FORMAS_DE_RECORTE.salida),
   ];
+  // Las que ya tenía la salida, al editar. `null` cuando se quitó o no había.
+  const [fotosGuardadas, setFotosGuardadas] = useState<(string | null)[]>(() =>
+    fotos.map((_, indice) => salida?.fotos[indice] ?? null),
+  );
+
   const fotosOcupadas = fotos.some((foto) =>
     ["abriendo", "recortando", "preparando"].includes(foto.estado),
+  );
+  const queHayEnCadaCaja: (FotoDeSalida | null)[] = fotos.map(
+    (foto, indice) => foto.archivo ?? (foto.estado === "vacio" ? fotosGuardadas[indice] : null),
   );
   // Se ve la caja siguiente recién cuando la anterior tiene foto.
   const cajasVisibles = Math.min(
     fotos.length,
-    1 + fotos.findLastIndex((foto) => foto.archivo !== null) + 1,
+    queHayEnCadaCaja.findLastIndex((cosa) => cosa !== null) + 2,
   );
 
   const alternar = <T,>(lista: T[], valor: T) =>
@@ -113,7 +152,7 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
       return;
     }
 
-    setArchivo(elegido);
+    setArchivoNuevo(elegido);
     setDelArchivo({
       largoKm: lectura.recorrido.largoKm,
       desnivelPositivoM: lectura.recorrido.desnivelPositivoM,
@@ -122,7 +161,8 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
   };
 
   const alQuitarArchivo = () => {
-    setArchivo(null);
+    setArchivoNuevo(null);
+    setTieneArchivoGuardado(false);
     setDelArchivo(null);
     setErrorDelArchivo(null);
   };
@@ -131,22 +171,31 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
     setErrorAlGuardar(null);
     setGuardando(true);
 
-    const resultado = await guardarSalida(
-      crearClienteEnElNavegador(),
-      {
-        titulo,
-        fecha,
-        descripcion,
-        actividades,
-        nivelEsfuerzo,
-        largoKm: delArchivo ? delArchivo.largoKm : leerNumero(largo),
-        desnivelPositivoM: delArchivo ? delArchivo.desnivelPositivoM : leerNumero(subida),
-        desnivelNegativoM: delArchivo ? delArchivo.desnivelNegativoM : leerNumero(bajada),
-        companeros,
-      },
-      fotos.map((foto) => foto.archivo).filter((archivoDeFoto): archivoDeFoto is File => archivoDeFoto !== null),
-      archivo,
-    );
+    const datos = {
+      titulo,
+      fecha,
+      descripcion,
+      actividades,
+      nivelEsfuerzo,
+      largoKm: delArchivo ? delArchivo.largoKm : leerNumero(largo),
+      desnivelPositivoM: delArchivo ? delArchivo.desnivelPositivoM : leerNumero(subida),
+      desnivelNegativoM: delArchivo ? delArchivo.desnivelNegativoM : leerNumero(bajada),
+      companeros,
+    };
+    const fotosFinales = queHayEnCadaCaja.filter((cosa): cosa is FotoDeSalida => cosa !== null);
+    const supabase = crearClienteEnElNavegador();
+
+    let resultado;
+    if (salida) {
+      const cambio: CambioDeArchivo = archivoNuevo
+        ? { tipo: "nuevo", archivo: archivoNuevo }
+        : salida.archivoUrl && !tieneArchivoGuardado
+          ? { tipo: "quitar" }
+          : { tipo: "mantener" };
+      resultado = await editarSalida(supabase, salida.id, datos, fotosFinales, cambio);
+    } else {
+      resultado = await guardarSalida(supabase, datos, fotosFinales, archivoNuevo);
+    }
 
     setGuardando(false);
 
@@ -157,20 +206,54 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
 
     if (resultado.datos.avisos.length > 0) {
       await avisar({
-        titulo: "La salida se guardó, pero no entró todo",
+        titulo: editando
+          ? "Los cambios se guardaron, pero no entró todo"
+          : "La salida se guardó, pero no entró todo",
         mensaje: resultado.datos.avisos.join("\n\n"),
       });
     }
 
+    if (editando) {
+      // Volver vuelve a la pantalla de antes, y se rearma con lo nuevo.
+      router.back();
+      router.refresh();
+    } else {
+      router.replace("/salidas");
+      router.refresh();
+    }
+  };
+
+  const alBorrar = async () => {
+    if (!salida) return;
+    const seguro = await confirmar({
+      titulo: "¿Borrar esta salida?",
+      mensaje: `«${salida.titulo}» deja de verse en la lista, para vos y para los demás.`,
+      textoDeAceptar: "Borrar la salida",
+      destructivo: true,
+    });
+    if (!seguro) return;
+
+    setBorrando(true);
+    const respuesta = await borrarSalida(salida.id);
+    setBorrando(false);
+
+    if (!respuesta.ok) {
+      await avisar({ titulo: "No se borró la salida", mensaje: respuesta.error });
+      return;
+    }
     router.replace("/salidas");
     router.refresh();
   };
 
+  const conArchivo = archivoNuevo !== null || tieneArchivoGuardado;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver a las salidas" />
-        <h1 className="text-xl font-semibold text-texto">Cargar una salida</h1>
+        <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver" />
+        <h1 className="text-xl font-semibold text-texto">
+          {editando ? "Editar la salida" : "Cargar una salida"}
+        </h1>
       </div>
 
       <Tarjeta className="space-y-4">
@@ -235,10 +318,12 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
           }}
         />
 
-        {archivo ? (
+        {conArchivo ? (
           <div className="flex items-center gap-3 rounded-xl border border-borde-fuerte bg-fondo px-3 py-3">
-            <p className="min-w-0 flex-1 truncate text-base font-medium text-texto">{archivo.name}</p>
-            <Boton variante="secundario" disabled={guardando} onClick={alQuitarArchivo}>
+            <p className="min-w-0 flex-1 truncate text-base font-medium text-texto">
+              {archivoNuevo ? archivoNuevo.name : "El archivo GPS que ya estaba"}
+            </p>
+            <Boton variante="secundario" disabled={ocupado} onClick={alQuitarArchivo}>
               Quitar
             </Boton>
           </div>
@@ -246,7 +331,7 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
           <Boton
             anchoCompleto
             variante="secundario"
-            disabled={leyendo || guardando}
+            disabled={leyendo || ocupado}
             onClick={() => entradaDeArchivo.current?.click()}
           >
             {leyendo ? "Leyendo el archivo…" : "Sumar el archivo GPS (.gpx o .kml)"}
@@ -261,8 +346,15 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
 
         {delArchivo ? (
           <p className="text-sm leading-6 text-texto-suave">
-            Los números salen del archivo: {delArchivo.largoKm.toFixed(1).replace(".", ",")} km, +
-            {delArchivo.desnivelPositivoM} m y −{delArchivo.desnivelNegativoM} m.
+            Los números salen del archivo y no se escriben a mano:{" "}
+            {[
+              delArchivo.largoKm !== null ? `${comoTexto(Math.round(delArchivo.largoKm * 10) / 10)} km` : null,
+              delArchivo.desnivelPositivoM !== null ? `+${delArchivo.desnivelPositivoM} m` : null,
+              delArchivo.desnivelNegativoM !== null ? `−${delArchivo.desnivelNegativoM} m` : null,
+            ]
+              .filter(Boolean)
+              .join(", ") || "el archivo no trae números"}
+            .
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-3">
@@ -305,8 +397,14 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
           <SelectorDeFoto
             key={indice}
             foto={foto}
-            deshabilitado={guardando}
+            deshabilitado={ocupado}
             etiqueta={ETIQUETAS_DE_FOTO[indice]}
+            fotoActual={fotosGuardadas[indice]}
+            alQuitarFotoActual={() =>
+              setFotosGuardadas((actuales) =>
+                actuales.map((guardada, cual) => (cual === indice ? null : guardada)),
+              )
+            }
           />
         ))}
       </Tarjeta>
@@ -353,14 +451,28 @@ export function FormularioDeSalida({ perfiles, avisoDeListaIncompleta }: Props) 
         </Tarjeta>
       ) : null}
 
-      <div className="pb-2">
+      <div className="space-y-3 pb-2">
         <Boton
           anchoCompleto
-          disabled={guardando || leyendo || fotosOcupadas || !haySenal}
+          disabled={ocupado || leyendo || fotosOcupadas || !haySenal}
           onClick={() => void alGuardar()}
         >
-          {guardando ? "Guardando… no cierres la pantalla" : "Guardar la salida"}
+          {guardando
+            ? "Guardando… no cierres la pantalla"
+            : editando
+              ? "Guardar los cambios"
+              : "Guardar la salida"}
         </Boton>
+        {editando ? (
+          <Boton
+            anchoCompleto
+            variante="destructivo"
+            disabled={ocupado || !haySenal}
+            onClick={() => void alBorrar()}
+          >
+            {borrando ? "Borrando…" : "Borrar la salida"}
+          </Boton>
+        ) : null}
       </div>
     </div>
   );

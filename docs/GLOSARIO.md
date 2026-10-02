@@ -18,7 +18,8 @@ Al tocar una anotación muestra su nombre, comentario y foto disponible; en PC,
 el cursor cambia al pasar sobre un punto.
 
 **Descargas**
-La pantalla que muestra los mapas guardados en este celular y el espacio que ocupan.
+La pestaña de Mapas que muestra los mapas bajados en este celular, el espacio
+que ocupan y el botón para sacar cada uno. Anda sin señal.
 
 **Imagen de mapa (tile)**
 El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamiento
@@ -304,7 +305,21 @@ Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
 cargarla, de la lista de usuarios.
 
 **Portada de la salida**
-La primera de las fotos de una salida. Es la que encabeza la tarjeta en la lista.
+La primera de las fotos de una salida. Encabeza la tarjeta en la lista, con el
+título y el día escritos encima.
+
+**Ficha de la salida**
+La pantalla que se abre tocando una salida: todo lo que tiene, con la
+descripción, todas las fotos y el archivo GPS. La tarjeta de la lista muestra
+solo lo principal.
+
+**Tres puntitos**
+El botón para editar algo propio. En salidas lleva a editarla; borrar está
+adentro de la edición, nunca a un toque desde la lista.
+
+**Texto sobre foto**
+Lo que se escribe encima de una foto: siempre claro sobre un degradé oscuro, en
+modo sol y en modo noche, porque la foto no cambia con el modo.
 
 **Código QR**
 El cuadradito que la cámara del celular lee para abrir el link de la app. Se

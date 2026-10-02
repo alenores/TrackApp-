@@ -38,6 +38,11 @@ type Props = {
   fotoActual?: string | null;
   /** «circulo» para la foto de perfil. */
   vistaPreviaRedonda?: boolean;
+  /**
+   * Para poder sacar la foto que ya existía, al editar. Sin esto, «Quitar»
+   * solo descarta la foto recién elegida y vuelve a mostrar la de antes.
+   */
+  alQuitarFotoActual?: () => void;
 };
 
 export function SelectorDeFoto({
@@ -46,6 +51,7 @@ export function SelectorDeFoto({
   etiqueta = "Elegir una foto",
   fotoActual = null,
   vistaPreviaRedonda = false,
+  alQuitarFotoActual,
 }: Props) {
   const entradaRef = useRef<HTMLInputElement>(null);
 
@@ -112,7 +118,11 @@ export function SelectorDeFoto({
               variante="destructivo"
               className="flex-1 px-3 text-sm"
               disabled={trabado}
-              onClick={foto.quitar}
+              onClick={
+                foto.estado === "vacio" && fotoActual && alQuitarFotoActual
+                  ? alQuitarFotoActual
+                  : foto.quitar
+              }
             >
               Quitar
             </Boton>

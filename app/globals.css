@@ -97,6 +97,13 @@
   --qr-fondo: #ffffff;
   --qr-modulo: #000000;
 
+  /* Texto escrito encima de una foto: siempre claro sobre un degradé oscuro,
+     en los dos modos. La foto no cambia con el modo, así que lo que va encima
+     tampoco. */
+  --sobre-foto-texto: #ffffff;
+  --sobre-foto-texto-suave: rgb(255 255 255 / 0.88);
+  --sobre-foto-degrade: rgb(0 0 0 / 0.8);
+
   --sombra: 0 1px 2px rgb(0 0 0 / 0.4);
   --sombra-alta: 0 4px 12px rgb(0 0 0 / 0.45);
 
@@ -167,6 +174,10 @@
   --qr-fondo: #ffffff;
   --qr-modulo: #000000;
 
+  --sobre-foto-texto: #ffffff;
+  --sobre-foto-texto-suave: rgb(255 255 255 / 0.88);
+  --sobre-foto-degrade: rgb(0 0 0 / 0.8);
+
   --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
   --sombra-alta: 0 4px 12px rgb(15 23 42 / 0.16);
 
@@ -182,6 +193,9 @@
   --color-velo: var(--velo);
   --color-qr-fondo: var(--qr-fondo);
   --color-qr-modulo: var(--qr-modulo);
+  --color-sobre-foto-texto: var(--sobre-foto-texto);
+  --color-sobre-foto-texto-suave: var(--sobre-foto-texto-suave);
+  --color-sobre-foto-degrade: var(--sobre-foto-degrade);
   --color-borde-suave: var(--borde-suave);
 
   --color-texto: var(--texto);

@@ -37,10 +37,25 @@ confirmación de cada paso. Salidas es 100 % con internet.
 ### Documentos actualizados
 `SCHEMA.md`, `GLOSARIO.md`, `AGENTS.md` y este registro.
 
+### Segunda vuelta, pedidos de Ale
+- La tarjeta de la lista lleva el título y el día sobre la portada (como los
+  sectores de Vías de Escalada), las personas en dos filas (quién la cargó y,
+  abajo, con quién fue), las actividades y los números. Sin descripción ni más
+  fotos: eso está en la **ficha de la salida**, que se abre tocándola.
+- Borrar salió de la lista. Los **tres puntitos** llevan a editar la salida, y
+  borrar está adentro de la edición, con confirmación.
+- Cargar una salida es un botón «+» flotante. Se armó como pieza compartida y
+  rutas usa la misma.
+- Editar una salida: datos, archivo GPS, fotos (se mantienen, cambian o quitan)
+  y compañeros. Nada se borra de verdad.
+- Colores nuevos de «texto sobre foto», fijos en los dos modos.
+- Descargas (ahora pestaña de Mapas): revisada, funciona igual que antes. Se
+  pasó el botón de sacar al tamaño normal de la app y el cartel de confirmar
+  ahora dice «simple» o «satelital» como lo ve el usuario.
+
 ### Deuda o inconsistencias detectadas
-Todavía no se puede editar una salida ya cargada. El cambio de la pestaña
-«Descargas» dentro de Mapas, del mismo trabajo anterior, no se revisó en esta
-sesión.
+Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
+navegador del agente: la verificación visual la hace Ale.
 
 ---
 

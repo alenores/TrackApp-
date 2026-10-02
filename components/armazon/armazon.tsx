@@ -13,6 +13,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progreso";
 import { MenuLateral } from "@/components/armazon/menu-lateral";
 import { BotonDeSubirRuta } from "@/components/rutas/boton-de-subir-ruta";
+import { BotonFlotanteDeAgregar } from "@/components/ui/boton-flotante-de-agregar";
 import { useDialogos } from "@/components/ui/dialogos";
 import { usePendientes } from "@/hooks/use-pendientes";
 import { useSubirPendientes } from "@/hooks/use-subir-pendientes";
@@ -145,6 +146,9 @@ export function Armazon({
         <BarraInferior />
 
         {showNewRouteFab ? <BotonDeSubirRuta /> : null}
+        {pathname === "/salidas" ? (
+          <BotonFlotanteDeAgregar href="/salidas/nueva" etiqueta="Cargar una salida" />
+        ) : null}
       </div>
     </ProveedorDeBarraDeProgreso>
   );

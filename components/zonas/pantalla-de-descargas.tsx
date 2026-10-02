@@ -5,164 +5,124 @@ import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { borrarElMapaDelSector, mostrarPeso } from "@/lib/mapas/descarga";
 import { claveDeMapa, NOMBRE_DEL_TIPO, type TipoDeMapa } from "@/lib/offline/mapas";
+import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 
+/**
+ * La pestaña Descargas de Mapas: los mapas que hay en este celular, cuánto
+ * ocupan y cómo sacarlos.
+ *
+ * Lee solo lo guardado en el celular, así que anda sin señal. Sacar un mapa
+ * también anda sin señal: libera el espacio de verdad y queda anotado para
+ * avisarle a la base cuando vuelva la señal (decisión 021).
+ *
+ * Los carteles de «abriendo» y «sin datos» los pone la pantalla de Mapas.
+ */
 export function PantallaDeDescargas() {
-  const { paquete, estado, aviso } = useDatosDeLaApp();
+  const { paquete } = useDatosDeLaApp();
   const mapas = useMapasBajados();
   const { confirmar, avisar } = useDialogos();
+  /** El mapa que se está borrando, con `claveDeMapa`: un sector puede tener dos. */
   const [borrando, setBorrando] = useState<string | null>(null);
 
-  const sectores = paquete?.sectores ?? [];
-  const zonas = paquete?.zonas ?? [];
+  const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
+  const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
 
-  const mapasConInfo = useMemo(() => {
-    return mapas
-      .map((mapa) => {
-        const sector = sectores.find((s) => s.id === mapa.sectorId);
-        const zona = sector ? zonas.find((z) => z.id === sector.zonaId) : undefined;
-        return {
-          ...mapa,
-          nombreSector: sector?.nombre ?? "Sector desconocido",
-          nombreZona: zona?.nombre ?? "Zona desconocida",
-          zonaNombre: zona?.nombre ?? "",
-          sectorNombre: sector?.nombre ?? "",
-        };
-      })
-      .sort((a, b) => {
-        const difZona = a.zonaNombre.localeCompare(b.zonaNombre);
-        if (difZona !== 0) return difZona;
-        const difSector = a.sectorNombre.localeCompare(b.sectorNombre);
-        if (difSector !== 0) return difSector;
-        return a.tipo.localeCompare(b.tipo);
-      });
-  }, [mapas, sectores, zonas]);
-
-  const pesoTotal = useMemo(
-    () => mapas.reduce((total, mapa) => total + mapa.bytes, 0),
-    [mapas]
+  const mapasConNombre = useMemo(
+    () =>
+      mapas
+        .map((mapa) => {
+          const sector = sectores.find((cada) => cada.id === mapa.sectorId);
+          const zona = sector ? zonas.find((cada) => cada.id === sector.zonaId) : undefined;
+          return {
+            ...mapa,
+            nombreDelSector: sector?.nombre ?? "Un sector que ya no existe",
+            nombreDeLaZona: zona?.nombre ?? "",
+          };
+        })
+        .sort(
+          (a, b) =>
+            a.nombreDeLaZona.localeCompare(b.nombreDeLaZona) ||
+            a.nombreDelSector.localeCompare(b.nombreDelSector) ||
+            a.tipo.localeCompare(b.tipo),
+        ),
+    [mapas, sectores, zonas],
   );
 
-  const handleBorrar = async (sectorId: number, tipo: TipoDeMapa, nombreSector: string) => {
+  const pesoTotal = useMemo(() => mapas.reduce((total, mapa) => total + mapa.bytes, 0), [mapas]);
+
+  const alBorrar = async (sectorId: number, tipo: TipoDeMapa, nombreDelSector: string) => {
     const seguro = await confirmar({
-      titulo: "¿Borrar este mapa?",
-      mensaje: `El mapa ${tipo} de "${nombreSector}" se va a borrar de tu celular para liberar espacio. Vas a necesitar señal para volver a bajarlo.`,
-      textoDeAceptar: "Borrar mapa",
+      titulo: "¿Sacar este mapa del celular?",
+      mensaje: `El mapa ${NOMBRE_DEL_TIPO[tipo].toLowerCase()} de «${nombreDelSector}» se borra del celular y libera su espacio. Para volver a tenerlo vas a necesitar señal.`,
+      textoDeAceptar: "Sacar el mapa",
       destructivo: true,
     });
-
     if (!seguro) return;
 
     setBorrando(claveDeMapa(sectorId, tipo));
     try {
       const resultado = await borrarElMapaDelSector(sectorId, sectores, tipo);
       if (!resultado.ok) {
-        await avisar({
-          titulo: "No se pudo borrar del todo",
-          mensaje: resultado.motivo,
-        });
+        await avisar({ titulo: "El mapa no se sacó del todo", mensaje: resultado.motivo });
       }
     } finally {
       setBorrando(null);
     }
   };
 
+  if (mapas.length === 0) {
+    return (
+      <Tarjeta className="space-y-1">
+        <p className="text-base font-medium text-texto">No tenés ningún mapa bajado en este celular.</p>
+        <p className="text-base leading-6 text-texto-suave">
+          Los mapas que bajes desde una ruta o un sector para usar sin señal aparecen acá.
+        </p>
+      </Tarjeta>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-3 max-w-2xl mx-auto w-full relative z-10">
-      {estado === "abriendo" ? (
-        <Tarjeta className="py-8 text-center text-base text-texto-suave">
-          Abriendo los mapas…
+    <div className="max-w-2xl space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <Tarjeta tono="alta" className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">Mapas bajados</p>
+          <p className="text-2xl font-bold tabular-nums text-texto">{mapas.length}</p>
         </Tarjeta>
-      ) : estado === "sin_datos" ? (
-        <Tarjeta franja="ambar" className="space-y-2">
-          <p className="text-base font-medium text-texto">
-            Todavía no hay nada guardado en este celular.
-          </p>
-          <p className="text-sm leading-6 text-texto-suave">
-            {aviso ??
-              "Conectate a internet una vez y los mapas quedarán guardados para usarlos sin señal."}
-          </p>
+        <Tarjeta tono="alta" className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">Espacio usado</p>
+          <p className="text-2xl font-bold tabular-nums text-texto">{mostrarPeso(pesoTotal)}</p>
         </Tarjeta>
-      ) : mapas.length === 0 ? (
-        <Tarjeta className="text-center py-10">
-          <p className="text-texto-suave font-medium">
-            No tenés ningún mapa descargado en este celular.
-          </p>
-          <p className="text-sm text-texto-suave mt-2">
-            Los mapas que bajes para usar sin señal van a aparecer acá.
-          </p>
-        </Tarjeta>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-4 mb-2">
-            <Tarjeta tono="alta" className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-                Mapas guardados
-              </p>
-              <p className="text-2xl font-bold tabular-nums text-texto">
-                {mapas.length}
-              </p>
-            </Tarjeta>
-            <Tarjeta tono="alta" className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-                Espacio usado
-              </p>
-              <p className="text-2xl font-bold tabular-nums text-texto">
-                {mostrarPeso(pesoTotal)}
-              </p>
-            </Tarjeta>
-          </div>
+      </div>
 
-          <div className="space-y-3">
-            {mapasConInfo.map((mapa) => {
-              const clave = claveDeMapa(mapa.sectorId, mapa.tipo);
-              const estaBorrando = borrando === clave;
-              
-              return (
-                <Tarjeta key={clave} className="relative pr-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="absolute right-2 top-2">
-                    <button
-                      type="button"
-                      disabled={estaBorrando || borrando !== null}
-                      onClick={() => handleBorrar(mapa.sectorId, mapa.tipo, mapa.nombreSector)}
-                      className="p-2 text-rojo-texto hover:bg-rojo-fondo rounded-lg transition-colors disabled:opacity-50"
-                      aria-label="Borrar mapa"
-                      title="Borrar mapa"
-                    >
-                      {estaBorrando ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-rojo-texto border-t-transparent" />
-                      ) : (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold text-texto">
-                      {mapa.nombreSector}
-                    </p>
-                    <p className="truncate text-sm text-texto-suave">
-                      {mapa.nombreZona}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2 text-xs font-medium text-texto-suave">
-                      <span className="bg-fondo border border-borde-suave rounded-md px-2 py-1">
-                        {NOMBRE_DEL_TIPO[mapa.tipo]}
-                      </span>
-                      <span className="bg-fondo border border-borde-suave rounded-md px-2 py-1 tabular-nums">
-                        {mostrarPeso(mapa.bytes)}
-                      </span>
-                    </div>
-                  </div>
-                </Tarjeta>
-              );
-            })}
-          </div>
-        </>
-      )}
+      <ul className="space-y-3">
+        {mapasConNombre.map((mapa) => {
+          const clave = claveDeMapa(mapa.sectorId, mapa.tipo);
+          return (
+            <li key={clave}>
+              <Tarjeta className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-semibold text-texto">{mapa.nombreDelSector}</p>
+                  {mapa.nombreDeLaZona ? (
+                    <p className="truncate text-sm text-texto-suave">{mapa.nombreDeLaZona}</p>
+                  ) : null}
+                  <p className="mt-1 text-sm text-texto-suave">
+                    {NOMBRE_DEL_TIPO[mapa.tipo]} · <span className="tabular-nums">{mostrarPeso(mapa.bytes)}</span>
+                  </p>
+                </div>
+                <Boton
+                  variante="destructivo"
+                  disabled={borrando !== null}
+                  onClick={() => void alBorrar(mapa.sectorId, mapa.tipo, mapa.nombreDelSector)}
+                >
+                  {borrando === clave ? "Sacando…" : "Sacar"}
+                </Boton>
+              </Tarjeta>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

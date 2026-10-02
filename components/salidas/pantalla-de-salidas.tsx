@@ -1,10 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { borrarSalida } from "@/app/actions/salidas";
 import { Boton } from "@/components/ui/boton";
-import { useDialogos } from "@/components/ui/dialogos";
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { TarjetaDeSalida } from "@/components/salidas/tarjeta-de-salida";
@@ -17,6 +14,8 @@ import type { PaginaDeSalidas } from "@/lib/salidas/datos";
  * **Salidas es 100 % con internet.** La lista llega armada del servidor; acá
  * solo se dibuja. Si la señal se va con la pantalla abierta, lo que ya se ve
  * queda a la vista y desaparecen las acciones que necesitan internet.
+ *
+ * Cargar una salida es el botón «+» flotante, que pone el armazón.
  */
 
 type Props = {
@@ -27,45 +26,16 @@ type Props = {
 export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
   const router = useRouter();
   const haySenal = useHaySenal();
-  const { confirmar, avisar } = useDialogos();
-  const [borrando, setBorrando] = useState<number | null>(null);
-
-  const alBorrar = async (salidaId: number, titulo: string) => {
-    const seguro = await confirmar({
-      titulo: "¿Borrar esta salida?",
-      mensaje: `«${titulo}» deja de verse en la lista, para vos y para los demás.`,
-      textoDeAceptar: "Borrar la salida",
-      destructivo: true,
-    });
-    if (!seguro) return;
-
-    setBorrando(salidaId);
-    const respuesta = await borrarSalida(salidaId);
-    setBorrando(null);
-
-    if (!respuesta.ok) {
-      await avisar({ titulo: "No se borró la salida", mensaje: respuesta.error });
-      return;
-    }
-    router.refresh();
-  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold uppercase text-texto">Salidas</h1>
-        {haySenal ? (
-          <Enlace href="/salidas/nueva" variante="principal">
-            Cargar una salida
-          </Enlace>
-        ) : null}
-      </div>
+    <div className="space-y-4 pb-16">
+      <h1 className="text-2xl font-bold uppercase text-texto">Salidas</h1>
 
       {!haySenal ? (
         <Tarjeta franja="ambar">
           <p className="text-base leading-6 text-texto">
             Sin señal. Salidas funciona solo con internet: lo que ves se cargó antes de
-            perderla. Para cargar o borrar una salida, esperá a tener señal.
+            perderla. Para cargar o editar una salida, esperá a tener señal.
           </p>
         </Tarjeta>
       ) : null}
@@ -84,7 +54,7 @@ export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
           <p className="text-base leading-6 text-texto-suave">
             {resultado.pagina > 1
               ? "No hay salidas más antiguas."
-              : "Todavía nadie cargó una salida. Cuando alguien cargue la suya, aparece acá."}
+              : "Todavía nadie cargó una salida. Cargá la primera con el botón «+» de abajo a la derecha."}
           </p>
         </Tarjeta>
       ) : (
@@ -93,9 +63,7 @@ export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
             <li key={salida.id}>
               <TarjetaDeSalida
                 salida={salida}
-                puedeBorrar={haySenal && salida.perfil.id === miPerfilId}
-                borrando={borrando === salida.id}
-                alBorrar={() => void alBorrar(salida.id, salida.titulo)}
+                puedeEditar={haySenal && salida.perfil.id === miPerfilId}
               />
             </li>
           ))}
@@ -103,7 +71,7 @@ export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
       )}
 
       {resultado.ok && (resultado.pagina > 1 || resultado.hayMas) ? (
-        <div className="flex justify-between gap-3 pb-2">
+        <div className="flex justify-between gap-3">
           {resultado.pagina > 1 ? (
             <Enlace
               href={resultado.pagina === 2 ? "/salidas" : `/salidas?pagina=${resultado.pagina - 1}`}

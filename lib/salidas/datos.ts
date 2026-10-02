@@ -25,6 +25,34 @@ export function leerPagina(valor: string | string[] | undefined): number {
   return Number.isInteger(numero) && numero >= 1 ? numero : 1;
 }
 
+export type UnaSalida =
+  | { ok: true; salida: Salida }
+  | { ok: false; noExiste: true }
+  | { ok: false; noExiste: false; motivo: string };
+
+/** El mensaje de cuando falló la base al traer una salida. */
+export function mensajeDeFalla(motivo: string): string {
+  return `No se pudo traer la salida: ${motivo} Volvé a intentar en un rato.`;
+}
+
+/** Una salida viva, para su ficha o para editarla. */
+export async function traerSalida(salidaId: number): Promise<UnaSalida> {
+  if (!Number.isInteger(salidaId) || salidaId < 1) return { ok: false, noExiste: true };
+
+  const supabase = await crearClienteEnElServidor();
+  const { data, error } = await supabase
+    .from("salidas")
+    .select(COLUMNAS_DE_SALIDA)
+    .eq("id", salidaId)
+    .is("eliminado_en", null)
+    .maybeSingle();
+
+  if (error) return { ok: false, noExiste: false, motivo: traducirErrorDeBase(error.message) };
+  if (!data) return { ok: false, noExiste: true };
+
+  return { ok: true, salida: leerSalida(data as unknown as FilaDeSalida) };
+}
+
 export async function traerSalidas(pagina: number): Promise<PaginaDeSalidas> {
   const supabase = await crearClienteEnElServidor();
   const desde = (pagina - 1) * SALIDAS_POR_PAGINA;
