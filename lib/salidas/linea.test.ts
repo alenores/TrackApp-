@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { FeatureCollection } from "geojson";
-import { dibujarLinea, leerLinea, simplificarLinea, type PuntoDeLinea } from "@/lib/salidas/linea";
+import {
+  dibujarLinea,
+  leerLinea,
+  rectanguloDeLaLinea,
+  simplificarLinea,
+  type PuntoDeLinea,
+} from "@/lib/salidas/linea";
 
 function coleccion(...lineas: number[][][]): FeatureCollection {
   return {
@@ -41,6 +47,22 @@ describe("leerLinea", () => {
       [-64, -31],
       [-64.1, -31.1],
     ]);
+  });
+});
+
+describe("rectanguloDeLaLinea", () => {
+  it("contiene a toda la línea", () => {
+    expect(
+      rectanguloDeLaLinea([
+        [-64.5, -31.2],
+        [-64.1, -31.9],
+        [-64.3, -31.0],
+      ]),
+    ).toEqual({ latNorte: -31, latSur: -31.9, lonEste: -64.1, lonOeste: -64.5 });
+  });
+
+  it("sin línea no hay rectángulo", () => {
+    expect(rectanguloDeLaLinea([])).toBeNull();
   });
 });
 

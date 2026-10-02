@@ -2,6 +2,9 @@
 
 **Decidido:** 2026-10-01 · **Mockup aprobado por Ale**
 
+> **Reemplazada en parte por la 031 (2026-10-02):** la pestaña ahora se llama
+> Anotaciones, también dibuja trazos y es la misma pantalla del sector.
+
 ## Decisión
 
 Mapas incorpora una tercera pestaña, **Puntos**, visible solo para el

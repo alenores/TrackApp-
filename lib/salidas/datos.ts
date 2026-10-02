@@ -1,6 +1,8 @@
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import { traducirErrorDeBase } from "@/lib/datos/resultado";
 import { COLUMNAS_DE_SALIDA, leerSalida, type FilaDeSalida } from "@/lib/salidas/fila";
+import { SIN_FILTROS, tituloParaBuscar, type FiltrosDeSalidas } from "@/lib/salidas/filtros";
+import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import type { Salida } from "@/types/database";
 
 /**
@@ -53,15 +55,50 @@ export async function traerSalida(salidaId: number): Promise<UnaSalida> {
   return { ok: true, salida: leerSalida(data as unknown as FilaDeSalida) };
 }
 
-export async function traerSalidas(pagina: number): Promise<PaginaDeSalidas> {
+/**
+ * Una página de salidas, con los filtros puestos. Los filtros los resuelve la
+ * base: así valen para todas las salidas y no solo para las de esta página.
+ */
+export async function traerSalidas(
+  pagina: number,
+  filtros: FiltrosDeSalidas = SIN_FILTROS,
+): Promise<PaginaDeSalidas> {
   const supabase = await crearClienteEnElServidor();
   const desde = (pagina - 1) * SALIDAS_POR_PAGINA;
 
+  let consulta = supabase.from("salidas").select(COLUMNAS_DE_SALIDA).is("eliminado_en", null);
+
+  if (filtros.titulo.trim()) consulta = consulta.ilike("titulo", `%${tituloParaBuscar(filtros.titulo)}%`);
+  if (filtros.actividades.length) consulta = consulta.overlaps("actividades", filtros.actividades);
+  if (filtros.esfuerzos.length) consulta = consulta.in("nivel_esfuerzo", filtros.esfuerzos);
+  if (filtros.desde) consulta = consulta.gte("fecha", filtros.desde);
+  if (filtros.hasta) consulta = consulta.lte("fecha", filtros.hasta);
+
+  if (filtros.participantes.length) {
+    // Fue quien la cargó, o fue como compañero. Las de compañero se buscan
+    // aparte, por tandas: la base corta en 1000 filas sin avisar.
+    const comoCompanero = await traerTodasLasFilas<{ salida_id: number }>((inicio, fin) =>
+      supabase
+        .from("salidas_companeros")
+        .select("salida_id")
+        .in("perfil_id", filtros.participantes)
+        .is("eliminado_en", null)
+        .order("id", { ascending: true })
+        .range(inicio, fin),
+    );
+    if (!comoCompanero.completa) {
+      return {
+        ok: false,
+        motivo: `no se pudo buscar con quién fue cada salida: ${traducirErrorDeBase(comoCompanero.motivo)}`,
+      };
+    }
+    const ids = [...new Set(comoCompanero.filas.map((fila) => fila.salida_id))];
+    const deQuienLaCargo = `perfil_id.in.(${filtros.participantes.join(",")})`;
+    consulta = consulta.or(ids.length ? `${deQuienLaCargo},id.in.(${ids.join(",")})` : deQuienLaCargo);
+  }
+
   // Se pide una de más solo para saber si hay otra página.
-  const { data, error } = await supabase
-    .from("salidas")
-    .select(COLUMNAS_DE_SALIDA)
-    .is("eliminado_en", null)
+  const { data, error } = await consulta
     .order("fecha", { ascending: false })
     .order("id", { ascending: false })
     .range(desde, desde + SALIDAS_POR_PAGINA);

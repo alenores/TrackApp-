@@ -366,8 +366,8 @@ const NO_ES_TUYA =
 
 export type DatosDeAnotacion = {
   /**
-   * `null` para los puntos que el administrador carga sin sector, pegando la
-   * coordenada (decisión 027). Manda dónde está, no a qué sector se lo anotó.
+   * `null` para lo que el administrador anota desde Mapas, sin sector
+   * (decisión 027). Manda dónde está, no a qué sector se lo anotó.
    */
   sectorId: number | null;
   tipo: TipoAnotacion;
@@ -415,13 +415,9 @@ export async function crearAnotacion(
   const problema = revisarAnotacion(datos);
   if (problema) return falla(problema);
 
-  if (datos.sectorId === null) {
-    if (datos.tipo !== "punto") {
-      return falla("Sin sector solo se cargan puntos. Los trazos se dibujan adentro de un sector.");
-    }
-    if (!(await soyAdministrador())) {
-      return falla("Cargar puntos sin sector lo puede hacer solo el administrador.");
-    }
+  // Puntos y trazos sin sector, desde Mapas: solo el administrador (decisión 027).
+  if (datos.sectorId === null && !(await soyAdministrador())) {
+    return falla("Anotar sin sector lo puede hacer solo el administrador. Entrá a un sector para anotar ahí.");
   }
 
   const supabase = await crearClienteEnElServidor();

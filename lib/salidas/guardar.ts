@@ -335,10 +335,15 @@ async function subirElArchivo(
 
   // La clase sale del nombre del archivo, no del navegador: Windows no conoce
   // el .gpx y la base lo rechazaría (pasó en rutas el 2026-09-20).
+  //
+  // Y se manda el contenido, no el archivo: con el archivo tal cual, la base
+  // lee la clase que le puso el navegador («un archivo cualquiera») en vez de
+  // la que se le dice, y lo rechaza. Pasó en salidas el 2026-10-02.
+  const contenido = new Uint8Array(await archivo.arrayBuffer());
   const subir = (clase: string) =>
     supabase.storage
       .from(DEPOSITO_DE_ARCHIVOS)
-      .upload(donde, archivo, { contentType: clase, upsert: true });
+      .upload(donde, contenido.slice(), { contentType: clase, upsert: true });
 
   let { error } = await subir(claseDelArchivoDeRuta(archivo.name));
   if (error && loRechazoPorLaClase(error.message)) {

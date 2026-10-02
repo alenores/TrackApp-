@@ -2,8 +2,8 @@
 
 import { Avatar } from "@/components/ui/avatar";
 import { Enlace } from "@/components/ui/enlace";
-import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { mostrarDesnivel, mostrarEsfuerzo, mostrarLargo } from "@/lib/rutas/actividades";
+import { PROPORCION_DE_LA_PORTADA_DE_SALIDA } from "@/lib/fotos/preparar";
 import { dibujarLinea } from "@/lib/salidas/linea";
 import { diaEnPalabras } from "@/lib/fechas";
 import type { Salida } from "@/types/database";
@@ -13,8 +13,12 @@ import type { Salida } from "@/types/database";
  * la ficha, así las dos muestran lo mismo de la misma forma.
  */
 
-/** La zona de la portada donde se dibuja la línea, en un cuadrado de 320. */
-const ZONA_DE_LA_LINEA = { x: 108, y: 72, ancho: 140, alto: 196 };
+/** El lienzo de la portada: 320 de ancho, y el alto que da su proporción. */
+const ANCHO_DEL_LIENZO = 320;
+const ALTO_DEL_LIENZO = Math.round(ANCHO_DEL_LIENZO / PROPORCION_DE_LA_PORTADA_DE_SALIDA);
+
+/** Dónde se dibuja la línea: en el medio, debajo del título y a la derecha de los números. */
+const ZONA_DE_LA_LINEA = { x: 112, y: 62, ancho: 136, alto: ALTO_DEL_LIENZO - 80 };
 
 /**
  * La portada, a la manera de Strava: la foto cuadrada con el título y el día
@@ -26,18 +30,23 @@ const ZONA_DE_LA_LINEA = { x: 108, y: 72, ancho: 140, alto: 196 };
  * sobre un fondo oscuro fijo.
  *
  * `margenDeTarjeta` la pega a los bordes cuando va adentro de una tarjeta.
+ * `conDatos={false}` deja solo la foto, el título y el día: en la ficha los
+ * números y la línea van afuera, para que la foto se vea.
  */
 export function PortadaDeSalida({
   salida,
   margenDeTarjeta = false,
+  conDatos = true,
 }: {
   salida: Salida;
   margenDeTarjeta?: boolean;
+  conDatos?: boolean;
 }) {
   const portada = salida.fotos[0];
-  const dibujo = salida.linea ? dibujarLinea(salida.linea, ZONA_DE_LA_LINEA) : null;
+  const dibujo =
+    conDatos && salida.linea ? dibujarLinea(salida.linea, ZONA_DE_LA_LINEA) : null;
 
-  const numeros = [
+  const numeros = !conDatos ? [] : [
     salida.largoKm !== null ? { nombre: "Largo", valor: mostrarLargo(salida.largoKm) } : null,
     salida.desnivelPositivoM !== null
       ? { nombre: "Subida", valor: mostrarDesnivel(salida.desnivelPositivoM, "positivo") }
@@ -50,9 +59,10 @@ export function PortadaDeSalida({
   return (
     <div
       className={[
-        "relative aspect-square overflow-hidden bg-sobre-foto-fondo",
+        "relative overflow-hidden bg-sobre-foto-fondo",
         margenDeTarjeta ? "-mx-4 -mt-4" : "rounded-2xl",
       ].join(" ")}
+      style={{ aspectRatio: PROPORCION_DE_LA_PORTADA_DE_SALIDA }}
     >
       {portada ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -66,10 +76,12 @@ export function PortadaDeSalida({
         />
       ) : null}
 
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-sobre-foto-degrade/80 via-sobre-foto-degrade/45 to-sobre-foto-degrade/20"
-      />
+      {conDatos ? (
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-r from-sobre-foto-degrade/80 via-sobre-foto-degrade/45 to-sobre-foto-degrade/20"
+        />
+      ) : null}
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-sobre-foto-degrade/70 to-transparent"
@@ -77,7 +89,7 @@ export function PortadaDeSalida({
 
       {dibujo ? (
         <svg
-          viewBox="0 0 320 320"
+          viewBox={`0 0 ${ANCHO_DEL_LIENZO} ${ALTO_DEL_LIENZO}`}
           aria-hidden
           className="absolute inset-0 h-full w-full"
         >
@@ -125,13 +137,13 @@ export function PortadaDeSalida({
       </div>
 
       {numeros.length > 0 ? (
-        <dl className="absolute left-4 top-1/2 flex -translate-y-1/3 flex-col gap-3.5">
+        <dl className="absolute bottom-3.5 left-4 flex flex-col gap-2">
           {numeros.map((numero) => (
             <div key={numero.nombre}>
-              <dt className="text-xs font-medium uppercase tracking-[0.06em] text-sobre-foto-texto-suave drop-shadow">
+              <dt className="text-xs font-medium uppercase leading-4 tracking-[0.06em] text-sobre-foto-texto-suave drop-shadow">
                 {numero.nombre}
               </dt>
-              <dd className="text-xl font-bold leading-tight tabular-nums text-sobre-foto-texto drop-shadow">
+              <dd className="text-lg font-bold leading-6 tabular-nums text-sobre-foto-texto drop-shadow">
                 {numero.valor}
               </dd>
             </div>
@@ -201,8 +213,8 @@ export function PersonasDeSalida({ salida }: { salida: Salida }) {
   );
 }
 
-/** Qué hicieron y todos los números que haya. Para la ficha. */
-export function DatosDeSalida({ salida }: { salida: Salida }) {
+/** Todos los números que haya, en dos columnas. Para la ficha. */
+export function NumerosDeSalida({ salida }: { salida: Salida }) {
   const numeros = [
     salida.largoKm !== null ? { nombre: "Largo", valor: mostrarLargo(salida.largoKm) } : null,
     salida.desnivelPositivoM !== null
@@ -216,20 +228,17 @@ export function DatosDeSalida({ salida }: { salida: Salida }) {
       : null,
   ].filter((numero) => numero !== null);
 
+  if (numeros.length === 0) return null;
+
   return (
-    <>
-      <InsigniasDeActividad actividades={salida.actividades} tamano="mediano" />
-      {numeros.length > 0 ? (
-        <dl className="grid grid-cols-2 gap-3 rounded-xl border border-borde-suave bg-fondo px-3 py-3 sm:grid-cols-4">
-          {numeros.map((numero) => (
-            <div key={numero.nombre}>
-              <dt className="text-xs text-texto-suave">{numero.nombre}</dt>
-              <dd className="mt-0.5 text-base font-semibold tabular-nums text-texto">{numero.valor}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
-    </>
+    <dl className="grid min-w-0 flex-1 grid-cols-2 content-center gap-3 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
+      {numeros.map((numero) => (
+        <div key={numero.nombre}>
+          <dt className="text-xs text-texto-suave">{numero.nombre}</dt>
+          <dd className="mt-0.5 text-base font-semibold tabular-nums text-texto">{numero.valor}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

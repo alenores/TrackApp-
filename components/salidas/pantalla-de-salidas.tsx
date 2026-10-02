@@ -1,19 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { FiltrosDeSalidas } from "@/components/salidas/filtros-de-salidas";
 import { TarjetaDeSalida } from "@/components/salidas/tarjeta-de-salida";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { PaginaDeSalidas } from "@/lib/salidas/datos";
+import {
+  direccionDeSalidas,
+  filtrosPuestos,
+  type FiltrosDeSalidas as Filtros,
+} from "@/lib/salidas/filtros";
+import type { PerfilBreve } from "@/types/database";
 
 /**
  * La lista de salidas.
  *
- * **Salidas es 100 % con internet.** La lista llega armada del servidor; acá
- * solo se dibuja. Si la señal se va con la pantalla abierta, lo que ya se ve
- * queda a la vista y desaparecen las acciones que necesitan internet.
+ * **Salidas es 100 % con internet.** La lista llega armada del servidor, con
+ * los filtros ya aplicados por la base; acá solo se dibuja. Si la señal se va
+ * con la pantalla abierta, lo que ya se ve queda a la vista y desaparecen las
+ * acciones que necesitan internet.
  *
  * Cargar una salida es el botón «+» flotante, que pone el armazón.
  */
@@ -21,21 +30,65 @@ import type { PaginaDeSalidas } from "@/lib/salidas/datos";
 type Props = {
   miPerfilId: string | null;
   resultado: PaginaDeSalidas;
+  filtros: Filtros;
+  /** Los usuarios, para filtrar por quién fue y nombrar los filtros puestos. */
+  perfiles: PerfilBreve[];
 };
 
-export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
+export function PantallaDeSalidas({ miPerfilId, resultado, filtros, perfiles }: Props) {
   const router = useRouter();
   const haySenal = useHaySenal();
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+
+  const nombreDe = (perfilId: string) =>
+    perfiles.find((perfil) => perfil.id === perfilId)?.nombre ?? "alguien que ya no está";
+  const puestos = filtrosPuestos(filtros, nombreDe);
+  const hayFiltros = puestos.length > 0;
 
   return (
     <div className="space-y-4 pb-16">
-      <h1 className="text-2xl font-bold uppercase text-texto">Salidas</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold uppercase text-texto">Salidas</h1>
+        {haySenal ? (
+          <Boton
+            variante={hayFiltros ? "principal" : "secundario"}
+            onClick={() => setFiltrosAbiertos(true)}
+            aria-label={hayFiltros ? `Filtrar, ${puestos.length} puestos` : "Filtrar"}
+          >
+            {hayFiltros ? `Filtrar (${puestos.length})` : "Filtrar"}
+          </Boton>
+        ) : null}
+      </div>
+
+      {hayFiltros ? (
+        <ul className="flex flex-wrap gap-1.5" aria-label="Filtros puestos">
+          {puestos.map((puesto) => (
+            <li key={puesto.clave}>
+              <span className="inline-flex h-10 items-center gap-1 rounded-full border border-acento-borde bg-verde-fondo pl-3.5 text-sm font-semibold text-verde-texto">
+                {puesto.etiqueta}
+                <Enlace
+                  href={direccionDeSalidas(puesto.sinEste)}
+                  aria-label={`Sacar el filtro ${puesto.etiqueta}`}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-lg leading-none hover:bg-superficie-alta"
+                >
+                  ×
+                </Enlace>
+              </span>
+            </li>
+          ))}
+          <li>
+            <Enlace href="/salidas" variante="secundario" className="rounded-full">
+              Limpiar todo
+            </Enlace>
+          </li>
+        </ul>
+      ) : null}
 
       {!haySenal ? (
         <Tarjeta franja="ambar">
           <p className="text-base leading-6 text-texto">
             Sin señal. Salidas funciona solo con internet: lo que ves se cargó antes de
-            perderla. Para cargar o editar una salida, esperá a tener señal.
+            perderla. Para cargar, editar o filtrar, esperá a tener señal.
           </p>
         </Tarjeta>
       ) : null}
@@ -52,9 +105,11 @@ export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
       ) : resultado.salidas.length === 0 ? (
         <Tarjeta>
           <p className="text-base leading-6 text-texto-suave">
-            {resultado.pagina > 1
-              ? "No hay salidas más antiguas."
-              : "Todavía nadie cargó una salida. Cargá la primera con el botón «+» de abajo a la derecha."}
+            {hayFiltros
+              ? "Ninguna salida cumple con todos los filtros. Sacá alguno para ver más."
+              : resultado.pagina > 1
+                ? "No hay salidas más antiguas."
+                : "Todavía nadie cargó una salida. Cargá la primera con el botón «+» de abajo a la derecha."}
           </p>
         </Tarjeta>
       ) : (
@@ -73,22 +128,30 @@ export function PantallaDeSalidas({ miPerfilId, resultado }: Props) {
       {resultado.ok && (resultado.pagina > 1 || resultado.hayMas) ? (
         <div className="flex justify-between gap-3">
           {resultado.pagina > 1 ? (
-            <Enlace
-              href={resultado.pagina === 2 ? "/salidas" : `/salidas?pagina=${resultado.pagina - 1}`}
-              variante="secundario"
-            >
+            <Enlace href={direccionDeSalidas(filtros, resultado.pagina - 1)} variante="secundario">
               Más recientes
             </Enlace>
           ) : (
             <span />
           )}
           {resultado.hayMas ? (
-            <Enlace href={`/salidas?pagina=${resultado.pagina + 1}`} variante="secundario">
+            <Enlace href={direccionDeSalidas(filtros, resultado.pagina + 1)} variante="secundario">
               Más antiguas
             </Enlace>
           ) : null}
         </div>
       ) : null}
+
+      <FiltrosDeSalidas
+        abierto={filtrosAbiertos}
+        alCerrar={() => setFiltrosAbiertos(false)}
+        filtros={filtros}
+        perfiles={perfiles}
+        alAplicar={(elegidos) => {
+          setFiltrosAbiertos(false);
+          router.push(direccionDeSalidas(elegidos));
+        }}
+      />
     </div>
   );
 }

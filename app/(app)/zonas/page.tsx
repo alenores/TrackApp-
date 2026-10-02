@@ -18,7 +18,9 @@ export default async function ZonasPage({
 }) {
   const esAdministrador = await soyAdministrador();
   const parametros = await searchParams;
-  const pestañaInicial = parametros.vista === "puntos" ? "puntos" : "mapa";
+  // «puntos» es el nombre viejo de la pestaña: los enlaces guardados siguen andando.
+  const pestañaInicial =
+    parametros.vista === "anotaciones" || parametros.vista === "puntos" ? "anotaciones" : "mapa";
 
   return (
     <>

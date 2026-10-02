@@ -10,7 +10,7 @@ vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/zonas/tarjeta-de-zona", () => ({ TarjetaDeZona: () => null }));
 vi.mock("@/components/zonas/mapa-general-de-zonas", () => ({ MapaGeneralDeZonas: () => null }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-describe("pestaña de puntos en Mapas", () => {
+describe("pestaña de anotaciones en Mapas (antes «Puntos»)", () => {
   it.each([
     [true, true, true], [true, false, false], [false, true, false], [false, false, false],
   ])("administrador %s y señal %s: visible %s", async (administrador, senal, visible) => {
@@ -19,7 +19,7 @@ describe("pestaña de puntos en Mapas", () => {
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(<PantallaDeZonas soyAdministrador={administrador} />));
-      expect(Boolean(contenedor.querySelector('#pestana-puntos'))).toBe(visible);
+      expect(Boolean(contenedor.querySelector('#pestana-anotaciones'))).toBe(visible);
     } finally { act(() => raiz.unmount()); }
   });
 });

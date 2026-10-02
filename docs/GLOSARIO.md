@@ -8,7 +8,8 @@
 **Mapas**
 El módulo para explorar Córdoba. Tiene una pestaña con la lista de zonas, otra
 con el mapa general de todas las zonas y los puntos marcados, y para el
-administrador una tercera pestaña para filtrar y gestionar los puntos.
+administrador una pestaña **Anotaciones** para marcar puntos y trazos en toda
+Córdoba, que es la misma pantalla de anotaciones del sector (decisión 031).
 
 **Mapa general**
 La vista de Córdoba dentro de Mapas. Dibuja solamente el perímetro y el nombre
@@ -118,10 +119,11 @@ ofrecería recuperar justo lo que él decidió tirar.
 **Punto**
 Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera).
-Puede llevar comentario y foto. No necesita pertenecer a un sector: el
-administrador también lo carga desde **Mapas → Zonas → Puntos**, pegando una coordenada
-de Google Earth. Desde el mapa de esa pantalla lo edita o lo borra. Se descarga
-con las demás anotaciones, aunque no se haya bajado el mapa de un sector.
+Puede llevar comentario y foto. Se ubica tocando el mapa o pegando la coordenada
+de Google Earth. No necesita pertenecer a un sector: el administrador también lo
+carga desde **Mapas → Anotaciones**, y lo mismo vale para un trazo. Se abre
+tocándolo en el mapa o en la lista, y ahí se edita o se borra. Se descarga con
+las demás anotaciones, aunque no se haya bajado el mapa de un sector.
 Ver decisión 027.
 
 **Trazo**
@@ -305,10 +307,18 @@ Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
 cargarla, de la lista de usuarios.
 
 **Portada de la salida**
-La primera de las fotos de una salida, cuadrada, a la manera de Strava: el
-título y el día arriba, los números apilados a la izquierda y la **línea de la
-salida** en el medio, todo directo sobre la foto. Sin foto, lo mismo va sobre
-un fondo oscuro.
+La primera de las fotos de una salida, apaisada (4 de ancho por 3 de alto). Se
+recorta a esa forma al elegirla: lo que se ve al recortar es lo que se ve en la
+lista. En la tarjeta va a la manera de Strava: el título y el día arriba, los
+números apilados abajo a la izquierda y la **línea de la salida** en el medio,
+todo directo sobre la foto. En la ficha va limpia, solo con el título y el día.
+Sin foto, lo mismo va sobre un fondo oscuro.
+
+**Filtro de salidas**
+Lo que achica la lista de salidas por título, qué hicieron, esfuerzo, quién fue
+(la cargó o fue de compañero) y entre qué fechas. Lo resuelve la base, así vale
+para todas las salidas. Los filtros puestos quedan arriba como pastillas, cada
+una con su cruz.
 
 **Línea de la salida**
 El dibujo del camino que hizo la salida, sobre la portada. Sale del archivo GPS

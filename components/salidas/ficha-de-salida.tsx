@@ -5,9 +5,11 @@ import { BotonVolver } from "@/components/ui/boton-volver";
 import { clasesDeBoton } from "@/components/ui/boton";
 import { Emergente } from "@/components/ui/emergente";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { MapaDeLaSalida, MiniaturaDeLaLinea } from "@/components/salidas/mapa-de-la-salida";
 import {
   BotonDeOpcionesDeSalida,
-  DatosDeSalida,
+  NumerosDeSalida,
   PersonasDeSalida,
   PortadaDeSalida,
 } from "@/components/salidas/partes-de-salida";
@@ -15,8 +17,10 @@ import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { Salida } from "@/types/database";
 
 /**
- * La ficha de una salida: todo lo que tiene. La descripción completa, todas
- * las fotos —tocando una se ve en grande— y el archivo GPS para bajar.
+ * La ficha de una salida: todo lo que tiene. La portada va limpia —solo el
+ * título y el día— y los números van afuera, al lado de la miniatura del
+ * recorrido, que tocándola abre el mapa. Después, la descripción completa,
+ * todas las fotos —tocando una se ve en grande— y el archivo GPS para bajar.
  */
 
 type Props = {
@@ -27,7 +31,14 @@ type Props = {
 export function FichaDeSalida({ salida, miPerfilId }: Props) {
   const haySenal = useHaySenal();
   const [fotoAbierta, setFotoAbierta] = useState<string | null>(null);
+  const [mapaAbierto, setMapaAbierto] = useState(false);
   const puedeEditar = haySenal && salida.perfil.id === miPerfilId;
+  const tieneRecorrido = salida.linea !== null || salida.archivoUrl !== null;
+  const tieneNumeros =
+    salida.largoKm !== null ||
+    salida.desnivelPositivoM !== null ||
+    salida.desnivelNegativoM !== null ||
+    salida.nivelEsfuerzo !== null;
 
   return (
     <div className="space-y-3">
@@ -43,15 +54,23 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
           aria-label="Ver la portada en grande"
           className="block w-full cursor-zoom-in text-left"
         >
-          <PortadaDeSalida salida={salida} />
+          <PortadaDeSalida salida={salida} conDatos={false} />
         </button>
       ) : (
-        <PortadaDeSalida salida={salida} />
+        <PortadaDeSalida salida={salida} conDatos={false} />
       )}
 
       <Tarjeta className="space-y-4">
         <PersonasDeSalida salida={salida} />
-        <DatosDeSalida salida={salida} />
+        <InsigniasDeActividad actividades={salida.actividades} tamano="mediano" />
+        {tieneRecorrido || tieneNumeros ? (
+          <div className="flex items-stretch gap-3">
+            {tieneRecorrido ? (
+              <MiniaturaDeLaLinea salida={salida} alTocar={() => setMapaAbierto(true)} />
+            ) : null}
+            <NumerosDeSalida salida={salida} />
+          </div>
+        ) : null}
         {salida.descripcion ? (
           <p className="whitespace-pre-line text-base leading-7 text-texto">{salida.descripcion}</p>
         ) : null}
@@ -78,6 +97,8 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
           ))}
         </div>
       ) : null}
+
+      <MapaDeLaSalida salida={salida} abierto={mapaAbierto} alCerrar={() => setMapaAbierto(false)} />
 
       <Emergente
         abierto={fotoAbierta !== null}

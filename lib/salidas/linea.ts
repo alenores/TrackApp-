@@ -1,5 +1,6 @@
 import type { FeatureCollection } from "geojson";
 import { lineasDelRecorrido } from "@/lib/rutas/recorrido";
+import type { Rectangulo } from "@/types/database";
 
 /**
  * La línea de una salida, para dibujarla sobre la portada.
@@ -59,6 +60,33 @@ export function leerLinea(valor: unknown): PuntoDeLinea[] | null {
   if (!Array.isArray(valor)) return null;
   const puntos = valor.filter(esPunto).map((punto): PuntoDeLinea => [punto[0], punto[1]]);
   return puntos.length >= 2 ? puntos : null;
+}
+
+/** La línea en la forma que entiende el mapa. */
+export function lineaComoColeccion(puntos: PuntoDeLinea[]): FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: puntos },
+      },
+    ],
+  };
+}
+
+/** El rectángulo que contiene a la línea, para encuadrar el mapa al abrir. */
+export function rectanguloDeLaLinea(puntos: PuntoDeLinea[]): Rectangulo | null {
+  if (puntos.length < 2) return null;
+  const lons = puntos.map(([lon]) => lon);
+  const lats = puntos.map(([, lat]) => lat);
+  return {
+    latNorte: Math.max(...lats),
+    latSur: Math.min(...lats),
+    lonEste: Math.max(...lons),
+    lonOeste: Math.min(...lons),
+  };
 }
 
 export type Caja = { x: number; y: number; ancho: number; alto: number };

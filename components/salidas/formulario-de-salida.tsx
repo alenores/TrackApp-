@@ -114,9 +114,10 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
   const [errorAlGuardar, setErrorAlGuardar] = useState<string | null>(null);
   const ocupado = guardando || borrando;
 
-  // Siempre cuatro, en el mismo orden: así lo piden los hooks.
+  // Siempre cuatro, en el mismo orden: así lo piden los hooks. La primera es
+  // la portada y se recorta a la forma con que se ve en la lista.
   const fotos = [
-    useFoto("salida", FORMAS_DE_RECORTE.salida),
+    useFoto("portadaDeSalida", FORMAS_DE_RECORTE.portadaDeSalida),
     useFoto("salida", FORMAS_DE_RECORTE.salida),
     useFoto("salida", FORMAS_DE_RECORTE.salida),
     useFoto("salida", FORMAS_DE_RECORTE.salida),
@@ -173,6 +174,13 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
 
   const alGuardar = async () => {
     setErrorAlGuardar(null);
+
+    // Sin portada, la foto que quedara primera no tendría la forma de la lista.
+    if (queHayEnCadaCaja[0] === null && queHayEnCadaCaja.some((cosa) => cosa !== null)) {
+      setErrorAlGuardar("Falta la portada. Elegí la primera foto, o quitá las demás.");
+      return;
+    }
+
     setGuardando(true);
 
     const datos = {
@@ -400,7 +408,8 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
           Fotos
         </h2>
         <p className="text-sm leading-6 text-texto-suave">
-          Hasta cuatro. La primera es la portada.
+          Hasta cuatro. La primera es la portada: se recorta apaisada, del mismo
+          tamaño con que se ve en la lista, y al elegirla ves exactamente cómo queda.
         </p>
         {fotos.slice(0, cajasVisibles).map((foto, indice) => (
           <SelectorDeFoto

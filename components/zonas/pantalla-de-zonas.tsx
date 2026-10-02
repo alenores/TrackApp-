@@ -8,18 +8,18 @@ import { MapaGeneralDeZonas } from "@/components/zonas/mapa-general-de-zonas";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresPorZona } from "@/lib/mapas/general";
-import { PantallaDePuntos } from "@/components/anotaciones/pantalla-de-puntos";
+import { AnotacionesDeCordoba } from "@/components/anotaciones/anotaciones-de-cordoba";
 import { PantallaDeDescargas } from "@/components/zonas/pantalla-de-descargas";
 
 type Propiedades = { soyAdministrador: boolean; pestañaInicial?: Pestana };
-type Pestana = "zonas" | "mapa" | "puntos" | "descargas";
+type Pestana = "zonas" | "mapa" | "anotaciones" | "descargas";
 
 /** El módulo Mapas: lista de zonas y vista general de Córdoba. */
 export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: Propiedades) {
   const puedeAdministrar = usePuedeAdministrar(soyAdministrador);
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const [pestana, setPestana] = useState<Pestana>(pestañaInicial);
-  const pestanaActiva = pestana === "puntos" && !puedeAdministrar ? "mapa" : pestana;
+  const pestanaActiva = pestana === "anotaciones" && !puedeAdministrar ? "mapa" : pestana;
 
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
   const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
@@ -27,7 +27,7 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
   const cantidades = useMemo(() => sectoresPorZona(sectores), [sectores]);
 
   const alMoverEntrePestanas = (evento: KeyboardEvent<HTMLDivElement>) => {
-    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "puntos", "descargas"] : ["zonas", "mapa", "descargas"];
+    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "anotaciones", "descargas"] : ["zonas", "mapa", "descargas"];
     const indice = pestanas.indexOf(pestanaActiva);
     const siguiente = evento.key === "ArrowRight"
       ? pestanas[(indice + 1) % pestanas.length]
@@ -59,10 +59,10 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
           Mapa
         </Boton>
         {puedeAdministrar ? (
-          <Boton role="tab" id="pestana-puntos" aria-controls="panel-puntos" aria-selected={pestanaActiva === "puntos"}
-            tabIndex={pestanaActiva === "puntos" ? 0 : -1}
-            variante={pestanaActiva === "puntos" ? "principal" : "fantasma"} onClick={() => setPestana("puntos")}>
-            Puntos
+          <Boton role="tab" id="pestana-anotaciones" aria-controls="panel-anotaciones" aria-selected={pestanaActiva === "anotaciones"}
+            tabIndex={pestanaActiva === "anotaciones" ? 0 : -1}
+            variante={pestanaActiva === "anotaciones" ? "principal" : "fantasma"} onClick={() => setPestana("anotaciones")}>
+            Anotaciones
           </Boton>
         ) : null}
         <Boton role="tab" id="pestana-descargas" aria-controls="panel-descargas" aria-selected={pestanaActiva === "descargas"}
@@ -80,7 +80,7 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
         <Tarjeta franja="ambar" className="space-y-2">
           <p className="text-base font-medium text-texto">Todavía no hay nada guardado en este celular.</p>
           <p role="alert" className="text-base leading-6 text-texto-suave">
-            {aviso ?? "Conectate a internet una vez para ver las zonas y los puntos guardados."}
+            {aviso ?? "Conectate a internet una vez para ver las zonas y las anotaciones guardadas."}
           </p>
         </Tarjeta>
       ) : (
@@ -106,9 +106,9 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
             <div role="tabpanel" id="panel-mapa" aria-labelledby="pestana-mapa">
               <MapaGeneralDeZonas zonas={zonas} anotaciones={anotaciones} sectoresPorZona={cantidades} />
             </div>
-          ) : pestanaActiva === "puntos" ? (
-            <div role="tabpanel" id="panel-puntos" aria-labelledby="pestana-puntos">
-              <PantallaDePuntos soyAdministrador={puedeAdministrar} />
+          ) : pestanaActiva === "anotaciones" ? (
+            <div role="tabpanel" id="panel-anotaciones" aria-labelledby="pestana-anotaciones">
+              <AnotacionesDeCordoba soyAdministrador={puedeAdministrar} />
             </div>
           ) : (
             <div role="tabpanel" id="panel-descargas" aria-labelledby="pestana-descargas">

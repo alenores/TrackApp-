@@ -5,7 +5,12 @@ import Cropper, { type Area } from "react-easy-crop";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
-import type { DestinoDeFoto, FotoAbierta, Recorte } from "@/lib/fotos/preparar";
+import {
+  PROPORCION_DE_LA_PORTADA_DE_SALIDA,
+  type DestinoDeFoto,
+  type FotoAbierta,
+  type Recorte,
+} from "@/lib/fotos/preparar";
 
 /**
  * La pantalla de recortar una foto. **Es la única de la app.**
@@ -58,6 +63,13 @@ export const FORMAS_DE_RECORTE = {
       { etiqueta: "Parada", valor: 3 / 4 },
     ],
   },
+  /**
+   * La portada de una salida se ve apaisada, siempre igual, con los datos
+   * encima. Se recorta a esa forma al elegirla: lo que se ve al recortar es lo
+   * que va a verse en la lista, sin sorpresas.
+   */
+  portadaDeSalida: { tipo: "fija", proporcion: PROPORCION_DE_LA_PORTADA_DE_SALIDA } as const,
+  /** Las demás fotos de una salida se ven enteras en la ficha: la forma la elige quien la sube. */
   salida: {
     tipo: "elegir",
     opciones: [

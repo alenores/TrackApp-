@@ -62,9 +62,28 @@ quienes fueron y las actividades. Se agregó `linea_simplificada` a `salidas`
 al cargarlo. Las salidas cargadas antes no tienen línea hasta que se les vuelva
 a subir el archivo desde la edición.
 
+### Cuarta vuelta
+- Ficha: la portada va limpia; los números van afuera, al lado de una
+  miniatura de la línea que abre el mapa a pantalla completa con el archivo
+  GPS completo (con la línea liviana mientras llega o si falla).
+- Portada apaisada 4:3 y recorte fijo a esa forma al elegirla (destino de foto
+  nuevo `portadaDeSalida`). Las demás fotos siguen con forma libre.
+- Filtro de salidas por título, qué hicieron, esfuerzo, quién fue y fechas,
+  resuelto en la base y guardado en la dirección.
+
+### Quinta vuelta: anotaciones unificadas y el archivo GPS de salidas
+- Puntos (Mapas) y Anotaciones (sector) pasan a ser una sola pantalla
+  (decisión 031). Traer de Google Earth y OpenStreetMap queda solo en el sector.
+- Arreglo: el archivo GPS de una salida se rechazaba («mime type
+  application/octet-stream is not supported»). Se mandaba el archivo tal cual y
+  la base leía la clase vacía que le pone Windows al .gpx. Ahora se manda el
+  contenido con la clase correcta, como en rutas. Lleva prueba automática.
+
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
-navegador del agente: la verificación visual la hace Ale.
+navegador del agente: la verificación visual la hace Ale. Los trazos todavía
+no se pueden tocar en el mapa para abrirlos (el mapa solo detecta puntos): se
+abren desde la lista.
 
 ---
 

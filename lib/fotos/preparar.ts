@@ -62,8 +62,17 @@ export const AJUSTES_POR_DESTINO = {
    * el paquete y los datos en el cerro son el recurso escaso.
    */
   anotacion: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
+  /** Las fotos de una salida se miran en grande en su ficha. */
   salida: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
+  /** La portada de una salida ocupa todo el ancho de la tarjeta. */
+  portadaDeSalida: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
 } as const satisfies Record<string, Ajuste>;
+
+/**
+ * Ancho dividido alto de la portada de una salida. Es la misma forma con que
+ * se recorta y con que se muestra: lo que se elige es lo que se ve.
+ */
+export const PROPORCION_DE_LA_PORTADA_DE_SALIDA = 4 / 3;
 
 /**
  * La copia chica que algunos destinos necesitan además de la foto.
