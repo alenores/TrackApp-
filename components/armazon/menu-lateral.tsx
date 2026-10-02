@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Avatar } from "@/components/ui/avatar";
 import { Boton } from "@/components/ui/boton";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { useHaySenal } from "@/hooks/use-hay-senal";
@@ -32,7 +33,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/mapa-libre",
-    label: "Navegaci�n libre",
+    label: "Navegación libre",
     necesitaSenal: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
@@ -56,13 +57,14 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-    {
+  {
     href: "/salidas",
     label: "Salidas",
+    // Salidas es solo con internet: sin señal no está.
     necesitaSenal: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6 21V4m0 0h10l-2 3.5 2 3.5H6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -84,9 +86,7 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-    ];
-
-import { Avatar } from "@/components/ui/avatar";
+];
 
 type SidebarProps = {
   userName?: string;

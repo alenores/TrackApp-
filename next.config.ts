@@ -162,11 +162,14 @@ const withPWA = withPWAInit({
        * Pantallas que escriben en la base —crear, editar, perfiles— y que por
        * lo tanto no sirven sin señal. Se marcan a mano para que no caigan en la
        * última regla y el celular muestre un formulario viejo creyendo que anda.
+       *
+       * Salidas también: es un módulo 100 % con internet y no se mezcla con lo
+       * que se guarda para el cerro.
        */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
         (/\/(?:nueva|editar|anotaciones)\/?$/.test(url.pathname) ||
-          /^\/perfil(?:es)?(?:\/|$)/.test(url.pathname)),
+          /^\/(?:perfil(?:es)?|salidas)(?:\/|$)/.test(url.pathname)),
       handler: "NetworkOnly",
       options: {},
     },

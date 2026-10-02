@@ -170,6 +170,64 @@ Nadie ve las de los demás, ni siquiera el administrador.
 
 ---
 
+## salidas
+
+**Lo que alguien hizo un día, contado para los demás.** Módulo 100 % con
+internet: nada de esto se guarda en el celular. Rehecha desde cero el
+2026-10-02 (migración `salidas_desde_cero`): la versión anterior no seguía las
+convenciones y tenía una sola fila de prueba.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | quien la cargó |
+| `titulo` | text | obligatorio, de 1 a 120 letras |
+| `fecha` | date | el día de la salida, no el de la carga. Por defecto, hoy en Córdoba |
+| `descripcion` | text | opcional |
+| `actividades` | actividad_ruta[] | al menos una. Las mismas que una ruta |
+| `nivel_esfuerzo` | nivel_esfuerzo | opcional. La misma escala que una ruta |
+| `largo_km` | numeric(7,2) | opcional, no negativo |
+| `desnivel_positivo_m` | integer | opcional, no negativo |
+| `desnivel_negativo_m` | integer | opcional, no negativo |
+| `archivo_url` | text | el archivo GPS, en `archivos-ruta`, carpeta del usuario, `salida-<id>.<ext>` |
+
+Más `creado_en`, `actualizado_en` (con disparador) y `eliminado_en`.
+
+**Permisos:** el usuario logueado ve las salidas vivas de todos (y las suyas
+borradas); crea y edita solo las suyas. No hay permiso de borrar: borrar es
+marcar `eliminado_en`.
+
+## salidas_fotos
+
+Hasta cuatro fotos por salida, en `fotos-salidas`, carpeta
+`<perfil_id>/<salida_id>/<orden>.webp`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `salida_id` | bigint | obligatorio |
+| `orden` | smallint | de 0 a 3. **La 0 es la portada.** Uno por lugar entre las filas vivas |
+| `foto_url` | text | obligatorio |
+
+Más `creado_en`, `actualizado_en` y `eliminado_en`.
+
+## salidas_companeros
+
+Los usuarios que fueron a la salida con quien la cargó.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `salida_id` | bigint | obligatorio |
+| `perfil_id` | uuid | el compañero. Una vez por salida entre las filas vivas |
+
+Más `creado_en`, `actualizado_en` y `eliminado_en`.
+
+**Permisos de fotos y compañeros:** los ve cualquier usuario logueado; los
+crea y edita solo quien cargó la salida (función `es_mi_salida`).
+
+---
+
 ## Cómo se detecta que hay novedades
 
 **Mirando `actualizado_en`.** Como lo mantiene un disparador de la base, cambia
@@ -184,6 +242,7 @@ tiene guardada contra la de la base. **No hay tabla de novedades.**
 |---|---|---|---|
 | `avatares` | sí | 2 MB | solo webp |
 | `fotos-anotaciones` | sí | 2 MB | solo webp |
+| `fotos-salidas` | sí | 2 MB | solo webp |
 | `archivos-ruta` | sí | 10 MB | gpx, kml, kmz, xml y text/xml |
 
 Los tipos exactos que acepta `archivos-ruta`, leídos de la base el 2026-09-20:

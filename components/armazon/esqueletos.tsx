@@ -40,6 +40,41 @@ export function PerfilesSkeleton() {
   );
 }
 
+export function SalidasSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <Esqueleto className="h-7 w-28" />
+        <Esqueleto className="h-10 w-32" />
+      </div>
+      {Array.from({ length: 2 }, (_, index) => (
+        <Tarjeta key={index} className="space-y-3 overflow-hidden">
+          <Esqueleto className="-mx-4 -mt-4 h-48 rounded-none" />
+          <Esqueleto className="h-6 w-48" />
+          <Esqueleto className="h-4 w-32" />
+          <Esqueleto className="h-4 w-full" />
+        </Tarjeta>
+      ))}
+    </div>
+  );
+}
+
+export function NuevaSalidaSkeleton() {
+  return (
+    <div className="space-y-3">
+      <Esqueleto className="h-10 w-48" />
+      <Tarjeta className="space-y-4">
+        <Esqueleto className="h-14 w-full" />
+        <Esqueleto className="h-14 w-full" />
+        <Esqueleto className="h-24 w-full" />
+      </Tarjeta>
+      <Tarjeta className="space-y-4">
+        <Esqueleto className="h-32 w-full" />
+      </Tarjeta>
+    </div>
+  );
+}
+
 export function PerfilSkeleton() {
   return <PerfilesSkeleton />;
 }

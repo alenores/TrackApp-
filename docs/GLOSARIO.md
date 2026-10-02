@@ -250,6 +250,8 @@ Cómo se dibuja el nivel de esfuerzo: una aguja y un color por nivel, verde
 **Desnivel positivo / desnivel negativo**
 Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque
 castigan distinto. Los calcula la app desde el archivo: nunca se cargan a mano.
+La única excepción es una **salida** sin archivo GPS, que es un relato y no se
+usa para navegar: ahí se pueden escribir.
 
 **Pedazo de mapa**
 La unidad mínima en que se guarda un mapa: un cuadradito del terreno, que
@@ -289,6 +291,20 @@ Lo que se le pasa a un amigo para que abra TrackApp: un texto con el link, por
 WhatsApp, o un **código QR** que se escanea con la cámara. Vive en la pantalla
 de perfiles, en la tarjeta «Invitá a un amigo». El link es la dirección desde
 donde se está usando la app.
+
+**Salida**
+Lo que alguien hizo un día, contado para los demás: título, día, qué hicieron,
+esfuerzo, los números, hasta cuatro fotos y con quién fue. Puede llevar el
+archivo GPS. **Es un módulo 100 % con internet**: se carga y se mira con señal,
+no se guarda en el celular y no se mezcla con la navegación. No confundir con
+«salir de la navegación», que es cerrar el mapa del cerro.
+
+**Compañero**
+Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
+cargarla, de la lista de usuarios.
+
+**Portada de la salida**
+La primera de las fotos de una salida. Es la que encabeza la tarjeta en la lista.
 
 **Código QR**
 El cuadradito que la cámara del celular lee para abrir el link de la app. Se

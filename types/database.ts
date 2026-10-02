@@ -204,3 +204,35 @@ export type Anotacion = {
   creadoEn: string;
   actualizadoEn: string;
 };
+
+/** Lo mínimo de un usuario para mostrarlo al lado de algo que hizo. */
+export type PerfilBreve = {
+  id: string;
+  nombre: string;
+  avatarUrl: string | null;
+};
+
+/**
+ * Una salida: lo que alguien hizo un día, contado para los demás.
+ *
+ * **Es 100 % con internet.** No se guarda en el celular ni se mezcla con lo
+ * que se usa en el cerro.
+ */
+export type Salida = {
+  id: number;
+  perfil: PerfilBreve;
+  titulo: string;
+  /** El día de la salida, «2026-10-02». No es el día en que se cargó. */
+  fecha: string;
+  descripcion: string | null;
+  actividades: ActividadRuta[];
+  nivelEsfuerzo: NivelEsfuerzo | null;
+  largoKm: number | null;
+  desnivelPositivoM: number | null;
+  desnivelNegativoM: number | null;
+  archivoUrl: string | null;
+  /** Ordenadas: la primera es la portada. */
+  fotos: string[];
+  companeros: PerfilBreve[];
+  creadoEn: string;
+};

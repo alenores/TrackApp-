@@ -4,6 +4,46 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-02 — Salidas rehecha desde cero
+
+### Estado al inicio
+El módulo de salidas, hecho con otro agente, rompía la publicación en Vercel.
+Además las fotos nunca se guardaban (iban a un depósito donde no tenían permiso),
+el archivo GPS fallaba en silencio, un error al traer la lista se mostraba como
+«no hay salidas», la base no tenía borrado lógico ni `actualizado_en`, usaba la
+palabra «track» y una escala de dificultad propia, y la pantalla podía quedar
+guardada en el celular. También rompió la tilde de «Navegación libre» en el menú.
+
+### Lo que se hizo
+- Se arregló la compilación que frenaba Vercel.
+- Base: las tres tablas se rehicieron desde cero con las convenciones (ver
+  `SCHEMA.md`), depósito propio `fotos-salidas` y permisos solo para el usuario
+  logueado. Compañeros reemplaza a «etiquetas».
+- Lógica separada de la pantalla: reglas, lectura y guardado en `lib/salidas/`,
+  con pruebas de las reglas y de la lectura.
+- Lista con página propia, carteles para cargando, vacío y error (con el motivo
+  y «Volver a intentar»), y páginas de a 20.
+- Cargar una salida es una pantalla propia con botón de volver. El archivo GPS
+  completa solo el largo y los desniveles; las fotos suben del celular directo a
+  su depósito. Si una foto falla, la salida queda y se dice cuál y por qué.
+- Quien la cargó la puede borrar, con confirmación (borrado lógico).
+- Salidas no se guarda en el celular: el motor offline la pide siempre a
+  internet. Sin señal desaparecen las acciones, no lo que ya se ve.
+
+### Decisiones tomadas
+Ale pidió rehacer el módulo sin tomar lo anterior como referencia y sin pedir
+confirmación de cada paso. Salidas es 100 % con internet.
+
+### Documentos actualizados
+`SCHEMA.md`, `GLOSARIO.md`, `AGENTS.md` y este registro.
+
+### Deuda o inconsistencias detectadas
+Todavía no se puede editar una salida ya cargada. El cambio de la pestaña
+«Descargas» dentro de Mapas, del mismo trabajo anterior, no se revisó en esta
+sesión.
+
+---
+
 ## Sesión 2026-10-01 — Pestaña Puntos y mapa más alto
 
 ### Estado al inicio

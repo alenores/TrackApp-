@@ -18,6 +18,22 @@ export function fechaCorta(iso: string): string {
   }
 }
 
+/**
+ * «2 de octubre de 2026», para un día suelto sin hora («2026-10-02»).
+ *
+ * Se lee al mediodía a propósito: leído a medianoche de Greenwich, en
+ * Argentina queda el día anterior.
+ */
+export function diaEnPalabras(dia: string): string {
+  const fecha = new Date(`${dia}T12:00:00`);
+  if (Number.isNaN(fecha.getTime())) return "—";
+  return fecha.toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 /** 19 de septiembre. Para cuando hay lugar y se lee mejor. */
 export function fechaEnPalabras(iso: string): string {
   try {
