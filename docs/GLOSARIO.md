@@ -309,9 +309,10 @@ cargarla, de la lista de usuarios.
 **Portada de la salida**
 La primera de las fotos de una salida, apaisada (4 de ancho por 3 de alto). Se
 recorta a esa forma al elegirla: lo que se ve al recortar es lo que se ve en la
-lista. En la tarjeta va a la manera de Strava: el título y el día arriba, los
-números apilados abajo a la izquierda y la **línea de la salida** en el medio,
-todo directo sobre la foto. En la ficha va limpia, solo con el título y el día.
+lista. En la tarjeta va a la manera de Strava: el título y el día arriba a la
+izquierda, chicos; al centro, los números en fila y debajo una firma chica y
+fina de la **línea de la salida**. La foto casi no se oscurece: queda de fondo,
+entremezclada con los datos. En la ficha va limpia, solo con el título y el día.
 Sin foto, lo mismo va sobre un fondo oscuro.
 
 **Filtro de salidas**
@@ -321,9 +322,10 @@ para todas las salidas. Los filtros puestos quedan arriba como pastillas, cada
 una con su cruz.
 
 **Línea de la salida**
-El dibujo del camino que hizo la salida, sobre la portada. Sale del archivo GPS
-y va en el celeste del recuadro del sector, porque nada del cerro ni de una
-foto se le parece. Una salida sin archivo GPS no tiene línea.
+El dibujo del camino que hizo la salida, sobre la portada: chico, fino y en un
+celeste suave, de la familia del recuadro del sector. Nada del cerro se le
+parece, pero no tapa la foto. Sale del archivo GPS; una salida sin archivo GPS
+no tiene línea.
 
 **Ficha de la salida**
 La pantalla que se abre tocando una salida: todo lo que tiene, con la

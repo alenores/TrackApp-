@@ -79,6 +79,12 @@ a subir el archivo desde la edición.
   la base leía la clase vacía que le pone Windows al .gpx. Ahora se manda el
   contenido con la clase correcta, como en rutas. Lleva prueba automática.
 
+### Sexta vuelta: portada más sutil
+Mockup aprobado por Ale (variante A, celeste suave). La línea grande, gruesa y
+con borde negro tapaba la foto. Ahora: números en fila al centro, una firma
+chica y fina de la línea debajo (2 px, sin puntas, `--sobre-foto-linea`
+#a5f3fc), título más chico y la foto casi sin oscurecer.
+
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
 navegador del agente: la verificación visual la hace Ale. Los trazos todavía

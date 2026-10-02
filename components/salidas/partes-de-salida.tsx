@@ -17,21 +17,28 @@ import type { Salida } from "@/types/database";
 const ANCHO_DEL_LIENZO = 320;
 const ALTO_DEL_LIENZO = Math.round(ANCHO_DEL_LIENZO / PROPORCION_DE_LA_PORTADA_DE_SALIDA);
 
-/** Dónde se dibuja la línea: en el medio, debajo del título y a la derecha de los números. */
-const ZONA_DE_LA_LINEA = { x: 112, y: 62, ancho: 136, alto: ALTO_DEL_LIENZO - 80 };
+/**
+ * Dónde se dibuja la línea: chica, centrada, debajo de los números. Es una
+ * firma del recorrido, no un mapa: si fuera grande taparía la foto.
+ */
+const ZONA_DE_LA_LINEA = { x: 130, y: 146, ancho: 60, alto: 50 };
+
+/** El velo que aparta los números de la foto sin apagarla. */
+const VELO_DEL_CENTRO =
+  "radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--sobre-foto-degrade) 35%, transparent) 0%, transparent 70%)";
 
 /**
- * La portada, a la manera de Strava: la foto cuadrada con el título y el día
- * arriba, los números apilados a la izquierda y la línea de la salida en el
- * medio, directo sobre la foto.
+ * La portada, a la manera de Strava: un bloque liviano y centrado con los
+ * números en fila y, debajo, una firma chica y fina del recorrido. El título y
+ * el día, arriba a la izquierda. La foto casi no se oscurece: queda de fondo,
+ * entremezclada con los datos, no tapada por ellos (pedido de Ale, 2026-10-02).
  *
- * Todo lo de encima va claro sobre degradés oscuros, igual en modo sol y en
- * modo noche: la foto no cambia con el modo. Sin foto, el mismo dibujo va
- * sobre un fondo oscuro fijo.
+ * Todo lo de encima va claro, igual en modo sol y en modo noche: la foto no
+ * cambia con el modo. Sin foto, lo mismo va sobre un fondo oscuro fijo.
  *
  * `margenDeTarjeta` la pega a los bordes cuando va adentro de una tarjeta.
  * `conDatos={false}` deja solo la foto, el título y el día: en la ficha los
- * números y la línea van afuera, para que la foto se vea.
+ * números y la línea van afuera.
  */
 export function PortadaDeSalida({
   salida,
@@ -76,74 +83,51 @@ export function PortadaDeSalida({
         />
       ) : null}
 
-      {conDatos ? (
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-sobre-foto-degrade/80 via-sobre-foto-degrade/45 to-sobre-foto-degrade/20"
-        />
+      {numeros.length > 0 || dibujo ? (
+        <div aria-hidden className="absolute inset-0" style={{ background: VELO_DEL_CENTRO }} />
       ) : null}
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-sobre-foto-degrade/70 to-transparent"
+        className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-sobre-foto-degrade/45 to-transparent"
       />
 
       {dibujo ? (
         <svg
           viewBox={`0 0 ${ANCHO_DEL_LIENZO} ${ALTO_DEL_LIENZO}`}
           aria-hidden
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full drop-shadow"
         >
-          <path
-            d={dibujo.trazo}
-            fill="none"
-            className="stroke-sobre-foto-degrade"
-            strokeOpacity={0.55}
-            strokeWidth={8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {/* El grosor no crece con la foto: fina en el celular y en la computadora. */}
           <path
             d={dibujo.trazo}
             fill="none"
             className="stroke-sobre-foto-linea"
-            strokeWidth={4}
+            strokeOpacity={0.9}
+            strokeWidth={2}
+            vectorEffect="non-scaling-stroke"
             strokeLinecap="round"
             strokeLinejoin="round"
-          />
-          <circle
-            cx={dibujo.inicio[0]}
-            cy={dibujo.inicio[1]}
-            r={5.5}
-            className="fill-sobre-foto-texto stroke-sobre-foto-degrade"
-            strokeWidth={1.5}
-          />
-          <circle
-            cx={dibujo.fin[0]}
-            cy={dibujo.fin[1]}
-            r={5.5}
-            className="fill-sobre-foto-linea stroke-sobre-foto-texto"
-            strokeWidth={2}
           />
         </svg>
       ) : null}
 
-      <div className="absolute left-4 right-16 top-3.5 space-y-0.5">
-        <h2 className="text-lg font-bold leading-tight text-sobre-foto-texto drop-shadow">
+      <div className="absolute left-3.5 right-16 top-2.5">
+        <h2 className="truncate text-base font-semibold leading-tight text-sobre-foto-texto drop-shadow">
           {salida.titulo}
         </h2>
-        <p className="text-sm font-medium text-sobre-foto-texto-suave drop-shadow">
+        <p className="text-xs font-medium text-sobre-foto-texto-suave drop-shadow">
           {diaEnPalabras(salida.fecha)}
         </p>
       </div>
 
       {numeros.length > 0 ? (
-        <dl className="absolute bottom-3.5 left-4 flex flex-col gap-2">
+        <dl className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 text-center drop-shadow">
           {numeros.map((numero) => (
             <div key={numero.nombre}>
-              <dt className="text-xs font-medium uppercase leading-4 tracking-[0.06em] text-sobre-foto-texto-suave drop-shadow">
+              <dt className="text-xs font-medium uppercase leading-4 tracking-[0.08em] text-sobre-foto-texto-suave">
                 {numero.nombre}
               </dt>
-              <dd className="text-lg font-bold leading-6 tabular-nums text-sobre-foto-texto drop-shadow">
+              <dd className="text-lg font-semibold leading-6 tabular-nums text-sobre-foto-texto">
                 {numero.valor}
               </dd>
             </div>

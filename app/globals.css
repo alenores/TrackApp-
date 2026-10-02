@@ -105,7 +105,7 @@
   --sobre-foto-degrade: rgb(0 0 0 / 0.8);
   /* La línea de la salida sobre la portada: el celeste del dato de noche, el
      mismo del recuadro del sector. Nada del cerro ni de una foto se le parece. */
-  --sobre-foto-linea: #67e8f9;
+  --sobre-foto-linea: #a5f3fc;
   /* El fondo de la portada cuando la salida no tiene foto. */
   --sobre-foto-fondo: #16202f;
 
@@ -182,7 +182,7 @@
   --sobre-foto-texto: #ffffff;
   --sobre-foto-texto-suave: rgb(255 255 255 / 0.88);
   --sobre-foto-degrade: rgb(0 0 0 / 0.8);
-  --sobre-foto-linea: #67e8f9;
+  --sobre-foto-linea: #a5f3fc;
   --sobre-foto-fondo: #16202f;
 
   --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
