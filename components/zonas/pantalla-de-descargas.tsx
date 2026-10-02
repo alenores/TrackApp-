@@ -6,21 +6,17 @@ import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { borrarElMapaDelSector, mostrarPeso } from "@/lib/mapas/descarga";
 import { claveDeMapa, NOMBRE_DEL_TIPO, type TipoDeMapa } from "@/lib/offline/mapas";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { FotoDeFondo } from "@/components/ui/foto-de-fondo";
-import { Boton } from "@/components/ui/boton";
 import { useDialogos } from "@/components/ui/dialogos";
 
-export default function PantallaDeMapas() {
+export function PantallaDeDescargas() {
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const mapas = useMapasBajados();
   const { confirmar, avisar } = useDialogos();
-  /** El mapa que se está borrando, con `claveDeMapa`: un sector puede tener dos. */
   const [borrando, setBorrando] = useState<string | null>(null);
 
   const sectores = paquete?.sectores ?? [];
   const zonas = paquete?.zonas ?? [];
 
-  // Armamos la lista cruzando lo guardado en el celular con lo que vino de la base
   const mapasConInfo = useMemo(() => {
     return mapas
       .map((mapa) => {
@@ -35,7 +31,6 @@ export default function PantallaDeMapas() {
         };
       })
       .sort((a, b) => {
-        // Ordenar por nombre de Zona y luego por nombre de Sector
         const difZona = a.zonaNombre.localeCompare(b.zonaNombre);
         if (difZona !== 0) return difZona;
         const difSector = a.sectorNombre.localeCompare(b.sectorNombre);
@@ -74,15 +69,7 @@ export default function PantallaDeMapas() {
   };
 
   return (
-    <>
-      <FotoDeFondo src="/fondo-mapas-sierras.webp" />
-      <div className="flex flex-col gap-3 max-w-2xl mx-auto p-4 md:p-6 lg:p-8 w-full relative z-10">
-        <div>
-        <h1 className="min-w-0 flex-1 truncate text-2xl font-bold uppercase text-texto">
-          Descargas
-        </h1>
-      </div>
-
+    <div className="flex flex-col gap-3 max-w-2xl mx-auto w-full relative z-10">
       {estado === "abriendo" ? (
         <Tarjeta className="py-8 text-center text-base text-texto-suave">
           Abriendo los mapas…
@@ -177,6 +164,5 @@ export default function PantallaDeMapas() {
         </>
       )}
     </div>
-    </>
   );
 }

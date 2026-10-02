@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/mapa-libre",
-    label: "Navegación libre",
+    label: "Navegaci�n libre",
     necesitaSenal: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
@@ -56,6 +56,16 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+    {
+    href: "/salidas",
+    label: "Salidas",
+    necesitaSenal: true,
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+        <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
   {
     href: "/perfiles",
     label: "Perfiles",
@@ -74,17 +84,7 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    href: "/mapas",
-    label: "Descargas",
-    necesitaSenal: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-];
+    ];
 
 import { Avatar } from "@/components/ui/avatar";
 

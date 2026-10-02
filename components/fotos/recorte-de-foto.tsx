@@ -58,6 +58,15 @@ export const FORMAS_DE_RECORTE = {
       { etiqueta: "Parada", valor: 3 / 4 },
     ],
   },
+  salida: {
+    tipo: "elegir",
+    opciones: [
+      { etiqueta: "Como vino", valor: "como-vino" },
+      { etiqueta: "Apaisada", valor: 4 / 3 },
+      { etiqueta: "Cuadrada", valor: 1 },
+      { etiqueta: "Parada", valor: 3 / 4 },
+    ],
+  },
 } as const satisfies Record<DestinoDeFoto, FormaDeRecorte>;
 
 const ZOOM_MINIMO = 1;

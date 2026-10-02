@@ -9,9 +9,10 @@ import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresPorZona } from "@/lib/mapas/general";
 import { PantallaDePuntos } from "@/components/anotaciones/pantalla-de-puntos";
+import { PantallaDeDescargas } from "@/components/zonas/pantalla-de-descargas";
 
 type Propiedades = { soyAdministrador: boolean; pestañaInicial?: Pestana };
-type Pestana = "zonas" | "mapa" | "puntos";
+type Pestana = "zonas" | "mapa" | "puntos" | "descargas";
 
 /** El módulo Mapas: lista de zonas y vista general de Córdoba. */
 export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: Propiedades) {
@@ -26,7 +27,7 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
   const cantidades = useMemo(() => sectoresPorZona(sectores), [sectores]);
 
   const alMoverEntrePestanas = (evento: KeyboardEvent<HTMLDivElement>) => {
-    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "puntos"] : ["zonas", "mapa"];
+    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "puntos", "descargas"] : ["zonas", "mapa", "descargas"];
     const indice = pestanas.indexOf(pestanaActiva);
     const siguiente = evento.key === "ArrowRight"
       ? pestanas[(indice + 1) % pestanas.length]
@@ -64,6 +65,11 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
             Puntos
           </Boton>
         ) : null}
+        <Boton role="tab" id="pestana-descargas" aria-controls="panel-descargas" aria-selected={pestanaActiva === "descargas"}
+          tabIndex={pestanaActiva === "descargas" ? 0 : -1}
+          variante={pestanaActiva === "descargas" ? "principal" : "fantasma"} onClick={() => setPestana("descargas")}>
+          Descargas
+        </Boton>
       </div>
 
       {estado === "abriendo" ? (
@@ -100,9 +106,13 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
             <div role="tabpanel" id="panel-mapa" aria-labelledby="pestana-mapa">
               <MapaGeneralDeZonas zonas={zonas} anotaciones={anotaciones} sectoresPorZona={cantidades} />
             </div>
-          ) : (
+          ) : pestanaActiva === "puntos" ? (
             <div role="tabpanel" id="panel-puntos" aria-labelledby="pestana-puntos">
               <PantallaDePuntos soyAdministrador={puedeAdministrar} />
+            </div>
+          ) : (
+            <div role="tabpanel" id="panel-descargas" aria-labelledby="pestana-descargas">
+              <PantallaDeDescargas />
             </div>
           )}
         </>

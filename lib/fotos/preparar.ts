@@ -62,6 +62,7 @@ export const AJUSTES_POR_DESTINO = {
    * el paquete y los datos en el cerro son el recurso escaso.
    */
   anotacion: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
+  salida: { ladoLargo: 1600, topeBytes: TOPE_DEL_FORMULARIO_BYTES, calidades: CALIDADES },
 } as const satisfies Record<string, Ajuste>;
 
 /**
