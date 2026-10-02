@@ -1,3 +1,4 @@
+import { leerLinea } from "@/lib/salidas/linea";
 import type { ActividadRuta, NivelEsfuerzo, PerfilBreve, Salida } from "@/types/database";
 
 /**
@@ -19,6 +20,7 @@ export type FilaDeSalida = {
   desnivel_positivo_m: number | null;
   desnivel_negativo_m: number | null;
   archivo_url: string | null;
+  linea_simplificada?: unknown;
   creado_en: string;
   perfil: FilaDePerfil;
   fotos: { orden: number; foto_url: string; eliminado_en: string | null }[] | null;
@@ -28,7 +30,7 @@ export type FilaDeSalida = {
 /** Lo que se le pide a la base. Los nombres de las uniones son los de la base. */
 export const COLUMNAS_DE_SALIDA = `
   id, titulo, fecha, descripcion, actividades, nivel_esfuerzo, largo_km,
-  desnivel_positivo_m, desnivel_negativo_m, archivo_url, creado_en,
+  desnivel_positivo_m, desnivel_negativo_m, archivo_url, linea_simplificada, creado_en,
   perfil:perfiles!salidas_perfil_id_fkey(id, nombre, avatar_url),
   fotos:salidas_fotos(orden, foto_url, eliminado_en),
   companeros:salidas_companeros(eliminado_en, perfil:perfiles!salidas_companeros_perfil_id_fkey(id, nombre, avatar_url))
@@ -78,6 +80,7 @@ export function leerSalida(fila: FilaDeSalida): Salida {
     desnivelPositivoM: fila.desnivel_positivo_m,
     desnivelNegativoM: fila.desnivel_negativo_m,
     archivoUrl: fila.archivo_url,
+    linea: leerLinea(fila.linea_simplificada),
     fotos,
     companeros,
     creadoEn: fila.creado_en,

@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Enlace } from "@/components/ui/enlace";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { mostrarDesnivel, mostrarEsfuerzo, mostrarLargo } from "@/lib/rutas/actividades";
+import { dibujarLinea } from "@/lib/salidas/linea";
 import { diaEnPalabras } from "@/lib/fechas";
 import type { Salida } from "@/types/database";
 
@@ -12,64 +13,165 @@ import type { Salida } from "@/types/database";
  * la ficha, así las dos muestran lo mismo de la misma forma.
  */
 
+/** La zona de la portada donde se dibuja la línea, en un cuadrado de 320. */
+const ZONA_DE_LA_LINEA = { x: 108, y: 72, ancho: 140, alto: 196 };
+
 /**
- * La portada con el título y el día escritos encima, sobre un degradé oscuro.
- * Sin portada, el título va solo, en el color normal del texto.
+ * La portada, a la manera de Strava: la foto cuadrada con el título y el día
+ * arriba, los números apilados a la izquierda y la línea de la salida en el
+ * medio, directo sobre la foto.
+ *
+ * Todo lo de encima va claro sobre degradés oscuros, igual en modo sol y en
+ * modo noche: la foto no cambia con el modo. Sin foto, el mismo dibujo va
+ * sobre un fondo oscuro fijo.
  *
  * `margenDeTarjeta` la pega a los bordes cuando va adentro de una tarjeta.
  */
 export function PortadaDeSalida({
   salida,
   margenDeTarjeta = false,
-  conLugarParaBoton = false,
 }: {
   salida: Salida;
   margenDeTarjeta?: boolean;
-  /** Deja libre la esquina de arriba a la derecha para el botón de tres puntitos. */
-  conLugarParaBoton?: boolean;
 }) {
   const portada = salida.fotos[0];
+  const dibujo = salida.linea ? dibujarLinea(salida.linea, ZONA_DE_LA_LINEA) : null;
 
-  if (!portada) {
-    return (
-      <div className={["space-y-1", conLugarParaBoton ? "pr-12" : ""].join(" ")}>
-        <h2 className="text-lg font-semibold leading-tight text-texto">{salida.titulo}</h2>
-        <p className="text-sm text-texto-suave">{diaEnPalabras(salida.fecha)}</p>
-      </div>
-    );
-  }
+  const numeros = [
+    salida.largoKm !== null ? { nombre: "Largo", valor: mostrarLargo(salida.largoKm) } : null,
+    salida.desnivelPositivoM !== null
+      ? { nombre: "Subida", valor: mostrarDesnivel(salida.desnivelPositivoM, "positivo") }
+      : null,
+    salida.nivelEsfuerzo !== null
+      ? { nombre: "Esfuerzo", valor: mostrarEsfuerzo(salida.nivelEsfuerzo) }
+      : null,
+  ].filter((numero) => numero !== null);
 
   return (
     <div
       className={[
-        "relative aspect-[16/9] overflow-hidden bg-fondo",
+        "relative aspect-square overflow-hidden bg-sobre-foto-fondo",
         margenDeTarjeta ? "-mx-4 -mt-4" : "rounded-2xl",
       ].join(" ")}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={portada}
-        alt=""
+      {portada ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={portada}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
+
+      <div
         aria-hidden
-        loading="lazy"
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 bg-gradient-to-r from-sobre-foto-degrade/80 via-sobre-foto-degrade/45 to-sobre-foto-degrade/20"
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-sobre-foto-degrade via-sobre-foto-degrade/30 to-transparent"
+        className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-sobre-foto-degrade/70 to-transparent"
       />
-      <div className="absolute inset-x-0 bottom-0 space-y-1 px-4 pb-3.5">
-        <h2 className="text-lg font-bold leading-tight text-sobre-foto-texto drop-shadow-sm">
+
+      {dibujo ? (
+        <svg
+          viewBox="0 0 320 320"
+          aria-hidden
+          className="absolute inset-0 h-full w-full"
+        >
+          <path
+            d={dibujo.trazo}
+            fill="none"
+            className="stroke-sobre-foto-degrade"
+            strokeOpacity={0.55}
+            strokeWidth={8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d={dibujo.trazo}
+            fill="none"
+            className="stroke-sobre-foto-linea"
+            strokeWidth={4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle
+            cx={dibujo.inicio[0]}
+            cy={dibujo.inicio[1]}
+            r={5.5}
+            className="fill-sobre-foto-texto stroke-sobre-foto-degrade"
+            strokeWidth={1.5}
+          />
+          <circle
+            cx={dibujo.fin[0]}
+            cy={dibujo.fin[1]}
+            r={5.5}
+            className="fill-sobre-foto-linea stroke-sobre-foto-texto"
+            strokeWidth={2}
+          />
+        </svg>
+      ) : null}
+
+      <div className="absolute left-4 right-16 top-3.5 space-y-0.5">
+        <h2 className="text-lg font-bold leading-tight text-sobre-foto-texto drop-shadow">
           {salida.titulo}
         </h2>
-        <p className="text-sm font-medium text-sobre-foto-texto-suave">{diaEnPalabras(salida.fecha)}</p>
+        <p className="text-sm font-medium text-sobre-foto-texto-suave drop-shadow">
+          {diaEnPalabras(salida.fecha)}
+        </p>
       </div>
+
+      {numeros.length > 0 ? (
+        <dl className="absolute left-4 top-1/2 flex -translate-y-1/3 flex-col gap-3.5">
+          {numeros.map((numero) => (
+            <div key={numero.nombre}>
+              <dt className="text-xs font-medium uppercase tracking-[0.06em] text-sobre-foto-texto-suave drop-shadow">
+                {numero.nombre}
+              </dt>
+              <dd className="text-xl font-bold leading-tight tabular-nums text-sobre-foto-texto drop-shadow">
+                {numero.valor}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }
 
-/** Quién la cargó y, en la fila de abajo, con quién fue. */
+/** «Alejandro», «Alejandro y Diego», «Alejandro y 2 más». */
+export function quienesFueron(salida: Salida): string {
+  const cuantos = salida.companeros.length;
+  if (cuantos === 0) return salida.perfil.nombre;
+  if (cuantos === 1) return `${salida.perfil.nombre} y ${salida.companeros[0].nombre}`;
+  return `${salida.perfil.nombre} y ${cuantos} más`;
+}
+
+/** Las caras de los que fueron, una encima de la otra, y sus nombres resumidos. */
+export function ParticipantesDeSalida({ salida }: { salida: Salida }) {
+  const personas = [salida.perfil, ...salida.companeros];
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <div className="flex shrink-0 -space-x-2">
+        {personas.map((persona) => (
+          <Avatar
+            key={persona.id || "autor"}
+            src={persona.avatarUrl}
+            name={persona.nombre}
+            size="sm"
+            className="ring-2 ring-superficie"
+          />
+        ))}
+      </div>
+      <span className="min-w-0 truncate text-sm text-texto-suave">{quienesFueron(salida)}</span>
+    </div>
+  );
+}
+
+/** Quién la cargó y, en la fila de abajo, con quién fue. Para la ficha. */
 export function PersonasDeSalida({ salida }: { salida: Salida }) {
   return (
     <div className="space-y-2">
@@ -99,7 +201,7 @@ export function PersonasDeSalida({ salida }: { salida: Salida }) {
   );
 }
 
-/** Qué hicieron y los números que haya. Lo que no se cargó no se muestra. */
+/** Qué hicieron y todos los números que haya. Para la ficha. */
 export function DatosDeSalida({ salida }: { salida: Salida }) {
   const numeros = [
     salida.largoKm !== null ? { nombre: "Largo", valor: mostrarLargo(salida.largoKm) } : null,

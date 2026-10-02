@@ -231,6 +231,11 @@ export type Salida = {
   desnivelPositivoM: number | null;
   desnivelNegativoM: number | null;
   archivoUrl: string | null;
+  /**
+   * La línea achicada, [longitud, latitud], para dibujarla sobre la portada.
+   * Vacía cuando la salida no tiene archivo GPS.
+   */
+  linea: [number, number][] | null;
   /** Ordenadas: la primera es la portada. */
   fotos: string[];
   companeros: PerfilBreve[];

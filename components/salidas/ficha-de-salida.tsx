@@ -45,10 +45,11 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
         >
           <PortadaDeSalida salida={salida} />
         </button>
-      ) : null}
+      ) : (
+        <PortadaDeSalida salida={salida} />
+      )}
 
       <Tarjeta className="space-y-4">
-        {salida.fotos.length === 0 ? <PortadaDeSalida salida={salida} /> : null}
         <PersonasDeSalida salida={salida} />
         <DatosDeSalida salida={salida} />
         {salida.descripcion ? (

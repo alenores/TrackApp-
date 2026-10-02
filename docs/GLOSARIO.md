@@ -305,8 +305,15 @@ Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
 cargarla, de la lista de usuarios.
 
 **Portada de la salida**
-La primera de las fotos de una salida. Encabeza la tarjeta en la lista, con el
-título y el día escritos encima.
+La primera de las fotos de una salida, cuadrada, a la manera de Strava: el
+título y el día arriba, los números apilados a la izquierda y la **línea de la
+salida** en el medio, todo directo sobre la foto. Sin foto, lo mismo va sobre
+un fondo oscuro.
+
+**Línea de la salida**
+El dibujo del camino que hizo la salida, sobre la portada. Sale del archivo GPS
+y va en el celeste del recuadro del sector, porque nada del cerro ni de una
+foto se le parece. Una salida sin archivo GPS no tiene línea.
 
 **Ficha de la salida**
 La pantalla que se abre tocando una salida: todo lo que tiene, con la

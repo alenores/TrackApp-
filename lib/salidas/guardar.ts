@@ -6,6 +6,7 @@ import {
   claseDelArchivoDeRuta,
   loRechazoPorLaClase,
 } from "@/lib/rutas/archivo";
+import type { PuntoDeLinea } from "@/lib/salidas/linea";
 import { MAXIMO_DE_FOTOS, revisarLaSalida, type DatosDeSalida } from "@/lib/salidas/reglas";
 
 /**
@@ -49,11 +50,14 @@ export function rutaDelArchivoDeSalida(perfilId: string, salidaId: number, nombr
 /** Una foto del formulario: la dirección de una que ya estaba, o un archivo nuevo. */
 export type FotoDeSalida = string | File;
 
+/** El archivo GPS elegido y su línea achicada, leída del mismo archivo. */
+export type ArchivoDeSalida = { archivo: File; linea: PuntoDeLinea[] };
+
 /** Qué hacer con el archivo GPS al editar. */
 export type CambioDeArchivo =
   | { tipo: "mantener" }
   | { tipo: "quitar" }
-  | { tipo: "nuevo"; archivo: File };
+  | ({ tipo: "nuevo" } & ArchivoDeSalida);
 
 export type SalidaGuardada = {
   salidaId: number;
@@ -102,7 +106,7 @@ export async function guardarSalida(
   supabase: SupabaseClient,
   datos: DatosDeSalida,
   fotos: FotoDeSalida[],
-  archivo: File | null,
+  archivo: ArchivoDeSalida | null,
 ): Promise<Resultado<SalidaGuardada>> {
   const problema = revisarTodo(datos, fotos);
   if (problema) return falla(problema);
@@ -177,12 +181,12 @@ export async function editarSalida(
   const avisos: string[] = [];
 
   if (archivo.tipo === "nuevo") {
-    const subida = await subirElArchivo(supabase, perfilId, salidaId, archivo.archivo);
+    const subida = await subirElArchivo(supabase, perfilId, salidaId, archivo);
     if (!subida.ok) avisos.push(`El archivo GPS nuevo no se subió: ${subida.error}`);
   } else if (archivo.tipo === "quitar") {
     const { error: errorAlQuitar } = await supabase
       .from("salidas")
-      .update({ archivo_url: null })
+      .update({ archivo_url: null, linea_simplificada: null })
       .eq("id", salidaId);
     if (errorAlQuitar) {
       avisos.push(`No se pudo quitar el archivo GPS: ${traducirErrorDeBase(errorAlQuitar.message)}`);
@@ -325,7 +329,7 @@ async function subirElArchivo(
   supabase: SupabaseClient,
   perfilId: string,
   salidaId: number,
-  archivo: File,
+  { archivo, linea }: ArchivoDeSalida,
 ): Promise<Resultado> {
   const donde = rutaDelArchivoDeSalida(perfilId, salidaId, archivo.name);
 
@@ -353,7 +357,10 @@ async function subirElArchivo(
   // El agregado obliga a bajar el archivo nuevo si se reemplazó uno con el mismo nombre.
   const { error: errorAlAnotar } = await supabase
     .from("salidas")
-    .update({ archivo_url: `${publicUrl}?v=${Date.now()}` })
+    .update({
+      archivo_url: `${publicUrl}?v=${Date.now()}`,
+      linea_simplificada: linea.length >= 2 ? linea : null,
+    })
     .eq("id", salidaId);
   if (errorAlAnotar) return falla(traducirErrorDeBase(errorAlAnotar.message));
 

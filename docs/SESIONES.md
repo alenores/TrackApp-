@@ -53,6 +53,15 @@ confirmación de cada paso. Salidas es 100 % con internet.
   pasó el botón de sacar al tamaño normal de la app y el cartel de confirmar
   ahora dice «simple» o «satelital» como lo ve el usuario.
 
+### Tercera vuelta: portada a la manera de Strava
+Mockup aprobado por Ale. Portada cuadrada con el título y el día arriba, los
+números apilados a la izquierda y la línea de la salida en el medio, en el
+celeste del recuadro del sector (`--sobre-foto-linea`). Abajo, las caras de
+quienes fueron y las actividades. Se agregó `linea_simplificada` a `salidas`
+(migración `salidas_linea_simplificada`): ~150 puntos sacados del archivo GPS
+al cargarlo. Las salidas cargadas antes no tienen línea hasta que se les vuelva
+a subir el archivo desde la edición.
+
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
 navegador del agente: la verificación visual la hace Ale.

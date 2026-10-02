@@ -22,6 +22,7 @@ import {
   type CambioDeArchivo,
   type FotoDeSalida,
 } from "@/lib/salidas/guardar";
+import { simplificarLinea, type PuntoDeLinea } from "@/lib/salidas/linea";
 import { hoyEnCordoba, leerNumero, LARGO_MAXIMO_DEL_TITULO } from "@/lib/salidas/reglas";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import {
@@ -91,6 +92,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
 
   // Con archivo, los números son los del archivo; sin archivo, los escritos.
   const [archivoNuevo, setArchivoNuevo] = useState<File | null>(null);
+  const [lineaNueva, setLineaNueva] = useState<PuntoDeLinea[]>([]);
   const [tieneArchivoGuardado, setTieneArchivoGuardado] = useState(Boolean(salida?.archivoUrl));
   const [delArchivo, setDelArchivo] = useState<Numeros | null>(
     salida?.archivoUrl
@@ -153,6 +155,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
     }
 
     setArchivoNuevo(elegido);
+    setLineaNueva(simplificarLinea(lectura.recorrido.geometria));
     setDelArchivo({
       largoKm: lectura.recorrido.largoKm,
       desnivelPositivoM: lectura.recorrido.desnivelPositivoM,
@@ -162,6 +165,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
 
   const alQuitarArchivo = () => {
     setArchivoNuevo(null);
+    setLineaNueva([]);
     setTieneArchivoGuardado(false);
     setDelArchivo(null);
     setErrorDelArchivo(null);
@@ -188,13 +192,18 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
     let resultado;
     if (salida) {
       const cambio: CambioDeArchivo = archivoNuevo
-        ? { tipo: "nuevo", archivo: archivoNuevo }
+        ? { tipo: "nuevo", archivo: archivoNuevo, linea: lineaNueva }
         : salida.archivoUrl && !tieneArchivoGuardado
           ? { tipo: "quitar" }
           : { tipo: "mantener" };
       resultado = await editarSalida(supabase, salida.id, datos, fotosFinales, cambio);
     } else {
-      resultado = await guardarSalida(supabase, datos, fotosFinales, archivoNuevo);
+      resultado = await guardarSalida(
+        supabase,
+        datos,
+        fotosFinales,
+        archivoNuevo ? { archivo: archivoNuevo, linea: lineaNueva } : null,
+      );
     }
 
     setGuardando(false);

@@ -190,6 +190,7 @@ convenciones y tenía una sola fila de prueba.
 | `desnivel_positivo_m` | integer | opcional, no negativo |
 | `desnivel_negativo_m` | integer | opcional, no negativo |
 | `archivo_url` | text | el archivo GPS, en `archivos-ruta`, carpeta del usuario, `salida-<id>.<ext>` |
+| `linea_simplificada` | jsonb | la línea achicada a ~150 puntos `[lon, lat]`, sacada del archivo GPS al cargarlo, para dibujarla sobre la portada. Vacía sin archivo |
 
 Más `creado_en`, `actualizado_en` (con disparador) y `eliminado_en`.
 
