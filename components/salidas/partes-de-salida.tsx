@@ -83,26 +83,33 @@ export function PortadaDeSalida({
         />
       ) : null}
 
+      {/*
+        Toda la foto baja un escalón de brillo, parejo: el texto es siempre
+        blanco, y una foto con cielo blanco lo borraba (Ale, 2026-10-04). Más
+        un velo extra detrás de los números y del título, para el peor caso.
+      */}
       {numeros.length > 0 || dibujo ? (
-        <div aria-hidden className="absolute inset-0" style={{ background: VELO_DEL_CENTRO }} />
+        <>
+          <div aria-hidden className="absolute inset-0 bg-sobre-foto-degrade/45" />
+          <div aria-hidden className="absolute inset-0" style={{ background: VELO_DEL_CENTRO }} />
+        </>
       ) : null}
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-sobre-foto-degrade/45 to-transparent"
+        className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-sobre-foto-degrade/55 to-transparent"
       />
 
       {dibujo ? (
         <svg
           viewBox={`0 0 ${ANCHO_DEL_LIENZO} ${ALTO_DEL_LIENZO}`}
           aria-hidden
-          className="absolute inset-0 h-full w-full drop-shadow"
+          className="absolute inset-0 h-full w-full drop-shadow-md"
         >
           {/* El grosor no crece con la foto: fina en el celular y en la computadora. */}
           <path
             d={dibujo.trazo}
             fill="none"
             className="stroke-sobre-foto-linea"
-            strokeOpacity={0.9}
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
             strokeLinecap="round"
@@ -121,7 +128,7 @@ export function PortadaDeSalida({
       </div>
 
       {numeros.length > 0 ? (
-        <dl className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 text-center drop-shadow">
+        <dl className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 text-center drop-shadow-md">
           {numeros.map((numero) => (
             <div key={numero.nombre}>
               <dt className="text-xs font-medium uppercase leading-4 tracking-[0.08em] text-sobre-foto-texto-suave">
