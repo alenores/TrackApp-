@@ -6,6 +6,7 @@ import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import {
+  PROPORCION_DE_LA_PORTADA_DE_PERFIL,
   PROPORCION_DE_LA_PORTADA_DE_SALIDA,
   type DestinoDeFoto,
   type FotoAbierta,
@@ -46,8 +47,8 @@ export type FormaDeRecorte =
 export const FORMAS_DE_RECORTE = {
   /** La foto de perfil se ve siempre dentro de un círculo. */
   avatar: { tipo: "circulo" } as const,
-  /** La portada de perfil se ve apaisada (proporción exacta de la tarjeta). */
-  portada: { tipo: "fija", proporcion: 2.8 } as const,
+  /** La portada de perfil se ve apaisada, con la misma forma con que se recorta. */
+  portada: { tipo: "fija", proporcion: PROPORCION_DE_LA_PORTADA_DE_PERFIL } as const,
   /** La foto de zona se ve apaisada (proporción exacta de la tarjeta). */
   zona: { tipo: "fija", proporcion: 2.8 } as const,
   /**

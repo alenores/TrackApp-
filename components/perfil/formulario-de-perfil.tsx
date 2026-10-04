@@ -13,8 +13,7 @@ import { Campo } from "@/components/ui/campo";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
-import { Avatar } from "@/components/ui/avatar";
-import { Tarjeta } from "@/components/ui/tarjeta";
+import { PortadaDePerfil } from "@/components/perfil/portada-de-perfil";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
@@ -166,19 +165,11 @@ export function FormularioDePerfil({
 
   return (
     <div className="relative flex flex-col overflow-hidden rounded-2xl border border-verde-borde bg-superficie text-left shadow-sm">
-      {/* Banner de portada */}
-      <div className="relative h-28 w-full bg-superficie-alta sm:h-36">
-        {portadaUrl ? (
-          <img
-            src={portadaUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-acento/40 to-superficie-alta" />
-        )}
-
-        <div className="absolute right-3 top-3 z-10">
+      <PortadaDePerfil
+        portadaUrl={portadaUrl}
+        avatarUrl={avatarUrl}
+        nombre={viewNombre}
+        accion={
           <CircleIconButton
             ariaLabel={editing ? "Cerrar edición" : "Editar perfil"}
             onClick={editing ? cancelEditing : startEditing}
@@ -187,20 +178,13 @@ export function FormularioDePerfil({
               {editing ? <CruzRedonda /> : <PencilIcon />}
             </span>
           </CircleIconButton>
-        </div>
-      </div>
+        }
+      />
 
       {/* Contenido principal */}
-      <div className="relative px-4 pb-5 sm:px-5">
-        {/* Avatar solapado */}
-        <div className="absolute -top-10 left-4 sm:left-5">
-          <div className="rounded-full border-4 border-superficie shadow-md">
-            <Avatar src={avatarUrl} name={viewNombre} size="lg" />
-          </div>
-        </div>
-
+      <div className="relative px-4 pb-5 pt-3 sm:px-5">
         {/* Info del usuario */}
-        <div className="mt-12 space-y-1">
+        <div className="space-y-1">
           <p className="text-lg font-bold text-texto">{viewNombre}</p>
           <p className="text-sm font-medium text-texto-suave">{email || "—"}</p>
         </div>

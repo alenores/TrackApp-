@@ -69,6 +69,13 @@ export const AJUSTES_POR_DESTINO = {
 } as const satisfies Record<string, Ajuste>;
 
 /**
+ * Ancho dividido alto de la portada de un perfil. Es la misma forma con que se
+ * recorta y con que se muestra: lo que se elige es lo que se ve. Era 2,8 y se
+ * mostraba en una franja más baja, así que se cortaba dos veces (2026-10-04).
+ */
+export const PROPORCION_DE_LA_PORTADA_DE_PERFIL = 2;
+
+/**
  * Ancho dividido alto de la portada de una salida. Es la misma forma con que
  * se recorta y con que se muestra: lo que se elige es lo que se ve.
  */

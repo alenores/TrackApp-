@@ -1,5 +1,4 @@
-import { Avatar } from "@/components/ui/avatar";
-import { Tarjeta } from "@/components/ui/tarjeta";
+import { PortadaDePerfil } from "@/components/perfil/portada-de-perfil";
 import type { Perfil } from "@/types/database";
 
 type PropiedadesDeTarjetaDePerfil = {
@@ -13,46 +12,23 @@ const ETIQUETAS_DE_CATEGORIA = {
   normal: "Normal",
 } as const;
 
-export function TarjetaDePerfil({
-  perfil,
-  soyYo = false,
-}: PropiedadesDeTarjetaDePerfil) {
+/** El perfil de otro usuario: su portada con el avatar adentro, y su nombre. */
+export function TarjetaDePerfil({ perfil, soyYo = false }: PropiedadesDeTarjetaDePerfil) {
   const nombre = perfil.nombre?.trim() || "Sin nombre";
   return (
     <div
       className={[
-        "relative flex flex-col overflow-hidden rounded-2xl border bg-superficie text-left transition-shadow shadow-sm",
+        "flex flex-col overflow-hidden rounded-2xl border bg-superficie text-left shadow-sm",
         soyYo ? "border-verde-borde" : "border-borde",
       ].join(" ")}
     >
-      {/* Portada */}
-      <div className="relative h-24 w-full bg-superficie-alta sm:h-32">
-        {perfil.portadaUrl ? (
-          <img
-            src={perfil.portadaUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : null}
-      </div>
-
-      {/* Contenido (Avatar + Info) */}
-      <div className="relative px-4 pb-5 sm:px-5">
-        {/* Avatar solapado */}
-        <div className="absolute -top-10 left-4 sm:left-5">
-          <div className="rounded-full border-4 border-superficie">
-            <Avatar src={perfil.avatarUrl} name={nombre} size="lg" />
-          </div>
-        </div>
-
-        {/* Espacio para el avatar */}
-        <div className="mt-12 space-y-1">
-          <p className="text-lg font-bold text-texto">{nombre}</p>
-          <p className="text-xs font-medium text-texto-suave">
-            {soyYo ? "Tu perfil · " : ""}
-            {ETIQUETAS_DE_CATEGORIA[perfil.categoria]}
-          </p>
-        </div>
+      <PortadaDePerfil portadaUrl={perfil.portadaUrl} avatarUrl={perfil.avatarUrl} nombre={nombre} />
+      <div className="space-y-1 px-4 pb-4 pt-3 sm:px-5">
+        <p className="text-lg font-bold text-texto">{nombre}</p>
+        <p className="text-sm font-medium text-texto-suave">
+          {soyYo ? "Tu perfil · " : ""}
+          {ETIQUETAS_DE_CATEGORIA[perfil.categoria]}
+        </p>
       </div>
     </div>
   );

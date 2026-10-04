@@ -85,6 +85,16 @@ con borde negro tapaba la foto. Ahora: números en fila al centro, una firma
 chica y fina de la línea debajo (2 px, sin puntas, `--sobre-foto-linea`
 #a5f3fc), título más chico y la foto casi sin oscurecer.
 
+### Séptima vuelta: portada de salidas más oscura y perfiles
+- La portada de la tarjeta de salidas se oscurece pareja (~35 %): con cielo
+  blanco el texto y la línea se perdían.
+- Perfiles (mockup aprobado, opción A): la portada se ve entera, con la misma
+  forma con que se recorta (2:1, antes se recortaba a 2,8 y se mostraba más
+  baja, cortándose dos veces); el avatar va adentro de la portada, sin aro.
+  El aro venía de un borde doble alrededor de un recuadro que no era cuadrado.
+  Pieza compartida `PortadaDePerfil` para tu perfil y el de los demás. Las
+  portadas viejas hay que volver a subirlas.
+
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
 navegador del agente: la verificación visual la hace Ale. Los trazos todavía
