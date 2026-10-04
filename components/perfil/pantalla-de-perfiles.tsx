@@ -1,5 +1,5 @@
 import { Tarjeta } from "@/components/ui/tarjeta";
-import type { Perfil } from "@/types/database";
+import type { ActividadRuta, Perfil } from "@/types/database";
 import { FormularioDePerfil } from "@/components/perfil/formulario-de-perfil";
 import { InvitarAUnAmigo } from "@/components/perfil/invitar-a-un-amigo";
 import { TarjetaDePerfil } from "@/components/perfil/tarjeta-de-perfil";
@@ -11,6 +11,8 @@ type PerfilesViewProps = {
   email: string;
   avatarUrl?: string | null;
   portadaUrl?: string | null;
+  /** Lo que practica quien usa la app. */
+  actividades: ActividadRuta[];
   perfiles: Perfil[];
   /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
   avisoDeListaIncompleta?: string | null;
@@ -23,6 +25,7 @@ export function PantallaDePerfiles({
   email,
   avatarUrl,
   portadaUrl,
+  actividades,
   perfiles,
   avisoDeListaIncompleta = null,
 }: PerfilesViewProps) {
@@ -46,6 +49,7 @@ export function PantallaDePerfiles({
         email={email}
         avatarUrl={avatarUrl}
         portadaUrl={portadaUrl}
+        actividades={actividades}
       />
 
       {avisoDeListaIncompleta ? (

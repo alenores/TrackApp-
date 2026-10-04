@@ -23,10 +23,13 @@ export type ActividadRuta =
   | "trekking"
   | "mountain_bike"
   | "kayak"
-  | "canyoning";
+  | "canyoning"
+  | "correr";
 
+/** Una sola lista para toda la app: rutas, salidas y lo que practica cada usuario. */
 export const ACTIVIDADES_RUTA: ActividadRuta[] = [
   "trekking",
+  "correr",
   "mountain_bike",
   "kayak",
   "canyoning",
@@ -95,6 +98,8 @@ export type Perfil = {
   nombre: string | null;
   avatarUrl: string | null;
   portadaUrl: string | null;
+  /** Lo que practica: ninguna, una o varias. Se elige al editar el perfil. */
+  actividades: ActividadRuta[];
   categoria: CategoriaUsuario;
   creadoEn: string;
   actualizadoEn: string;

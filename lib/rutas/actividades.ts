@@ -22,6 +22,12 @@ export const ACTIVIDADES: ActividadMostrada[] = [
       "M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM11 21l1.5-6.5L9.5 12 8 16m4.5-1.5L16 17l1 4M7 9l3.5-2 3 1.5L17 11",
   },
   {
+    tipo: "correr",
+    etiqueta: "Correr",
+    trazo:
+      "M14.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM13 7.5 11 13M7.5 10l3-2.5 3 1.5 3 1.5M11 13l3 3-1 5M11 13l-3 3.5H4.5",
+  },
+  {
     tipo: "mountain_bike",
     etiqueta: "Mountain bike",
     trazo:
@@ -36,8 +42,9 @@ export const ACTIVIDADES: ActividadMostrada[] = [
   {
     tipo: "canyoning",
     etiqueta: "Canyoning",
+    // Alguien bajando en rapel: la pared a la izquierda y la cuerda a la derecha.
     trazo:
-      "M12 3v9m0 0-3.5 9M12 12l3.5 9M6 7h12M9.5 5.5 12 3l2.5 2.5",
+      "M4 2v20M18 2v20M11.5 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM11 10l1.5 4.5M12 11.5l6-1M12.5 14.5 8 16.5M12.5 14.5 10 19.5",
   },
 ];
 

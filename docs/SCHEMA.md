@@ -20,6 +20,8 @@ lectura filtra `eliminado_en is null`**, salvo que el caso pida ver lo borrado.
 | `id` | uuid | Es el mismo id del usuario del login. Única excepción a la regla del número correlativo, y es obligada |
 | `nombre` | text | |
 | `avatar_url` | text | |
+| `portada_url` | text | la portada, recortada 2:1 al subirla |
+| `actividades` | actividad_ruta[] | lo que practica: ninguna, una o varias. Por defecto vacía (migración `correr_y_actividades_del_perfil`, 2026-10-04) |
 | `categoria` | categoria_usuario | `administrador` · `premium` · `normal`. Por defecto `normal` |
 
 **Permisos:** todos ven todos los perfiles. Cada uno edita el suyo. El
@@ -85,7 +87,7 @@ edita y borra.**
 | `nombre` | text | obligatorio |
 | `descripcion` | text | |
 | `comentario` | text | |
-| `actividades` | actividad_ruta[] | `trekking` · `mountain_bike` · `kayak` · `canyoning`. **Al menos una** |
+| `actividades` | actividad_ruta[] | `trekking` · `correr` · `mountain_bike` · `kayak` · `canyoning`. **Al menos una**. `correr` se sumó el 2026-10-04, para toda la app |
 | `dificultad_tecnica` | smallint | del 1 al 10 |
 | `nivel_esfuerzo` | nivel_esfuerzo | `bajo` · `medio` · `alto` · `muy_alto` |
 | `equipo` | text | texto libre |

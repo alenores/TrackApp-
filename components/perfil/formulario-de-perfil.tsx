@@ -14,6 +14,9 @@ import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { PortadaDePerfil } from "@/components/perfil/portada-de-perfil";
+import { Opciones, type Opcion } from "@/components/ui/opciones";
+import { mostrarActividad } from "@/lib/rutas/actividades";
+import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
@@ -23,7 +26,14 @@ type PerfilFormProps = {
   email: string;
   avatarUrl?: string | null;
   portadaUrl?: string | null;
+  /** Lo que practica. */
+  actividades: ActividadRuta[];
 };
+
+const OPCIONES_DE_ACTIVIDAD: Opcion<ActividadRuta>[] = ACTIVIDADES_RUTA.map((tipo) => {
+  const actividad = mostrarActividad(tipo);
+  return { valor: tipo, etiqueta: actividad.etiqueta, trazo: actividad.trazo };
+});
 
 const PROFILE_FIELD_CLASS =
   "border-borde bg-superficie text-texto placeholder:text-texto-suave/50";
@@ -80,7 +90,9 @@ export function FormularioDePerfil({
   email,
   avatarUrl,
   portadaUrl,
+  actividades,
 }: PerfilFormProps) {
+  const [actividadesElegidas, setActividadesElegidas] = useState<ActividadRuta[]>(actividades);
   const router = useRouter();
   const foto = useFoto("avatar", FORMAS_DE_RECORTE.avatar);
   const fotoPortada = useFoto("portada", FORMAS_DE_RECORTE.portada);
@@ -112,6 +124,7 @@ export function FormularioDePerfil({
   const resetForm = () => {
     setNombre(initialNombre || displayNombre);
     setEmailValue(email);
+    setActividadesElegidas(actividades);
     clearAvatarSelection();
     setError(null);
     setMessage(null);
@@ -138,6 +151,7 @@ export function FormularioDePerfil({
       email: emailValue,
       avatarFile: foto.archivo,
       portadaFile: fotoPortada.archivo,
+      actividades: actividadesElegidas,
     });
 
     if (!result.success) {
@@ -169,6 +183,7 @@ export function FormularioDePerfil({
         portadaUrl={portadaUrl}
         avatarUrl={avatarUrl}
         nombre={viewNombre}
+        actividades={actividades}
         accion={
           <CircleIconButton
             ariaLabel={editing ? "Cerrar edición" : "Editar perfil"}
@@ -181,19 +196,12 @@ export function FormularioDePerfil({
         }
       />
 
-      {/* Contenido principal */}
-      <div className="relative px-4 pb-5 pt-3 sm:px-5">
-        {/* Info del usuario */}
-        <div className="space-y-1">
-          <p className="text-lg font-bold text-texto">{viewNombre}</p>
-          <p className="text-sm font-medium text-texto-suave">{email || "—"}</p>
-        </div>
-
-        {/* Formulario de edición */}
+      {/* Formulario de edición */}
+      <div className="px-4 sm:px-5">
         {editing ? (
           <form
             onSubmit={(event) => void handleSubmit(event)}
-            className="mt-5 space-y-4 pt-4 border-t border-borde/60"
+            className="space-y-4 border-t border-borde/60 pb-5 pt-4"
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -243,6 +251,22 @@ export function FormularioDePerfil({
               className={PROFILE_FIELD_CLASS}
             />
 
+            <Opciones
+              etiqueta="Qué practicás"
+              ayuda="Podés elegir varias, una o ninguna. Se ven en tu perfil."
+              opciones={OPCIONES_DE_ACTIVIDAD}
+              elegidas={actividadesElegidas}
+              alElegir={(valor) =>
+                setActividadesElegidas((actuales) =>
+                  actuales.includes(valor)
+                    ? actuales.filter((cada) => cada !== valor)
+                    : [...actuales, valor],
+                )
+              }
+              columnas={2}
+              multiple
+            />
+
             <Boton type="submit" anchoCompleto disabled={loading}>
               {loading ? "Guardando…" : "Guardar cambios"}
             </Boton>
@@ -250,7 +274,7 @@ export function FormularioDePerfil({
         ) : null}
 
         {message ? (
-          <p className="mt-4 rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
+          <p className="mb-5 rounded-lg border border-verde-borde bg-verde-fondo px-3 py-2 text-sm text-verde-texto">
             {message}
           </p>
         ) : null}

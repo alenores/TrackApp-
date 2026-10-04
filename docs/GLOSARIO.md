@@ -302,6 +302,12 @@ archivo GPS. **Es un módulo 100 % con internet**: se carga y se mira con señal
 no se guarda en el celular y no se mezcla con la navegación. No confundir con
 «salir de la navegación», que es cerrar el mapa del cerro.
 
+**Actividad**
+Lo que se hace: trekking, correr, mountain bike, kayak o canyoning (su ícono es
+alguien bajando en rapel). **Es una sola lista para toda la app**: las rutas,
+las salidas y lo que practica cada usuario, que se elige al editar el perfil y
+se muestra en su tarjeta.
+
 **Compañero**
 Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
 cargarla, de la lista de usuarios.

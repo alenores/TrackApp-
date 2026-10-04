@@ -13,6 +13,7 @@ import {
   traducirErrorDeLaCuenta,
 } from "@/lib/datos/resultado";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
+import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
 
 /**
  * Guardar los datos de la cuenta.
@@ -35,9 +36,14 @@ export async function editarPerfil(input: {
   email: string;
   avatarFile?: File | null;
   portadaFile?: File | null;
+  /** Lo que practica. Sin esto, no se toca lo que ya tenía. */
+  actividades?: ActividadRuta[];
 }): Promise<ResultadoDeEditarPerfil> {
   const nombre = input.nombre.trim();
   const email = input.email.trim().toLowerCase();
+  const actividades = input.actividades
+    ? [...new Set(input.actividades)].filter((cada) => ACTIVIDADES_RUTA.includes(cada))
+    : undefined;
 
   if (!nombre) {
     return { success: false, error: "Escribí tu nombre: no puede quedar vacío." };
@@ -153,6 +159,7 @@ export async function editarPerfil(input: {
     .from("perfiles")
     .update({
       nombre,
+      ...(actividades ? { actividades } : {}),
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       ...(portadaUrl ? { portada_url: portadaUrl } : {}),
     })

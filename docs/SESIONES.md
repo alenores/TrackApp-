@@ -94,6 +94,10 @@ chica y fina de la línea debajo (2 px, sin puntas, `--sobre-foto-linea`
   El aro venía de un borde doble alrededor de un recuadro que no era cuadrado.
   Pieza compartida `PortadaDePerfil` para tu perfil y el de los demás. Las
   portadas viejas hay que volver a subirlas.
+- Corrección de Ale: la opción correcta era la B. El avatar va mitad afuera,
+  con el nombre a su derecha; sin email. Cada usuario elige lo que practica
+  (ninguna, una o varias) y se muestra debajo. Se sumó «correr» como actividad
+  en toda la app, y el ícono de canyoning pasó a ser alguien en rapel.
 
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el

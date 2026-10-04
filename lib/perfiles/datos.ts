@@ -6,7 +6,7 @@ import {
   type ResultadoLista,
 } from "@/lib/supabase/listas";
 import { traerUsuario } from "@/lib/cuenta/sesion";
-import type { CategoriaUsuario, Perfil } from "@/types/database";
+import type { ActividadRuta, CategoriaUsuario, Perfil } from "@/types/database";
 
 /**
  * Acceso a la tabla de perfiles.
@@ -21,12 +21,14 @@ type Fila = {
   nombre: string | null;
   avatar_url: string | null;
   portada_url: string | null;
+  actividades: ActividadRuta[] | null;
   categoria: CategoriaUsuario;
   creado_en: string;
   actualizado_en: string;
 };
 
-const COLUMNAS = "id, nombre, avatar_url, portada_url, categoria, creado_en, actualizado_en";
+const COLUMNAS =
+  "id, nombre, avatar_url, portada_url, actividades, categoria, creado_en, actualizado_en";
 
 function leer(fila: Fila): Perfil {
   return {
@@ -34,6 +36,7 @@ function leer(fila: Fila): Perfil {
     nombre: fila.nombre,
     avatarUrl: fila.avatar_url,
     portadaUrl: fila.portada_url,
+    actividades: fila.actividades ?? [],
     categoria: fila.categoria,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,
