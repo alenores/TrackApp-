@@ -5,6 +5,13 @@ import type { TipoDeFondo } from "@/components/mapa/capas-base";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { useAnotacionesEnElMapa } from "@/components/navegacion/anotaciones-en-el-mapa";
 import { ModalDeSalida } from "@/components/navegacion/modal-de-salida";
+import {
+  BotonEmpezarARegistrar,
+  BotonMarcarAca,
+  FranjaDeRegistro,
+  PreguntaDeRegistrar,
+} from "@/components/navegacion/registro-de-salida";
+import { useRegistroDeSalida } from "@/hooks/use-registro-de-salida";
 import { ElegirRutasDelMapa } from "@/components/navegacion/elegir-rutas-del-mapa";
 import { Boton } from "@/components/ui/boton";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
@@ -36,6 +43,9 @@ export function PantallaDeMapaLibre() {
   const paquete = usePaqueteGuardado();
   const mapasBajados = useMapasBajados();
   const gps = useGps();
+  // La salida que se está registrando, si hay. Solo escribe en el celular.
+  const registro = useRegistroDeSalida(gps);
+  const [preguntandoSiRegistrar, setPreguntandoSiRegistrar] = useState(false);
   const {
     estado: estadoDelGps,
     error: errorDelGps,
@@ -172,6 +182,15 @@ export function PantallaDeMapaLibre() {
             </p>
           ) : null}
 
+          {registro.enCurso ? (
+            <FranjaDeRegistro
+              kilometros={registro.kilometros}
+              puntos={registro.puntos}
+              marcaRecien={registro.marcaRecien}
+              error={registro.error}
+            />
+          ) : null}
+
           <div className="pointer-events-auto flex items-center gap-2">
             <BotonRedondo etiqueta="Salir de la navegación libre" onClick={() => requestExit()}>
               {ICONOS_DEL_CERRO.salir}
@@ -181,6 +200,11 @@ export function PantallaDeMapaLibre() {
               {ICONOS_DEL_CERRO.rutas}
             </BotonRedondo>
             <span className="flex-1" />
+            {registro.enCurso ? (
+              <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!posicion} />
+            ) : (
+              <BotonEmpezarARegistrar alTocar={() => setPreguntandoSiRegistrar(true)} />
+            )}
             {estadoDelGps === "andando" ? (
               <BotonRedondo etiqueta="Centrar en mi ubicación" onClick={() => setCentrarGps(Date.now())}>
                 {ICONOS_DEL_CERRO.centrar}
@@ -207,11 +231,28 @@ export function PantallaDeMapaLibre() {
 
       {deAnotaciones.resto}
 
+      <PreguntaDeRegistrar
+        abierta={preguntandoSiRegistrar}
+        alCerrar={() => setPreguntandoSiRegistrar(false)}
+        alSoloNavegar={() => setPreguntandoSiRegistrar(false)}
+        textoDeSoloNavegar="Ahora no"
+        alRegistrar={() => {
+          setPreguntandoSiRegistrar(false);
+          void registro.empezar(null, null);
+        }}
+      />
+
       <ModalDeSalida
         open={open}
         titulo="¿Salir de la navegación libre?"
         onCancel={cancelExit}
         onConfirm={confirmExit}
+        registrando={registro.enCurso !== null}
+        alTerminarYSalir={() => {
+          void registro.terminar().then((terminada) => {
+            if (terminada) confirmExit();
+          });
+        }}
       />
     </>
   );

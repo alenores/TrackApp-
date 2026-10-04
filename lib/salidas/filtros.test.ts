@@ -78,6 +78,15 @@ describe("filtrosPuestos", () => {
   });
 });
 
+describe("un día elegido en el calendario", () => {
+  it("es una sola pastilla, que saca las dos fechas", () => {
+    const puestos = filtrosPuestos({ ...SIN_FILTROS, desde: "2026-05-02", hasta: "2026-05-02" }, () => "");
+    expect(puestos).toHaveLength(1);
+    expect(puestos[0].etiqueta).toBe("El 2 de mayo de 2026");
+    expect(puestos[0].sinEste).toEqual(SIN_FILTROS);
+  });
+});
+
 describe("tituloParaBuscar", () => {
   it("los comodines de la base se buscan como letras", () => {
     expect(tituloParaBuscar(" 50%_ ")).toBe("50\\%\\_");

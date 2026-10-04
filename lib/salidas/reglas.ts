@@ -11,8 +11,13 @@ import type { ActividadRuta, NivelEsfuerzo } from "@/types/database";
  * se entere antes de esperar la subida, con palabras que entienda.
  */
 
-/** Hasta cuatro fotos. La primera es la portada. */
-export const MAXIMO_DE_FOTOS = 4;
+/** Hasta treinta fotos (Ale, 2026-10-04). La primera es la portada. */
+export const MAXIMO_DE_FOTOS = 30;
+
+/** «La portada», «La foto 5»: para decir cuál no entró. */
+export function nombreDeLaFoto(indice: number): string {
+  return indice === 0 ? "La portada" : `La foto ${indice + 1}`;
+}
 
 export const LARGO_MAXIMO_DEL_TITULO = 120;
 

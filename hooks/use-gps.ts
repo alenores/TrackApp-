@@ -19,6 +19,8 @@ export type Gps = {
   posicion: { lat: number; lon: number } | null;
   /** Cuántos metros puede errar la última posición, según el propio GPS. */
   precision: number | null;
+  /** Metros sobre el mar, si el celular lo da. Muchos no lo dan. */
+  altura: number | null;
   prender: () => void;
   segundosSinNoticias: number;
   /** `true` cuando el GPS anda pero hace rato que no da novedades. */
@@ -31,6 +33,7 @@ export function useGps(): Gps {
   const [error, setError] = useState<string | null>(null);
   const [posicion, setPosicion] = useState<{ lat: number; lon: number } | null>(null);
   const [precision, setPrecision] = useState<number | null>(null);
+  const [altura, setAltura] = useState<number | null>(null);
   const [ultimaNoticia, setUltimaNoticia] = useState<number | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
 
@@ -71,6 +74,10 @@ export function useGps(): Gps {
         setPrecision(
           Number.isFinite(lectura.coords.accuracy) ? Math.round(lectura.coords.accuracy) : null,
         );
+        const metrosSobreElMar = lectura.coords.altitude;
+        setAltura(
+          metrosSobreElMar !== null && Number.isFinite(metrosSobreElMar) ? metrosSobreElMar : null,
+        );
         setEstado("andando");
         // Si antes falló y ahora da posición, el cartel de falla se va: si no,
         // el usuario lee «no da posición» con el punto moviéndose.
@@ -94,6 +101,7 @@ export function useGps(): Gps {
     error,
     posicion,
     precision,
+    altura,
     prender,
     segundosSinNoticias,
     posicionVieja:

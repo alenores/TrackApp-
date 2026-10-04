@@ -27,6 +27,48 @@ function nombreDelArchivo(direccion: string): string {
   }
 }
 
+/** «Los Gigantes con el grupo.gpx»: el título, sin lo que un archivo no admite. */
+export function nombreParaBajar(titulo: string, direccion: string): string {
+  const extension = nombreDelArchivo(direccion).split(".").pop()?.toLowerCase() || "gpx";
+  const limpio = titulo.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim() || "salida";
+  return `${limpio}.${extension}`;
+}
+
+/**
+ * Bajar el archivo GPS al celular o la computadora.
+ *
+ * Un enlace común no alcanza: el archivo vive en otro sitio, y el navegador
+ * lo abriría como texto en vez de bajarlo. Se trae y se entrega como descarga,
+ * con el nombre de la salida.
+ *
+ * Devuelve `null` si salió bien, o qué pasó.
+ */
+export async function bajarElArchivo(direccion: string, titulo: string): Promise<string | null> {
+  const control = new AbortController();
+  const corte = setTimeout(() => control.abort(), TOPE_MS);
+  try {
+    const respuesta = await fetch(direccion, { signal: control.signal });
+    if (!respuesta.ok) {
+      return `el archivo GPS no está disponible (la base respondió ${respuesta.status})`;
+    }
+    const contenido = await respuesta.blob();
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(contenido);
+    enlace.download = nombreParaBajar(titulo, direccion);
+    document.body.append(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(enlace.href), 10_000);
+    return null;
+  } catch {
+    return control.signal.aborted
+      ? "el archivo tardó demasiado en llegar; probá con mejor señal"
+      : "no hubo conexión para traer el archivo";
+  } finally {
+    clearTimeout(corte);
+  }
+}
+
 export async function traerLaLineaCompleta(direccion: string): Promise<LineaCompleta> {
   const control = new AbortController();
   const corte = setTimeout(() => control.abort(), TOPE_MS);

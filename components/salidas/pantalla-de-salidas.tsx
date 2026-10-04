@@ -6,6 +6,9 @@ import { Boton } from "@/components/ui/boton";
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { FiltrosDeSalidas } from "@/components/salidas/filtros-de-salidas";
+import { CalendarioDeSalidas } from "@/components/salidas/calendario-de-salidas";
+import { AvisoDeRegistros } from "@/components/salidas/aviso-de-registros";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { TarjetaDeSalida } from "@/components/salidas/tarjeta-de-salida";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { PaginaDeSalidas } from "@/lib/salidas/datos";
@@ -39,6 +42,8 @@ export function PantallaDeSalidas({ miPerfilId, resultado, filtros, perfiles }: 
   const router = useRouter();
   const haySenal = useHaySenal();
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+  const [calendarioAbierto, setCalendarioAbierto] = useState(false);
+  const diaElegido = filtros.desde && filtros.desde === filtros.hasta ? filtros.desde : null;
 
   const nombreDe = (perfilId: string) =>
     perfiles.find((perfil) => perfil.id === perfilId)?.nombre ?? "alguien que ya no está";
@@ -50,13 +55,18 @@ export function PantallaDeSalidas({ miPerfilId, resultado, filtros, perfiles }: 
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold uppercase text-texto">Salidas</h1>
         {haySenal ? (
-          <Boton
-            variante={hayFiltros ? "principal" : "secundario"}
-            onClick={() => setFiltrosAbiertos(true)}
-            aria-label={hayFiltros ? `Filtrar, ${puestos.length} puestos` : "Filtrar"}
-          >
-            {hayFiltros ? `Filtrar (${puestos.length})` : "Filtrar"}
-          </Boton>
+          <div className="flex items-center gap-2">
+            <BotonRedondo etiqueta="Ver los días con salidas" onClick={() => setCalendarioAbierto(true)}>
+              <path d="M7 3v3M17 3v3M4 9h16M5 5.5h14a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z" />
+            </BotonRedondo>
+            <Boton
+              variante={hayFiltros ? "principal" : "secundario"}
+              onClick={() => setFiltrosAbiertos(true)}
+              aria-label={hayFiltros ? `Filtrar, ${puestos.length} puestos` : "Filtrar"}
+            >
+              {hayFiltros ? `Filtrar (${puestos.length})` : "Filtrar"}
+            </Boton>
+          </div>
         ) : null}
       </div>
 
@@ -83,6 +93,8 @@ export function PantallaDeSalidas({ miPerfilId, resultado, filtros, perfiles }: 
           </li>
         </ul>
       ) : null}
+
+      <AvisoDeRegistros />
 
       {!haySenal ? (
         <Tarjeta franja="ambar">
@@ -141,6 +153,17 @@ export function PantallaDeSalidas({ miPerfilId, resultado, filtros, perfiles }: 
           ) : null}
         </div>
       ) : null}
+
+      <CalendarioDeSalidas
+        abierto={calendarioAbierto}
+        alCerrar={() => setCalendarioAbierto(false)}
+        diaInicial={filtros.desde}
+        diaElegido={diaElegido}
+        alElegirDia={(dia) => {
+          setCalendarioAbierto(false);
+          router.push(direccionDeSalidas({ ...filtros, desde: dia, hasta: dia }));
+        }}
+      />
 
       <FiltrosDeSalidas
         abierto={filtrosAbiertos}

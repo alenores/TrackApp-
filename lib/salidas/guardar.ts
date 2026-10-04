@@ -7,7 +7,12 @@ import {
   loRechazoPorLaClase,
 } from "@/lib/rutas/archivo";
 import type { PuntoDeLinea } from "@/lib/salidas/linea";
-import { MAXIMO_DE_FOTOS, revisarLaSalida, type DatosDeSalida } from "@/lib/salidas/reglas";
+import {
+  MAXIMO_DE_FOTOS,
+  nombreDeLaFoto,
+  revisarLaSalida,
+  type DatosDeSalida,
+} from "@/lib/salidas/reglas";
 
 /**
  * Cargar y editar salidas. **Es el único camino para escribirlas.**
@@ -65,7 +70,6 @@ export type SalidaGuardada = {
   avisos: string[];
 };
 
-const NOMBRES_DE_FOTO = ["La portada", "La segunda foto", "La tercera foto", "La cuarta foto"];
 
 function filaDeDatos(datos: DatosDeSalida) {
   return {
@@ -156,6 +160,8 @@ export async function editarSalida(
   datos: DatosDeSalida,
   fotos: FotoDeSalida[],
   archivo: CambioDeArchivo,
+  /** `true` para publicar un borrador: desde ahí la ven todos. */
+  publicar = false,
 ): Promise<Resultado<SalidaGuardada>> {
   const problema = revisarTodo(datos, fotos);
   if (problema) return falla(problema);
@@ -165,7 +171,7 @@ export async function editarSalida(
 
   const { data: filas, error } = await supabase
     .from("salidas")
-    .update(filaDeDatos(datos))
+    .update({ ...filaDeDatos(datos), ...(publicar ? { estado: "publicada" } : {}) })
     .eq("id", salidaId)
     .eq("perfil_id", perfilId)
     .is("eliminado_en", null)
@@ -274,7 +280,7 @@ async function escribirFotos(
       .from(DEPOSITO_DE_FOTOS_DE_SALIDA)
       .upload(donde, foto, { contentType: foto.type, upsert: true });
     if (error) {
-      avisos.push(`${NOMBRES_DE_FOTO[indice]} no se subió: ${traducirErrorDeBase(error.message)}`);
+      avisos.push(`${nombreDeLaFoto(indice)} no se subió: ${traducirErrorDeBase(error.message)}`);
       continue;
     }
     const {
@@ -325,7 +331,8 @@ async function escribirFotos(
   return avisos;
 }
 
-async function subirElArchivo(
+/** Sube el archivo GPS de una salida y anota su dirección y su línea. */
+export async function subirElArchivo(
   supabase: SupabaseClient,
   perfilId: string,
   salidaId: number,

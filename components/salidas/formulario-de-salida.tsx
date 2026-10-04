@@ -23,7 +23,14 @@ import {
   type FotoDeSalida,
 } from "@/lib/salidas/guardar";
 import { simplificarLinea, type PuntoDeLinea } from "@/lib/salidas/linea";
-import { hoyEnCordoba, leerNumero, LARGO_MAXIMO_DEL_TITULO } from "@/lib/salidas/reglas";
+import {
+  hoyEnCordoba,
+  leerNumero,
+  LARGO_MAXIMO_DEL_TITULO,
+  MAXIMO_DE_FOTOS,
+} from "@/lib/salidas/reglas";
+import { GrillaDeFotos } from "@/components/fotos/grilla-de-fotos";
+import { useVariasFotos } from "@/hooks/use-varias-fotos";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import {
   ACTIVIDADES_RUTA,
@@ -65,8 +72,6 @@ const OPCIONES_DE_ESFUERZO: Opcion<NivelEsfuerzo>[] = NIVELES_ESFUERZO.map((nive
   valor: nivel,
   etiqueta: mostrarEsfuerzo(nivel),
 }));
-
-const ETIQUETAS_DE_FOTO = ["Elegir la portada", "Sumar otra foto", "Sumar otra foto", "Sumar otra foto"];
 
 type Numeros = { largoKm: number | null; desnivelPositivoM: number | null; desnivelNegativoM: number | null };
 
@@ -114,29 +119,19 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
   const [errorAlGuardar, setErrorAlGuardar] = useState<string | null>(null);
   const ocupado = guardando || borrando;
 
-  // Siempre cuatro, en el mismo orden: así lo piden los hooks. La primera es
-  // la portada y se recorta a la forma con que se ve en la lista.
-  const fotos = [
-    useFoto("portadaDeSalida", FORMAS_DE_RECORTE.portadaDeSalida),
-    useFoto("salida", FORMAS_DE_RECORTE.salida),
-    useFoto("salida", FORMAS_DE_RECORTE.salida),
-    useFoto("salida", FORMAS_DE_RECORTE.salida),
-  ];
-  // Las que ya tenía la salida, al editar. `null` cuando se quitó o no había.
-  const [fotosGuardadas, setFotosGuardadas] = useState<(string | null)[]>(() =>
-    fotos.map((_, indice) => salida?.fotos[indice] ?? null),
-  );
+  // La portada se elige sola y se recorta a la forma con que se ve en la
+  // lista. Las demás, hasta completar el tope, se eligen de a varias juntas.
+  const portada = useFoto("portadaDeSalida", FORMAS_DE_RECORTE.portadaDeSalida);
+  // La que ya tenía la salida, al editar. `null` cuando se quitó o no había.
+  const [portadaGuardada, setPortadaGuardada] = useState<string | null>(salida?.fotos[0] ?? null);
+  const demas = useVariasFotos("salida", MAXIMO_DE_FOTOS, salida?.fotos.slice(1) ?? []);
 
-  const fotosOcupadas = fotos.some((foto) =>
-    ["abriendo", "recortando", "preparando"].includes(foto.estado),
-  );
-  const queHayEnCadaCaja: (FotoDeSalida | null)[] = fotos.map(
-    (foto, indice) => foto.archivo ?? (foto.estado === "vacio" ? fotosGuardadas[indice] : null),
-  );
-  // Se ve la caja siguiente recién cuando la anterior tiene foto.
-  const cajasVisibles = Math.min(
-    fotos.length,
-    queHayEnCadaCaja.findLastIndex((cosa) => cosa !== null) + 2,
+  const fotosOcupadas =
+    ["abriendo", "recortando", "preparando"].includes(portada.estado) || demas.procesando !== null;
+  const laPortada: FotoDeSalida | null =
+    portada.archivo ?? (portada.estado === "vacio" ? portadaGuardada : null);
+  const lasDemas: FotoDeSalida[] = demas.fotos.map((foto) =>
+    foto.clase === "nueva" ? foto.archivo : foto.url,
   );
 
   const alternar = <T,>(lista: T[], valor: T) =>
@@ -172,12 +167,14 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
     setErrorDelArchivo(null);
   };
 
-  const alGuardar = async () => {
+  const esBorrador = salida?.estado === "borrador";
+
+  const alGuardar = async (publicar = false) => {
     setErrorAlGuardar(null);
 
     // Sin portada, la foto que quedara primera no tendría la forma de la lista.
-    if (queHayEnCadaCaja[0] === null && queHayEnCadaCaja.some((cosa) => cosa !== null)) {
-      setErrorAlGuardar("Falta la portada. Elegí la primera foto, o quitá las demás.");
+    if (laPortada === null && lasDemas.length > 0) {
+      setErrorAlGuardar("Falta la portada. Elegila arriba de las demás fotos, o quitá las demás.");
       return;
     }
 
@@ -194,7 +191,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
       desnivelNegativoM: delArchivo ? delArchivo.desnivelNegativoM : leerNumero(bajada),
       companeros,
     };
-    const fotosFinales = queHayEnCadaCaja.filter((cosa): cosa is FotoDeSalida => cosa !== null);
+    const fotosFinales = laPortada ? [laPortada, ...lasDemas] : [];
     const supabase = crearClienteEnElNavegador();
 
     let resultado;
@@ -204,7 +201,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
         : salida.archivoUrl && !tieneArchivoGuardado
           ? { tipo: "quitar" }
           : { tipo: "mantener" };
-      resultado = await editarSalida(supabase, salida.id, datos, fotosFinales, cambio);
+      resultado = await editarSalida(supabase, salida.id, datos, fotosFinales, cambio, publicar);
     } else {
       resultado = await guardarSalida(
         supabase,
@@ -269,7 +266,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
       <div className="flex items-center gap-2">
         <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver" />
         <h1 className="text-xl font-semibold text-texto">
-          {editando ? "Editar la salida" : "Cargar una salida"}
+          {esBorrador ? "Completar la salida" : editando ? "Editar la salida" : "Cargar una salida"}
         </h1>
       </div>
 
@@ -408,23 +405,29 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
           Fotos
         </h2>
         <p className="text-sm leading-6 text-texto-suave">
-          Hasta cuatro. La primera es la portada: se recorta apaisada, del mismo
-          tamaño con que se ve en la lista, y al elegirla ves exactamente cómo queda.
+          Hasta {MAXIMO_DE_FOTOS}. La portada se recorta apaisada, del mismo tamaño
+          con que se ve en la lista, y al elegirla ves exactamente cómo queda.
         </p>
-        {fotos.slice(0, cajasVisibles).map((foto, indice) => (
-          <SelectorDeFoto
-            key={indice}
-            foto={foto}
+        <SelectorDeFoto
+          foto={portada}
+          deshabilitado={ocupado}
+          etiqueta="Elegir la portada"
+          fotoActual={portadaGuardada}
+          alQuitarFotoActual={() => setPortadaGuardada(null)}
+        />
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-texto-suave">
+            {demas.fotos.length === 0 ? "Las demás fotos" : `Las demás fotos (${demas.fotos.length})`}
+          </h3>
+          <p className="text-sm leading-6 text-texto-suave">
+            Elegí varias juntas de la galería; se suben como vinieron. Tocá una para quitarla.
+          </p>
+          <GrillaDeFotos
+            varias={demas}
+            lugarLibre={MAXIMO_DE_FOTOS - 1 - demas.fotos.length}
             deshabilitado={ocupado}
-            etiqueta={ETIQUETAS_DE_FOTO[indice]}
-            fotoActual={fotosGuardadas[indice]}
-            alQuitarFotoActual={() =>
-              setFotosGuardadas((actuales) =>
-                actuales.map((guardada, cual) => (cual === indice ? null : guardada)),
-              )
-            }
           />
-        ))}
+        </div>
       </Tarjeta>
 
       <Tarjeta className="space-y-3">
@@ -470,17 +473,40 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
       ) : null}
 
       <div className="space-y-3 pb-2">
-        <Boton
-          anchoCompleto
-          disabled={ocupado || leyendo || fotosOcupadas || !haySenal}
-          onClick={() => void alGuardar()}
-        >
-          {guardando
-            ? "Guardando… no cierres la pantalla"
-            : editando
-              ? "Guardar los cambios"
-              : "Guardar la salida"}
-        </Boton>
+        {esBorrador ? (
+          <>
+            <p className="text-sm leading-6 text-texto-suave">
+              Es un borrador: solo lo ves vos. Al publicarlo lo ven todos.
+            </p>
+            <Boton
+              anchoCompleto
+              disabled={ocupado || leyendo || fotosOcupadas || !haySenal}
+              onClick={() => void alGuardar(true)}
+            >
+              {guardando ? "Guardando… no cierres la pantalla" : "Publicar la salida"}
+            </Boton>
+            <Boton
+              anchoCompleto
+              variante="secundario"
+              disabled={ocupado || leyendo || fotosOcupadas || !haySenal}
+              onClick={() => void alGuardar(false)}
+            >
+              Guardar el borrador
+            </Boton>
+          </>
+        ) : (
+          <Boton
+            anchoCompleto
+            disabled={ocupado || leyendo || fotosOcupadas || !haySenal}
+            onClick={() => void alGuardar()}
+          >
+            {guardando
+              ? "Guardando… no cierres la pantalla"
+              : editando
+                ? "Guardar los cambios"
+                : "Guardar la salida"}
+          </Boton>
+        )}
         {editando ? (
           <Boton
             anchoCompleto

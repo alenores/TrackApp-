@@ -308,6 +308,16 @@ alguien bajando en rapel). **Es una sola lista para toda la app**: las rutas,
 las salidas y lo que practica cada usuario, que se elige al editar el perfil y
 se muestra en su tarjeta.
 
+**Registro de salida**
+Lo que se junta de una salida mientras se navega: los puntos por donde vas,
+anotados solos con la pantalla prendida, y los que marcás con la banderita
+**«Marcar acá»**. Se guarda en el celular sin señal y, al terminar, sube solo
+como borrador. Ver `decisiones/032`.
+
+**Borrador**
+Una salida que solo ve quien la hizo, hasta que la completa y toca «Publicar».
+Es lo que queda de un registro de salida al subir.
+
 **Compañero**
 Un usuario de TrackApp que fue a una salida con quien la cargó. Se elige al
 cargarla, de la lista de usuarios.

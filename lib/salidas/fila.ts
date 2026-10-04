@@ -11,6 +11,8 @@ type FilaDePerfil = { id: string; nombre: string | null; avatar_url: string | nu
 
 export type FilaDeSalida = {
   id: number;
+  estado?: "borrador" | "publicada";
+  ruta_id?: number | null;
   titulo: string;
   fecha: string;
   descripcion: string | null;
@@ -29,7 +31,7 @@ export type FilaDeSalida = {
 
 /** Lo que se le pide a la base. Los nombres de las uniones son los de la base. */
 export const COLUMNAS_DE_SALIDA = `
-  id, titulo, fecha, descripcion, actividades, nivel_esfuerzo, largo_km,
+  id, estado, ruta_id, titulo, fecha, descripcion, actividades, nivel_esfuerzo, largo_km,
   desnivel_positivo_m, desnivel_negativo_m, archivo_url, linea_simplificada, creado_en,
   perfil:perfiles!salidas_perfil_id_fkey(id, nombre, avatar_url),
   fotos:salidas_fotos(orden, foto_url, eliminado_en),
@@ -66,6 +68,8 @@ export function leerSalida(fila: FilaDeSalida): Salida {
 
   return {
     id: fila.id,
+    estado: fila.estado === "borrador" ? "borrador" : "publicada",
+    rutaId: fila.ruta_id ?? null,
     perfil: leerPerfil(fila.perfil) ?? {
       id: "",
       nombre: NOMBRE_SI_NO_TIENE,

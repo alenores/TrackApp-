@@ -135,6 +135,15 @@ export function filtrosPuestos(
       },
     });
   }
+  // Un solo día, elegido en el calendario: una sola pastilla, no dos.
+  if (filtros.desde && filtros.desde === filtros.hasta) {
+    puestos.push({
+      clave: "dia",
+      etiqueta: `El ${diaEnPalabras(filtros.desde)}`,
+      sinEste: { ...filtros, desde: null, hasta: null },
+    });
+    return puestos;
+  }
   if (filtros.desde) {
     puestos.push({
       clave: "desde",

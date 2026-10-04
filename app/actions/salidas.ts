@@ -4,6 +4,17 @@ import { revalidatePath } from "next/cache";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import { exito, falla, traducirErrorDeBase, type Resultado } from "@/lib/datos/resultado";
+import { traerDiasConSalidas } from "@/lib/salidas/datos";
+
+/** Los días con salidas de un mes, para el calendario de la lista. */
+export async function diasConSalidas(desde: string, hasta: string): Promise<Resultado<string[]>> {
+  const esFecha = /^\d{4}-\d{2}-\d{2}$/;
+  if (!esFecha.test(desde) || !esFecha.test(hasta)) {
+    return falla("Las fechas del calendario no se entienden. Cerralo y volvé a abrirlo.");
+  }
+  const resultado = await traerDiasConSalidas(desde, hasta);
+  return resultado.ok ? exito(resultado.dias) : falla(resultado.motivo);
+}
 
 /**
  * Borrar una salida: marcar `eliminado_en`. Nada se borra de verdad.

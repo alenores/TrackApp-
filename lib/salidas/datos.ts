@@ -32,6 +32,34 @@ export type UnaSalida =
   | { ok: false; noExiste: true }
   | { ok: false; noExiste: false; motivo: string };
 
+/**
+ * Los días que tuvieron salidas entre dos fechas, para marcarlos en el
+ * calendario. Se pide de a un mes: en un mes no hay mil salidas, y el tope
+ * explícito igual lo dice si pasara.
+ */
+export async function traerDiasConSalidas(
+  desde: string,
+  hasta: string,
+): Promise<{ ok: true; dias: string[] } | { ok: false; motivo: string }> {
+  const TOPE = 1000;
+  const supabase = await crearClienteEnElServidor();
+  const { data, error } = await supabase
+    .from("salidas")
+    .select("fecha")
+    .is("eliminado_en", null)
+    .gte("fecha", desde)
+    .lte("fecha", hasta)
+    .order("fecha", { ascending: true })
+    .limit(TOPE);
+
+  if (error) return { ok: false, motivo: traducirErrorDeBase(error.message) };
+  const filas = (data ?? []) as { fecha: string }[];
+  if (filas.length === TOPE) {
+    return { ok: false, motivo: "hay demasiadas salidas en este mes para marcarlas todas" };
+  }
+  return { ok: true, dias: [...new Set(filas.map((fila) => fila.fecha))] };
+}
+
 /** El mensaje de cuando falló la base al traer una salida. */
 export function mensajeDeFalla(motivo: string): string {
   return `No se pudo traer la salida: ${motivo} Volvé a intentar en un rato.`;

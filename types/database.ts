@@ -225,6 +225,13 @@ export type PerfilBreve = {
  */
 export type Salida = {
   id: number;
+  /**
+   * `borrador` es lo que subió solo de una salida registrada navegando: lo ve
+   * solo quien la hizo hasta que la completa y la publica.
+   */
+  estado: "borrador" | "publicada";
+  /** La ruta que se navegó, si la salida se registró navegando una. */
+  rutaId: number | null;
   perfil: PerfilBreve;
   titulo: string;
   /** El día de la salida, «2026-10-02». No es el día en que se cargó. */

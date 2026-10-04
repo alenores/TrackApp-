@@ -9,6 +9,12 @@ type NavigationExitModalProps = {
   titulo?: string;
   onCancel: () => void;
   onConfirm: () => void;
+  /**
+   * Hay una salida registrándose. Salir tiene dos caminos: terminarla (queda
+   * el borrador para subir) o dejarla en curso para seguir en la próxima.
+   */
+  registrando?: boolean;
+  alTerminarYSalir?: () => void;
 };
 
 export function ModalDeSalida({
@@ -16,6 +22,8 @@ export function ModalDeSalida({
   titulo = "¿Salir de la navegación?",
   onCancel,
   onConfirm,
+  registrando = false,
+  alTerminarYSalir,
 }: NavigationExitModalProps) {
   if (!open) {
     return null;
@@ -45,7 +53,9 @@ export function ModalDeSalida({
             {titulo}
           </h2>
           <p id="navigation-exit-description" className="text-sm leading-6 text-texto-suave">
-            Tu posición GPS se desactivará
+            {registrando
+              ? "Estás registrando una salida. Si la terminás, queda un borrador que se sube solo cuando haya señal. Si la seguís después, se retoma la próxima vez que navegues."
+              : "Tu posición GPS se desactivará"}
           </p>
         </div>
 
@@ -53,9 +63,20 @@ export function ModalDeSalida({
           <Boton type="button" anchoCompleto onClick={onCancel}>
             Cancelar
           </Boton>
-          <Boton type="button" variante="destructivo" anchoCompleto onClick={onConfirm}>
-            Salir
-          </Boton>
+          {registrando && alTerminarYSalir ? (
+            <>
+              <Boton type="button" variante="secundario" anchoCompleto onClick={alTerminarYSalir}>
+                Terminar la salida y salir
+              </Boton>
+              <Boton type="button" variante="secundario" anchoCompleto onClick={onConfirm}>
+                Salir y seguirla después
+              </Boton>
+            </>
+          ) : (
+            <Boton type="button" variante="destructivo" anchoCompleto onClick={onConfirm}>
+              Salir
+            </Boton>
+          )}
         </div>
       </Tarjeta>
     </div>

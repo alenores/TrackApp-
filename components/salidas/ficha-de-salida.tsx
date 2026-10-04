@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { clasesDeBoton } from "@/components/ui/boton";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente } from "@/components/ui/emergente";
+import { Enlace } from "@/components/ui/enlace";
+import { bajarElArchivo } from "@/lib/salidas/archivo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { MapaDeLaSalida, MiniaturaDeLaLinea } from "@/components/salidas/mapa-de-la-salida";
@@ -32,7 +35,24 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
   const haySenal = useHaySenal();
   const [fotoAbierta, setFotoAbierta] = useState<string | null>(null);
   const [mapaAbierto, setMapaAbierto] = useState(false);
+  const [bajando, setBajando] = useState(false);
+  const { confirmar, avisar } = useDialogos();
   const puedeEditar = haySenal && salida.perfil.id === miPerfilId;
+
+  // Antes de bajar se dice qué es: un ícono solo no alcanza para saberlo.
+  const alBajarElArchivo = async (direccion: string) => {
+    const seguro = await confirmar({
+      titulo: "¿Bajar el archivo GPS?",
+      mensaje:
+        "Es el recorrido de esta salida, para abrirlo en Google Earth, en tu reloj o en otra app de mapas. Se guarda en las descargas de tu celular o tu computadora.",
+      textoDeAceptar: "Bajar el archivo",
+    });
+    if (!seguro) return;
+    setBajando(true);
+    const problema = await bajarElArchivo(direccion, salida.titulo);
+    setBajando(false);
+    if (problema) await avisar({ titulo: "No se bajó el archivo", mensaje: `${problema}.` });
+  };
   const tieneRecorrido = salida.linea !== null || salida.archivoUrl !== null;
   const tieneNumeros =
     salida.largoKm !== null ||
@@ -44,7 +64,18 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver a las salidas" />
-        {puedeEditar ? <BotonDeOpcionesDeSalida salidaId={salida.id} sobreFoto={false} /> : null}
+        <div className="flex items-center gap-2">
+          {salida.archivoUrl && haySenal ? (
+            <BotonRedondo
+              etiqueta="Bajar el archivo GPS"
+              disabled={bajando}
+              onClick={() => void alBajarElArchivo(salida.archivoUrl as string)}
+            >
+              <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" />
+            </BotonRedondo>
+          ) : null}
+          {puedeEditar ? <BotonDeOpcionesDeSalida salidaId={salida.id} sobreFoto={false} /> : null}
+        </div>
       </div>
 
       {salida.fotos.length > 0 ? (
@@ -60,6 +91,18 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
         <PortadaDeSalida salida={salida} conDatos={false} />
       )}
 
+      {salida.estado === "borrador" && puedeEditar ? (
+        <Tarjeta franja="ambar" className="space-y-3">
+          <p className="text-base leading-6 text-texto">
+            Es un borrador: solo lo ves vos. Completá el título, con quién fuiste y lo que falte,
+            y publicalo cuando quieras.
+          </p>
+          <Enlace href={`/salidas/${salida.id}/editar`} variante="principal">
+            Completar y publicar
+          </Enlace>
+        </Tarjeta>
+      ) : null}
+
       <Tarjeta className="space-y-4">
         <PersonasDeSalida salida={salida} />
         <InsigniasDeActividad actividades={salida.actividades} tamano="mediano" />
@@ -73,11 +116,6 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
         ) : null}
         {salida.descripcion ? (
           <p className="whitespace-pre-line text-base leading-7 text-texto">{salida.descripcion}</p>
-        ) : null}
-        {salida.archivoUrl ? (
-          <a href={salida.archivoUrl} download className={clasesDeBoton("secundario")}>
-            Bajar el archivo GPS
-          </a>
         ) : null}
       </Tarjeta>
 

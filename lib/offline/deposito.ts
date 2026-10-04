@@ -22,9 +22,12 @@ const NOMBRE = "trackapp-offline";
  *
  * La 1 tenía solo los recorridos. La 2 sumó los pedazos de mapa. La 3 sumó las
  * fotos de las anotaciones. La 4 suma las anotaciones marcadas sin señal que
- * esperan para subirse.
+ * esperan para subirse. La 5 suma las salidas registradas navegando.
+ *
+ * Subir de número **no borra nada**: al abrir, solo se agregan los estantes que
+ * faltan; lo que ya estaba guardado queda como estaba.
  */
-const VERSION = 4;
+const VERSION = 5;
 
 export const ESTANTES = {
   recorridos: "recorridos",
@@ -32,6 +35,7 @@ export const ESTANTES = {
   mapasDeSector: "mapas-de-sector",
   fotosDeAnotacion: "fotos-de-anotacion",
   anotacionesPendientes: "anotaciones-pendientes",
+  registrosDeSalida: "registros-de-salida",
 } as const;
 
 export type Estante = (typeof ESTANTES)[keyof typeof ESTANTES];

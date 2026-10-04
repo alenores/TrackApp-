@@ -99,9 +99,23 @@ chica y fina de la línea debajo (2 px, sin puntas, `--sobre-foto-linea`
   (ninguna, una o varias) y se muestra debajo. Se sumó «correr» como actividad
   en toda la app, y el ícono de canyoning pasó a ser alguien en rapel.
 
+### Octava vuelta: arreglos chicos y registrar salidas navegando
+- Avatar con aro fino del color de la tarjeta. Desplazamiento trabado al tocar
+  un dibujo (la línea, un ícono): la traba de «tirar para recargar» no
+  encontraba la lista desde un dibujo; arreglado con prueba. Ícono de descarga
+  del GPS con confirmación, que baja de verdad. Hasta 30 fotos por salida (las
+  demás se eligen de a varias). Fecha abajo y línea un poco más grande en la
+  tarjeta. Calendario de días con salidas.
+- Decisión 032: botón flotante de navegar en el celular, registro de la salida
+  mientras se navega (puntos automáticos y «Marcar acá», guardados en el
+  celular), y borrador que sube solo y se publica. Migraciones
+  `salidas_hasta_30_fotos` y `salidas_borrador_y_registro`; depósito del
+  celular en versión 5 (estante `registros-de-salida`).
+
 ### Deuda o inconsistencias detectadas
 Las pantallas de salidas no se pudieron mirar con sesión iniciada desde el
-navegador del agente: la verificación visual la hace Ale. Los trazos todavía
+navegador del agente: la verificación visual la hace Ale. Etapas 3 y 4 de la
+decisión 032 pendientes (fotos con lugar y fotos sobre el mapa). Los trazos todavía
 no se pueden tocar en el mapa para abrirlos (el mapa solo detecta puntos): se
 abren desde la lista.
 

@@ -8,8 +8,9 @@ import type { ActividadRuta } from "@/types/database";
  * La cabecera de un perfil. **La misma en tu perfil y en el de los demás.**
  *
  * La portada se ve entera, con la misma forma con que se recorta al subirla.
- * El avatar va mitad adentro y mitad afuera de la portada, sin aro y con una
- * sombra suave; el nombre, a su derecha, en la parte de afuera. Debajo, lo
+ * El avatar va mitad adentro y mitad afuera de la portada, con un aro fino
+ * del color de la tarjeta que lo separa de la foto, y una sombra suave; el
+ * nombre, a su derecha, en la parte de afuera. Debajo, lo
  * que practica (decidido por Ale el 2026-10-04).
  */
 
@@ -39,7 +40,11 @@ export function PortadaDePerfil({ portadaUrl, avatarUrl, nombre, detalle, activi
       </div>
 
       <div className="relative px-4 pb-4 sm:px-5">
-        <div className="absolute -top-10 left-4 flex rounded-full shadow-[var(--sombra-alta)] sm:left-5">
+        {/*
+          Un aro fino del color de la tarjeta separa el avatar de la portada y
+          le da aire. Va por fuera (no cambia el tamaño), así sigue redondo.
+        */}
+        <div className="absolute -top-10 left-4 flex rounded-full shadow-[var(--sombra-alta)] ring-[3px] ring-superficie sm:left-5">
           <Avatar src={avatarUrl} name={nombre} size="lg" sinBorde />
         </div>
         {/* El nombre arranca donde termina el avatar: 80 de avatar más el margen. */}

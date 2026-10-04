@@ -12,6 +12,10 @@ import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
+import { BotonFlotante } from "@/components/ui/boton-flotante-de-agregar";
+import { PreguntaDeRegistrar } from "@/components/navegacion/registro-de-salida";
+import { useRegistros } from "@/hooks/use-registros";
+import { elEnCurso, empezarUnRegistro } from "@/lib/salidas/registro";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Avatar } from "@/components/ui/avatar";
@@ -79,6 +83,8 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const [buscandoRecorrido, setBuscandoRecorrido] = useState(true);
   const [autor, setAutor] = useState<Perfil | null>(null);
   const [borrando, setBorrando] = useState(false);
+  const [preguntandoSiRegistrar, setPreguntandoSiRegistrar] = useState(false);
+  const hayUnaEnCurso = elEnCurso(useRegistros()) !== null;
   const [fondoElegido, setFondoElegido] = useState<TipoDeFondo>("dibujo");
 
   const ruta: RutaSinRecorrido | null =
@@ -191,6 +197,34 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
   const hayTextos = Boolean(
     ruta.equipo || ruta.complicaciones || ruta.comentario,
   );
+
+  const irANavegar = () =>
+    router.push(
+      `/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`,
+    );
+
+  // Antes de navegar se pregunta si registrar la salida. Si ya hay una en
+  // curso (se dejó para seguir después), se entra directo y se sigue esa.
+  const navegar = () => {
+    if (hayUnaEnCurso) {
+      irANavegar();
+      return;
+    }
+    setPreguntandoSiRegistrar(true);
+  };
+
+  const registrarYNavegar = async () => {
+    setPreguntandoSiRegistrar(false);
+    try {
+      await empezarUnRegistro(ruta.id, ruta.nombre);
+    } catch (causa) {
+      await avisar({
+        titulo: "No se pudo empezar a registrar",
+        mensaje: `${causa instanceof Error ? causa.message : String(causa)}. Podés navegar igual y empezar a registrar desde el mapa.`,
+      });
+    }
+    irANavegar();
+  };
 
   return (
     <div className="space-y-3">
@@ -348,15 +382,35 @@ export function RutaDetalle({ rutaId, miPerfilId }: RutaDetalleProps) {
         )}
       </Tarjeta>
 
-      <div className="flex justify-center">
-        <Boton
-          className="flex items-center gap-2 px-6"
-          onClick={() => router.push(`/navegacion/${ruta.id}?fondo=${fondoElegido}${idsEncendidos.length > 0 ? `&rutas=${idsEncendidos.join(",")}` : ""}`)}
-        >
+      {/* En la computadora, el botón de siempre. */}
+      <div className="hidden justify-center lg:flex">
+        <Boton className="flex items-center gap-2 px-6" onClick={navegar}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
           Navegar esta ruta
         </Boton>
       </div>
+
+      {/*
+        En el celular, flotante abajo a la derecha, al alcance del pulgar
+        (Ale, 2026-10-04). Navegar anda sin señal: este botón está siempre.
+        El lugar de abajo evita que tape lo último de la ficha.
+      */}
+      <div aria-hidden className="h-12 lg:hidden" />
+      <BotonFlotante etiqueta="Navegar esta ruta" alTocar={navegar} soloCelular>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        <circle cx="12" cy="12" r="6.5" />
+        <circle cx="12" cy="12" r="2.5" />
+      </BotonFlotante>
+
+      <PreguntaDeRegistrar
+        abierta={preguntandoSiRegistrar}
+        alCerrar={() => setPreguntandoSiRegistrar(false)}
+        alSoloNavegar={() => {
+          setPreguntandoSiRegistrar(false);
+          irANavegar();
+        }}
+        alRegistrar={() => void registrarYNavegar()}
+      />
     </div>
   );
 }

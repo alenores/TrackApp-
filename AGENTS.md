@@ -169,8 +169,10 @@ Maps, que también necesita internet.
   una pantalla de administración sin conexión.
 - Al tocar una pantalla, la única pregunta válida es: **¿esto es navegar?** Si
   no lo es, no hay nada que pensar sobre el offline.
-- **Salidas es 100 % con internet.** No se guarda en el celular, no se calienta
-  y no se mezcla con nada del cerro.
+- **Salidas es 100 % con internet**, con una sola excepción: **el registro en
+  curso** de una salida mientras se navega se guarda en el celular y sube solo,
+  como borrador, con señal y la navegación cerrada (decisión 032). Las
+  pantallas de salidas no se guardan en el celular ni se calientan.
 
 ### El usuario descarga en su casa. Tema cerrado.
 

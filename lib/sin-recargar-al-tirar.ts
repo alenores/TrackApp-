@@ -16,8 +16,13 @@ import { SELECTOR_DEL_MAPA } from "@/lib/sin-zoom";
  */
 
 /** El elemento que de verdad se desplaza bajo el dedo, si hay alguno. */
-function elQueSeDesplaza(desde: Element | null): HTMLElement | null {
+export function elQueSeDesplaza(desde: Element | null): HTMLElement | null {
+  // Un dibujo (la línea de una salida, un ícono) no es un elemento común de la
+  // página: se arranca desde el primero que lo contiene. Si no, la búsqueda se
+  // cortaba en el dibujo, se creía que arriba no quedaba nada y se frenaba el
+  // desplazamiento normal. Pasó en Salidas el 2026-10-04.
   let actual: Element | null = desde;
+  while (actual && !(actual instanceof HTMLElement)) actual = actual.parentElement;
   while (actual instanceof HTMLElement) {
     const { overflowY } = getComputedStyle(actual);
     const seDesplaza = (overflowY === "auto" || overflowY === "scroll") &&

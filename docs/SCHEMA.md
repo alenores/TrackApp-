@@ -192,12 +192,16 @@ convenciones y tenía una sola fila de prueba.
 | `desnivel_positivo_m` | integer | opcional, no negativo |
 | `desnivel_negativo_m` | integer | opcional, no negativo |
 | `archivo_url` | text | el archivo GPS, en `archivos-ruta`, carpeta del usuario, `salida-<id>.<ext>` |
+| `estado` | text | `borrador` · `publicada`. Por defecto `publicada`. El borrador lo ve solo quien lo hizo (decisión 032) |
+| `ruta_id` | bigint | la ruta navegada, si se registró navegando una |
+| `codigo_local` | uuid | el código del celular de una salida registrada. Único: evita dos borradores si una subida se corta |
 | `linea_simplificada` | jsonb | la línea achicada a ~150 puntos `[lon, lat]`, sacada del archivo GPS al cargarlo, para dibujarla sobre la portada. Vacía sin archivo |
 
 Más `creado_en`, `actualizado_en` (con disparador) y `eliminado_en`.
 
-**Permisos:** el usuario logueado ve las salidas vivas de todos (y las suyas
-borradas); crea y edita solo las suyas. No hay permiso de borrar: borrar es
+**Permisos:** el usuario logueado ve las salidas publicadas y vivas de todos, y
+todas las suyas (borradores y borradas); crea y edita solo las suyas. Un
+borrador puede no tener actividad; una publicada, al menos una. No hay permiso de borrar: borrar es
 marcar `eliminado_en`.
 
 ## salidas_fotos

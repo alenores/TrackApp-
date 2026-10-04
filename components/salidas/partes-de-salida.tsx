@@ -21,7 +21,7 @@ const ALTO_DEL_LIENZO = Math.round(ANCHO_DEL_LIENZO / PROPORCION_DE_LA_PORTADA_D
  * Dónde se dibuja la línea: chica, centrada, debajo de los números. Es una
  * firma del recorrido, no un mapa: si fuera grande taparía la foto.
  */
-const ZONA_DE_LA_LINEA = { x: 130, y: 146, ancho: 60, alto: 50 };
+const ZONA_DE_LA_LINEA = { x: 124, y: 140, ancho: 72, alto: 60 };
 
 /** El velo que aparta los números de la foto sin apagarla. */
 const VELO_DEL_CENTRO =
@@ -29,8 +29,8 @@ const VELO_DEL_CENTRO =
 
 /**
  * La portada, a la manera de Strava: un bloque liviano y centrado con los
- * números en fila y, debajo, una firma chica y fina del recorrido. El título y
- * el día, arriba a la izquierda. La foto casi no se oscurece: queda de fondo,
+ * números en fila y, debajo, una firma chica y fina del recorrido. El título
+ * arriba a la izquierda y el día abajo a la izquierda. La foto casi no se oscurece: queda de fondo,
  * entremezclada con los datos, no tapada por ellos (pedido de Ale, 2026-10-02).
  *
  * Todo lo de encima va claro, igual en modo sol y en modo noche: la foto no
@@ -122,10 +122,25 @@ export function PortadaDeSalida({
         <h2 className="truncate text-base font-semibold leading-tight text-sobre-foto-texto drop-shadow">
           {salida.titulo}
         </h2>
-        <p className="text-xs font-medium text-sobre-foto-texto-suave drop-shadow">
+        {!conDatos ? (
+          <p className="text-xs font-medium text-sobre-foto-texto-suave drop-shadow">
+            {diaEnPalabras(salida.fecha)}
+          </p>
+        ) : null}
+      </div>
+
+      {salida.estado === "borrador" ? (
+        <p className="absolute bottom-2 right-3 rounded-full border border-ambar-borde bg-ambar-fondo px-2.5 py-0.5 text-xs font-semibold text-ambar-texto">
+          Borrador · sin publicar
+        </p>
+      ) : null}
+
+      {/* En la tarjeta, el día va abajo a la izquierda (Ale, 2026-10-04). */}
+      {conDatos ? (
+        <p className="absolute bottom-2.5 left-3.5 text-xs font-medium text-sobre-foto-texto-suave drop-shadow">
           {diaEnPalabras(salida.fecha)}
         </p>
-      </div>
+      ) : null}
 
       {numeros.length > 0 ? (
         <dl className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 text-center drop-shadow-md">

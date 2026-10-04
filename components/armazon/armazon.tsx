@@ -17,6 +17,8 @@ import { BotonFlotanteDeAgregar } from "@/components/ui/boton-flotante-de-agrega
 import { useDialogos } from "@/components/ui/dialogos";
 import { usePendientes } from "@/hooks/use-pendientes";
 import { useSubirPendientes } from "@/hooks/use-subir-pendientes";
+import { useSubirRegistros } from "@/hooks/use-subir-registros";
+import { useRegistros } from "@/hooks/use-registros";
 import { cuantosPendientesQuedan } from "@/lib/anotaciones/en-pantalla";
 import { anotarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 
@@ -44,6 +46,8 @@ export function Armazon({
   const [loggingOut, setLoggingOut] = useState(false);
   const pendientes = usePendientes();
   const sinSubir = cuantosPendientesQuedan(pendientes);
+  // Las salidas registradas navegando que todavía no subieron, en curso o no.
+  const salidasSinSubir = useRegistros().length;
 
   // Quién sos, guardado para la navegación, que no le pregunta a la base.
   useEffect(() => {
@@ -52,6 +56,8 @@ export function Armazon({
 
   // Lo marcado sin señal sube solo apenas hay señal y no estás navegando.
   useSubirPendientes(miPerfilId);
+  // Y las salidas registradas navegando, igual: con señal y fuera del mapa.
+  useSubirRegistros(miPerfilId);
   const showNewRouteFab = pathname === "/rutas" || pathname === "/";
 
   /**
@@ -68,8 +74,21 @@ export function Armazon({
     const seguro = await confirmar({
       titulo: "¿Cerrar sesión?",
       mensaje:
-        sinSubir > 0
-          ? `Se borra de este celular todo lo bajado, y también ${sinSubir === 1 ? "una anotación que marcaste sin señal y todavía no se subió" : `${sinSubir} anotaciones que marcaste sin señal y todavía no se subieron`}: esas se pierden. Si podés, esperá a que se suban.`
+        sinSubir > 0 || salidasSinSubir > 0
+          ? `Se borra de este celular todo lo bajado, y también ${[
+              sinSubir === 1
+                ? "una anotación que marcaste sin señal y todavía no se subió"
+                : sinSubir > 1
+                  ? `${sinSubir} anotaciones que marcaste sin señal y todavía no se subieron`
+                  : null,
+              salidasSinSubir === 1
+                ? "una salida registrada que todavía no se subió"
+                : salidasSinSubir > 1
+                  ? `${salidasSinSubir} salidas registradas que todavía no se subieron`
+                  : null,
+            ]
+              .filter(Boolean)
+              .join(", y ")}: eso se pierde. Si podés, esperá a que se suba.`
           : "Se borra de este celular todo lo bajado: las rutas, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
       textoDeAceptar: "Cerrar sesión",
       destructivo: true,

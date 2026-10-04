@@ -3,6 +3,7 @@ import { olvidarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 import { borrarTodosLosMapasDelCelular } from "@/lib/mapas/descarga";
 import { borrarPaquete } from "@/lib/offline/paquete";
 import { borrarTodosLosRecorridos } from "@/lib/offline/recorridos";
+import { borrarTodosLosRegistros } from "@/lib/salidas/registro";
 
 /**
  * Borrar del celular todo lo de la cuenta que se va.
@@ -35,6 +36,13 @@ export async function borrarLoGuardadoEnElCelular(): Promise<void> {
     // Lo marcado sin señal que no subió era de la cuenta que se va. Se avisa
     // antes, en el cartel de cerrar sesión.
     await borrarTodosLosPendientes();
+  } catch {
+    // Ídem.
+  }
+
+  try {
+    // Las salidas registradas navegando que no subieron: ídem, se avisa antes.
+    await borrarTodosLosRegistros();
   } catch {
     // Ídem.
   }
