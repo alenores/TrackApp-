@@ -12,6 +12,12 @@ nombre del concepto ni como texto de la app. En este informe se usa
 **Circuito**; el aviso por separaciones se llama **«Partes sin unir»**. Esta
 corrección no aprueba ni modifica las propuestas técnicas de Claude.
 
+**Decisión posterior de Alejandro (044):** el Circuito se dibuja directamente
+punto por punto. Si dos puntos seguidos caen sobre el mismo Camino, la línea
+sigue ese Camino; si el siguiente cae fuera, continúa libremente. No hay un
+paso obligatorio de elegir Camino ni modos separados de dibujo. Cualquier
+propuesta de editor que suponga esos pasos queda superada por esta decisión.
+
 Cada afirmación importante lleva una marca:
 
 - **[verificada]**: comprobada hoy en el código, en la migración o en el

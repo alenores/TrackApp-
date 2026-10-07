@@ -17,6 +17,10 @@ evidente en el mapa, aunque esa vía nunca se haya marcado como Camino.
   sobre vías evidentes del mapa que no estén marcadas como Caminos.
 - Un Circuito puede combinar ambas formas o usar solo una de ellas. Los puntos
   y trazos sirven como referencia visual; no son componentes obligatorios.
+- El editor se usa dibujando directamente el Circuito, punto por punto. Cuando
+  dos puntos consecutivos caen sobre un mismo Camino, la línea sigue ese
+  Camino; al tocar fuera, continúa libremente. No se elige un Camino como paso
+  obligatorio ni se cambia de modo. Ver decisión 044.
 - Crear o editar un Circuito no crea ni modifica Caminos, puntos o trazos.
 - Mapas/Caminos se puede implementar y probar como funcionalidad independiente.
   El diseño de Circuitos comienza en paralelo con las pruebas de Caminos;

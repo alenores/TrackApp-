@@ -1,65 +1,58 @@
-# Editor de Circuitos: boceto guiado para revisión
+# Boceto del dibujo de Circuitos: notas
 
-**Estado:** segunda propuesta de Codex, 2026-10-07. No está aprobada por Ale.
-Reemplaza el primer dibujo de la misma página, que Ale encontró inentendible y
-visualmente anticuado. No cambia la app, no consulta datos y no guarda nada.
+**Estado:** tercera propuesta de Codex, 2026-10-07. No aprobada por Alejandro.
+Reemplaza los dos bocetos anteriores de la misma página después de la
+corrección expresa de Ale. Es un ejemplo local: no lee datos ni guarda nada.
 
-## Qué se intenta mostrar
+## Regla de uso que Ale confirmó
 
-El Circuito se arma en tres pasos visibles en la parte superior de la página:
+El usuario marca con el mouse, punto a punto, por dónde irá el Circuito. Puede
+empezar en cualquier lugar del mapa. **No se elige un Camino para iniciar un
+Circuito.** Si dos puntos consecutivos caen sobre el mismo Camino, la línea
+del Circuito sigue la forma de ese Camino entre ambos. Si el siguiente punto
+cae fuera, la línea sale del Camino y llega a ese punto; se puede seguir
+dibujando libremente. Más adelante puede volver a seguir otro Camino. No hacen
+falta modos separados «usar Camino» y «dibujar parte propia», ni porcentajes.
 
-1. **Entender.** Una pantalla breve explica con ejemplos qué se puede hacer:
-   usar un Camino del mapa, dibujar una parte propia y revisar el Circuito
-   antes de salir. No exige interpretar controles antes de conocer el objetivo.
-2. **Armar.** El mapa ocupa el lugar principal y el costado ofrece dos acciones
-   alternativas. Para usar un Camino, se toca su línea; después se elige usar
-   todo o marcar inicio y final sobre la misma línea. Para dibujar, se tocan
-   puntos sobre el mapa y se termina la parte. Debajo aparecen las partes
-   incorporadas, en orden, con botones normales para moverlas o quitarlas.
-3. **Revisar.** Se muestra el Circuito armado, se escribe el nombre y se ven
-   los avisos. Una separación entre partes se indica como **«Partes sin unir»**:
-   no se dibuja un enlace inventado ni se bloquea guardar. Un botón del boceto
-   simula la corrección de un Camino para mostrar el otro aviso previo.
+Mapas/Caminos y Circuitos siguen siendo conceptos independientes: dibujar el
+Circuito no crea ni edita Caminos, puntos o trazos. Un Camino existente solo
+sirve como guía geométrica cuando los puntos marcados lo aprovechan. Ver
+decisión 044.
 
-La línea azul representa el Circuito completo sin crear otro Camino en Mapas.
-La procedencia de cada parte figura en la lista: tomada de un Camino o dibujada
-solo para este Circuito. El color y estilo de los Caminos marcados se mantienen
-en el mapa de ejemplo para recordar que siguen siendo contenido de Mapas.
+## Separación de textos en el boceto
 
-## Qué está decidido y qué está propuesto
+- **Dentro del marco blanco de TrackApp** están únicamente los títulos,
+  instrucciones, botones y mensajes propuestos para la app.
+- **Fuera del marco, sobre fondo violeta y borde punteado**, están las notas
+  para que Ale comprenda y pruebe el ejemplo. Todas dicen explícitamente
+  «no aparece en la app». Los botones de reiniciar el ejemplo viven ahí.
 
-**Decidido por Ale:** los Circuitos pueden mezclar partes de Caminos y partes
-propias; no modifican Mapas; los tramos tomados siguen las correcciones de su
-Camino; se avisa antes de salir; un Circuito con partes sin unir se puede
-guardar y muestra un aviso. El nombre del concepto es **Circuito**, no un
-sinónimo introducido por el agente.
+## Qué se puede probar
 
-**Propuesta visual de Codex, pendiente de Ale:** recorrido de tres pantallas,
-ubicación de botones, elección directa de extremos sobre el mapa, línea azul
-para el Circuito, lista ordenada debajo del mapa y avisos al revisar.
+1. Tocar dos lugares del Camino verde: la línea azul sigue los quiebres de ese
+   Camino, no une esos toques en línea recta.
+2. Tocar un lugar fuera del Camino: la línea azul sale hacia el nuevo punto.
+3. Tocar otros lugares libres y luego dos sobre un Camino: se retoma su forma.
+4. «Deshacer último punto» quita solo el último toque. El modo sol/noche cambia
+   los colores del ejemplo.
 
-**Pendiente de decisiones de producto:** una o varias actividades por
-Circuito, repetir una porción de Camino, comportamiento de Caminos retirados o
-reclasificados, relación con Salidas y alcance final de los datos globales. El
-boceto no muestra controles para esas decisiones todavía.
+## Límites de la demostración
 
-## Límites del ejemplo
+El mapa y sus Caminos son inventados; no representan Ascochinga. Una cercanía
+de 18 unidades del dibujo se toma como toque sobre Camino, solo para la
+demostración. En la implementación real habrá que ajustar la selección según
+el acercamiento y resolver los casos donde se cruzan o superponen Caminos. El
+ejemplo no calcula distancia, esfuerzo, desnivel ni mapas faltantes, y no
+demuestra todavía el guardado ni la navegación. La línea corregida de un
+Camino y los avisos previos acordados siguen pendientes de implementación.
 
-- El fondo del mapa, sus Caminos y sus puntos son inventados. Sirven para
-  explicar la interacción; no son datos de Ascochinga.
-- La longitud y la distancia entre partes se miden en el dibujo de ejemplo,
-  solo para mostrar un aviso. La app real deberá calcularlas sobre el terreno.
-- La corrección simulada mueve un punto de un Camino del ejemplo; no demuestra
-  todavía el algoritmo definitivo para mantener exactamente sus extremos.
-- «Guardar Circuito» muestra un mensaje y no escribe datos. Recargar reinicia
-  el ejemplo.
-- La revisión visual automatizada de archivos `file:` fue rechazada por la
-  política del navegador; se comprobó la sintaxis del JavaScript, pero hace
-  falta la revisión visual y de clics de Ale. Eso es parte de la aprobación
-  previa a tocar las pantallas de la app.
+La herramienta de navegador del agente rechazó abrir este archivo `file:` por
+su política de seguridad. Se revisó la sintaxis del JavaScript, pero no se
+puede afirmar que el aspecto o los clics hayan sido comprobados visualmente.
+Ale puede abrir y evaluar el boceto local; no está aprobado por haberlo creado.
 
 ## Auditoría de fuentes
 
-- **Leído en tiempo real:** decisiones 034, 037, 042 y 043; glosario; reglas de diseño exterior; primer boceto y crítica concreta de Ale.
-- **Inferido:** separar las acciones en tres pasos reduce la cantidad de controles simultáneos y hace visible por qué se usa cada uno.
-- **Pendiente de verificación:** revisión de Ale, informe técnico de Claude en lo relativo a extremos vinculados y ejecución del editor real.
+- **Leído en tiempo real:** corrección expresa de Ale en la conversación, decisiones 034, 042 y 043, glosario, reglas de diseño exterior y versiones anteriores del boceto.
+- **Inferido:** un toque libre después de uno sobre Camino se conecta por una línea hacia el punto libre; no inventa una continuación por otro Camino.
+- **Pendiente de verificación:** evaluación de Ale del boceto; selección en cruces; avisos y vínculo de geometría en la app real.

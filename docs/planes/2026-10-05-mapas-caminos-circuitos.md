@@ -164,16 +164,20 @@ partes tomadas de un Camino conservan el vínculo y siguen las correcciones de
 su línea. Antes de salir se avisa del cambio (decisión 042). Si partes del
 Circuito quedan sin unir, se permite guardarlo con aviso de partes sin unir y
 sin inventar el enlace (decisión 043).
+Ale definió después que el editor dibuja el Circuito punto por punto desde
+cualquier lugar: dos toques consecutivos sobre el mismo Camino hacen que la
+línea siga su curso, y un toque fuera la hace salir. No hay selección previa
+obligatoria de Caminos ni modos separados (decisión 044).
 
 ## Decisiones pendientes antes de implementar
 
 Estas preguntas no se responderán por suposición ni por lo que hace la app
 vieja. Se plantearán a Ale en conversaciones breves y se esperará su respuesta:
 
-1. **Armado de un circuito:** debe poder combinar partes de Caminos sin
-   redibujarlas y partes dibujadas solo para el Circuito. Ya se decidió que las
-   partes vinculadas siguen las correcciones del Camino y que las separaciones
-   se guardan con aviso; faltan las reglas concretas de selección y edición.
+1. **Armado de un circuito:** se dibuja punto por punto. Si dos puntos seguidos
+   están en el mismo Camino, se sigue su línea; fuera de él, el dibujo sigue
+   libre. Las partes vinculadas siguen las correcciones del Camino y las
+   separaciones se guardan con aviso. Falta resolver la selección en cruces.
 2. **Permisos:** las categorías para el contenido del mapa y los Circuitos
    ya están definidas arriba. Para clasificar una parte de un Camino se aplica
    la regla de edición del Camino. Falta traducir la decisión a controles de

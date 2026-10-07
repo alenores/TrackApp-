@@ -222,6 +222,9 @@ ni modifica contenido de Mapas. Su desarrollo queda para una etapa posterior.
 Es distinto de una **Salida**, que cuenta lo que ocurrió realmente.
 En la pantalla se dice **Circuito**; no se introduce «plan» como nombre
 alternativo. Si sus partes quedan separadas, se avisa **«Partes sin unir»**.
+Se dibuja marcando puntos directamente sobre el mapa. Puede empezar en
+cualquier lugar. Si dos puntos seguidos caen sobre un mismo Camino, la línea
+del Circuito sigue ese Camino entre los dos; luego puede salir libremente.
 
 **Ruta**
 La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,

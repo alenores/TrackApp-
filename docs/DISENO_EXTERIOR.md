@@ -52,6 +52,16 @@ parte se ven su condición, complejidad, observación y fecha disponible. La
 valoración de esfuerzo y dificultad técnica de la ruta completa queda en su
 ficha y no interviene en el dibujo. Ver decisión 033.
 
+### Dibujo de Circuitos en computadora
+
+El Circuito se marca directamente, punto por punto, sin pedir que primero se
+elija un Camino. Si dos puntos consecutivos caen sobre el mismo Camino, la
+línea del Circuito sigue ese Camino; si el siguiente cae fuera, se separa y
+continúa hacia el punto libre. No hay dos herramientas entre las que alternar
+para «usar Camino» o «dibujar parte propia». Ver decisión 044. Las notas
+explicativas de un boceto se muestran fuera de la pantalla de la app, con un
+tratamiento visual distinto y una etiqueta explícita de que no se publicarán.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

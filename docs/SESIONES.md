@@ -26,6 +26,11 @@ edición, permisos y modo avión. Circuitos todavía no existía.
 - Ale encontró ese primer boceto difícil de entender y visualmente anticuado.
   Se reemplazó por una segunda propuesta guiada en tres pasos: entender,
   armar sobre el mapa y revisar el Circuito. Sigue sin aprobación.
+- Ale corrigió el concepto central: el Circuito se dibuja marcando puntos
+  directamente, sin elegir Camino ni alternar herramientas. Si dos puntos
+  seguidos caen sobre un Camino, la línea sigue su forma; un punto fuera hace
+  salir de él. Se reemplazó el segundo boceto por uno centrado en esa única
+  acción y se separaron visualmente las notas para Ale de la pantalla propuesta.
 
 ### Decisiones tomadas
 
@@ -33,6 +38,7 @@ Ale confirmó las dos reglas anteriores. Las decisiones de selección, orden,
 relación con Salidas y otras respuestas de uso siguen pendientes.
 Después corrigió la terminología: la pantalla debe decir «Circuito» y «Partes
 sin unir», sin introducir «plan» como nombre alternativo.
+Confirmó el dibujo directo del Circuito descrito en la decisión 044.
 Claude alcanzó a terminar su informe técnico con la terminología anterior.
 Codex revisó que fuera solo un informe, corrigió allí esas menciones y dejó
 registrada la corrección editorial sin aprobar propuestas técnicas.
@@ -40,7 +46,8 @@ registrada la corrección editorial sin aprobar propuestas técnicas.
 ### Documentos actualizados
 
 Decisiones 034, 042 y 043; plan de separación; encargo técnico e informe de
-Claude, boceto del editor y sus notas, y este registro.
+Claude, boceto del editor y sus notas, glosario, diseño exterior, decisión 044
+y este registro.
 
 ### Deuda o inconsistencias detectadas
 
