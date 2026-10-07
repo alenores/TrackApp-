@@ -191,7 +191,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
           {datos.omitidos.map((elemento) => <p key={elemento.orden} className="text-base text-ambar-texto">{elemento.nombre ?? `Elemento ${elemento.orden + 1}`}: {elemento.motivo}</p>)}
           {vistaPrevia ? (
             <div className="space-y-2">
-              <p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}` : "Vista previa del archivo completo"}. Los demás Caminos se muestran más tenues.</p>
+              <p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}. Las demás líneas se ven más tenues.` : "Vista previa del archivo completo. Elegí «Ver en el mapa» para destacar una línea o un punto."}</p>
               <CargadorDeMapa key={`${nombreDelArchivo}-${elementoEnVista?.tipo ?? "todo"}-${elementoEnVista?.indice ?? 0}`}
                 enVivo principal caminos={vistaPrevia.caminos} verticesDeCamino={vistaPrevia.punto}
                 encuadre={vistaPrevia.encuadre} />

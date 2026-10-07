@@ -28,6 +28,9 @@ paquete del celular y la restricción efectiva de Anotaciones para Normal.
 - Se inspeccionaron las pantallas de Mapas y de importación en modo sol y noche.
   La herramienta de navegador impidió elegir el KML local en el formulario,
   por lo que no se probó el flujo completo de importación en pantalla.
+- Ale probó el KML en la versión publicada: aparecen siete líneas y ningún
+  punto. Su captura mostró un aviso falso de mapa vacío sobre una línea visible;
+  se corrigió la condición del aviso y el texto de la vista previa.
 
 ### Decisiones tomadas
 
