@@ -18,6 +18,11 @@ sigue ese Camino; si el siguiente cae fuera, continúa libremente. No hay un
 paso obligatorio de elegir Camino ni modos separados de dibujo. Cualquier
 propuesta de editor que suponga esos pasos queda superada por esta decisión.
 
+**Decisión posterior de Alejandro (045):** si un Camino usado por un Circuito
+se retira de Mapas, esa parte sigue visible dentro del Circuito con un aviso
+antes de salir. Responde la pregunta 1 de la sección 8; el mecanismo técnico
+de conservación y sincronización sigue pendiente.
+
 Cada afirmación importante lleva una marca:
 
 - **[verificada]**: comprobada hoy en el código, en la migración o en el
@@ -53,8 +58,9 @@ Cada afirmación importante lleva una marca:
    dibujo del Circuito (dos partes que no se tocan); sin paso es una clasificación
    de una parte de un Camino para una actividad. Se calculan, guardan y avisan
    por separado.
-6. Hay **nueve decisiones de uso pendientes** (sección 8). Cinco frenan la
-   lógica de la primera fase; cuatro pueden esperar al boceto.
+6. La sección 8 contiene las preguntas de uso del informe original. La
+   primera quedó respondida después, en la decisión 045; las otras siguen
+   pendientes.
 
 ---
 
@@ -374,7 +380,7 @@ antes de salir**. Lo que sigue es cómo calcular dónde quedan sus extremos.
 | `siguio` | Hubo corrección, el traslado es confiable | Aviso «cambió el Circuito» antes de salir, con el largo antes y después |
 | `a_revisar` | Hubo corrección y el traslado no es seguro | Aviso más fuerte antes de salir, señalando la parte en el mapa. La línea que se dibuja es **siempre la corregida**, nunca la vieja |
 | `sin_lugar` | El tramo elegido desapareció entero de la línea | Se dibuja como separación: el Circuito queda con partes sin unir (sección 4) |
-| `camino_retirado` | El Camino fue retirado | Depende de la pregunta 1 |
+| `camino_retirado` | El Camino fue retirado | La parte sigue visible con aviso antes de salir (decisión posterior 045) |
 
 Así **nunca se cambia la regla en silencio**: el Circuito sigue la corrección
 en todos los casos; lo único que varía es cuán fuerte avisa.
@@ -626,8 +632,9 @@ Circuitos se propone lo mismo por coherencia, pero no está decidido.
 - La base no borra el Camino, así que la referencia nunca queda colgando: el
   número sigue existiendo y su última línea se puede leer.
 - Lo que no se permite es **anclar de nuevo** a un Camino retirado.
-- Qué se muestra depende de la pregunta 1. Si el Circuito queda inservible, el
-  aviso va antes de salir con el nombre del Camino.
+- La decisión posterior 045 exige mantener esa parte visible con un aviso
+  antes de salir. La forma de conservar la línea sigue siendo una propuesta
+  técnica por resolver. El aviso debe identificar el Camino retirado.
 
 ---
 
@@ -681,10 +688,8 @@ Solo decisiones de uso. Cada una tiene la consecuencia si no se responde.
 
 **Frenan la lógica de la primera fase:**
 
-1. **Si se retira un Camino que usa tu Circuito:** (a) el Circuito sigue
-   mostrando esa parte con un aviso, o (b) esa parte desaparece y el Circuito
-   queda con partes sin unir. *Sin respuesta:* los Circuitos con Caminos retirados no
-   se pueden preparar para salir.
+1. **Respondida en la decisión 045.** Si se retira un Camino que usa tu
+   Circuito, esa parte sigue visible con un aviso antes de salir.
 2. **Si cambia la clasificación de una parte que usa tu Circuito, ¿se avisa
    antes de salir?** (a) solo si pasa a «a pie» o «sin paso», (b) cualquier
    cambio, o (c) no se avisa. *Sin respuesta:* solo se avisan correcciones de

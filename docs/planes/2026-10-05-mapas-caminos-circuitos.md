@@ -3,8 +3,12 @@
 **Estado al 2026-10-07:** Mapas/Caminos está publicado y Ale empezó la prueba
 de importación con su KML: aparecen siete líneas y ningún punto. Falta probar
 el guardado y la edición completos, los permisos con las tres categorías y el
-uso real en modo avión. En paralelo comienza el diseño de Circuitos; todavía
-no existe como módulo, tabla ni editor.
+uso real en modo avión. Circuitos ya tiene boceto aprobado y la primera lógica
+de dibujo probada; todavía no tiene tabla, pantalla ni navegación.
+
+Si se retira de Mapas un Camino utilizado por un Circuito, esa parte sigue
+visible dentro del Circuito con un aviso antes de salir (decisión 045). La
+implementación de esta regla sigue pendiente.
 
 ## Por qué se plantea
 
@@ -28,7 +32,8 @@ actividad, esfuerzo y dificultad globales. Esa mezcla originó la revisión.
   también actividad, largo, desniveles, dificultad técnica y esfuerzo global.
 - **Salidas** ya existe y significa lo que efectivamente ocurrió un día. Su
   registro puede referirse a `ruta_id`; no es sinónimo de un Circuito futuro.
-- **Circuitos no existe**: no hay módulo, tabla ni editor con ese nombre.
+- **Circuitos todavía no funciona en la app**: se preparó la lógica pura del
+  dibujo, pero no hay tabla, editor integrado ni navegación.
 - Hay un **prototipo local sin publicar y sin confirmar** que divide una ruta
   actual en partes, les asigna condición de paso y complejidad, las dibuja en
   el mapa y ofrece las líneas de un KML por separado. Está en cambios locales

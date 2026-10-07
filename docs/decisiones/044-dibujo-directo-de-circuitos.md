@@ -1,7 +1,7 @@
 # 044 — Dibujar el Circuito directamente, punto por punto
 
-**Decidido por Alejandro:** 2026-10-07 · **Estado:** definición de producto;
-implementación pendiente
+**Decidido por Alejandro:** 2026-10-07 · **Estado:** definición de producto y
+boceto aprobados; lógica pura implementada, pantalla y guardado pendientes
 
 ## Decisión
 
@@ -26,12 +26,12 @@ salir, según la decisión 042.
 Definir la tolerancia con que un toque se reconoce como «sobre un Camino» en
 distintos acercamientos y qué pasa si dos Caminos se cruzan o se superponen.
 Esto no cambia la interacción principal de un solo dibujo punto por punto.
-El boceto revisado está en `docs/bocetos/circuitos-editor.html` y todavía no
-está aprobado por Ale.
+El boceto revisado está en `docs/bocetos/circuitos-editor.html`. Ale lo aprobó
+explícitamente el 2026-10-07: «ahora sí está correcto, bien simple. Confirmado».
 
 ## Auditoría de fuentes
 
 - **Leído en tiempo real:** decisiones 034 y 042, bocetos anteriores y corrección explícita de Ale en la conversación.
 - **Decidido por Alejandro:** dibujo directo del Circuito con el mouse; puede empezar fuera de cualquier Camino; si los dos puntos caen sobre el mismo Camino, seguir su curso; al tocar fuera, salir de él; sin botones ni porcentajes para seleccionar Caminos.
 - **Inferido:** el toque sobre Camino debe identificarse por cercanía geométrica sin convertir el Camino en requisito de creación.
-- **Pendiente de verificación:** aprobación visual del boceto, detalles de cruces y comportamiento en la app real.
+- **Pendiente de verificación:** detalles de cruces y comportamiento en la app real.

@@ -17,7 +17,7 @@ edición, permisos y modo avión. Circuitos todavía no existía.
 - Se documentó el vínculo dinámico entre Circuitos y Caminos y el aviso previo
   cuando se corrige la línea de un Camino.
 - Se documentó que un Circuito con partes sin unir puede guardarse, siempre
-  con aviso de plan incompleto y sin dibujar un enlace supuesto.
+  con aviso «Partes sin unir» y sin dibujar un enlace supuesto.
 - Se preparó un encargo técnico detallado y limitado para que Claude estudie
   Circuitos en paralelo, sin tocar la app ni la base.
 - Se preparó un primer boceto local del editor de Circuitos, todavía sin
@@ -31,6 +31,14 @@ edición, permisos y modo avión. Circuitos todavía no existía.
   seguidos caen sobre un Camino, la línea sigue su forma; un punto fuera hace
   salir de él. Se reemplazó el segundo boceto por uno centrado en esa única
   acción y se separaron visualmente las notas para Ale de la pantalla propuesta.
+- Ale revisó esa tercera versión y la aprobó: «ahora sí está correcto, bien
+  simple. Confirmado».
+- Ale confirmó que un Camino retirado sigue visible dentro del Circuito que
+  lo utiliza, con un aviso antes de salir. Quedó en la decisión 045.
+- Se implementó por separado la lógica de dibujo: toques libres o sobre un
+  Camino, seguimiento de su forma entre dos toques consecutivos y salida hacia
+  un punto libre. Seis pruebas automáticas pasan; tipos y lint no dan errores.
+  Todavía no se conectó a ninguna pantalla ni se guardan Circuitos.
 
 ### Decisiones tomadas
 
@@ -39,6 +47,8 @@ relación con Salidas y otras respuestas de uso siguen pendientes.
 Después corrigió la terminología: la pantalla debe decir «Circuito» y «Partes
 sin unir», sin introducir «plan» como nombre alternativo.
 Confirmó el dibujo directo del Circuito descrito en la decisión 044.
+Confirmó el boceto visual correspondiente antes de implementar la pantalla.
+Confirmó la visibilidad y el aviso por un Camino retirado en la decisión 045.
 Claude alcanzó a terminar su informe técnico con la terminología anterior.
 Codex revisó que fuera solo un informe, corrigió allí esas menciones y dejó
 registrada la corrección editorial sin aprobar propuestas técnicas.
@@ -46,8 +56,8 @@ registrada la corrección editorial sin aprobar propuestas técnicas.
 ### Documentos actualizados
 
 Decisiones 034, 042 y 043; plan de separación; encargo técnico e informe de
-Claude, boceto del editor y sus notas, glosario, diseño exterior, decisión 044
-y este registro.
+Claude, boceto del editor y sus notas, glosario, diseño exterior, decisiones 044
+y 045, arquitectura y este registro.
 
 ### Deuda o inconsistencias detectadas
 
@@ -56,9 +66,10 @@ reflejan el concepto anterior. No se renombrarán ni migrarán por inercia.
 
 ### Pendientes para la próxima
 
-Revisar con Ale el informe de Claude y el boceto de Circuitos,
-resolver las decisiones de producto que el editor exige, y recién entonces
-implementar por etapas. Completar la prueba independiente de Caminos.
+Resolver las decisiones de producto que faltan para guardar, actualizar y
+navegar Circuitos. Conectar la lógica de dibujo a la pantalla aprobada cuando
+su contrato de datos esté definido. Completar la prueba independiente de
+Caminos.
 
 ## Sesión 2026-10-07 — Caminos integrados en Mapas
 

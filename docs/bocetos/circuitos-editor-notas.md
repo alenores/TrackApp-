@@ -1,6 +1,7 @@
 # Boceto del dibujo de Circuitos: notas
 
-**Estado:** tercera propuesta de Codex, 2026-10-07. No aprobada por Alejandro.
+**Estado:** aprobada por Alejandro el 2026-10-07 («ahora sí está correcto, bien
+simple. Confirmado»). Sigue siendo un ejemplo local, no la app implementada.
 Reemplaza los dos bocetos anteriores de la misma página después de la
 corrección expresa de Ale. Es un ejemplo local: no lee datos ni guarda nada.
 
@@ -49,10 +50,11 @@ Camino y los avisos previos acordados siguen pendientes de implementación.
 La herramienta de navegador del agente rechazó abrir este archivo `file:` por
 su política de seguridad. Se revisó la sintaxis del JavaScript, pero no se
 puede afirmar que el aspecto o los clics hayan sido comprobados visualmente.
-Ale puede abrir y evaluar el boceto local; no está aprobado por haberlo creado.
+Ale revisó y aprobó el concepto de interacción del boceto. Su aprobación no
+convierte las limitaciones del ejemplo en reglas de la app definitiva.
 
 ## Auditoría de fuentes
 
 - **Leído en tiempo real:** corrección expresa de Ale en la conversación, decisiones 034, 042 y 043, glosario, reglas de diseño exterior y versiones anteriores del boceto.
 - **Inferido:** un toque libre después de uno sobre Camino se conecta por una línea hacia el punto libre; no inventa una continuación por otro Camino.
-- **Pendiente de verificación:** evaluación de Ale del boceto; selección en cruces; avisos y vínculo de geometría en la app real.
+- **Pendiente de verificación:** selección en cruces; avisos y vínculo de geometría en la app real.
