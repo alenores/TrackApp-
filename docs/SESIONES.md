@@ -23,6 +23,9 @@ edición, permisos y modo avión. Circuitos todavía no existía.
 - Se preparó un primer boceto local del editor de Circuitos, todavía sin
   aprobación: combina partes de Caminos y partes dibujadas, muestra las
   separaciones y simula una corrección de Camino.
+- Ale encontró ese primer boceto difícil de entender y visualmente anticuado.
+  Se reemplazó por una segunda propuesta guiada en tres pasos: entender,
+  armar sobre el mapa y revisar el Circuito. Sigue sin aprobación.
 
 ### Decisiones tomadas
 
