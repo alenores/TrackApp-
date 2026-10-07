@@ -6,8 +6,10 @@
 > independientes para las alternativas de paso. Circuitos se dibuja punto por
 > punto; si dos toques seguidos caen en un mismo Camino, sigue su línea. La
 > lógica pura de ese dibujo está preparada en `lib/circuitos/dibujo.ts` y tiene
-> pruebas. Aún no hay tabla, pantalla ni navegación de Circuitos. Ver
-> decisiones 034 y 044. El resto de este documento describe principalmente la
+> pruebas. El mapa compartido también tiene capas separadas para las partes
+> propias del Circuito y las tomadas de Caminos; la pantalla todavía no las
+> alimenta. Aún no hay tabla, pantalla ni navegación de Circuitos. Ver
+> decisiones 034, 044 y 046. El resto de este documento describe principalmente la
 > arquitectura anterior de Rutas.
 >
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores

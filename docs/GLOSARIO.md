@@ -225,6 +225,10 @@ alternativo. Si sus partes quedan separadas, se avisa **«Partes sin unir»**.
 Se dibuja marcando puntos directamente sobre el mapa. Puede empezar en
 cualquier lugar. Si dos puntos seguidos caen sobre un mismo Camino, la línea
 del Circuito sigue ese Camino entre los dos; luego puede salir libremente.
+Cada Circuito tiene una actividad. Mientras se arma, se pueden mostrar Caminos
+de una o varias actividades; al pasar el mouse por un Camino aparecen todas
+las que tiene asociadas. Las partes propias se ven con línea continua neutra;
+las que toman un Camino conservan sus colores y marcas. Ver decisión 046.
 
 **Ruta**
 La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,

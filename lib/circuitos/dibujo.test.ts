@@ -21,7 +21,7 @@ function libre(punto: Position): ToqueDelCircuito {
 }
 
 function sobre(punto: Position): ToqueDelCircuito {
-  const resultado = toqueSobreCamino(punto, CAMINO);
+  const resultado = toqueSobreCamino(punto, CAMINO, "mountain_bike");
   if (!resultado.ok) throw new Error(resultado.error);
   return resultado.datos;
 }

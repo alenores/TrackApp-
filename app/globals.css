@@ -73,6 +73,9 @@
   --parte-sin-clasificar: #cbd5e1;
   --parte-x: #111827;
   --parte-x-halo: #ffffff;
+  /* Lo dibujado solo para un Circuito no usa los colores de dificultad. */
+  --circuito-propio: #ffffff;
+  --circuito-borde: #08111c;
   /* El sendero a pie: no es un camino de auto y no se dibuja igual. */
   --mapa-sendero: #e8a765;
   /* Arroyos y ríos: referencia para ubicarse y para cargar agua. */
@@ -165,6 +168,8 @@
   --parte-sin-clasificar: #475569;
   --parte-x: #111827;
   --parte-x-halo: #ffffff;
+  --circuito-propio: #000000;
+  --circuito-borde: #ffffff;
   --mapa-sendero: #8a4b1a;
   --mapa-agua: #1d6f96;
   --mapa-curva: #a21caf;

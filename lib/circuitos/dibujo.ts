@@ -1,4 +1,5 @@
 import type { Position } from "geojson";
+import type { ActividadRuta } from "@/types/database";
 import { esCoordenadaValida, largoDeLinea, tramoDeLinea, ubicarEnLinea } from "@/lib/caminos/geometria";
 import { exito, falla, type Resultado } from "@/lib/datos/resultado";
 
@@ -15,16 +16,19 @@ export type ToqueDelCircuito = {
     caminoId: number;
     distanciaM: number;
     versionForma: number;
+    actividadDelCamino: ActividadRuta;
   };
 };
 
 export type ParteDibujada = {
   tipo: "libre" | "sobre_camino";
+  sentido: "ida" | "vuelta" | null;
   coordenadas: Position[];
   caminoId: number | null;
   desdeM: number | null;
   hastaM: number | null;
   versionForma: number | null;
+  actividadDelCamino: ActividadRuta | null;
 };
 
 /** El mapa decide qué recibió el toque; esta función registra un punto libre. */
@@ -39,6 +43,7 @@ export function toqueLibre(coordenada: Position): Resultado<ToqueDelCircuito> {
 export function toqueSobreCamino(
   coordenada: Position,
   camino: CaminoParaCircuito,
+  actividadDelCamino: ActividadRuta,
 ): Resultado<ToqueDelCircuito> {
   if (!esCoordenadaValida(coordenada)) {
     return falla("Ese lugar está fuera del mapa. Tocá un punto válido para continuar el Circuito.");
@@ -54,6 +59,7 @@ export function toqueSobreCamino(
       caminoId: camino.id,
       distanciaM: lugar.distanciaM,
       versionForma: camino.versionForma,
+      actividadDelCamino,
     },
   });
 }
@@ -101,21 +107,25 @@ export function dibujarCircuito(
       const coordenadas = tramoDeLinea(camino.coordenadas, desdeM, hastaM);
       partes.push({
         tipo: "sobre_camino",
+        sentido: primero.distanciaM > segundo.distanciaM ? "vuelta" : "ida",
         coordenadas: primero.distanciaM > segundo.distanciaM ? coordenadas.reverse() : coordenadas,
         caminoId: camino.id,
         desdeM,
         hastaM,
         versionForma: camino.versionForma,
+        actividadDelCamino: segundo.actividadDelCamino,
       });
       continue;
     }
     partes.push({
       tipo: "libre",
+      sentido: null,
       coordenadas: [[...anterior.coordenada], [...actual.coordenada]],
       caminoId: null,
       desdeM: null,
       hastaM: null,
       versionForma: null,
+      actividadDelCamino: null,
     });
   }
   return exito(partes);

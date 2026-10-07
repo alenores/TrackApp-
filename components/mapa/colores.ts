@@ -17,6 +17,8 @@ export type ColoresDelMapa = {
   parteSinClasificar: string;
   parteX: string;
   parteXHalo: string;
+  circuitoPropio: string;
+  circuitoBorde: string;
   gps: string;
   anotacion: string;
   rectanguloNuevo: string;
@@ -46,6 +48,8 @@ const DE_RESPALDO: ColoresDelMapa = {
   parteSinClasificar: "#cbd5e1",
   parteX: "#111827",
   parteXHalo: "#ffffff",
+  circuitoPropio: "#000000",
+  circuitoBorde: "#ffffff",
   gps: "#60a5fa",
   anotacion: "#f472b6",
   rectanguloNuevo: "#67e8f9",
@@ -78,6 +82,8 @@ export function coloresDelMapa(): ColoresDelMapa {
     parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
     parteX: leer("--parte-x", DE_RESPALDO.parteX),
     parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
+    circuitoPropio: leer("--circuito-propio", DE_RESPALDO.circuitoPropio),
+    circuitoBorde: leer("--circuito-borde", DE_RESPALDO.circuitoBorde),
     gps: leer("--gps", DE_RESPALDO.gps),
     anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
     rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),

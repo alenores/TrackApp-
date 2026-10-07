@@ -62,6 +62,13 @@ para «usar Camino» o «dibujar parte propia». Ver decisión 044. Las notas
 explicativas de un boceto se muestran fuera de la pantalla de la app, con un
 tratamiento visual distinto y una etiqueta explícita de que no se publicarán.
 
+La parte marcada libremente en un Circuito va con línea continua negra en
+modo sol y blanca en modo noche: no recibe una clasificación de Camino. La
+parte tomada de un Camino conserva sus colores y marcas de exploración y
+paso. Al armar el Circuito se elige una actividad y se puede mostrar Caminos
+de una o varias; al pasar el mouse, el Camino indica todas sus actividades.
+Ver decisión 046.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

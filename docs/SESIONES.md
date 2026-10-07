@@ -39,6 +39,12 @@ edición, permisos y modo avión. Circuitos todavía no existía.
   Camino, seguimiento de su forma entre dos toques consecutivos y salida hacia
   un punto libre. Seis pruebas automáticas pasan; tipos y lint no dan errores.
   Todavía no se conectó a ninguna pantalla ni se guardan Circuitos.
+- Ale aclaró que las partes propias del Circuito son recorridos elegidos, no
+  Caminos pendientes de evaluar. Se preparó en el mapa real su línea continua
+  neutra y la conservación del color y las marcas al tomar partes de Caminos.
+  También se preparó el filtro por actividades y el cartel al pasar el mouse.
+  Once pruebas de Circuitos pasan; los tipos y el estilo no tienen errores.
+  El editor y el guardado de Circuitos siguen pendientes.
 
 ### Decisiones tomadas
 
@@ -49,6 +55,7 @@ sin unir», sin introducir «plan» como nombre alternativo.
 Confirmó el dibujo directo del Circuito descrito en la decisión 044.
 Confirmó el boceto visual correspondiente antes de implementar la pantalla.
 Confirmó la visibilidad y el aviso por un Camino retirado en la decisión 045.
+Confirmó el aspecto y las actividades descritos en la decisión 046.
 Claude alcanzó a terminar su informe técnico con la terminología anterior.
 Codex revisó que fuera solo un informe, corrigió allí esas menciones y dejó
 registrada la corrección editorial sin aprobar propuestas técnicas.
@@ -56,8 +63,8 @@ registrada la corrección editorial sin aprobar propuestas técnicas.
 ### Documentos actualizados
 
 Decisiones 034, 042 y 043; plan de separación; encargo técnico e informe de
-Claude, boceto del editor y sus notas, glosario, diseño exterior, decisiones 044
-y 045, arquitectura y este registro.
+Claude, boceto del editor y sus notas, glosario, diseño exterior, decisiones 044,
+045 y 046, arquitectura y este registro.
 
 ### Deuda o inconsistencias detectadas
 

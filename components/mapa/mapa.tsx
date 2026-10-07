@@ -60,6 +60,8 @@ const FUENTE_RUTA = "ruta";
 const CAPAS_DE_PARTES = ["ruta-por-explorar", "ruta-transitable", "ruta-a-pie", "ruta-sin-paso"];
 const FUENTE_CAMINOS = "caminos";
 const CAPAS_DE_CAMINOS = ["camino-otra-actividad", "camino-por-explorar", "camino-transitable", "camino-a-pie", "camino-sin-paso"];
+const FUENTE_CIRCUITO = "circuito";
+const CAPAS_DEL_CIRCUITO = ["circuito-propio", "circuito-camino-por-explorar", "circuito-camino-transitable", "circuito-camino-a-pie", "circuito-camino-sin-paso"];
 const FUENTE_POSICION = "mi-posicion";
 const FUENTE_ANOTACIONES = "anotaciones";
 const FUENTE_RECTANGULOS = "rectangulos";
@@ -127,6 +129,12 @@ type MapaProps = {
   recorrido?: FeatureCollection | null;
   /** Los Caminos del mapa, separados de la ruta planificada. */
   caminos?: FeatureCollection | null;
+  /** El Circuito conserva distintas las partes propias y las tomadas de Caminos. */
+  circuito?: FeatureCollection | null;
+  /** En PC, muestra junto al cursor las actividades de cada Camino. */
+  mostrarActividadesDeCaminoAlPasar?: boolean;
+  /** Un clic en cualquier lugar arma el Circuito; caminoId es nulo fuera de un Camino. */
+  alMarcarPuntoDelCircuito?: (lon: number, lat: number, caminoId: number | null, actividadMostrada: string | null) => void;
   /** Vértices del Camino que se está corrigiendo en la computadora. */
   verticesDeCamino?: number[][] | null;
   alMoverVerticeDeCamino?: (indice: number, lon: number, lat: number) => void;
@@ -309,6 +317,9 @@ function ponerDatos(
 export function Mapa({
   recorrido = null,
   caminos = null,
+  circuito = null,
+  mostrarActividadesDeCaminoAlPasar = false,
+  alMarcarPuntoDelCircuito,
   verticesDeCamino = null,
   alMoverVerticeDeCamino,
   alTocarVerticeDeCamino,
@@ -358,6 +369,7 @@ export function Mapa({
   // ===========================================================================
 
   const [gpsPrendido, setGpsPrendido] = useState(false);
+  const [caminoBajoCursor, setCaminoBajoCursor] = useState<{ id: number; texto: string; x: number; y: number } | null>(null);
   const [posicionPropia, setPosicionPropia] = useState<PosicionEnElMapa | null>(null);
   const [anotacionTocadaId, setAnotacionTocadaId] = useState<number | null>(null);
   const vigilanciaRef = useRef<number | null>(null);
@@ -551,6 +563,8 @@ export function Mapa({
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_CAMINOS, { type: "geojson", data: VACIO });
+      mapa.addSource(FUENTE_CIRCUITO, { type: "geojson", data: VACIO });
+      mapa.addSource("x-sin-paso-circuito", { type: "geojson", data: VACIO });
       mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
@@ -674,6 +688,33 @@ export function Mapa({
         layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
         paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 },
       });
+      const filtroPropio: maplibregl.FilterSpecification = ["==", ["get", "clase"], "propia"];
+      mapa.addLayer({ id: "circuito-propio-borde", type: "line", source: FUENTE_CIRCUITO,
+        filter: filtroPropio, layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.circuitoBorde, "line-width": 10 } });
+      mapa.addLayer({ id: CAPAS_DEL_CIRCUITO[0], type: "line", source: FUENTE_CIRCUITO,
+        filter: filtroPropio, layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.circuitoPropio, "line-width": 6 } });
+      for (const [paso, capa, guiones] of [
+        ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5]],
+        ["transitable", CAPAS_DEL_CIRCUITO[2], null],
+        ["a_pie", CAPAS_DEL_CIRCUITO[3], [0.45, 1.5]],
+        ["sin_paso", CAPAS_DEL_CIRCUITO[4], null],
+      ] as const) {
+        const filtro: maplibregl.FilterSpecification = ["all", ["==", ["get", "clase"], "camino"], ["==", ["get", "paso"], paso]];
+        const opacidad: maplibregl.ExpressionSpecification = ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1];
+        mapa.addLayer({ id: `${capa}-borde`, type: "line", source: FUENTE_CIRCUITO,
+          filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": colores.circuitoBorde, "line-width": 10, "line-opacity": opacidad,
+            ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
+        mapa.addLayer({ id: capa, type: "line", source: FUENTE_CIRCUITO,
+          filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": colorDeParte, "line-width": 7, "line-opacity": opacidad,
+            ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
+      }
+      mapa.addLayer({ id: "circuito-sin-paso-x", type: "symbol", source: "x-sin-paso-circuito",
+        layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
+        paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 } });
       mapa.addLayer({
         id: "vertices-de-camino", type: "circle", source: "vertices-de-camino",
         paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
@@ -872,6 +913,18 @@ export function Mapa({
         ]);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.parteX);
       }
+      mapa.setPaintProperty(CAPAS_DEL_CIRCUITO[0], "line-color", colores.circuitoPropio);
+      mapa.setPaintProperty("circuito-propio-borde", "line-color", colores.circuitoBorde);
+      for (const capa of CAPAS_DEL_CIRCUITO.slice(1)) {
+        mapa.setPaintProperty(capa, "line-color", [
+          "match", ["get", "complejidad"],
+          "facil", colores.parteFacil, "media", colores.parteMedia,
+          "dificil", colores.parteDificil, colores.parteSinClasificar,
+        ]);
+        mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.circuitoBorde);
+      }
+      mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);
+      mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.rectanguloZona);
       mapa.setPaintProperty("camino-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
@@ -974,6 +1027,15 @@ export function Mapa({
       ponerDatos(mapa, "x-sin-paso-caminos", caminos ? puntosSinPaso(caminos) : VACIO);
     });
   }, [caminos]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => {
+      ponerDatos(mapa, FUENTE_CIRCUITO, circuito ?? VACIO);
+      ponerDatos(mapa, "x-sin-paso-circuito", circuito ? puntosSinPaso(circuito) : VACIO);
+    });
+  }, [circuito]);
 
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -1334,8 +1396,21 @@ export function Mapa({
         : false;
       const sobreZona = alSenalarZona ? buscarZona(evento) !== null : false;
       const sobreRuta = alTocarRuta ? buscarRuta(evento) !== null : false;
-      const sobreCamino = alTocarCamino ? buscarCamino(evento) !== null : false;
-      mapa.getCanvas().style.cursor = sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
+      const caminoEncontrado = alTocarCamino || mostrarActividadesDeCaminoAlPasar || alMarcarPuntoDelCircuito
+        ? buscarCamino(evento) : null;
+      const sobreCamino = caminoEncontrado !== null;
+      mapa.getCanvas().style.cursor = alMarcarPuntoDelCircuito ? "crosshair"
+        : sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
+      if (mostrarActividadesDeCaminoAlPasar && caminoEncontrado) {
+        const id = Number(caminoEncontrado.properties?.camino_id);
+        const nombre = String(caminoEncontrado.properties?.nombre ?? "Camino");
+        const actividades = String(caminoEncontrado.properties?.actividades_texto ?? "Actividad sin indicar");
+        if (Number.isInteger(id)) {
+          const x = Math.max(8, Math.min(evento.point.x + 12, mapa.getCanvas().clientWidth - 260));
+          const y = Math.max(8, Math.min(evento.point.y + 12, mapa.getCanvas().clientHeight - 70));
+          setCaminoBajoCursor((actual) => actual?.id === id ? actual : { id, texto: `${nombre} · ${actividades}`, x, y });
+        }
+      } else if (mostrarActividadesDeCaminoAlPasar) setCaminoBajoCursor(null);
     };
     const tocar = (evento: maplibregl.MapMouseEvent) => {
       if (alTocarVerticeDeCamino && mapa.getLayer("vertices-de-camino")) {
@@ -1345,6 +1420,14 @@ export function Mapa({
           alTocarVerticeDeCamino(indice);
           return;
         }
+      }
+      if (alMarcarPuntoDelCircuito) {
+        const encontrado = buscarCamino(evento);
+        const id = Number(encontrado?.properties?.camino_id);
+        alMarcarPuntoDelCircuito(evento.lngLat.lng, evento.lngLat.lat,
+          Number.isInteger(id) && id > 0 ? id : null,
+          typeof encontrado?.properties?.actividad_mostrada === "string" ? encontrado.properties.actividad_mostrada : null);
+        return;
       }
       const id = buscarAnotacion(evento);
       if (id !== null) {
@@ -1373,6 +1456,7 @@ export function Mapa({
     };
     const salir = () => {
       mapa.getCanvas().style.cursor = "";
+      setCaminoBajoCursor(null);
     };
 
     mapa.on("mousemove", mover);
@@ -1384,7 +1468,7 @@ export function Mapa({
       mapa.off("click", tocar);
       mapa.getCanvas().style.cursor = "";
     };
-  }, [alSenalarZona, alTocarAnotacion, alTocarRuta, alTocarCamino, alTocarVerticeDeCamino, marcandoPunto]);
+  }, [alSenalarZona, alTocarAnotacion, alTocarRuta, alTocarCamino, alTocarVerticeDeCamino, alMarcarPuntoDelCircuito, mostrarActividadesDeCaminoAlPasar, marcandoPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {
@@ -1623,6 +1707,12 @@ export function Mapa({
     >
       <div className="relative min-h-0 flex-1">
       <div ref={contenedorRef} className="h-full w-full" />
+      {mostrarActividadesDeCaminoAlPasar && caminoBajoCursor ? (
+        <div className="pointer-events-none absolute z-10 max-w-64 rounded-lg border border-borde bg-superficie px-3 py-2 text-base font-medium text-texto shadow-lg"
+          style={{ left: caminoBajoCursor.x, top: caminoBajoCursor.y }}>
+          {caminoBajoCursor.texto}
+        </div>
+      ) : null}
 
       {/*
         El fondo puede fallar y la app sigue andando, pero el usuario tiene que
@@ -1638,7 +1728,7 @@ export function Mapa({
           El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
           ruta, tu posición y los recuadros— sigue siendo correcto.
         </p>
-      ) : dibujado === 0 && !recorrido?.features.length && !caminos?.features.length
+      ) : dibujado === 0 && !recorrido?.features.length && !caminos?.features.length && !circuito?.features.length
         && !verticesDeCamino?.length && anotaciones.length === 0 ? (
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           El mapa está armado pero no hay nada que dibujar todavía.
