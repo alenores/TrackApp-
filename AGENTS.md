@@ -112,8 +112,33 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 ### Mapa
 
-- **El mapa general de «Mapas» dibuja solo perímetros y nombres de zonas, más
-  los puntos marcados.** Nunca divisiones ni etiquetas de sectores. Al hacer
+- **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
+  clasifican ni delimitan Caminos, Circuitos, puntos o trazos. Un Camino no
+  se parte ni se asigna por cruzar uno o muchos de ellos. Antes de salir, se
+  usa la ubicación del Circuito o del área que se desea explorar para saber
+  qué mapas descargar. Decisión de Ale del 2026-10-05; adaptación pendiente.
+- **Cada Camino indica una o más actividades, con al menos una obligatoria.**
+  Usa las cinco existentes: Trekking, Correr, Mountain bike, Kayak y Canyoning.
+  La condición de paso y la complejidad de cada parte se clasifican por
+  actividad y pueden ser distintas entre actividades. En el mapa la actividad
+  elegida determina qué clasificación se destaca. **Todos los Caminos siguen
+  visibles y consultables**; los de otras actividades se muestran con menor
+  protagonismo, sin desaparecer. Cada persona elige la actividad principal en
+  el mapa y se recuerda su última elección. Observación y fecha de
+  comprobación son únicas por parte, compartidas entre actividades.
+  Decisiones 036 y 038.
+- **Un Camino mal dibujado se puede corregir como el mismo Camino**, por su
+  autor o por el Administrador; no se exige volver a importarlo como otro.
+  Corregir la línea conserva condición y complejidad de todas las partes que
+  continúan, también la redibujada; no reinicia «por explorar» ni pide
+  revisión automática. La clasificación puede editarse por separado sin
+  modificar la línea. Decisión 037.
+
+- **El mapa general de «Mapas» debe dibujar perímetros y nombres de zonas,
+  más todos los Caminos, puntos y trazos marcados.** La navegación libre también
+  debe mostrar todos los Caminos, puntos y trazos. Esta ampliación fue decidida
+  por Ale el 2026-10-05. Nunca divisiones ni
+  etiquetas de sectores. Al hacer
   clic o tocar una zona aparece su ficha breve con «Ver zona»; los sectores
   quedan en el detalle de esa zona. Nombres e íconos aparecen gradualmente al
   acercarse y no se amontonan con poco zoom. Ver `docs/decisiones/029`.
@@ -505,10 +530,13 @@ rompe algo** — hasta que falla en el cerro.
 
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
   Sin excepciones.
-- **El recorrido subido a la app se llama `ruta`.** En pantalla, en el código y
-  en la base. **Prohibido «track», «trayecto» y «recorrido» para lo mismo.**
-  La única excepción es `TrackApp`, que es el nombre del producto, no del
-  concepto.
+- **La app actual llama `ruta` al recorrido subido.** La nueva estructura,
+  todavía sin implementar, separará **Camino** (posibilidad de paso marcada en
+  Mapas) de **Circuito** (plan que puede combinar partes de Caminos existentes
+  con partes dibujadas solo para él, sin redibujar los Caminos). Ver decisión
+  034. **Prohibido «track», «trayecto» y
+  «recorrido» como nombres alternativos de esos conceptos.** La única
+  excepción es `TrackApp`, que es el nombre del producto.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
   variantes, sin «acá le decimos de otra forma porque queda mejor».
 - Las palabras del proyecto viven en `docs/GLOSARIO.md`. **Palabra nueva, entrada
@@ -543,8 +571,11 @@ evitar que vuelva a pasar**.
 Hay tres categorías, y están fijadas: **administrador** (Ale, único dueño del
 producto), **premium** (sus amigos) y **normal** (el resto).
 
-**Qué puede hacer cada una todavía NO está definido, y no se inventa.** Se
-define función por función, a medida que cada función se define. Ver
+**Para contenido de Mapas y Circuitos ya hay permisos decididos**. En Mapas se
+aplicaron a interfaz, acciones y base; faltan pruebas con las tres categorías
+reales. Circuitos sigue sin implementar. Administrador y Premium crean y editan lo propio;
+Administrador edita todo; Normal solo consulta. Normal puede registrar su
+Salida y cargarle fotos. No se inventan permisos para otras funciones. Ver
 `docs/USUARIOS.md`.
 
 ---

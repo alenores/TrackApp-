@@ -3,17 +3,25 @@
 > Términos propios del proyecto. Si un término se usa en el código o en una
 > conversación y no está acá, se agrega.
 
+> **Revisión conceptual en curso (2026-10-07):** «Ruta» y «Parte de ruta»
+> describen la app anterior y un prototipo local. **Caminos** ya se integró
+> dentro de Mapas. **Circuitos** nombra la planificación futura y todavía no
+> tiene módulo.
+> Ver
+> `docs/planes/2026-10-05-mapas-caminos-circuitos.md`. No usar las entradas
+> actuales como contrato de la estructura futura.
+
 ## Mapas y offline
 
 **Mapas**
-El módulo para explorar Córdoba. Tiene una pestaña con la lista de zonas, otra
-con el mapa general de todas las zonas y los puntos marcados, y para el
-administrador una pestaña **Anotaciones** para marcar puntos y trazos en toda
-Córdoba, que es la misma pantalla de anotaciones del sector (decisión 031).
+El módulo para explorar Córdoba. Tiene pestañas de zonas, mapa general,
+Caminos, Anotaciones y descargas. Administrador y Premium pueden sumar y editar
+el contenido propio del mapa; el Administrador también puede editar el ajeno.
 
 **Mapa general**
-La vista de Córdoba dentro de Mapas. Dibuja solamente el perímetro y el nombre
-de cada zona y todos los puntos marcados; los sectores se ven al abrir una zona.
+La vista de Córdoba dentro de Mapas. Dibuja el perímetro y el nombre de cada
+zona, más todos los Caminos, puntos y trazos. Los sectores se ven al abrir una
+zona.
 Al hacer clic o tocar una zona muestra su ficha breve y el acceso «Ver zona».
 Al tocar una anotación muestra su nombre, comentario y foto disponible; en PC,
 el cursor cambia al pasar sobre un punto.
@@ -190,22 +198,66 @@ El resto de los usuarios: amigos de amigos y cualquiera que llegue.
 
 ## Dominio
 
+**Camino** — *concepto aprobado e implementado en Mapas*
+Una línea de Mapas que representa una posibilidad de paso, incluso sobre agua
+en kayak. Puede dividirse en partes con condición de paso y complejidad local.
+Indica una o más actividades para las que sirve; al menos una es obligatoria.
+La condición de paso y la complejidad local de cada parte se registran para
+cada actividad y pueden ser distintas entre actividades.
+La observación y la fecha de comprobación son únicas para la parte y se
+comparten entre actividades.
+En el mapa se ven todos los Caminos: los de la actividad elegida tienen
+prioridad visual y los de otras actividades siguen visibles y consultables.
+Si la línea quedó mal dibujada, un usuario autorizado puede corregir ese
+mismo Camino en la app, sin crear otro.
+No es una anotación de trazo ni una salida planificada. Ale confirmó el nombre
+«Caminos» el 2026-10-05.
+
+**Circuito** — *concepto aprobado, todavía no existe en la app*
+La salida que se planifica tomando partes de Caminos ya marcados, dibujando
+partes propias o combinando ambas. Al tomar un Camino no hace falta redibujarlo.
+Las partes propias pueden seguir vías evidentes del mapa de fondo. Los puntos
+y trazos sirven de referencia, sin ser obligatorios. Armar un Circuito no crea
+ni modifica contenido de Mapas. Su desarrollo queda para una etapa posterior.
+Es distinto de una **Salida**, que cuenta lo que ocurrió realmente.
+
 **Ruta**
-El recorrido subido a la app desde un archivo. Tiene una línea, un nombre, una
-distancia, desnivel, dificultad y comentarios.
+La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,
+dificultad técnica y esfuerzo globales, y comentarios. Puede tener varias
+partes con condiciones diferentes; la valoración global no colorea esas partes.
 
 **Es la palabra definitiva y la única.** Nunca «track», «trayecto» ni
 «recorrido» para referirse a esto. `TrackApp` sigue siendo el nombre del
 producto: eso no es el concepto y no se renombra.
 
+**Parte de ruta**
+Una sección continua de la línea de una ruta, elegida marcando su inicio y su
+final desde la computadora. Tiene su propia condición de paso y complejidad.
+Puede volver a clasificarse sin cambiar las partes vecinas.
+
+**Condición de paso**
+Lo que se sabe sobre atravesar una parte: **por explorar** (línea entrecortada),
+**transitable** en la actividad (línea continua), **a pie con equipo** (línea de
+puntos) o **sin paso** (línea visible con X). En una ruta solo de bicicleta o
+solo de kayak, la pantalla usa esos nombres concretos.
+
+**Complejidad de una parte**
+Fácil (verde), media (amarillo) o difícil (rojo). Es independiente de la condición
+de paso y de la dificultad técnica y el esfuerzo de la ruta completa. Si aún no
+se evaluó, queda **sin clasificar** y se dibuja en gris, nunca en verde por
+defecto.
+
 **Zona**
 Agrupación de sectores, con nombre, descripción y un rectángulo propio de dos
 puntos. **El rectángulo de la zona no se descarga nunca**: existe solo para
-medir qué parte de su territorio todavía no tiene sector encima.
+medir qué parte de su territorio todavía no tiene sector encima. Su propósito
+de producto es organizar la cobertura y descarga de mapas; no clasifica ni
+delimita Caminos, Circuitos o anotaciones (decisión 035).
 
 **Sector**
 Rectángulo alineado al norte dentro de una zona, definido por **dos puntos**: la
-esquina noroeste y la sudeste. Es la unidad que se descarga.
+esquina noroeste y la sudeste. Es la unidad que se descarga; no define a qué
+Camino, Circuito o anotación pertenece un lugar (decisión 035).
 
 **Cobertura**
 Cuánto de una ruta cae adentro de algún sector, y de esos sectores cuáles están

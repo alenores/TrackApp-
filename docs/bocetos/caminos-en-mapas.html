@@ -1,0 +1,1696 @@
+<!doctype html>
+<html lang="es" data-modo="noche">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto · Caminos en Mapas</title>
+<style>
+/*
+ * Boceto estático de Caminos en Mapas. No se conecta a nada, no lee archivos
+ * y no es código de la app. Los colores salen de variables con los mismos
+ * nombres que la app, en los dos modos.
+ */
+:root,
+:root[data-modo="noche"] {
+  --fondo: #0f172a;
+  --superficie: #1e293b;
+  --superficie-alta: #334155;
+  --borde: #334155;
+  --borde-fuerte: #8795ab;
+  --texto: #f1f5f9;
+  --texto-suave: #aab8c9;
+  --acento: #1b4332;
+  --acento-hover: #14532d;
+  --acento-texto: #d8f3dc;
+  --acento-borde: #047857;
+  --dato: #67e8f9;
+  --rojo-texto: #fca5a5;
+  --rojo-fondo: #351620;
+  --rojo-fondo-fuerte: #4a1b22;
+  --rojo-borde: #991b1b;
+  --ambar-texto: #fde68a;
+  --ambar-fondo: #33250f;
+  --ambar-borde: #b45309;
+  --verde-texto: #6ee7b7;
+  --verde-fondo: #0d3b2e;
+  --verde-borde: #059669;
+  --mapa-fondo: #16202f;
+  --mapa-relieve: #24324a;
+  --anotacion: #f472b6;
+  --parte-facil: #2de083;
+  --parte-media: #ffd43b;
+  --parte-dificil: #ff6262;
+  --parte-sin-clasificar: #cbd5e1;
+  --parte-x: #111827;
+  --parte-x-halo: #ffffff;
+  /* Borde de cada línea de un Camino: en modo noche casi no se nota. */
+  --linea-borde: #0b1220;
+  /* Caminos que no sirven para la actividad elegida: finos y apagados. */
+  --otra-actividad: #7c8aa0;
+  --zona-borde: #aab8c9;
+  --velo: rgb(0 0 0 / 0.72);
+  --sombra: 0 1px 2px rgb(0 0 0 / 0.4);
+  --sombra-alta: 0 4px 12px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+:root[data-modo="sol"] {
+  --fondo: #f8fafc;
+  --superficie: #ffffff;
+  --superficie-alta: #e2e8f0;
+  --borde: #cbd5e1;
+  --borde-fuerte: #64748b;
+  --texto: #0f172a;
+  --texto-suave: #475569;
+  --acento: #1b4332;
+  --acento-hover: #14532d;
+  --acento-texto: #d8f3dc;
+  --acento-borde: #14532d;
+  --dato: #0c4a6e;
+  --rojo-texto: #6b1616;
+  --rojo-fondo: #fee2e2;
+  --rojo-fondo-fuerte: #fecaca;
+  --rojo-borde: #b91c1c;
+  --ambar-texto: #78350f;
+  --ambar-fondo: #fef3c7;
+  --ambar-borde: #b45309;
+  --verde-texto: #064e3b;
+  --verde-fondo: #d1fae5;
+  --verde-borde: #047857;
+  --mapa-fondo: #e8eef4;
+  --mapa-relieve: #cfd9e4;
+  --anotacion: #be185d;
+  /* Con el borde oscuro de la línea, el color puede ser el de verdad: el
+     amarillo sigue siendo amarillo y el contraste lo da el borde. */
+  --parte-facil: #16a34a;
+  --parte-media: #eab308;
+  --parte-dificil: #dc2626;
+  --parte-sin-clasificar: #94a3b8;
+  --parte-x: #111827;
+  --parte-x-halo: #ffffff;
+  --linea-borde: #0f172a;
+  --otra-actividad: #475569;
+  --zona-borde: #475569;
+  --velo: rgb(15 23 42 / 0.55);
+  --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
+  --sombra-alta: 0 4px 12px rgb(15 23 42 / 0.16);
+  color-scheme: light;
+}
+
+/* Los colores de trazo son del dato, no del modo (como en la app). */
+:root {
+  --trazo-agua: #0ea5e9;
+  --trazo-huella: #f97316;
+  --trazo-limite: #a855f7;
+  --trazo-peligro: #ef4444;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+h1, h2, h3, h4, p { margin: 0; }
+button, input, textarea { font: inherit; color: inherit; }
+
+/* ------------------------------------------------ controles del boceto */
+.boceto-barra {
+  position: relative; z-index: 30;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding: 10px 16px;
+  background: var(--superficie-alta);
+  border-bottom: 2px dashed var(--dato);
+}
+.boceto-barra .rotulo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--dato); }
+.boceto-barra .grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.boceto-barra .grupo > span { font-size: 14px; color: var(--texto-suave); }
+
+.nota-boceto {
+  border: 2px dashed var(--dato);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--texto);
+  background: transparent;
+}
+.nota-boceto::before {
+  content: "Nota del boceto · ";
+  font-weight: 700;
+  color: var(--dato);
+}
+
+/* ------------------------------------------------ armazón de la app */
+.app { display: grid; grid-template-columns: 210px minmax(0, 1fr); min-height: 100vh; }
+.menu { background: var(--superficie); border-right: 1px solid var(--borde); padding: 16px 12px; }
+.marca { font-weight: 800; font-size: 20px; margin: 0 8px 16px; }
+.menu nav { display: grid; gap: 4px; }
+.menu nav span {
+  display: block; padding: 8px 12px; border-radius: 12px; font-size: 15px; color: var(--texto-suave);
+}
+.menu nav span.activo { background: var(--superficie-alta); color: var(--texto); font-weight: 600; }
+main { padding: 20px 24px 40px; min-width: 0; }
+.encabezado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.encabezado h1 { font-size: 24px; font-weight: 800; text-transform: uppercase; }
+.pestanas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+/* ------------------------------------------------ piezas compartidas */
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 8px 16px;
+  border-radius: 12px; border: 1px solid transparent;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background-color .15s;
+}
+.boton:focus-visible, .opcion:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--dato); outline-offset: 2px;
+}
+.boton:disabled { opacity: .5; cursor: not-allowed; }
+.principal { background: var(--acento); color: var(--acento-texto); border-color: var(--acento-borde); }
+.principal:hover:not(:disabled) { background: var(--acento-hover); }
+.secundario { background: var(--superficie-alta); color: var(--texto); border-color: var(--borde-fuerte); }
+.secundario:hover:not(:disabled) { background: var(--superficie); }
+.destructivo { background: var(--rojo-fondo); color: var(--rojo-texto); border-color: var(--rojo-borde); }
+.destructivo:hover:not(:disabled) { background: var(--rojo-fondo-fuerte); }
+.fantasma { background: transparent; color: var(--texto-suave); }
+.fantasma:hover { background: var(--superficie-alta); color: var(--texto); }
+.boton svg { width: 18px; height: 18px; }
+
+.tarjeta {
+  background: var(--superficie); border: 1px solid var(--borde);
+  border-radius: 16px; padding: 16px; box-shadow: var(--sombra);
+}
+.franja-ambar { border-left: 6px solid var(--ambar-borde); }
+.franja-rojo { border-left: 6px solid var(--rojo-borde); }
+.franja-verde { border-left: 6px solid var(--verde-borde); }
+.aviso-ambar { background: var(--ambar-fondo); color: var(--ambar-texto); border: 1px solid var(--ambar-borde); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.aviso-rojo { background: var(--rojo-fondo); color: var(--rojo-texto); border: 1px solid var(--rojo-borde); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.aviso-verde { background: var(--verde-fondo); color: var(--verde-texto); border: 1px solid var(--verde-borde); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+
+.titulo-seccion { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-suave); margin-bottom: 8px; }
+.suave { color: var(--texto-suave); }
+.chico { font-size: 14px; }
+.pila > * + * { margin-top: 12px; }
+.pila-chica > * + * { margin-top: 6px; }
+.fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.entre { justify-content: space-between; }
+
+.opciones { display: grid; gap: 6px; }
+.opciones.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.opciones.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.opciones.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.opciones.c5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.opcion {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 8px 10px;
+  border-radius: 12px; border: 1px solid var(--borde-fuerte);
+  background: var(--superficie); color: var(--texto);
+  font-size: 14px; font-weight: 600; cursor: pointer; text-align: center;
+}
+.opcion[aria-pressed="true"] { background: var(--acento); color: var(--acento-texto); border-color: var(--acento-borde); }
+.opcion:disabled { opacity: .5; cursor: not-allowed; }
+
+label.campo { display: block; font-size: 14px; font-weight: 500; color: var(--texto-suave); margin-bottom: 6px; }
+input[type="text"], input[type="date"], textarea {
+  width: 100%; min-height: 40px; padding: 8px 12px;
+  border-radius: 12px; border: 1px solid var(--borde-fuerte);
+  background: var(--fondo); color: var(--texto); font-size: 16px;
+}
+textarea { min-height: 88px; resize: vertical; }
+input:disabled, textarea:disabled { opacity: .6; }
+.contador { font-size: 13px; color: var(--texto-suave); text-align: right; margin-top: 4px; }
+.contador.pasado { color: var(--rojo-texto); font-weight: 700; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--borde-fuerte); color: var(--texto);
+}
+.chip.destacada { background: var(--acento); color: var(--acento-texto); border-color: var(--acento-borde); }
+
+/* ------------------------------------------------ mapas */
+.mapa-caja {
+  position: relative; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--borde); background: var(--mapa-fondo);
+}
+.mapa-caja svg { display: block; width: 100%; height: auto; }
+.mapa-caja .controles {
+  position: absolute; right: 12px; bottom: 12px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+}
+.mapa-caja .controles .boton { min-width: 40px; padding: 8px 10px; box-shadow: var(--sombra-alta); }
+.mapa-caja.en-grande {
+  position: fixed; inset: 12px; z-index: 40; border-radius: 16px; box-shadow: var(--sombra-alta);
+  display: flex; align-items: center; justify-content: center;
+}
+.mapa-caja.en-grande svg { width: auto; height: 100%; max-width: 100%; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 14px; color: var(--texto-suave); margin-top: 8px; }
+.leyenda b { color: var(--texto); font-weight: 600; }
+.leyenda .item { display: inline-flex; align-items: center; gap: 6px; }
+.muestra { width: 34px; height: 12px; }
+.tocable { cursor: pointer; }
+.etiqueta-mapa { font-size: 16px; font-weight: 600; fill: var(--texto); paint-order: stroke; stroke: var(--mapa-fondo); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.etiqueta-zona { font-size: 17px; font-weight: 700; fill: var(--zona-borde); paint-order: stroke; stroke: var(--mapa-fondo); stroke-width: 4px; cursor: pointer; }
+
+/* ------------------------------------------------ distribuciones */
+.mapa-con-ficha { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.traer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: 16px; align-items: start; }
+.traer .vista-previa { position: sticky; top: 16px; }
+.editor { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 16px; align-items: start; }
+.editor-partes { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+
+.linea-a-traer { border: 1px solid var(--borde); border-radius: 14px; padding: 12px; background: var(--superficie); }
+.linea-a-traer.enfocada { border-color: var(--dato); box-shadow: 0 0 0 2px var(--dato); }
+.linea-a-traer .cabeza { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.numero { width: 26px; height: 26px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--superficie-alta); }
+.color-earth { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--texto-suave); }
+.color-earth i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; border: 1px solid var(--borde-fuerte); }
+.estado-pill { margin-left: auto; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.estado-pill.falta { background: var(--ambar-fondo); color: var(--ambar-texto); border: 1px solid var(--ambar-borde); }
+.estado-pill.listo { background: var(--verde-fondo); color: var(--verde-texto); border: 1px solid var(--verde-borde); }
+.estado-pill.omitida { background: var(--superficie-alta); color: var(--texto-suave); border: 1px solid var(--borde-fuerte); }
+
+.lista-partes { display: grid; gap: 6px; }
+.renglon-parte {
+  display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 12px; border: 1px solid var(--borde); background: var(--superficie);
+  cursor: pointer; text-align: left; width: 100%;
+}
+.renglon-parte[aria-pressed="true"] { border-color: var(--dato); box-shadow: 0 0 0 2px var(--dato); }
+.tabla-actividades { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla-actividades td { padding: 6px 0; border-top: 1px solid var(--borde); vertical-align: top; }
+.tabla-actividades td:first-child { color: var(--texto-suave); width: 42%; padding-right: 8px; }
+.permisos { width: 100%; border-collapse: collapse; font-size: 14px; }
+.permisos th, .permisos td { border-top: 1px solid var(--borde); padding: 8px 6px; text-align: left; }
+.permisos th { color: var(--texto-suave); font-weight: 600; }
+.esqueleto { height: 14px; border-radius: 8px; background: var(--superficie-alta); }
+.oculto { display: none !important; }
+
+/* ------------------------------------------------ emergente única */
+.velo { position: fixed; inset: 0; background: var(--velo); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.emergente { width: min(460px, 100%); background: var(--superficie); border: 1px solid var(--borde-fuerte); border-radius: 16px; padding: 20px; box-shadow: var(--sombra-alta); }
+.emergente h2 { font-size: 18px; margin-bottom: 8px; }
+.emergente .botones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+@media (max-width: 1100px) {
+  .mapa-con-ficha, .traer, .editor, .editor-partes { grid-template-columns: minmax(0, 1fr); }
+  .traer .vista-previa { position: static; }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .menu { display: none; }
+  main { padding: 16px; }
+  .opciones.c5, .opciones.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<div class="boceto-barra" role="region" aria-label="Controles del boceto">
+  <span class="rotulo">Boceto · no es la app</span>
+  <div class="grupo">
+    <span>Situación:</span>
+    <button class="opcion" data-accion="situacion" data-valor="1" aria-pressed="true">1 · Mapa general</button>
+    <button class="opcion" data-accion="situacion" data-valor="2" aria-pressed="false">2 · Traer de afuera</button>
+    <button class="opcion" data-accion="situacion" data-valor="2b" aria-pressed="false">2b · Archivo con puntos (ejemplo)</button>
+    <button class="opcion" data-accion="situacion" data-valor="3" aria-pressed="false">3 · Editor del Camino</button>
+    <button class="opcion" data-accion="situacion" data-valor="4" aria-pressed="false">4 · Editor de partes</button>
+    <button class="opcion" data-accion="situacion" data-valor="5" aria-pressed="false">5 · Permisos y estados</button>
+  </div>
+  <div class="grupo">
+    <span>Ver como:</span>
+    <button class="opcion" data-accion="rol" data-valor="administrador" aria-pressed="true">Administrador</button>
+    <button class="opcion" data-accion="rol" data-valor="premium_autor" aria-pressed="false">Premium que lo subió</button>
+    <button class="opcion" data-accion="rol" data-valor="premium_otro" aria-pressed="false">Otro Premium</button>
+    <button class="opcion" data-accion="rol" data-valor="normal" aria-pressed="false">Normal</button>
+  </div>
+  <button class="boton fantasma" data-accion="reiniciar">Reiniciar el boceto</button>
+</div>
+
+<div class="app">
+  <aside class="menu" aria-label="Menú de la app">
+    <div class="marca">TrackApp</div>
+    <nav>
+      <span>Rutas</span>
+      <span>Navegación libre</span>
+      <span class="activo">Mapas</span>
+      <span>Salidas</span>
+      <span>Perfiles</span>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="encabezado">
+      <h1>Mapas</h1>
+      <div class="fila">
+        <span class="chico suave" id="quien-usa"></span>
+        <button class="boton secundario" data-accion="modo" id="boton-modo"></button>
+      </div>
+    </div>
+
+    <div class="pestanas" role="tablist" aria-label="Vistas de Mapas">
+      <button class="boton" data-accion="pestana" data-valor="zonas" id="pestana-zonas">Zonas</button>
+      <button class="boton" data-accion="pestana" data-valor="mapa" id="pestana-mapa">Mapa</button>
+      <button class="boton" data-accion="pestana" data-valor="caminos" id="pestana-caminos">Caminos</button>
+      <button class="boton" data-accion="pestana" data-valor="anotaciones" id="pestana-anotaciones">Anotaciones</button>
+      <button class="boton" data-accion="pestana" data-valor="descargas" id="pestana-descargas">Descargas</button>
+    </div>
+
+    <section id="vista-mapa"></section>
+    <section id="vista-caminos"></section>
+    <section id="vista-traer"></section>
+    <section id="vista-editor"></section>
+    <section id="vista-estados"></section>
+    <section id="vista-anotaciones"></section>
+    <section id="vista-otra"></section>
+  </main>
+</div>
+
+<div class="velo oculto" id="velo" data-accion="cerrar-emergente-afuera">
+  <div class="emergente" role="dialog" aria-modal="true" aria-labelledby="emergente-titulo" id="emergente"></div>
+</div>
+
+<noscript><p style="padding:16px">Este boceto necesita JavaScript para pasar de una vista a otra.</p></noscript>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------- datos de ejemplo
+// Forma real de las siete líneas del proyecto de Ascochinga, achicada a
+// coordenadas de dibujo. Se calculó una sola vez leyendo el archivo en la
+// computadora; el boceto no lee ningún archivo.
+const GEO = {"lineas":[{"nombre":"ascichinga 1","color":"#fbc02d","km":27.62,"p":[[657.8,112.8],[649.5,116.6],[645.2,121.9],[645.7,127.7],[646.6,135.7],[645.7,143.3],[649,156.1],[644.1,164.5],[638.2,172.4],[637,177.8],[629.2,180.3],[624.2,176.3],[612.8,178.1],[605,180.3],[596.2,176.5],[588.7,178.5],[582.1,177.2],[574.2,182.2],[571.6,188.6],[565.5,185.1],[551.7,185.8],[548.6,191.3],[533.4,186.7],[534.6,178],[532.7,171.9],[522.1,167.6],[518.1,166.1],[515.2,171.9],[503.7,167.9],[497.5,159.4],[492,163.2],[493.7,173.1],[485.3,175.4],[485.8,178],[487.5,178.5],[484.7,179.4],[482.7,173.2],[480.4,175.1],[474,174],[470.6,174.7],[467.2,171.7],[465.3,172.1],[467.4,177.8],[469.8,178.3],[472.3,176],[471.8,188.9],[470.4,187.3],[469.1,193],[463.6,198.6],[466,209.9],[467,228.4],[468.6,241.8],[481.2,260.2],[484,270.4],[486,264.4],[492.3,266.9],[495.6,274.6],[494,285],[493.6,303.3],[512.8,302.8],[515.3,296.2],[524.6,297.9],[525.9,302],[527.8,301],[531.6,308.8],[534,317.3],[535.9,317.9],[543.6,311.3],[547.6,306.5],[548.9,295.5],[552.9,294.2],[555.9,290.7],[561.5,279.4],[572.1,271],[574.4,274.3],[578.4,266.7],[578.9,263.5],[581.6,262.5],[589.1,249.6],[594.3,251.7],[598.7,247.7],[600.9,248.3],[609.2,240]],"acum":[0,0.38,0.67,0.91,1.24,1.56,2.11,2.52,2.93,3.16,3.5,3.76,4.25,4.58,4.98,5.31,5.58,5.97,6.26,6.56,7.13,7.4,8.05,8.42,8.69,9.16,9.34,9.61,10.12,10.56,10.84,11.26,11.62,11.73,11.81,11.93,12.2,12.32,12.6,12.74,12.93,13.01,13.26,13.37,13.51,14.04,14.13,14.37,14.7,15.18,15.95,16.51,17.44,17.88,18.14,18.43,18.77,19.22,19.98,20.78,21.07,21.47,21.65,21.74,22.1,22.47,22.55,22.97,23.23,23.69,23.87,24.06,24.59,25.15,25.32,25.67,25.81,25.93,26.55,26.79,27.03,27.13,27.62]},{"nombre":"Conexion (capaz caminando)","color":"#7b1fa2","km":2.56,"p":[[613.4,233.5],[613.4,226.8],[610,224.6],[612.4,218],[617.6,209.3],[622.4,198],[634,180.1]],"acum":[0,0.28,0.45,0.74,1.16,1.67,2.56]},{"nombre":"Conexion con camino ascochinga-la cumbre","color":"#7b1fa2","km":22.06,"p":[[467.9,170.5],[463.9,161.5],[461.9,158.4],[449.6,166.4],[436.3,164.2],[430.2,160.5],[417.8,150.4],[413.5,142.8],[407.5,139.4],[400.9,140.8],[395.7,135.6],[387.2,118.2],[378.3,112.4],[382.7,86.5],[411.6,71.6],[451.6,57.4],[469.9,73.9],[475.5,71.1],[480.1,54.3],[493.8,50],[502.1,64.3],[521.4,64],[521.4,72.1],[539.4,75.2],[551.3,81],[556.8,78.3],[570.9,96.6],[591.1,88],[584.6,83.3],[606.8,65.3],[620.6,67.9],[632.6,87.6],[639.1,90.8],[644.7,110.9],[657.3,112.4]],"acum":[0,0.41,0.56,1.18,1.74,2.03,2.7,3.07,3.35,3.63,3.94,4.74,5.19,6.28,7.63,9.41,10.43,10.69,11.41,12.01,12.7,13.51,13.85,14.61,15.16,15.41,16.38,17.29,17.63,18.82,19.41,20.37,20.67,21.54,22.06]},{"nombre":"zona camino cuadrado - cascada alpatuca","color":"#fbc02d","km":5.61,"p":[[450.5,560.2],[447,558.4],[452,550.2],[450.9,547.2],[447.8,547],[450.1,541.9],[446.8,539.9],[444.4,541],[439.2,535.6],[438,533.4],[438.8,530.2],[443.6,525.7],[446.8,520.6],[446.4,515.9],[445,509.5],[446.8,507.9],[451.9,504.6],[450.7,500.9],[449.3,499.1],[446.1,496.7],[443.8,494.2],[439.9,492.8],[435.9,491.8],[435.2,488.2],[433,487.8],[430.9,485],[426.6,486.2],[425,485],[426.2,484.7],[425.5,481.1],[422.4,481.8],[420.8,481.5],[422.7,479.8],[418.9,479.2],[417.1,482.1]],"acum":[0,0.16,0.56,0.69,0.82,1.06,1.22,1.32,1.64,1.74,1.88,2.15,2.41,2.6,2.88,2.98,3.23,3.39,3.49,3.65,3.79,3.96,4.14,4.29,4.38,4.53,4.72,4.8,4.85,5.01,5.14,5.21,5.31,5.47,5.61]},{"nombre":"Camino cuadrado - alpatuca","color":"#1976d2","km":6.58,"p":[[449.5,498.8],[450.8,497],[451.1,494.3],[450.7,492.8],[452.4,492.5],[454,491.7],[452.3,489],[453.6,487.6],[452.4,486.1],[449.9,485.5],[447.9,484.8],[449.1,483.8],[449.1,483.2],[446.4,483],[442,482.9],[440,480.8],[439.9,477.5],[438.7,472.6],[438.6,470.4],[438.5,466.6],[440.9,467.5],[440.9,459],[439.4,452.2],[437.6,445.6],[437.8,441.3],[430.9,437.4],[414,443.3],[402.8,442.2],[397.7,429.7],[414.6,435.1],[421.2,424.5]],"acum":[0,0.09,0.21,0.27,0.34,0.42,0.55,0.63,0.7,0.81,0.9,0.96,0.99,1.1,1.29,1.41,1.54,1.75,1.84,2,2.11,2.46,2.75,3.04,3.22,3.55,4.29,4.76,5.32,6.06,6.58]},{"nombre":"alpatica-salida al cuadrado mas arriba","color":"#42a5f5","km":4.92,"p":[[342.2,483.9],[344.8,482.8],[344.3,481.1],[344,478.7],[344.4,477.7],[344.2,475.8],[344.4,473.6],[346.9,470.7],[348.6,467],[350.5,466.2],[351.9,467.1],[354.2,466.2],[355.7,464.7],[357.1,463.7],[358.4,461.7],[359.5,459.7],[362.6,456.2],[365,457],[366.3,456.6],[367,455],[367.4,454],[367.5,450.2],[368.4,449.8],[368.8,449.3],[370.4,450.3],[373,448.6],[374.4,447.6],[374.7,446.7],[374.7,445.5],[374.8,444.4],[378.2,442.4],[378.9,441.1],[380.4,439.6],[382,438.9],[381.8,437.8],[382.7,435.9],[383.6,434.2],[386.4,434.2],[386.2,432.1],[388.7,431.4],[389.5,431.4],[389.8,432.6],[392.5,432.4],[392.9,433.9],[394.8,435],[393.2,436.1],[394.3,436.9],[397.5,439.1],[402.1,437.8],[403.6,437.9],[408.6,436.3],[415.7,434.5]],"acum":[0,0.12,0.19,0.29,0.34,0.42,0.51,0.67,0.84,0.93,0.99,1.09,1.18,1.26,1.35,1.45,1.64,1.75,1.81,1.88,1.93,2.09,2.13,2.15,2.23,2.36,2.43,2.48,2.52,2.57,2.73,2.79,2.88,2.96,3,3.09,3.17,3.29,3.37,3.48,3.52,3.57,3.68,3.74,3.84,3.92,3.97,4.13,4.33,4.4,4.61,4.92]},{"nombre":"trazoz alpatuca","color":"#42a5f5","km":3.64,"p":[[355,527.1],[357.2,526.4],[368.7,536.8],[374.4,536],[376,533.4],[383.6,536.1],[377.7,541.6],[377.1,548],[375.3,548.4],[374.6,551.1],[373.6,552.7],[370.9,557.2],[373.9,561.7],[374.1,563.3],[376,563],[386.3,564.2],[388,569],[389.6,569.7],[389.6,570]],"acum":[0,0.1,0.74,0.98,1.11,1.45,1.78,2.05,2.12,2.24,2.32,2.54,2.76,2.83,2.91,3.34,3.55,3.62,3.63]}],"editor":[[533.7,470],[540.9,459.5],[542.8,444.3],[540.1,436],[549.8,434.4],[558.8,429.4],[549.6,414.7],[556.6,406.6],[550,398.3],[536,394.6],[524.6,390.6],[531.5,385.2],[531.3,381.9],[515.9,380.6],[491,379.7],[479.7,368.1],[479.1,349.8],[472.7,321.6],[472,309.5],[471.4,287.9],[485.2,292.9],[485.3,244.9],[476.8,206.7],[466.6,169.3],[467.8,145.2],[428.6,122.9],[333.4,156.1],[270.1,150.2],[241.2,79.5],[336.8,109.8],[373.7,50]],"cortes":[15,23,25],"corteAsco":45};
+const HOY = "2026-10-06";
+
+const ACTIVIDADES = [
+  { id: "trekking", nombre: "Trekking" },
+  { id: "correr", nombre: "Correr" },
+  { id: "mountain_bike", nombre: "Mountain bike" },
+  { id: "kayak", nombre: "Kayak" },
+  { id: "canyoning", nombre: "Canyoning" },
+];
+const nombreActividad = (id) => ACTIVIDADES.find((a) => a.id === id).nombre;
+
+const PASOS = ["por_explorar", "transitable", "a_pie", "sin_paso"];
+function nombrePaso(paso, actividad) {
+  if (paso === "por_explorar") return "Por explorar";
+  if (paso === "transitable") return "Transitable";
+  if (paso === "sin_paso") return "Sin paso";
+  if (actividad === "mountain_bike") return "A pie con la bici";
+  if (actividad === "kayak") return "A pie con el kayak";
+  return "A pie con equipo";
+}
+const COMPLEJIDADES = [null, "facil", "media", "dificil"];
+const nombreComplejidad = (c) => ({ facil: "Fácil", media: "Media", dificil: "Difícil" })[c] || "Sin clasificar";
+const colorComplejidad = (c) => (c ? `var(--parte-${c})` : "var(--parte-sin-clasificar)");
+
+const PERSONAS = {
+  administrador: { id: "ale", nombre: "Ale", categoria: "Administrador" },
+  premium_autor: { id: "martin", nombre: "Martín", categoria: "Premium" },
+  premium_otro: { id: "sofia", nombre: "Sofía", categoria: "Premium" },
+  normal: { id: "juan", nombre: "Juan", categoria: "Normal" },
+};
+const AUTORES = { ale: "Ale", martin: "Martín", sofia: "Sofía" };
+
+const TRAZOS_COLOR = [
+  { id: "agua", nombre: "Agua", color: "var(--trazo-agua)" },
+  { id: "huella", nombre: "Huella", color: "var(--trazo-huella)" },
+  { id: "limite", nombre: "Límite", color: "var(--trazo-limite)" },
+  { id: "peligro", nombre: "Peligro", color: "var(--trazo-peligro)" },
+];
+
+const ICONOS = {
+  cascada: { nombre: "Cascada", trazo: "M8 4v9M12 4v12M16 4v9M5 18c3 2.5 11 2.5 14 0" },
+  tranquera: { nombre: "Tranquera", trazo: "M4 6v13M20 6v13M4 9h16M4 15h16M4 9l16 6" },
+  mirador: { nombre: "Mirador", trazo: "M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" },
+  refugio: { nombre: "Refugio", trazo: "M4 11.5 12 4.5l8 7V20H4zM10 20v-5h4v5" },
+  fuente: { nombre: "Fuente", trazo: "M12 4c-3 4.5-5 7-5 9.5a5 5 0 0 0 10 0C17 11 15 8.5 12 4z" },
+  cumbre: { nombre: "Cumbre", trazo: "M3 19 10 7l3 5 2-3 6 10z" },
+};
+
+const cl = (paso, comp) => ({ paso, comp });
+function caminosDeEjemplo() {
+  const ultimo = (i) => GEO.lineas[i].p.length - 1;
+  const [c1, c2, c3] = GEO.cortes;
+  return [
+    { id: 1, linea: 0, nombre: "ascichinga 1", autor: "ale", actividades: ["mountain_bike", "trekking"], descripcion: "", partes: [
+      { desde: 0, hasta: GEO.corteAsco, por: { mountain_bike: cl("transitable", "media"), trekking: cl("transitable", "facil") }, obs: "Ripio firme. Algunas bajadas con piedra suelta.", fecha: "2026-09-20" },
+      { desde: GEO.corteAsco, hasta: ultimo(0), por: { mountain_bike: cl("por_explorar", null), trekking: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+    { id: 2, linea: 1, nombre: "Conexion (capaz caminando)", autor: "martin", actividades: ["mountain_bike"], descripcion: "", partes: [
+      { desde: 0, hasta: ultimo(1), por: { mountain_bike: cl("por_explorar", "media") }, obs: "Desde Google Earth parece empinada.", fecha: "" },
+    ] },
+    { id: 3, linea: 2, nombre: "Conexion con camino ascochinga-la cumbre", autor: "ale", actividades: ["mountain_bike"], descripcion: "", partes: [
+      { desde: 0, hasta: ultimo(2), por: { mountain_bike: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+    { id: 4, linea: 3, nombre: "zona camino cuadrado - cascada alpatuca", autor: "ale", actividades: ["trekking"], descripcion: "", partes: [
+      { desde: 0, hasta: ultimo(3), por: { trekking: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+    { id: 5, linea: 4, nombre: "Camino cuadrado - alpatuca", autor: "martin", actividades: ["mountain_bike", "trekking"],
+      descripcion: "Huella que sale del camino del Cuadrado hacia la zona de Alpatuca.", partes: [
+      { desde: 0, hasta: c1, por: { mountain_bike: cl("transitable", "facil"), trekking: cl("transitable", "facil") }, obs: "", fecha: "2026-10-04" },
+      { desde: c1, hasta: c2, por: { mountain_bike: cl("a_pie", "media"), trekking: cl("transitable", "media") }, obs: "Piedra suelta en la subida: se empuja la bici.", fecha: "2026-10-04" },
+      { desde: c2, hasta: c3, por: { mountain_bike: cl("sin_paso", "facil"), trekking: cl("transitable", "facil") }, obs: "Alambrado nuevo sin tranquera. Caminando se pasa por abajo.", fecha: "2026-09-28" },
+      { desde: c3, hasta: ultimo(4), por: { mountain_bike: cl("por_explorar", null), trekking: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+    { id: 6, linea: 5, nombre: "alpatica-salida al cuadrado mas arriba", autor: "martin", actividades: ["trekking", "correr"], descripcion: "", partes: [
+      { desde: 0, hasta: ultimo(5), por: { trekking: cl("por_explorar", null), correr: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+    { id: 7, linea: 6, nombre: "trazoz alpatuca", autor: "ale", actividades: ["trekking"], descripcion: "", partes: [
+      { desde: 0, hasta: ultimo(6), por: { trekking: cl("por_explorar", null) }, obs: "", fecha: "" },
+    ] },
+  ];
+}
+
+const L = (i) => GEO.lineas[i].p;
+const PUNTOS = [
+  { id: "cascada", autor: "ale", nombre: "Cascada (ejemplo)", icono: "cascada", comentario: "Se llega bajando por la quebrada.", pos: [L(3).at(-1)[0] + 6, L(3).at(-1)[1] + 4] },
+  { id: "tranquera", autor: "martin", nombre: "Tranquera (ejemplo)", icono: "tranquera", comentario: "Con candado los fines de semana.", pos: [L(4)[GEO.cortes[1]][0] + 8, L(4)[GEO.cortes[1]][1] - 6] },
+  { id: "mirador", autor: "sofia", nombre: "Mirador (ejemplo)", icono: "mirador", comentario: "Vista a la llanura.", pos: [L(0)[20][0], L(0)[20][1] - 12] },
+];
+const TRAZOS = [
+  { id: "arroyo", autor: "ale", nombre: "Arroyo (ejemplo)", color: "agua", comentario: "Lleva agua casi todo el año.",
+    p: Array.from({ length: 24 }, (_, t) => [392 + t * 11, 430 + 16 * Math.sin(t / 2.4)]) },
+  { id: "alambrado", autor: "martin", nombre: "Alambrado (ejemplo)", color: "limite", comentario: "Campo privado.",
+    p: [[L(4)[GEO.cortes[1]][0] - 40, L(4)[GEO.cortes[1]][1] - 34], [L(4)[GEO.cortes[1]][0] + 34, L(4)[GEO.cortes[1]][1] + 40]] },
+];
+
+// Dos archivos de ejemplo. El de Ascochinga es el real: siete líneas y ningún
+// punto. El otro es inventado para el boceto y trae solo puntos.
+const ARCHIVOS = {
+  ascochinga: {
+    nombre: "Ascochinga Bike 1.kml",
+    inventado: false,
+    lineas: GEO.lineas,
+    puntos: [],
+  },
+  puntos: {
+    nombre: "Puntos del cerro.kml",
+    inventado: true,
+    lineas: [],
+    puntos: [
+      { nombre: "Mirador del Pan de Azúcar", icono: "mirador", pos: [L(0)[30][0] + 14, L(0)[30][1] - 16] },
+      { nombre: "Fuente del puesto", icono: "fuente", pos: [L(2)[18][0] - 18, L(2)[18][1] + 10] },
+      { nombre: "Refugio viejo", icono: "refugio", pos: [L(5)[20][0] + 12, L(5)[20][1] + 12] },
+    ],
+  },
+};
+
+// ---------------------------------------------------------------- estado
+function estadoInicial() {
+  const caminos = caminosDeEjemplo();
+  const demo = structuredClone(caminos.find((c) => c.id === 5));
+  return {
+    vista: "mapa",
+    subEditor: "datos",
+    rol: "administrador",
+    modo: document.documentElement.dataset.modo || "noche",
+    actividadPrincipal: "mountain_bike",
+    acercamiento: "lejos",
+    seleccion: null,
+    caminos,
+    avisoLista: null,
+    enGrande: null,
+    traer: nuevoTraer("ascochinga"),
+    anotacionesBorradas: [],
+    avisoAnotaciones: null,
+    anotacionABorrar: null,
+    traerDesde: "caminos",
+    editor: {
+      camino: demo,
+      coords: GEO.editor.map((p) => [...p]),
+      coordsAntes: null,
+      corrigiendo: false,
+      lineaGuardada: false,
+      nombre: demo.nombre,
+      descripcion: demo.descripcion,
+      actividades: [...demo.actividades],
+      pendienteSacar: null,
+      errorDatos: null,
+      datosGuardados: false,
+      actividadPartes: "mountain_bike",
+      parte: 1,
+      partiendo: false,
+      marcas: [],
+      parteGuardada: null,
+      datosParteTocados: false,
+    },
+  };
+}
+let estado = estadoInicial();
+
+const yo = () => PERSONAS[estado.rol];
+const puedeCrear = () => estado.rol !== "normal";
+const puedeEditar = (camino) => estado.rol === "administrador" || (estado.rol === "premium_autor" && camino.autor === "martin");
+const caminosVivos = () => estado.caminos;
+/** Puntos y trazos: Administrador y Premium suman; cada Premium cambia lo suyo y el Administrador, todo. */
+const puedeEditarAnotacion = (a) => estado.rol === "administrador" || (estado.rol.startsWith("premium") && a.autor === yo().id);
+const puntosVivos = () => PUNTOS.filter((p) => !estado.anotacionesBorradas.includes(p.id));
+const trazosVivos = () => TRAZOS.filter((t) => !estado.anotacionesBorradas.includes(t.id));
+
+/**
+ * Los topes son de caracteres, como los cuenta la base. JavaScript cuenta
+ * algunos símbolos (un emoji, por ejemplo) como dos: por eso se cuentan así.
+ */
+const caracteres = (texto) => Array.from(texto).length;
+const conMiles = (numero) => numero.toLocaleString("es-AR");
+
+function esc(texto) {
+  return String(texto ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+const km = (valor) => `${valor.toFixed(1).replace(".", ",")} km`;
+function fechaEnPalabras(fecha) {
+  if (!fecha) return "";
+  const [a, m, d] = fecha.split("-").map(Number);
+  const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  return `${d} de ${meses[m - 1]} de ${a}`;
+}
+
+// ---------------------------------------------------------------- dibujo de líneas
+const pts = (arr) => arr.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+const DASH = { por_explorar: "14 9", transitable: null, a_pie: "0.1 11", sin_paso: null };
+
+function largoPx(arr) {
+  let total = 0;
+  for (let i = 1; i < arr.length; i += 1) total += Math.hypot(arr[i][0] - arr[i - 1][0], arr[i][1] - arr[i - 1][1]);
+  return total;
+}
+function puntoA(arr, distancia) {
+  let acumulado = 0;
+  for (let i = 1; i < arr.length; i += 1) {
+    const tramo = Math.hypot(arr[i][0] - arr[i - 1][0], arr[i][1] - arr[i - 1][1]);
+    if (acumulado + tramo >= distancia) {
+      const t = tramo ? (distancia - acumulado) / tramo : 0;
+      return [arr[i - 1][0] + (arr[i][0] - arr[i - 1][0]) * t, arr[i - 1][1] + (arr[i][1] - arr[i - 1][1]) * t];
+    }
+    acumulado += tramo;
+  }
+  return arr[arr.length - 1];
+}
+function equis(arr) {
+  const largo = largoPx(arr);
+  const cantidad = Math.max(1, Math.round(largo / 70));
+  let svg = "";
+  for (let i = 0; i < cantidad; i += 1) {
+    const [x, y] = puntoA(arr, (largo * (i + 0.5)) / cantidad);
+    svg += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" pointer-events="none">
+      <path d="M-6 -6L6 6M6 -6L-6 6" stroke="var(--parte-x-halo)" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-6 -6L6 6M6 -6L-6 6" stroke="var(--parte-x)" stroke-width="3.2" stroke-linecap="round"/></g>`;
+  }
+  return svg;
+}
+/** Una parte clasificada: borde, color por complejidad, forma por condición, X si no hay paso. */
+function lineaDeParte(arr, clasificacion, ancho = 6) {
+  const dash = DASH[clasificacion.paso];
+  const atributo = dash ? ` stroke-dasharray="${dash}"` : "";
+  return `<polyline points="${pts(arr)}" fill="none" stroke="var(--linea-borde)" stroke-width="${ancho + 4}" stroke-linecap="round" stroke-linejoin="round"${atributo}/>
+    <polyline points="${pts(arr)}" fill="none" stroke="${colorComplejidad(clasificacion.comp)}" stroke-width="${ancho}" stroke-linecap="round" stroke-linejoin="round"${atributo}/>
+    ${clasificacion.paso === "sin_paso" ? equis(arr) : ""}`;
+}
+function muestraDeLinea(paso, comp) {
+  const arr = [[3, 6], [31, 6]];
+  return `<svg class="muestra" viewBox="0 0 34 12" aria-hidden="true">${lineaDeParte(arr, cl(paso, comp), 4).replace(/stroke-width="8"/g, 'stroke-width="7"')}</svg>`;
+}
+function iconoSvg(icono, x, y, grande) {
+  if (!grande) return `<circle cx="${x}" cy="${y}" r="5" fill="var(--anotacion)" stroke="var(--parte-x-halo)" stroke-width="1.5"/>`;
+  return `<g transform="translate(${x} ${y})"><circle r="12" fill="var(--anotacion)" stroke="var(--parte-x-halo)" stroke-width="2"/>
+    <g transform="translate(-8.4 -8.4) scale(0.7)"><path d="${ICONOS[icono].trazo}" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g></g>`;
+}
+function relieve(ancho, alto) {
+  let svg = "";
+  for (let i = 0; i < 9; i += 1) {
+    const y0 = 40 + i * (alto / 9);
+    let d = `M0 ${y0.toFixed(1)}`;
+    for (let x = 0; x <= ancho; x += 50) d += ` L${x} ${(y0 + 14 * Math.sin(x / 90 + i)).toFixed(1)}`;
+    svg += `<path d="${d}" fill="none" stroke="var(--mapa-relieve)" stroke-width="1.5"/>`;
+  }
+  return svg;
+}
+
+// ---------------------------------------------------------------- vista: mapa general
+/** Encuadra unos puntos en el mapa: lo que hay que mirar, no lo que se estaba mirando. */
+function encuadre(base, ancho, alto, margen) {
+  const xs = base.map((p) => p[0]);
+  const ys = base.map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const escala = Math.min((ancho - 2 * margen) / Math.max(x1 - x0, 1), (alto - 2 * margen) / Math.max(y1 - y0, 1), 8);
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  return (p) => [(p[0] - cx) * escala + ancho / 2, (p[1] - cy) * escala + alto / 2];
+}
+function transformacion() {
+  if (estado.acercamiento === "lejos") return (p) => p;
+  const sel = estado.seleccion?.tipo === "camino" ? caminosVivos().find((c) => c.id === estado.seleccion.id) : null;
+  if (!sel) return (p) => [(p[0] - 520) * 2.1 + 500, (p[1] - 330) * 2.1 + 310];
+  return encuadre(L(sel.linea), 1000, 620, 110);
+}
+
+function svgMapaGeneral() {
+  const tf = transformacion();
+  const cerca = estado.acercamiento === "cerca";
+  const principal = estado.actividadPrincipal;
+  const sel = estado.seleccion;
+  let svg = `<svg viewBox="0 0 1000 620" role="img" aria-label="Mapa general con Caminos, puntos y trazos">
+    <rect width="1000" height="620" fill="var(--mapa-fondo)"/>${relieve(1000, 620)}`;
+
+  // La zona: solo su perímetro y su nombre. No ordena Caminos.
+  const [z1, z2] = [tf([318, 26]), tf([682, 594])];
+  svg += `<rect x="${z1[0]}" y="${z1[1]}" width="${z2[0] - z1[0]}" height="${z2[1] - z1[1]}" fill="none" stroke="var(--zona-borde)" stroke-width="2" stroke-dasharray="8 6"/>
+    <text class="etiqueta-zona" x="${z1[0] + 10}" y="${z1[1] + 22}" data-accion="tocar-zona">Sierras Chicas (ejemplo)</text>`;
+
+  for (const trazo of trazosVivos()) {
+    const arr = trazo.p.map(tf);
+    const color = TRAZOS_COLOR.find((c) => c.id === trazo.color).color;
+    svg += `<polyline points="${pts(arr)}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${pts(arr)}" fill="none" stroke="transparent" stroke-width="16" class="tocable" pointer-events="stroke" data-accion="tocar-trazo" data-id="${trazo.id}"/>`;
+  }
+
+  const ordenados = [...caminosVivos()].sort((a, b) => Number(a.actividades.includes(principal)) - Number(b.actividades.includes(principal)));
+  for (const camino of ordenados) {
+    const linea = L(camino.linea).map(tf);
+    const sirve = camino.actividades.includes(principal);
+    const elegido = sel?.tipo === "camino" && sel.id === camino.id;
+    if (elegido) svg += `<polyline points="${pts(linea)}" fill="none" stroke="var(--dato)" stroke-width="18" stroke-opacity="0.35" stroke-linecap="round" stroke-linejoin="round"/>`;
+    camino.partes.forEach((parte, i) => {
+      const arr = linea.slice(parte.desde, parte.hasta + 1);
+      svg += sirve
+        ? lineaDeParte(arr, parte.por[principal])
+        : `<polyline points="${pts(arr)}" fill="none" stroke="var(--otra-actividad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+      if (elegido && sel.parte === i) {
+        svg += `<polyline points="${pts(arr)}" fill="none" stroke="var(--dato)" stroke-width="2" stroke-dasharray="2 4" pointer-events="none"/>`;
+      }
+      svg += `<polyline points="${pts(arr)}" fill="none" stroke="transparent" stroke-width="18" class="tocable" pointer-events="stroke" data-accion="tocar-camino" data-id="${camino.id}" data-parte="${i}"><title>${esc(camino.nombre)}</title></polyline>`;
+    });
+    if (cerca) {
+      const medio = linea[Math.floor(linea.length / 2)];
+      svg += `<text class="etiqueta-mapa" x="${medio[0] + 10}" y="${medio[1] - 8}">${esc(camino.nombre)}</text>`;
+    }
+  }
+
+  for (const punto of puntosVivos()) {
+    const [x, y] = tf(punto.pos);
+    svg += `<g class="tocable" data-accion="tocar-punto" data-id="${punto.id}">${iconoSvg(punto.icono, x.toFixed(1), y.toFixed(1), cerca)}<title>${esc(punto.nombre)}</title></g>`;
+    if (cerca) svg += `<text class="etiqueta-mapa" x="${x + 16}" y="${y + 5}">${esc(punto.nombre)}</text>`;
+  }
+  return svg + "</svg>";
+}
+
+function controlesDeMapa(cual) {
+  const grande = estado.enGrande === cual;
+  return `<div class="controles">
+    ${cual === "general" ? `<div class="fila" style="justify-content:flex-end;gap:6px"><button class="boton secundario" data-accion="acercar" aria-label="Acercar" ${estado.acercamiento === "cerca" ? "disabled" : ""}>+</button>
+    <button class="boton secundario" data-accion="alejar" aria-label="Alejar" ${estado.acercamiento === "lejos" ? "disabled" : ""}>−</button></div>` : ""}
+    <button class="boton secundario" data-accion="agrandar" data-valor="${cual}">${grande ? "Cerrar mapa grande" : "Agrandar"}</button>
+  </div>`;
+}
+
+function leyendaDePartes(actividad) {
+  return `<div class="leyenda">
+    <b>Color = complejidad:</b>
+    <span class="item">${muestraDeLinea("transitable", "facil")} Fácil</span>
+    <span class="item">${muestraDeLinea("transitable", "media")} Media</span>
+    <span class="item">${muestraDeLinea("transitable", "dificil")} Difícil</span>
+    <span class="item">${muestraDeLinea("transitable", null)} Sin clasificar</span>
+  </div>
+  <div class="leyenda">
+    <b>Línea = condición:</b>
+    <span class="item">${muestraDeLinea("por_explorar", null)} Por explorar</span>
+    <span class="item">${muestraDeLinea("transitable", null)} Transitable</span>
+    <span class="item">${muestraDeLinea("a_pie", null)} ${esc(nombrePaso("a_pie", actividad))}</span>
+    <span class="item">${muestraDeLinea("sin_paso", null)} Sin paso</span>
+  </div>`;
+}
+
+/** Editar y borrar un punto o un trazo, para quien puede; para el resto, por qué no. */
+function accionesDeAnotacion(a, enLista = false) {
+  if (puedeEditarAnotacion(a)) {
+    return `<div class="fila"><button class="boton secundario" data-accion="nada">Editar</button>
+      <button class="boton destructivo" data-accion="borrar-anotacion" data-id="${a.id}">Borrar</button></div>`;
+  }
+  if (estado.rol === "normal") {
+    return enLista ? "" : `<p class="chico suave">Tu cuenta puede ver los puntos y trazos, pero no sumarlos ni cambiarlos.</p>`;
+  }
+  return `<p class="chico suave">Solo podés cambiar lo que marcaste vos.</p>`;
+}
+
+function fichaDelMapa() {
+  const sel = estado.seleccion;
+  if (!sel) {
+    return `<div class="tarjeta pila"><p class="suave">Tocá un Camino, un punto o un trazo para ver su ficha. Tocá el nombre de una zona para abrirla.</p></div>`;
+  }
+  if (sel.tipo === "zona") {
+    return `<div class="tarjeta pila"><h3>Sierras Chicas (ejemplo)</h3>
+      <p class="chico suave">Zona con 4 sectores para bajar mapas.</p>
+      <button class="boton secundario" data-accion="nada">Ver zona</button>
+      <p class="chico suave">Las zonas solo ordenan las descargas de mapas. Los Caminos no pertenecen a ninguna.</p></div>`;
+  }
+  if (sel.tipo === "punto") {
+    const punto = puntosVivos().find((p) => p.id === sel.id);
+    if (!punto) return `<div class="tarjeta"><p class="suave">Ese punto ya no está en el mapa.</p></div>`;
+    return `<div class="tarjeta pila"><p class="titulo-seccion">Punto · ${esc(ICONOS[punto.icono].nombre)}</p>
+      <h3>${esc(punto.nombre)}</h3><p>${esc(punto.comentario)}</p><p class="chico suave">Sin foto · Lo marcó ${esc(AUTORES[punto.autor])}</p>
+      ${accionesDeAnotacion(punto)}</div>`;
+  }
+  if (sel.tipo === "trazo") {
+    const trazo = trazosVivos().find((t) => t.id === sel.id);
+    if (!trazo) return `<div class="tarjeta"><p class="suave">Ese trazo ya no está en el mapa.</p></div>`;
+    return `<div class="tarjeta pila"><p class="titulo-seccion">Trazo · ${esc(TRAZOS_COLOR.find((c) => c.id === trazo.color).nombre)}</p>
+      <h3>${esc(trazo.nombre)}</h3><p>${esc(trazo.comentario)}</p>
+      <p class="chico suave">Un trazo es una referencia: no tiene partes ni condición de paso. Lo marcó ${esc(AUTORES[trazo.autor])}.</p>
+      ${accionesDeAnotacion(trazo)}</div>`;
+  }
+  const camino = caminosVivos().find((c) => c.id === sel.id);
+  if (!camino) return `<div class="tarjeta"><p class="suave">Ese Camino ya no está en el mapa.</p></div>`;
+  const principal = estado.actividadPrincipal;
+  const parte = camino.partes[sel.parte ?? 0];
+  const acum = GEO.lineas[camino.linea].acum;
+  const chips = camino.actividades.map((a) => `<span class="chip ${a === principal ? "destacada" : ""}">${esc(nombreActividad(a))}</span>`).join(" ");
+  const filas = camino.actividades.map((a) => {
+    const c = parte.por[a];
+    return `<tr><td>${esc(nombreActividad(a))}</td><td><span class="fila">${muestraDeLinea(c.paso, c.comp)} ${esc(nombrePaso(c.paso, a))} · ${esc(nombreComplejidad(c.comp))}</span></td></tr>`;
+  }).join("");
+  const acciones = puedeEditar(camino)
+    ? `<div class="fila"><button class="boton secundario" data-accion="abrir-editor" data-valor="datos">Editar Camino</button>
+       <button class="boton secundario" data-accion="abrir-editor" data-valor="partes">Editar partes</button></div>`
+    : estado.rol === "normal"
+      ? `<p class="chico suave">Tu cuenta puede ver los Caminos, pero no cambiarlos.</p>`
+      : `<p class="chico suave">Lo subió ${esc(AUTORES[camino.autor])}: solo podés cambiar los tuyos.</p>`;
+  return `<div class="tarjeta pila">
+    <div><p class="titulo-seccion">Camino</p><h3>${esc(camino.nombre)}</h3></div>
+    <div class="fila">${chips}</div>
+    ${camino.actividades.includes(principal) ? "" : `<p class="aviso-ambar">No está marcado para ${esc(nombreActividad(principal))}: por eso se ve fino y apagado. Sirve para las actividades de arriba.</p>`}
+    <p class="chico suave">Lo subió ${esc(AUTORES[camino.autor])} · ${km(GEO.lineas[camino.linea].km)} · ${camino.partes.length} ${camino.partes.length === 1 ? "parte" : "partes"}</p>
+    <div class="pila-chica">
+      <p class="titulo-seccion">Parte ${(sel.parte ?? 0) + 1} de ${camino.partes.length} · del km ${acum[parte.desde].toFixed(1).replace(".", ",")} al ${acum[parte.hasta].toFixed(1).replace(".", ",")}</p>
+      <table class="tabla-actividades"><tbody>${filas}
+        <tr><td>Observación</td><td>${parte.obs ? esc(parte.obs) : '<span class="suave">Sin observación</span>'}</td></tr>
+        <tr><td>Comprobado el</td><td>${parte.fecha ? fechaEnPalabras(parte.fecha) : '<span class="suave">Sin fecha</span>'}</td></tr>
+      </tbody></table>
+      <p class="chico suave">Tocá otra parte de la línea para ver la suya.</p>
+    </div>
+    ${acciones}
+  </div>`;
+}
+
+function renderMapa() {
+  const principal = estado.actividadPrincipal;
+  const vista = document.getElementById("vista-mapa");
+  vista.innerHTML = `<div class="pila">
+    <div class="tarjeta pila-chica">
+      <div class="fila entre"><p class="titulo-seccion" style="margin:0">Actividad principal</p>
+        <p class="chico suave">La app se acuerda de la última que elegiste.</p></div>
+      <div class="opciones c5">${ACTIVIDADES.map((a) => `<button class="opcion" data-accion="principal" data-valor="${a.id}" aria-pressed="${a.id === principal}">${esc(a.nombre)}</button>`).join("")}</div>
+    </div>
+    <div class="mapa-con-ficha">
+      <div>
+        <div class="mapa-caja ${estado.enGrande === "general" ? "en-grande" : ""}" id="mapa-general">${svgMapaGeneral()}${controlesDeMapa("general")}</div>
+        ${leyendaDePartes(principal)}
+        <div class="leyenda"><span class="item"><svg class="muestra" viewBox="0 0 34 12"><polyline points="3,6 31,6" stroke="var(--otra-actividad)" stroke-width="2.5"/></svg> Caminos de otras actividades</span>
+          <span class="item"><svg class="muestra" viewBox="0 0 34 12"><polyline points="3,6 31,6" stroke="var(--trazo-agua)" stroke-width="3"/></svg> Trazo de referencia</span>
+          <span class="item"><svg class="muestra" viewBox="0 0 34 12"><circle cx="17" cy="6" r="5" fill="var(--anotacion)"/></svg> Punto</span></div>
+      </div>
+      <div class="pila">${fichaDelMapa()}
+        <p class="nota-boceto">Alejado no hay nombres sobre el mapa. Con + aparecen los nombres de Caminos y puntos, y los íconos.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------- vista: lista de Caminos
+function renderCaminos() {
+  const vista = document.getElementById("vista-caminos");
+  const lista = caminosVivos();
+  vista.innerHTML = `<div class="pila">
+    ${estado.avisoLista ? `<p class="aviso-verde" role="status">${esc(estado.avisoLista)}</p>` : ""}
+    <div class="fila entre">
+      <p class="suave">${lista.length} Caminos en el mapa</p>
+      ${puedeCrear() ? `<button class="boton principal" data-accion="ir-traer" data-valor="ascochinga">Traer de afuera</button>` : `<p class="chico suave">Tu cuenta puede ver los Caminos, pero no sumarlos ni cambiarlos.</p>`}
+    </div>
+    <div class="galeria">${lista.map((camino) => `
+      <div class="tarjeta pila-chica">
+        <h3 style="font-size:17px">${esc(camino.nombre)}</h3>
+        <div class="fila">${camino.actividades.map((a) => `<span class="chip">${esc(nombreActividad(a))}</span>`).join(" ")}</div>
+        <p class="chico suave">${km(GEO.lineas[camino.linea].km)} · ${camino.partes.length} ${camino.partes.length === 1 ? "parte" : "partes"} · Lo subió ${esc(AUTORES[camino.autor])}</p>
+        <div class="fila">
+          <button class="boton secundario" data-accion="ver-en-mapa" data-id="${camino.id}">Ver en el mapa</button>
+          ${puedeEditar(camino) ? `<button class="boton secundario" data-accion="editar-camino" data-id="${camino.id}">Editar</button>` : ""}
+        </div>
+      </div>`).join("")}</div>
+    <p class="nota-boceto">Pestaña nueva «Caminos» dentro de Mapas: la ven todos; «Traer de afuera» y «Editar» solo aparecen a quien puede usarlos. En este boceto solo se puede editar en detalle «Camino cuadrado - alpatuca».</p>
+  </div>`;
+}
+
+// ---------------------------------------------------------------- vista: traer de afuera
+function nuevoTraer(archivo) {
+  return {
+    archivo,
+    decisiones: {},
+    nombres: ARCHIVOS[archivo].lineas.map((l) => l.nombre),
+    colores: {},
+    actividades: [],
+    puntos: {},
+    iconos: Object.fromEntries(ARCHIVOS[archivo].puntos.map((p, i) => [i, p.icono])),
+    foco: null,
+    incorporado: false,
+  };
+}
+
+/** «a», «a y b», «a, b y c». */
+function enLista(partes) {
+  return partes.length <= 1 ? partes.join("") : `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}`;
+}
+const cuenta = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+
+function resumenTraer() {
+  const t = estado.traer;
+  const archivo = ARCHIVOS[t.archivo];
+  const lineas = archivo.lineas.map((_, i) => i);
+  const puntos = archivo.puntos.map((_, i) => i);
+  const caminos = lineas.filter((i) => t.decisiones[i] === "camino").length;
+  const trazos = lineas.filter((i) => t.decisiones[i] === "trazo").length;
+  const lineasOmitidas = lineas.filter((i) => t.decisiones[i] === "omitir").length;
+  const puntosSumados = puntos.filter((i) => t.puntos[i] === "sumar").length;
+  const puntosOmitidos = puntos.filter((i) => t.puntos[i] === "omitir").length;
+  const faltanLineas = lineas.filter((i) => !t.decisiones[i]);
+  const faltanPuntos = puntos.filter((i) => !t.puntos[i]);
+  const trazosSinColor = lineas.filter((i) => t.decisiones[i] === "trazo" && !t.colores[i]);
+  const sinNombre = lineas.filter((i) => t.decisiones[i] && t.decisiones[i] !== "omitir" && !t.nombres[i].trim());
+  const largos = lineas.filter((i) => t.decisiones[i] !== "omitir" && caracteres(t.nombres[i].trim()) > 120);
+  const decididos = lineas.length - faltanLineas.length + puntos.length - faltanPuntos.length;
+  const total = caminos + trazos + puntosSumados;
+
+  const problemas = [];
+  if (faltanLineas.length) problemas.push(`Falta decidir ${faltanLineas.length === 1 ? "la línea" : "las líneas"} ${enLista(faltanLineas.map((i) => String(i + 1)))}.`);
+  if (faltanPuntos.length) problemas.push(`Falta decidir ${faltanPuntos.length === 1 ? "el punto" : "los puntos"} ${enLista(faltanPuntos.map((i) => `P${i + 1}`))}.`);
+  if (trazosSinColor.length) problemas.push(`Elegí el color del trazo en ${enLista(trazosSinColor.map((i) => `la línea ${i + 1}`))}.`);
+  if (caminos > 0 && t.actividades.length === 0) problemas.push("Elegí al menos una actividad para los Caminos nuevos.");
+  if (sinNombre.length) problemas.push(`Ponele nombre a ${enLista(sinNombre.map((i) => `la línea ${i + 1}`))}.`);
+  if (largos.length) problemas.push(`El nombre de ${enLista(largos.map((i) => `la línea ${i + 1}`))} pasa los 120 caracteres: acortalo.`);
+  if (!faltanLineas.length && !faltanPuntos.length && total === 0) problemas.push("Elegiste omitir todo: no queda nada para sumar.");
+
+  const vaASumar = [];
+  if (caminos) vaASumar.push(cuenta(caminos, "Camino", "Caminos"));
+  if (trazos) vaASumar.push(cuenta(trazos, "trazo", "trazos"));
+  if (puntosSumados) vaASumar.push(cuenta(puntosSumados, "punto", "puntos"));
+  const omitido = [];
+  if (lineasOmitidas) omitido.push(cuenta(lineasOmitidas, "línea", "líneas"));
+  if (puntosOmitidos) omitido.push(cuenta(puntosOmitidos, "punto", "puntos"));
+  const textoOmitido = omitido.length ? ` Se ${lineasOmitidas + puntosOmitidos === 1 ? "omite" : "omiten"} ${enLista(omitido)}.` : "";
+  const texto = decididos === 0
+    ? "Todavía no elegiste qué hacer con nada del archivo."
+    : `Vas a sumar ${vaASumar.length ? enLista(vaASumar) : "nada"}.${textoOmitido}`;
+  return { problemas, texto, listo: problemas.length === 0 && total > 0, vaASumar, total };
+}
+
+function svgVistaPrevia() {
+  const t = estado.traer;
+  const archivo = ARCHIVOS[t.archivo];
+  const lineaEnfocada = t.foco?.tipo === "linea";
+  const tf = lineaEnfocada ? encuadre(archivo.lineas[t.foco.i].p, 1000, 620, 90) : (p) => p;
+  let svg = `<svg viewBox="0 0 1000 620" role="img" aria-label="Vista previa de lo que trae el archivo"><rect width="1000" height="620" fill="var(--mapa-fondo)"/>${relieve(1000, 620)}`;
+  archivo.lineas.forEach((linea, i) => {
+    if (lineaEnfocada && i === t.foco.i) return;
+    const omitida = t.decisiones[i] === "omitir";
+    const arr = linea.p.map(tf);
+    svg += `<polyline points="${pts(arr)}" fill="none" stroke="var(--otra-actividad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${t.foco ? 0.4 : 1}" ${omitida ? 'stroke-dasharray="2 6"' : ""}/>
+      <polyline points="${pts(arr)}" fill="none" stroke="transparent" stroke-width="18" class="tocable" pointer-events="stroke" data-accion="enfocar" data-valor="linea-${i}"><title>${esc(t.nombres[i])}</title></polyline>`;
+  });
+  if (lineaEnfocada) {
+    const arr = archivo.lineas[t.foco.i].p.map(tf);
+    const medio = arr[Math.floor(arr.length / 2)];
+    svg += `<polyline points="${pts(arr)}" fill="none" stroke="var(--linea-borde)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${pts(arr)}" fill="none" stroke="var(--dato)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${arr[0][0]}" cy="${arr[0][1]}" r="7" fill="var(--dato)" stroke="var(--parte-x-halo)" stroke-width="2"/>
+      <text class="etiqueta-mapa" style="font-size:28px;stroke-width:6px" x="${medio[0] + 14}" y="${medio[1] - 12}">${t.foco.i + 1} · ${esc(t.nombres[t.foco.i])}</text>`;
+  }
+  archivo.puntos.forEach((punto, i) => {
+    const enfocado = t.foco?.tipo === "punto" && t.foco.i === i;
+    const [x, y] = tf(punto.pos);
+    if (enfocado) svg += `<circle cx="${x}" cy="${y}" r="24" fill="var(--dato)" fill-opacity="0.3"/>`;
+    svg += `<g class="tocable" data-accion="enfocar" data-valor="punto-${i}" opacity="${t.puntos[i] === "omitir" ? 0.45 : 1}">${iconoSvg(t.iconos[i], x, y, true)}<title>${esc(punto.nombre)}</title></g>`;
+    if (enfocado) svg += `<text class="etiqueta-mapa" style="font-size:28px;stroke-width:6px" x="${x + 22}" y="${y + 9}">P${i + 1} · ${esc(punto.nombre)}</text>`;
+  });
+  return svg + "</svg>";
+}
+
+function filaDeLinea(linea, i) {
+  const t = estado.traer;
+  const decision = t.decisiones[i];
+  const enfocada = t.foco?.tipo === "linea" && t.foco.i === i;
+  const largo = caracteres(t.nombres[i].trim());
+  const pill = !decision ? `<span class="estado-pill falta">Falta decidir</span>`
+    : decision === "omitir" ? `<span class="estado-pill omitida">Se omite</span>`
+    : decision === "trazo" && !t.colores[i] ? `<span class="estado-pill falta">Falta el color</span>`
+    : `<span class="estado-pill listo">${decision === "camino" ? "Camino" : "Trazo"}</span>`;
+  return `<div class="linea-a-traer ${enfocada ? "enfocada" : ""}" id="linea-${i}">
+    <div class="cabeza"><span class="numero">${i + 1}</span>
+      <span class="color-earth" title="Color que tenía en Google Earth"><i style="background:${linea.color}"></i>Color en Google Earth</span>
+      ${pill}</div>
+    <div class="fila" style="align-items:flex-start">
+      <div style="flex:1;min-width:220px"><label class="campo" for="nombre-${i}">Nombre</label>
+        <input type="text" id="nombre-${i}" data-campo="nombre-linea" data-i="${i}" value="${esc(t.nombres[i])}" ${decision === "omitir" ? "disabled" : ""}>
+        <p class="contador ${largo > 120 ? "pasado" : ""}" id="contador-linea-${i}">${largo} de 120 caracteres</p></div>
+      <span class="chico suave" style="padding-top:36px">${km(linea.km)}</span>
+      <button class="boton fantasma" style="margin-top:28px" data-accion="enfocar" data-valor="linea-${i}">${enfocada ? "Viéndola" : "Ver en el mapa"}</button>
+    </div>
+    <div class="opciones c3" style="margin-top:8px" role="group" aria-label="Qué hacer con la línea ${i + 1}">
+      ${[["camino", "Camino"], ["trazo", "Trazo de referencia"], ["omitir", "Omitir"]].map(([valor, texto]) =>
+        `<button class="opcion" data-accion="decidir" data-i="${i}" data-valor="${valor}" aria-pressed="${decision === valor}">${texto}</button>`).join("")}
+    </div>
+    ${decision === "trazo" ? `<div style="margin-top:8px"><p class="chico suave" style="margin-bottom:6px">Color del trazo</p>
+      <div class="opciones c4">${TRAZOS_COLOR.map((c) => `<button class="opcion" data-accion="color-trazo" data-i="${i}" data-valor="${c.id}" aria-pressed="${t.colores[i] === c.id}"><i style="width:14px;height:14px;border-radius:4px;background:${c.color};display:inline-block"></i>${c.nombre}</button>`).join("")}</div></div>` : ""}
+  </div>`;
+}
+
+function filaDePunto(punto, i) {
+  const t = estado.traer;
+  const decision = t.puntos[i];
+  const enfocado = t.foco?.tipo === "punto" && t.foco.i === i;
+  const pill = !decision ? `<span class="estado-pill falta">Falta decidir</span>`
+    : decision === "omitir" ? `<span class="estado-pill omitida">Se omite</span>`
+    : `<span class="estado-pill listo">Se suma</span>`;
+  return `<div class="linea-a-traer ${enfocado ? "enfocada" : ""}" id="punto-${i}">
+    <div class="cabeza"><span class="numero">P${i + 1}</span><b>${esc(punto.nombre)}</b>${pill}</div>
+    <p class="chico suave">Lo que dice el archivo queda como comentario del punto. El ícono se propone por el nombre y lo podés cambiar.</p>
+    <div class="opciones c3" style="margin-top:8px" role="group" aria-label="Ícono del punto P${i + 1}">
+      ${["mirador", "cumbre", "refugio", "fuente", "cascada", "tranquera"].map((icono) => `<button class="opcion" data-accion="icono-punto" data-i="${i}" data-valor="${icono}" aria-pressed="${t.iconos[i] === icono}" ${decision === "omitir" ? "disabled" : ""}>${ICONOS[icono].nombre}</button>`).join("")}
+    </div>
+    <div class="opciones c3" style="margin-top:8px" role="group" aria-label="Qué hacer con el punto P${i + 1}">
+      <button class="opcion" data-accion="decidir-punto" data-i="${i}" data-valor="sumar" aria-pressed="${decision === "sumar"}">Sumar el punto</button>
+      <button class="opcion" data-accion="decidir-punto" data-i="${i}" data-valor="omitir" aria-pressed="${decision === "omitir"}">Omitir</button>
+      <button class="opcion" data-accion="enfocar" data-valor="punto-${i}" aria-pressed="${enfocado}">Ver en el mapa</button>
+    </div>
+  </div>`;
+}
+
+function renderTraer() {
+  const t = estado.traer;
+  const archivo = ARCHIVOS[t.archivo];
+  const vista = document.getElementById("vista-traer");
+  if (!puedeCrear()) {
+    vista.innerHTML = `<div class="tarjeta franja-ambar pila"><h2 style="font-size:18px">Traer de afuera</h2>
+      <p>Tu cuenta puede ver los Caminos, los puntos y los trazos, pero no sumarlos. Los suman los usuarios Premium y el administrador: si conocés algo que falta, pasáselo a Ale.</p>
+      <button class="boton secundario" data-accion="volver-traer">Volver a ${estado.traerDesde === "anotaciones" ? "Anotaciones" : "Caminos"}</button></div>`;
+    return;
+  }
+  if (t.incorporado) {
+    const r = resumenTraer();
+    const unoSolo = r.total === 1;
+    vista.innerHTML = `<div class="pila">
+      <div class="tarjeta franja-verde pila"><h2 style="font-size:18px">Listo</h2>
+        <p>Se ${unoSolo ? "sumó" : "sumaron"} ${enLista(r.vaASumar)}. Ya se ${unoSolo ? "ve" : "ven"} en el mapa.</p>
+        <p class="chico suave">Lo que omitiste no se guardó, y el archivo tampoco.</p>
+        <div class="fila"><button class="boton principal" data-accion="pestana" data-valor="mapa">Ver en el mapa</button>
+          <button class="boton secundario" data-accion="traer-otro">Traer otro archivo</button></div></div>
+      <p class="nota-boceto">En el boceto el mapa general no cambia: muestra siempre el mismo ejemplo. Si algo no se pudiera guardar, en vez de «Listo» se ve el aviso de la situación 5.</p>
+    </div>`;
+    return;
+  }
+
+  const r = resumenTraer();
+  let paso = 1;
+  const titulo = (texto) => `<p class="titulo-seccion" style="margin:0">${paso++} · ${texto}</p>`;
+  const resumenDelArchivo = [
+    archivo.lineas.length ? cuenta(archivo.lineas.length, "línea", "líneas") : "ninguna línea",
+    archivo.puntos.length ? cuenta(archivo.puntos.length, "punto", "puntos") : "ningún punto",
+    "nada se salteó",
+  ].join(" · ");
+  const tarjetaArchivo = `<div class="tarjeta pila-chica">
+      ${titulo("El archivo")}
+      <div class="fila entre"><p><b>${esc(archivo.nombre)}</b> · ${resumenDelArchivo}</p>
+        <button class="boton secundario" data-accion="nada">Elegir otro archivo</button></div>
+      <p class="chico suave">Sirven archivos .kml, .kmz y .gpx. El archivo no se guarda: solo queda lo que sumes.</p>
+      ${archivo.inventado ? `<p class="nota-boceto">Archivo inventado para el boceto, para ver cómo se trae uno que solo tiene puntos. No es un archivo de Ale.</p>` : ""}
+    </div>`;
+  const tarjetaActividades = archivo.lineas.length ? `<div class="tarjeta pila-chica">
+      ${titulo("Para qué sirven los Caminos nuevos")}
+      <div class="opciones c5">${ACTIVIDADES.map((a) => `<button class="opcion" data-accion="actividad-traer" data-valor="${a.id}" aria-pressed="${t.actividades.includes(a.id)}">${esc(a.nombre)}</button>`).join("")}</div>
+      <p class="chico suave">Vale para todas las líneas que marques como Camino. Después podés cambiarlo en cada uno.</p>
+    </div>` : "";
+  const bloqueLineas = archivo.lineas.length ? `${titulo("Qué hacer con cada línea")}
+      <p class="chico suave">Cada línea es una alternativa aparte: no se suman entre sí. El color de Google Earth no decide nada.</p>
+      ${archivo.lineas.map(filaDeLinea).join("")}` : "";
+  const bloquePuntos = archivo.puntos.length ? `${titulo("Qué hacer con cada punto")}
+      <p class="chico suave">Un punto no necesita zona ni sector.</p>
+      ${archivo.puntos.map(filaDePunto).join("")}`
+    : `<p class="nota-boceto">Este archivo no trae puntos. Para ver cómo se trae uno que sí trae, elegí arriba «2b · Archivo con puntos».</p>`;
+  const textoDelMapa = !t.foco
+    ? (archivo.lineas.length ? "Tocá una línea o «Ver en el mapa» para verla de cerca." : "Tocá un punto o «Ver en el mapa» para ubicarlo.")
+    : t.foco.tipo === "punto" ? `Estás viendo el punto P${t.foco.i + 1}.`
+    : `Estás viendo la línea ${t.foco.i + 1}, con su comienzo marcado. Las demás quedan apagadas.`;
+
+  vista.innerHTML = `<div class="pila">
+    <div class="fila entre"><div class="fila"><button class="boton fantasma" data-accion="volver-traer">← Volver a ${estado.traerDesde === "anotaciones" ? "Anotaciones" : "Caminos"}</button><h2 style="font-size:20px">Traer de afuera</h2></div></div>
+    ${tarjetaArchivo}
+    ${tarjetaActividades}
+    <div class="traer">
+      <div class="pila">${bloqueLineas}${bloquePuntos}</div>
+      <div class="vista-previa pila-chica">
+        <div class="mapa-caja ${estado.enGrande === "previa" ? "en-grande" : ""}">${svgVistaPrevia()}${controlesDeMapa("previa")}</div>
+        <p class="chico suave">${textoDelMapa}</p>
+      </div>
+    </div>
+    <div class="tarjeta pila-chica ${r.problemas.length ? "franja-ambar" : "franja-verde"}" id="resumen-traer">${resumenHtml(r)}</div>
+  </div>`;
+}
+function resumenHtml(r) {
+  return `<p><b id="resumen-texto">${esc(r.texto)}</b></p>
+    ${r.problemas.map((p) => `<p class="chico">${esc(p)}</p>`).join("")}
+    <div class="fila"><button class="boton principal" data-accion="incorporar" ${r.listo ? "" : "disabled"}>Sumar al mapa</button>
+      <button class="boton secundario" data-accion="volver-traer">Cancelar</button></div>`;
+}
+
+// ---------------------------------------------------------------- vista: editor
+function editorBloqueado(camino) {
+  if (puedeEditar(camino)) return "";
+  const texto = estado.rol === "normal"
+    ? "Tu cuenta puede ver los Caminos, pero no cambiarlos."
+    : `Este Camino lo subió ${AUTORES[camino.autor]}: solo podés cambiar los tuyos. Si hay algo para corregir, avisale al administrador.`;
+  return `<div class="tarjeta franja-ambar"><p>${esc(texto)}</p></div>
+    <p class="nota-boceto">En la app esta pantalla ni se ofrece a quien no puede editar. Se muestra para ver qué pasa si alguien llega igual.</p>`;
+}
+
+function svgEditor(modo) {
+  const e = estado.editor;
+  const preferida = modo === "partes" ? e.actividadPartes : estado.actividadPrincipal;
+  const act = e.camino.actividades.includes(preferida) ? preferida : e.camino.actividades[0];
+  let svg = `<svg viewBox="0 0 800 520" role="img" aria-label="Línea del Camino" id="svg-editor"><rect width="800" height="520" fill="var(--mapa-fondo)"/>${relieve(800, 520)}`;
+  e.camino.partes.forEach((parte, i) => {
+    const arr = e.coords.slice(parte.desde, parte.hasta + 1);
+    if (modo === "partes" && i === e.parte) {
+      svg += `<polyline points="${pts(arr)}" fill="none" stroke="var(--dato)" stroke-width="20" stroke-opacity="0.35" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+    svg += lineaDeParte(arr, parte.por[act] || cl("por_explorar", null), 7);
+    if (modo === "partes" || !e.corrigiendo) {
+      svg += `<polyline points="${pts(arr)}" fill="none" stroke="transparent" stroke-width="20" class="tocable" pointer-events="stroke" data-accion="${modo === "partes" ? "tocar-parte-editor" : "nada"}" data-parte="${i}"/>`;
+    }
+  });
+  if (modo === "partes") {
+    e.camino.partes.forEach((parte) => {
+      const [x, y] = e.coords[parte.desde];
+      if (parte.desde !== 0) svg += `<circle cx="${x}" cy="${y}" r="4" fill="var(--superficie)" stroke="var(--texto)" stroke-width="2" pointer-events="none"/>`;
+    });
+    e.marcas.forEach((indice, n) => {
+      const [x, y] = e.coords[indice];
+      svg += `<circle cx="${x}" cy="${y}" r="9" fill="var(--dato)" stroke="var(--parte-x-halo)" stroke-width="3"/>
+        <text class="etiqueta-mapa" x="${x + 12}" y="${y - 10}">${n === 0 ? "Inicio" : "Final"}</text>`;
+    });
+  }
+  if (modo === "datos" && e.corrigiendo) {
+    e.coords.forEach(([x, y], i) => {
+      svg += `<circle cx="${x}" cy="${y}" r="7" fill="var(--superficie)" stroke="var(--dato)" stroke-width="3" class="tocable" data-vertice="${i}"/>`;
+    });
+  }
+  return svg + "</svg>";
+}
+
+function renderEditor() {
+  const e = estado.editor;
+  const camino = e.camino;
+  const vista = document.getElementById("vista-editor");
+  if (e.retirado) {
+    vista.innerHTML = `<div class="tarjeta franja-ambar pila-chica"><p>Ese Camino fue retirado del mapa. Volvé a la lista de Caminos.</p>
+      <div class="fila"><button class="boton secundario" data-accion="volver-caminos">Volver a Caminos</button></div></div>
+      <p class="nota-boceto" style="margin-top:12px">No hay botón para recuperarlo, tampoco para el administrador. Usá «Reiniciar el boceto» arriba para volver a verlo.</p>`;
+    return;
+  }
+  const bloqueo = editorBloqueado(camino);
+  const deshabilitado = bloqueo ? "disabled" : "";
+  const cabecera = `<div class="fila entre">
+      <div class="fila"><button class="boton fantasma" data-accion="volver-caminos">← Volver a Caminos</button>
+        <h2 style="font-size:20px">${esc(camino.nombre)}</h2></div>
+      <div class="fila" role="tablist" aria-label="Partes del editor">
+        <button class="boton ${estado.subEditor === "datos" ? "principal" : "fantasma"}" data-accion="sub-editor" data-valor="datos">Datos y línea</button>
+        <button class="boton ${estado.subEditor === "partes" ? "principal" : "fantasma"}" data-accion="sub-editor" data-valor="partes">Partes</button>
+      </div></div>`;
+
+  if (estado.subEditor === "datos") {
+    const largoNombre = caracteres(e.nombre.trim());
+    const largoDescripcion = caracteres(e.descripcion);
+    vista.innerHTML = `<div class="pila">${cabecera}${bloqueo}
+      ${estado.notaEditor ? '<p class="nota-boceto">El boceto abre siempre el mismo Camino de ejemplo, «Camino cuadrado - alpatuca».</p>' : ""}
+      <div class="editor">
+        <div class="tarjeta pila">
+          <div><label class="campo" for="campo-nombre">Nombre</label>
+            <input type="text" id="campo-nombre" data-campo="nombre" value="${esc(e.nombre)}" ${deshabilitado}>
+            <p class="contador ${largoNombre > 120 ? "pasado" : ""}" id="contador-nombre">${largoNombre} de 120 caracteres</p></div>
+          <div><label class="campo" for="campo-descripcion">Descripción</label>
+            <textarea id="campo-descripcion" data-campo="descripcion" ${deshabilitado}>${esc(e.descripcion)}</textarea>
+            <p class="contador ${largoDescripcion > 2000 ? "pasado" : ""}" id="contador-descripcion">${conMiles(largoDescripcion)} de 2.000 caracteres</p></div>
+          <div><p class="campo">Sirve para (al menos una)</p>
+            <div class="opciones c2">${ACTIVIDADES.map((a) => `<button class="opcion" data-accion="actividad-editor" data-valor="${a.id}" aria-pressed="${e.actividades.includes(a.id)}" ${deshabilitado}>${esc(a.nombre)}</button>`).join("")}</div></div>
+          ${e.pendienteSacar ? `<div class="aviso-ambar pila-chica"><p>Si sacás ${esc(nombreActividad(e.pendienteSacar))}, se borra su condición y su complejidad en las ${camino.partes.length} partes. La observación y la fecha de cada parte quedan.</p>
+            <div class="fila"><button class="boton destructivo" data-accion="confirmar-sacar">Sacar ${esc(nombreActividad(e.pendienteSacar))}</button>
+            <button class="boton secundario" data-accion="cancelar-sacar">Dejarla</button></div></div>` : ""}
+          ${e.errorDatos ? `<p class="aviso-rojo" role="alert">${esc(e.errorDatos)}</p>` : ""}
+          ${e.datosGuardados ? `<p class="aviso-verde" role="status">Se guardaron los cambios.</p>` : ""}
+          <p class="chico suave">Lo subió ${esc(AUTORES[camino.autor])} el 5 de octubre de 2026.</p>
+          ${bloqueo ? "" : `<div class="fila entre"><button class="boton principal" data-accion="guardar-datos">Guardar cambios</button>
+            <button class="boton destructivo" data-accion="retirar">Retirar este Camino</button></div>`}
+        </div>
+        <div class="pila-chica">
+          <div class="mapa-caja ${estado.enGrande === "editor" ? "en-grande" : ""}">${svgEditor("datos")}${e.corrigiendo ? "" : controlesDeMapa("editor")}</div>
+          ${e.corrigiendo
+            ? `<div class="tarjeta pila-chica"><p><b>Corrigiendo la línea.</b> Arrastrá los puntos para ubicarlos donde va de verdad.</p>
+                <p class="chico suave">Es el mismo Camino. Cada parte conserva su condición, complejidad, observación y fecha.</p>
+                <div class="fila"><button class="boton principal" data-accion="guardar-linea">Guardar la línea corregida</button>
+                <button class="boton secundario" data-accion="cancelar-linea">Cancelar</button></div></div>`
+            : `${leyendaDePartes(estado.actividadPrincipal)}
+               ${e.lineaGuardada ? `<p class="aviso-verde" role="status">La línea quedó corregida. Es el mismo Camino y sus ${camino.partes.length} partes conservan condición, complejidad, observación y fecha.</p>` : ""}
+               ${bloqueo ? "" : `<div class="fila"><button class="boton secundario" data-accion="corregir-linea">Corregir la línea</button></div>`}`}
+          <p class="nota-boceto">El color y la forma muestran la actividad principal elegida en el mapa. Para clasificar, usá la pestaña «Partes».</p>
+        </div>
+      </div></div>`;
+    return;
+  }
+
+  // Partes
+  const act = camino.actividades.includes(e.actividadPartes) ? e.actividadPartes : camino.actividades[0];
+  e.actividadPartes = act;
+  const parte = camino.partes[e.parte];
+  const acum = GEO.lineas[camino.linea].acum;
+  const clasif = parte.por[act];
+  const otras = camino.actividades.filter((a) => a !== act);
+  const fechaFutura = parte.fecha && parte.fecha > HOY;
+  vista.innerHTML = `<div class="pila">${cabecera}${bloqueo}
+    <div class="tarjeta pila-chica">
+      <p class="titulo-seccion" style="margin:0">Actividad que estás clasificando</p>
+      <div class="opciones c5">${camino.actividades.map((a) => `<button class="opcion" data-accion="actividad-partes" data-valor="${a}" aria-pressed="${a === act}">${esc(nombreActividad(a))}</button>`).join("")}</div>
+      <p class="chico suave">Solo aparecen las actividades de este Camino. Cada una tiene su propia condición y complejidad en cada parte.</p>
+    </div>
+    <div class="editor-partes">
+      <div class="pila-chica">
+        <div class="mapa-caja ${estado.enGrande === "partes" ? "en-grande" : ""}">${svgEditor("partes")}${controlesDeMapa("partes")}</div>
+        ${leyendaDePartes(act)}
+        ${e.partiendo
+          ? `<div class="tarjeta pila-chica"><p><b>Partir.</b> Tocá la línea dos veces: primero el inicio y después el final de la parte nueva.</p>
+              <div class="fila"><button class="boton principal" data-accion="confirmar-partir" ${e.marcas.length === 2 ? "" : "disabled"}>Separar esta parte</button>
+              <button class="boton secundario" data-accion="cancelar-partir">Cancelar</button></div></div>`
+          : bloqueo ? "" : `<div class="fila"><button class="boton secundario" data-accion="partir">Partir una parte</button></div>`}
+        <div class="lista-partes">${camino.partes.map((p, i) => {
+          const c = p.por[act];
+          return `<button class="renglon-parte" data-accion="elegir-parte" data-parte="${i}" aria-pressed="${i === e.parte}">
+            ${muestraDeLinea(c.paso, c.comp)}<span class="chico"><b>Parte ${i + 1}</b> · km ${acum[p.desde].toFixed(1).replace(".", ",")} a ${acum[p.hasta].toFixed(1).replace(".", ",")} · ${esc(nombrePaso(c.paso, act))} · ${esc(nombreComplejidad(c.comp))}</span></button>`;
+        }).join("")}</div>
+      </div>
+      <div class="tarjeta pila">
+        <div><p class="titulo-seccion" style="margin:0">Parte ${e.parte + 1} de ${camino.partes.length}</p>
+          <p class="chico suave">Del km ${acum[parte.desde].toFixed(1).replace(".", ",")} al ${acum[parte.hasta].toFixed(1).replace(".", ",")} · ${km(acum[parte.hasta] - acum[parte.desde])}</p></div>
+        <fieldset style="border:0;padding:0;margin:0" class="pila-chica"><legend class="campo">Condición de paso para ${esc(nombreActividad(act))}</legend>
+          <div class="opciones c2">${PASOS.map((p) => `<button class="opcion" data-accion="paso" data-valor="${p}" aria-pressed="${clasif.paso === p}" ${deshabilitado}>${muestraDeLinea(p, clasif.comp)}${esc(nombrePaso(p, act))}</button>`).join("")}</div></fieldset>
+        <fieldset style="border:0;padding:0;margin:0" class="pila-chica"><legend class="campo">Complejidad para ${esc(nombreActividad(act))}</legend>
+          <div class="opciones c2">${COMPLEJIDADES.map((c) => `<button class="opcion" data-accion="complejidad" data-valor="${c ?? ""}" aria-pressed="${clasif.comp === c}" ${deshabilitado}><i style="width:14px;height:14px;border-radius:999px;background:${colorComplejidad(c)};display:inline-block;border:1px solid var(--borde-fuerte)"></i>${nombreComplejidad(c)}</button>`).join("")}</div></fieldset>
+        ${clasif.paso === "sin_paso" ? `<p class="chico suave">Sin paso se marca con X sobre la línea. El color sigue diciendo la complejidad: la X no la vuelve roja.</p>` : ""}
+        ${otras.length ? `<div class="pila-chica"><p class="campo" style="margin:0">Las otras actividades en esta parte</p>
+          <table class="tabla-actividades"><tbody>${otras.map((a) => `<tr><td>${esc(nombreActividad(a))}</td><td><span class="fila">${muestraDeLinea(parte.por[a].paso, parte.por[a].comp)}${esc(nombrePaso(parte.por[a].paso, a))} · ${esc(nombreComplejidad(parte.por[a].comp))}</span>
+            <button class="boton fantasma" data-accion="actividad-partes" data-valor="${a}">Clasificar ${esc(nombreActividad(a))}</button></td></tr>`).join("")}</tbody></table></div>` : ""}
+        <div class="pila-chica" style="border-top:1px solid var(--borde);padding-top:12px">
+          <p class="titulo-seccion" style="margin:0">De la parte, para todas las actividades</p>
+          <div><label class="campo" for="campo-observacion">Observación</label>
+            <textarea id="campo-observacion" data-campo="observacion" ${deshabilitado} placeholder="Por ejemplo: tranquera con candado o mucha maleza.">${esc(parte.obs)}</textarea>
+            <p class="contador ${caracteres(parte.obs) > 1000 ? "pasado" : ""}" id="contador-observacion">${conMiles(caracteres(parte.obs))} de 1.000 caracteres</p>
+            <p class="aviso-rojo ${caracteres(parte.obs) > 1000 ? "" : "oculto"}" role="alert" id="error-observacion">La observación es muy larga: dejala en 1.000 caracteres o menos.</p></div>
+          <div><label class="campo" for="campo-fecha">Comprobado el</label>
+            <input type="date" id="campo-fecha" data-campo="fecha" max="${HOY}" value="${esc(parte.fecha)}" ${deshabilitado}></div>
+          <p class="aviso-rojo ${fechaFutura ? "" : "oculto"}" role="alert" id="error-fecha">La fecha de comprobación es más adelante que hoy. Elegí el día en que pasaste por ahí.</p>
+          <p class="chico suave ${e.datosParteTocados ? "" : "oculto"}" id="nota-datos-parte">Cambiar la observación o la fecha no cambia la línea ni la condición: fijate que el dibujo sigue igual.</p>
+        </div>
+        ${e.parteGuardada !== null ? `<p class="aviso-verde" role="status">Se guardó la parte ${e.parteGuardada + 1}. La línea no cambió.</p>` : ""}
+        ${bloqueo ? "" : `<div class="fila"><button class="boton principal" data-accion="guardar-parte" id="boton-guardar-parte" ${fechaFutura || caracteres(parte.obs) > 1000 ? "disabled" : ""}>Guardar la parte</button></div>`}
+      </div>
+    </div>
+    <p class="nota-boceto">En el boceto las partes se cortan en los puntos de la línea. En la app se corta exactamente donde tocás, también entre dos puntos.</p>
+  </div>`;
+}
+
+// ---------------------------------------------------------------- vista: anotaciones
+function anotacionesVivas() {
+  return [
+    ...puntosVivos().map((p) => ({ ...p, tipo: "punto" })),
+    ...trazosVivos().map((t) => ({ ...t, tipo: "trazo" })),
+  ];
+}
+
+function renderAnotaciones() {
+  const vista = document.getElementById("vista-anotaciones");
+  const lista = anotacionesVivas();
+  const puntos = lista.filter((a) => a.tipo === "punto").length;
+  vista.innerHTML = `<div class="pila">
+    ${estado.avisoAnotaciones ? `<p class="aviso-verde" role="status">${esc(estado.avisoAnotaciones)}</p>` : ""}
+    <div class="fila entre">
+      <p class="suave">${cuenta(puntos, "punto", "puntos")} y ${cuenta(lista.length - puntos, "trazo", "trazos")} en el mapa</p>
+      ${puedeCrear()
+        ? `<div class="fila"><button class="boton principal" data-accion="nada">Sumar un punto</button>
+            <button class="boton principal" data-accion="nada">Sumar un trazo</button>
+            <button class="boton secundario" data-accion="ir-traer" data-valor="puntos">Traer de afuera</button></div>`
+        : `<p class="chico suave">Tu cuenta puede ver los puntos y trazos, pero no sumarlos ni cambiarlos.</p>`}
+    </div>
+    <div class="galeria">${lista.map((a) => {
+      const tipo = a.tipo === "punto" ? `Punto · ${ICONOS[a.icono].nombre}` : `Trazo · ${TRAZOS_COLOR.find((c) => c.id === a.color).nombre}`;
+      return `<div class="tarjeta pila-chica"><p class="titulo-seccion" style="margin:0">${esc(tipo)}</p>
+        <h3 style="font-size:17px">${esc(a.nombre)}</h3><p class="chico">${esc(a.comentario)}</p>
+        <p class="chico suave">Lo marcó ${esc(AUTORES[a.autor])}</p>
+        <div class="fila"><button class="boton secundario" data-accion="ver-anotacion" data-tipo="${a.tipo}" data-id="${a.id}">Ver en el mapa</button></div>
+        ${accionesDeAnotacion(a, true)}</div>`;
+    }).join("")}</div>
+    <p class="nota-boceto">Hoy esta pestaña es solo del administrador. Con la decisión del 5 de octubre la ven también Premium, que suma puntos y trazos y cambia o borra los suyos, y Normal, que solo mira. Normal tampoco anota durante la navegación, que no es parte de este boceto. El diseño de la pantalla de anotaciones no cambia acá: solo quién la ve y qué botones tiene. «Sumar un punto», «Sumar un trazo» y «Editar» no hacen nada en el boceto.</p>
+  </div>`;
+}
+
+// ---------------------------------------------------------------- vista: permisos y estados
+function renderEstados() {
+  const vista = document.getElementById("vista-estados");
+  const si = "Sí", no = "No";
+  vista.innerHTML = `<div class="pila">
+    <p class="nota-boceto">Esta página es solo del boceto: junta en un lugar los permisos y los estados de las pantallas de Caminos para revisarlos de una vez.</p>
+    <div class="tarjeta">
+      <p class="titulo-seccion">Quién puede hacer qué</p>
+      <table class="permisos"><thead><tr><th></th><th>Administrador</th><th>Premium</th><th>Normal</th></tr></thead><tbody>
+        <tr><td>Ver todos los Caminos, puntos y trazos</td><td>${si}</td><td>${si}</td><td>${si}</td></tr>
+        <tr><td>Traer de afuera (sumar Caminos, puntos y trazos)</td><td>${si}</td><td>${si}</td><td>${no}</td></tr>
+        <tr><td>Editar o retirar los Caminos propios</td><td>${si}</td><td>${si}</td><td>${no}</td></tr>
+        <tr><td>Editar o retirar los Caminos de otros</td><td>${si}</td><td>${no}</td><td>${no}</td></tr>
+        <tr><td>Sumar puntos y trazos a mano</td><td>${si}</td><td>${si}</td><td>${no}</td></tr>
+        <tr><td>Editar o borrar los puntos y trazos propios</td><td>${si}</td><td>${si}</td><td>${no}</td></tr>
+        <tr><td>Editar o borrar los puntos y trazos de otros</td><td>${si}</td><td>${no}</td><td>${no}</td></tr>
+        <tr><td>Recuperar un Camino retirado</td><td>${no}</td><td>${no}</td><td>${no}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="galeria">
+      <div class="tarjeta pila-chica"><p class="titulo-seccion">Lista vacía · Administrador o Premium</p>
+        <p>Todavía no hay Caminos en el mapa.</p><p class="chico suave">Traé un archivo de Google Earth o de un GPS para sumar el primero.</p>
+        <div class="fila"><button class="boton principal" data-accion="ir-traer" data-valor="ascochinga">Traer de afuera</button></div></div>
+      <div class="tarjeta pila-chica"><p class="titulo-seccion">Lista vacía · Normal</p>
+        <p>Todavía no hay Caminos en el mapa.</p></div>
+      <div class="tarjeta pila-chica" aria-busy="true"><p class="titulo-seccion">Cargando</p>
+        <p class="suave">Trayendo los Caminos…</p><div class="esqueleto" style="width:80%"></div><div class="esqueleto" style="width:60%"></div><div class="esqueleto" style="width:70%"></div></div>
+      <div class="tarjeta franja-rojo pila-chica"><p class="titulo-seccion">No se pudo traer la lista</p>
+        <p role="alert">No se pudieron traer los Caminos: la base tardó demasiado en contestar.</p><p class="chico suave">Probá de nuevo cuando tengas mejor conexión.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Probar de nuevo</button></div></div>
+      <div class="tarjeta franja-ambar pila-chica"><p class="titulo-seccion">Lista incompleta</p>
+        <p role="alert">Llegaron 180 Caminos de los 182 que hay. La lista se cortó mientras se traía.</p><p class="chico suave">No se muestra a medias: probá de nuevo.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Probar de nuevo</button></div></div>
+      <div class="tarjeta franja-rojo pila-chica"><p class="titulo-seccion">Un Camino guardado con un error</p>
+        <p role="alert">El Camino «Bajada al río» está guardado con un error: hay un hueco antes de la parte 3. No se puede mostrar ni editar hasta corregirlo.</p><p class="chico suave">Avisale al administrador. Los demás Caminos se ven igual.</p>
+        ${estado.rol === "administrador" ? `<div class="fila"><button class="boton destructivo" data-accion="nada">Retirar este Camino</button></div>` : ""}</div>
+      <div class="tarjeta franja-ambar pila-chica"><p class="titulo-seccion">Dos personas editando a la vez</p>
+        <p role="alert">Este Camino cambió desde que lo abriste: alguien guardó otra versión. No se guardó nada.</p><p class="chico suave">Volvé a abrirlo para ver cómo quedó y repetí tu cambio.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Volver a abrir</button></div></div>
+      <div class="tarjeta franja-rojo pila-chica"><p class="titulo-seccion">Traer de afuera · archivo dañado</p>
+        <p role="alert">El archivo está dañado y no se puede leer.</p><p class="chico suave">Probá exportarlo de nuevo desde Google Earth o desde la página del reloj.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Elegir otro archivo</button></div></div>
+      <div class="tarjeta franja-ambar pila-chica"><p class="titulo-seccion">Traer de afuera · nada que sirva</p>
+        <p role="alert">El archivo no trae ninguna línea ni ningún punto que se pueda usar. Trae 2 áreas, que no se pueden sumar.</p><p class="chico suave">En Google Earth, exportá la carpeta con las líneas que dibujaste.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Elegir otro archivo</button></div></div>
+      <div class="tarjeta franja-ambar pila-chica"><p class="titulo-seccion">Traer de afuera · se salteó algo</p>
+        <p>7 líneas · 1 punto · 1 cosa se saltea.</p><p class="chico suave">«Campo cercado» es un área, no una línea ni un punto, y no se suma.</p></div>
+      <div class="tarjeta franja-rojo pila-chica"><p class="titulo-seccion">Traer de afuera · no se guardó todo</p>
+        <p role="alert">Se sumaron 4 de los 5 Caminos. «Camino cuadrado - alpatuca» no se guardó: la base tardó demasiado en contestar.</p><p class="chico suave">Los otros 4 ya están en el mapa. Probá de nuevo con ese.</p>
+        <div class="fila"><button class="boton secundario" data-accion="nada">Probar de nuevo con ese</button></div></div>
+      <div class="tarjeta pila-chica"><p class="titulo-seccion">Datos que no se pueden guardar</p>
+        <p class="aviso-rojo">El nombre es muy largo: tiene 134 caracteres y el máximo son 120. Acortalo.</p>
+        <p class="aviso-rojo">Elegí al menos una actividad para este Camino.</p>
+        <p class="aviso-rojo">La fecha de comprobación es más adelante que hoy. Elegí el día en que pasaste por ahí.</p></div>
+      <div class="tarjeta pila-chica"><p class="titulo-seccion">Retirar un Camino</p>
+        <p class="chico suave">Pide confirmación. Después desaparece del mapa y de la lista para todos, y no hay botón para recuperarlo.</p>
+        <div class="fila"><button class="boton destructivo" data-accion="ver-retirar">Ver la confirmación</button></div></div>
+    </div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------- vistas sin contenido en el boceto
+function renderOtra(nombre) {
+  document.getElementById("vista-otra").innerHTML = `<div class="tarjeta pila-chica"><p>La pestaña «${esc(nombre)}» no cambia con Caminos.</p>
+    <p class="nota-boceto">Queda como está hoy en la app; no es parte de este boceto.</p></div>`;
+}
+
+// ---------------------------------------------------------------- emergente única
+function abrirEmergente(titulo, texto, botones) {
+  const caja = document.getElementById("emergente");
+  caja.innerHTML = `<h2 id="emergente-titulo">${esc(titulo)}</h2><p>${esc(texto)}</p>
+    <div class="botones">${botones.map((b) => `<button class="boton ${b.variante}" data-accion="${b.accion}">${esc(b.texto)}</button>`).join("")}</div>`;
+  document.getElementById("velo").classList.remove("oculto");
+  caja.querySelector("button")?.focus();
+}
+function cerrarEmergente() {
+  document.getElementById("velo").classList.add("oculto");
+}
+function pedirRetiro(desdeEstados) {
+  const camino = estado.editor.camino;
+  abrirEmergente(
+    `¿Retirar «${camino.nombre}»?`,
+    "Deja de verse en el mapa y en la lista, para todos. No se puede recuperar desde la app.",
+    [
+      { texto: "Cancelar", variante: "secundario", accion: "cerrar-emergente" },
+      { texto: "Sí, retirar", variante: "destructivo", accion: desdeEstados ? "cerrar-emergente" : "confirmar-retiro" },
+    ],
+  );
+}
+
+// ---------------------------------------------------------------- render general
+const SITUACIONES = { 1: ["mapa"], 2: ["traer"], "2b": ["traer"], 3: ["editor", "datos"], 4: ["editor", "partes"], 5: ["estados"] };
+
+/** «2» es el archivo de Ascochinga; «2b», el de ejemplo con solo puntos. */
+function elegirArchivo(situacion) {
+  const archivo = situacion === "2b" ? "puntos" : "ascochinga";
+  estado.traerDesde = situacion === "2b" ? "anotaciones" : "caminos";
+  if (estado.traer.archivo !== archivo || estado.traer.incorporado) estado.traer = nuevoTraer(archivo);
+}
+
+function render() {
+  document.documentElement.dataset.modo = estado.modo;
+  document.getElementById("boton-modo").textContent = estado.modo === "noche" ? "Cambiar a modo sol" : "Cambiar a modo noche";
+  const persona = yo();
+  document.getElementById("quien-usa").textContent = `${persona.nombre} · ${persona.categoria}`;
+
+  const pestanaActiva = { mapa: "mapa", caminos: "caminos", traer: estado.traerDesde, editor: "caminos", estados: null }[estado.vista] ?? estado.vista;
+  for (const boton of document.querySelectorAll('[data-accion="pestana"]')) {
+    const activa = boton.dataset.valor === pestanaActiva;
+    boton.className = `boton ${activa ? "principal" : "fantasma"}`;
+    boton.setAttribute("aria-selected", String(activa));
+  }
+
+  const situacion = estado.vista === "mapa" ? "1" : estado.vista === "traer" ? (estado.traer.archivo === "puntos" ? "2b" : "2") : estado.vista === "editor" ? (estado.subEditor === "datos" ? "3" : "4") : estado.vista === "estados" ? "5" : "";
+  for (const boton of document.querySelectorAll('[data-accion="situacion"]')) boton.setAttribute("aria-pressed", String(boton.dataset.valor === situacion));
+  for (const boton of document.querySelectorAll('[data-accion="rol"]')) boton.setAttribute("aria-pressed", String(boton.dataset.valor === estado.rol));
+
+  const vistas = { mapa: renderMapa, caminos: renderCaminos, traer: renderTraer, editor: renderEditor, anotaciones: renderAnotaciones, estados: renderEstados };
+  for (const nombre of ["mapa", "caminos", "traer", "editor", "anotaciones", "estados", "otra"]) {
+    document.getElementById(`vista-${nombre}`).classList.toggle("oculto", nombre !== (vistas[estado.vista] ? estado.vista : "otra"));
+  }
+  if (vistas[estado.vista]) vistas[estado.vista]();
+  else renderOtra(estado.vista === "zonas" ? "Zonas" : "Descargas");
+}
+
+// ---------------------------------------------------------------- acciones
+document.addEventListener("click", (evento) => {
+  const elemento = evento.target.closest("[data-accion]");
+  if (!elemento) return;
+  const { accion, valor } = elemento.dataset;
+  const e = estado.editor;
+  const t = estado.traer;
+  if (accion === "cerrar-emergente-afuera") {
+    if (evento.target === elemento) cerrarEmergente();
+    return;
+  }
+  switch (accion) {
+    case "situacion": {
+      const [vista, sub] = SITUACIONES[valor];
+      estado.vista = vista;
+      if (sub) estado.subEditor = sub;
+      if (vista === "traer") elegirArchivo(valor);
+      estado.enGrande = null;
+      estado.notaEditor = false;
+      break;
+    }
+    case "rol": estado.rol = valor; break;
+    case "reiniciar": { const modo = estado.modo; estado = estadoInicial(); estado.modo = modo; break; }
+    case "modo": estado.modo = estado.modo === "noche" ? "sol" : "noche"; break;
+    case "pestana":
+      estado.vista = valor; estado.enGrande = null;
+      estado.avisoLista = valor === "caminos" ? estado.avisoLista : null;
+      estado.avisoAnotaciones = valor === "anotaciones" ? estado.avisoAnotaciones : null;
+      break;
+    case "ver-anotacion": estado.vista = "mapa"; estado.seleccion = { tipo: elemento.dataset.tipo, id: elemento.dataset.id }; break;
+    case "borrar-anotacion": {
+      const anotacion = anotacionesVivas().find((a) => a.id === elemento.dataset.id);
+      if (!anotacion || !puedeEditarAnotacion(anotacion)) return;
+      estado.anotacionABorrar = anotacion.id;
+      abrirEmergente(`¿Borrar «${anotacion.nombre}»?`, "Deja de verse en todos los mapas, para todos.", [
+        { texto: "Cancelar", variante: "secundario", accion: "cerrar-emergente" },
+        { texto: "Sí, borrar", variante: "destructivo", accion: "confirmar-borrar-anotacion" },
+      ]);
+      return;
+    }
+    case "confirmar-borrar-anotacion": {
+      cerrarEmergente();
+      const anotacion = anotacionesVivas().find((a) => a.id === estado.anotacionABorrar);
+      if (anotacion) {
+        estado.anotacionesBorradas.push(anotacion.id);
+        estado.avisoAnotaciones = `Se borró «${anotacion.nombre}». Ya no aparece en el mapa.`;
+      }
+      if (estado.seleccion?.id === estado.anotacionABorrar) estado.seleccion = null;
+      estado.anotacionABorrar = null;
+      break;
+    }
+    case "principal": estado.actividadPrincipal = valor; break;
+    case "acercar": estado.acercamiento = "cerca"; break;
+    case "alejar": estado.acercamiento = "lejos"; break;
+    case "agrandar": estado.enGrande = estado.enGrande === valor ? null : valor; break;
+    case "tocar-camino": estado.seleccion = { tipo: "camino", id: Number(elemento.dataset.id), parte: Number(elemento.dataset.parte) }; break;
+    case "tocar-punto": estado.seleccion = { tipo: "punto", id: elemento.dataset.id }; break;
+    case "tocar-trazo": estado.seleccion = { tipo: "trazo", id: elemento.dataset.id }; break;
+    case "tocar-zona": estado.seleccion = { tipo: "zona" }; break;
+    case "abrir-editor": estado.vista = "editor"; estado.subEditor = valor; estado.enGrande = null; estado.notaEditor = estado.seleccion?.id !== 5; break;
+    case "ver-en-mapa": estado.vista = "mapa"; estado.seleccion = { tipo: "camino", id: Number(elemento.dataset.id), parte: 0 }; break;
+    case "editar-camino": estado.vista = "editor"; estado.subEditor = "datos"; estado.notaEditor = Number(elemento.dataset.id) !== 5; break;
+    case "ir-traer": estado.vista = "traer"; elegirArchivo(valor === "puntos" ? "2b" : "2"); break;
+    case "volver-caminos": estado.vista = "caminos"; estado.enGrande = null; break;
+    case "volver-traer": estado.vista = estado.traerDesde; estado.enGrande = null; break;
+    case "traer-otro": estado.traer = nuevoTraer(estado.traer.archivo); break;
+    case "enfocar": {
+      const [tipo, numero] = valor.split("-");
+      const i = Number(numero);
+      t.foco = t.foco?.tipo === tipo && t.foco.i === i ? null : { tipo, i };
+      break;
+    }
+    case "decidir": t.decisiones[Number(elemento.dataset.i)] = valor; t.foco = { tipo: "linea", i: Number(elemento.dataset.i) }; break;
+    case "color-trazo": t.colores[Number(elemento.dataset.i)] = valor; break;
+    case "actividad-traer": t.actividades = t.actividades.includes(valor) ? t.actividades.filter((a) => a !== valor) : [...t.actividades, valor]; break;
+    case "decidir-punto": t.puntos[Number(elemento.dataset.i)] = valor; t.foco = { tipo: "punto", i: Number(elemento.dataset.i) }; break;
+    case "icono-punto": t.iconos[Number(elemento.dataset.i)] = valor; break;
+    case "incorporar": if (resumenTraer().listo) t.incorporado = true; break;
+    case "sub-editor": estado.subEditor = valor; estado.enGrande = null; break;
+    case "actividad-editor": {
+      e.datosGuardados = false; e.errorDatos = null;
+      if (!e.actividades.includes(valor)) { e.actividades = [...e.actividades, valor]; e.pendienteSacar = null; break; }
+      if (e.actividades.length === 1) { e.errorDatos = "Elegí al menos una actividad para este Camino."; break; }
+      if (e.camino.actividades.includes(valor)) { e.pendienteSacar = valor; break; }
+      e.actividades = e.actividades.filter((a) => a !== valor);
+      break;
+    }
+    case "confirmar-sacar": e.actividades = e.actividades.filter((a) => a !== e.pendienteSacar); e.pendienteSacar = null; break;
+    case "cancelar-sacar": e.pendienteSacar = null; break;
+    case "guardar-datos": {
+      const nombre = e.nombre.trim();
+      e.errorDatos = !nombre ? "Ponele un nombre al Camino."
+        : caracteres(nombre) > 120 ? `El nombre es muy largo: tiene ${caracteres(nombre)} caracteres y el máximo son 120. Acortalo.`
+        : caracteres(e.descripcion) > 2000 ? "La descripción es muy larga: dejala en 2.000 caracteres o menos."
+        : e.actividades.length === 0 ? "Elegí al menos una actividad para este Camino." : null;
+      if (!e.errorDatos) {
+        for (const parte of e.camino.partes) {
+          for (const a of e.actividades) if (!parte.por[a]) parte.por[a] = cl("por_explorar", null);
+          for (const a of Object.keys(parte.por)) if (!e.actividades.includes(a)) delete parte.por[a];
+        }
+        e.camino.actividades = [...e.actividades];
+        e.camino.nombre = nombre;
+        e.camino.descripcion = e.descripcion;
+        e.datosGuardados = true;
+        sincronizarConElMapa();
+      }
+      break;
+    }
+    case "corregir-linea": e.corrigiendo = true; e.coordsAntes = e.coords.map((p) => [...p]); e.lineaGuardada = false; break;
+    case "guardar-linea": e.corrigiendo = false; e.lineaGuardada = true; break;
+    case "cancelar-linea": e.corrigiendo = false; e.coords = e.coordsAntes; break;
+    case "retirar": pedirRetiro(false); return;
+    case "ver-retirar": pedirRetiro(true); return;
+    case "cerrar-emergente": cerrarEmergente(); return;
+    case "confirmar-retiro": {
+      cerrarEmergente();
+      estado.caminos = estado.caminos.filter((c) => c.id !== e.camino.id);
+      if (estado.seleccion?.id === e.camino.id) estado.seleccion = null;
+      estado.avisoLista = `Se retiró «${e.camino.nombre}». Ya no aparece en el mapa ni en esta lista.`;
+      e.retirado = true;
+      estado.vista = "caminos";
+      break;
+    }
+    case "actividad-partes": estado.editor.actividadPartes = valor; e.parteGuardada = null; break;
+    case "tocar-parte-editor":
+      if (e.partiendo) { marcarParaPartir(evento); break; }
+      e.parte = Number(elemento.dataset.parte); e.parteGuardada = null; e.datosParteTocados = false;
+      break;
+    case "elegir-parte":
+      e.parte = Number(elemento.dataset.parte); e.parteGuardada = null; e.datosParteTocados = false;
+      break;
+    case "paso": if (puedeEditar(e.camino)) { e.camino.partes[e.parte].por[e.actividadPartes].paso = valor; e.parteGuardada = null; } break;
+    case "complejidad": if (puedeEditar(e.camino)) { e.camino.partes[e.parte].por[e.actividadPartes].comp = valor || null; e.parteGuardada = null; } break;
+    case "guardar-parte": e.parteGuardada = e.parte; e.datosParteTocados = false; sincronizarConElMapa(); break;
+    case "partir": e.partiendo = true; e.marcas = []; break;
+    case "cancelar-partir": e.partiendo = false; e.marcas = []; break;
+    case "confirmar-partir": partir(); break;
+    case "nada": return;
+    default: return;
+  }
+  render();
+});
+
+/** En el modo partir, cada toque sobre la línea deja una marca en el punto más cercano. */
+function marcarParaPartir(evento) {
+  const e = estado.editor;
+  const svg = document.getElementById("svg-editor");
+  const p = svg.createSVGPoint();
+  p.x = evento.clientX; p.y = evento.clientY;
+  const local = p.matrixTransform(svg.getScreenCTM().inverse());
+  let mejor = 0;
+  e.coords.forEach((c, i) => { if (Math.hypot(c[0] - local.x, c[1] - local.y) < Math.hypot(e.coords[mejor][0] - local.x, e.coords[mejor][1] - local.y)) mejor = i; });
+  e.marcas = e.marcas.length >= 2 ? [mejor] : [...e.marcas, mejor];
+}
+
+function partir() {
+  const e = estado.editor;
+  if (e.marcas.length !== 2) return;
+  const [a, b] = [...e.marcas].sort((x, y) => x - y);
+  if (a === b) { e.marcas = []; return; }
+  const nuevas = [];
+  for (const parte of e.camino.partes) {
+    let tramos = [[parte.desde, parte.hasta]];
+    for (const corte of [a, b]) {
+      tramos = tramos.flatMap(([d, h]) => (corte > d && corte < h ? [[d, corte], [corte, h]] : [[d, h]]));
+    }
+    for (const [d, h] of tramos) nuevas.push({ ...structuredClone(parte), desde: d, hasta: h });
+  }
+  e.camino.partes = nuevas;
+  e.parte = nuevas.findIndex((p) => p.desde === a);
+  e.partiendo = false;
+  e.marcas = [];
+  e.parteGuardada = null;
+  sincronizarConElMapa();
+}
+
+/** Lo que se guarda en el editor se ve después en el mapa general (salvo la forma de la línea). */
+function sincronizarConElMapa() {
+  const e = estado.editor;
+  const enElMapa = estado.caminos.find((c) => c.id === e.camino.id);
+  if (!enElMapa) return;
+  enElMapa.nombre = e.camino.nombre;
+  enElMapa.descripcion = e.camino.descripcion;
+  enElMapa.actividades = [...e.camino.actividades];
+  enElMapa.partes = structuredClone(e.camino.partes);
+}
+
+// Lo que se escribe no redibuja todo: solo los contadores y avisos, para no perder el cursor.
+document.addEventListener("input", (evento) => {
+  const campo = evento.target.dataset?.campo;
+  if (!campo) return;
+  const e = estado.editor;
+  const valor = evento.target.value;
+  if (campo === "nombre-linea") {
+    const i = Number(evento.target.dataset.i);
+    estado.traer.nombres[i] = valor;
+    const largo = caracteres(valor.trim());
+    const contador = document.getElementById(`contador-linea-${i}`);
+    contador.textContent = `${largo} de 120 caracteres`;
+    contador.classList.toggle("pasado", largo > 120);
+    const r = resumenTraer();
+    const resumen = document.getElementById("resumen-traer");
+    resumen.innerHTML = resumenHtml(r);
+    resumen.classList.toggle("franja-ambar", r.problemas.length > 0);
+    resumen.classList.toggle("franja-verde", r.problemas.length === 0);
+    return;
+  }
+  if (campo === "nombre") {
+    e.nombre = valor; e.datosGuardados = false;
+    const largo = caracteres(valor.trim());
+    const contador = document.getElementById("contador-nombre");
+    contador.textContent = `${largo} de 120 caracteres`;
+    contador.classList.toggle("pasado", largo > 120);
+  }
+  if (campo === "descripcion") {
+    e.descripcion = valor; e.datosGuardados = false;
+    const contador = document.getElementById("contador-descripcion");
+    contador.textContent = `${conMiles(caracteres(valor))} de 2.000 caracteres`;
+    contador.classList.toggle("pasado", caracteres(valor) > 2000);
+  }
+  if (campo === "observacion" || campo === "fecha") {
+    const parte = e.camino.partes[e.parte];
+    if (campo === "observacion") {
+      parte.obs = valor;
+      const contador = document.getElementById("contador-observacion");
+      contador.textContent = `${conMiles(caracteres(valor))} de 1.000 caracteres`;
+      contador.classList.toggle("pasado", caracteres(valor) > 1000);
+      document.getElementById("error-observacion").classList.toggle("oculto", caracteres(valor) <= 1000);
+    } else {
+      parte.fecha = valor;
+    }
+    e.datosParteTocados = true;
+    e.parteGuardada = null;
+    const futura = parte.fecha && parte.fecha > HOY;
+    document.getElementById("error-fecha").classList.toggle("oculto", !futura);
+    document.getElementById("nota-datos-parte").classList.remove("oculto");
+    const boton = document.getElementById("boton-guardar-parte");
+    if (boton) boton.disabled = Boolean(futura) || caracteres(parte.obs) > 1000;
+  }
+});
+
+// Corregir la línea: arrastrar los puntos. Las partes siguen pegadas a sus puntos.
+let arrastrando = null;
+document.addEventListener("pointerdown", (evento) => {
+  const vertice = evento.target.closest?.("[data-vertice]");
+  if (!vertice || !estado.editor.corrigiendo) return;
+  arrastrando = Number(vertice.dataset.vertice);
+  evento.preventDefault();
+});
+document.addEventListener("pointermove", (evento) => {
+  if (arrastrando === null) return;
+  const svg = document.getElementById("svg-editor");
+  if (!svg) return;
+  const p = svg.createSVGPoint();
+  p.x = evento.clientX; p.y = evento.clientY;
+  const local = p.matrixTransform(svg.getScreenCTM().inverse());
+  estado.editor.coords[arrastrando] = [Math.max(0, Math.min(800, local.x)), Math.max(0, Math.min(520, local.y))];
+  svg.outerHTML = svgEditor("datos");
+});
+document.addEventListener("pointerup", () => { arrastrando = null; });
+
+// La tecla Escape hace lo que el botón físico de atrás: cierra la emergente o el mapa grande.
+document.addEventListener("keydown", (evento) => {
+  if (evento.key !== "Escape") return;
+  if (!document.getElementById("velo").classList.contains("oculto")) { cerrarEmergente(); return; }
+  if (estado.enGrande) { estado.enGrande = null; render(); }
+});
+
+// Para revisar o compartir una vista puntual, la dirección puede abrirla directo.
+// Por ejemplo: caminos-en-mapas.html#situacion=4&modo=sol&rol=normal
+function leerDireccion() {
+  const datos = new URLSearchParams(location.hash.slice(1));
+  const situacion = datos.get("situacion");
+  if (SITUACIONES[situacion]) {
+    const [vista, sub] = SITUACIONES[situacion];
+    estado.vista = vista;
+    if (sub) estado.subEditor = sub;
+    if (vista === "traer") elegirArchivo(situacion);
+  }
+  if (datos.get("vista")) estado.vista = datos.get("vista");
+  if (["sol", "noche"].includes(datos.get("modo"))) estado.modo = datos.get("modo");
+  if (PERSONAS[datos.get("rol")]) estado.rol = datos.get("rol");
+  if (ACTIVIDADES.some((a) => a.id === datos.get("principal"))) estado.actividadPrincipal = datos.get("principal");
+  if (datos.get("cerca") === "1") estado.acercamiento = "cerca";
+  if (datos.get("camino")) {
+    const [id, parte] = datos.get("camino").split(".");
+    estado.seleccion = { tipo: "camino", id: Number(id), parte: Number(parte || 0) };
+  }
+  if (datos.get("parte")) estado.editor.parte = Number(datos.get("parte"));
+  if (datos.get("ejemplo") === "decidido") {
+    const t = estado.traer;
+    t.decisiones = { 0: "camino", 1: "camino", 2: "camino", 3: "omitir", 4: "camino", 5: "camino", 6: "trazo" };
+    t.actividades = ["mountain_bike"];
+    t.foco = { tipo: "linea", i: 6 };
+  }
+  if (datos.get("corrigiendo") === "1") {
+    const e = estado.editor;
+    e.corrigiendo = true;
+    e.coordsAntes = e.coords.map((p) => [...p]);
+    e.coords[18] = [e.coords[18][0] + 40, e.coords[18][1] - 30];
+  }
+}
+
+leerDireccion();
+render();
+</script>
+</body>
+</html>

@@ -7,23 +7,36 @@ import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import {
   CORDOBA_COMPLETA,
-  puntosDelMapaGeneral,
   zonasEnElMapaGeneral,
 } from "@/lib/mapas/general";
 import type { Anotacion, Zona } from "@/types/database";
+import type { CaminoSinLinea } from "@/lib/caminos/datos";
+import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
+import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
+import { dibujarCaminos } from "@/lib/caminos/dibujo";
+import { SelectorDeActividadPrincipal } from "@/components/caminos/selector-de-actividad-principal";
+import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
+import { ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
 
 type Propiedades = {
   zonas: Zona[];
   anotaciones: Anotacion[];
+  caminos?: CaminoSinLinea[];
   sectoresPorZona: Record<number, number>;
 };
 
-/** Vista del territorio completo: solo perímetros de zonas y anotaciones. */
-export function MapaGeneralDeZonas({ zonas, anotaciones, sectoresPorZona }: Propiedades) {
+/** Vista del territorio completo con zonas, Caminos y anotaciones. */
+const SIN_CAMINOS: CaminoSinLinea[] = [];
+
+export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLinea = SIN_CAMINOS, sectoresPorZona }: Propiedades) {
   const [zonaId, setZonaId] = useState<number | null>(null);
+  const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
+  const [actividad, elegirActividad] = useActividadPrincipal();
+  const { caminos, error: errorDeCaminos, cargando: cargandoCaminos } = useCaminosGuardados(caminosSinLinea);
   const zonaIdRef = useRef<number | null>(null);
   const rectangulos = useMemo(() => zonasEnElMapaGeneral(zonas), [zonas]);
-  const puntos = useMemo(() => puntosDelMapaGeneral(anotaciones), [anotaciones]);
+  const dibujo = useMemo(() => dibujarCaminos(caminos, actividad), [caminos, actividad]);
+  const elegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const zonaElegida = zonas.find((zona) => zona.id === zonaId) ?? null;
   const guardarZona = useCallback((id: number | null) => {
     zonaIdRef.current = id;
@@ -46,15 +59,30 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, sectoresPorZona }: Prop
 
   return (
     <div className="space-y-3">
+      <SelectorDeActividadPrincipal actividad={actividad} alCambiar={elegirActividad} />
+      {cargandoCaminos && caminosSinLinea.length > 0 ? <p role="status" className="text-base text-texto">Abriendo los Caminos guardados…</p> : null}
+      {errorDeCaminos ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{errorDeCaminos}</p></Tarjeta> : null}
       <CargadorDeMapa
         enVivo
         principal
         alturaExtendida
         encuadre={CORDOBA_COMPLETA}
         rectangulos={rectangulos}
-        anotaciones={puntos}
+        anotaciones={anotaciones}
+        caminos={dibujo}
+        referencia={<ReferenciaDePartes />}
+        alTocarCamino={(_lon, _lat, propiedades) => {
+          const id = Number(propiedades.camino_id);
+          const indice = Number(propiedades.parte_indice);
+          if (Number.isInteger(id) && Number.isInteger(indice)) {
+            setCaminoTocado({ id, indice });
+            guardarZona(null);
+          }
+        }}
         alSenalarZona={senalarZona}
-        fichaSobreElMapa={zonaElegida ? (
+        fichaSobreElMapa={elegido && caminoTocado ? (
+          <FichaDeCamino camino={elegido} indice={caminoTocado.indice} alCerrar={() => setCaminoTocado(null)} />
+        ) : zonaElegida ? (
           <div data-ficha-zona>
               <Tarjeta className="space-y-3 shadow-[var(--sombra-alta)]">
                 <div className="flex items-start justify-between gap-2">

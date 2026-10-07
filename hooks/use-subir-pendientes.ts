@@ -14,6 +14,9 @@ import { subirLosPendientes } from "@/lib/anotaciones/subir-pendientes";
 import { esLaPantallaDeNavegar } from "@/lib/actualizacion/version-nueva";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
+import type { CategoriaUsuario } from "@/types/database";
+
+const SIN_PERMISO_PARA_SUBIR = "Tu cuenta es Normal y ya no puede modificar el mapa. Este cambio sigue guardado en el celular, pero no se subirá. Consultá al Administrador si querés conservar la información.";
 
 /**
  * Sube sola lo que se marcó sin señal, apenas se puede.
@@ -34,7 +37,7 @@ export function pedirQueSeSubaYa(): void {
   for (const pedir of pedidos) pedir();
 }
 
-export function useSubirPendientes(miPerfilId: string | null): void {
+export function useSubirPendientes(miPerfilId: string | null, categoria: CategoriaUsuario): void {
   const pendientes = usePendientes();
   const haySenal = useHaySenal();
   const camino = usePathname();
@@ -55,6 +58,14 @@ export function useSubirPendientes(miPerfilId: string | null): void {
     void (async () => {
       try {
         const lista = await releerLosPendientes();
+        if (categoria === "normal") {
+          for (const pendiente of lista) {
+            if (!pendiente.terminada && pendiente.ultimoError !== SIN_PERMISO_PARA_SUBIR) {
+              await guardarPendiente({ ...pendiente, ultimoError: SIN_PERMISO_PARA_SUBIR });
+            }
+          }
+          return;
+        }
         await subirLosPendientes({
           supabase: crearClienteEnElNavegador(),
           perfilId: miPerfilId,
@@ -96,7 +107,7 @@ export function useSubirPendientes(miPerfilId: string | null): void {
     })();
     // Se reintenta cuando vuelve la señal, al salir de la navegación, cuando
     // se marca algo nuevo o cuando el usuario lo pide.
-  }, [haySenal, navegando, miPerfilId, hayQueSubir, hayTerminados, pendientes.length, intento]);
+  }, [haySenal, navegando, miPerfilId, categoria, hayQueSubir, hayTerminados, pendientes.length, intento]);
 
   const reintentar = useCallback(() => setIntento((cada) => cada + 1), []);
 

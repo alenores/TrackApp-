@@ -35,6 +35,7 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
+import { puntosSinPaso } from "@/lib/rutas/partes";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
@@ -56,6 +57,9 @@ type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
  */
 
 const FUENTE_RUTA = "ruta";
+const CAPAS_DE_PARTES = ["ruta-por-explorar", "ruta-transitable", "ruta-a-pie", "ruta-sin-paso"];
+const FUENTE_CAMINOS = "caminos";
+const CAPAS_DE_CAMINOS = ["camino-otra-actividad", "camino-por-explorar", "camino-transitable", "camino-a-pie", "camino-sin-paso"];
 const FUENTE_POSICION = "mi-posicion";
 const FUENTE_ANOTACIONES = "anotaciones";
 const FUENTE_RECTANGULOS = "rectangulos";
@@ -121,6 +125,14 @@ export type PosicionEnElMapa = {
 type MapaProps = {
   /** La línea de la ruta. */
   recorrido?: FeatureCollection | null;
+  /** Los Caminos del mapa, separados de la ruta planificada. */
+  caminos?: FeatureCollection | null;
+  /** Vértices del Camino que se está corrigiendo en la computadora. */
+  verticesDeCamino?: number[][] | null;
+  alMoverVerticeDeCamino?: (indice: number, lon: number, lat: number) => void;
+  alTocarVerticeDeCamino?: (indice: number) => void;
+  /** Extremos elegidos en el editor de partes. */
+  extremosDeParte?: { inicio: number[] | null; final: number[] | null };
   /** Los puntos y trazos dibujados sobre el territorio. */
   anotaciones?: Anotacion[];
   /** Dónde está el usuario, si el GPS está andando. */
@@ -202,6 +214,9 @@ type MapaProps = {
   alMarcarPunto?: (lon: number, lat: number) => void;
   /** Se llama con el número de la anotación que el usuario tocó. */
   alTocarAnotacion?: (anotacionId: number) => void;
+  /** Se llama al tocar una parte de una ruta. También sirve para elegirla al editar. */
+  alTocarRuta?: (lon: number, lat: number, propiedades: Record<string, unknown>) => void;
+  alTocarCamino?: (lon: number, lat: number, propiedades: Record<string, unknown>) => void;
   /** `false` cuando quien lo llama ya muestra la ficha compartida por su cuenta. */
   mostrarFichaAnotacion?: boolean;
   /** Abrir o cerrar la ficha de zona con un clic o toque en el mapa. */
@@ -293,6 +308,11 @@ function ponerDatos(
 
 export function Mapa({
   recorrido = null,
+  caminos = null,
+  verticesDeCamino = null,
+  alMoverVerticeDeCamino,
+  alTocarVerticeDeCamino,
+  extremosDeParte,
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
@@ -314,6 +334,8 @@ export function Mapa({
   marcandoPunto = false,
   alMarcarPunto,
   alTocarAnotacion,
+  alTocarRuta,
+  alTocarCamino,
   mostrarFichaAnotacion = true,
   alSenalarZona,
   fichaSobreElMapa,
@@ -324,6 +346,10 @@ export function Mapa({
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<maplibregl.Map | null>(null);
+  const verticesDeCaminoRef = useRef(verticesDeCamino);
+  const moverVerticeRef = useRef(alMoverVerticeDeCamino);
+  useEffect(() => { verticesDeCaminoRef.current = verticesDeCamino; }, [verticesDeCamino]);
+  useEffect(() => { moverVerticeRef.current = alMoverVerticeDeCamino; }, [alMoverVerticeDeCamino]);
   const marcadoresDeEtiquetasRef = useRef<maplibregl.Marker[]>([]);
   const listoRef = useRef(false);
 
@@ -524,6 +550,11 @@ export function Mapa({
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
+      mapa.addSource(FUENTE_CAMINOS, { type: "geojson", data: VACIO });
+      mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
+      mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
+      mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
+      mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
       mapa.addSource("punto-de-ajuste", { type: "geojson", data: VACIO });
@@ -603,15 +634,113 @@ export function Mapa({
         },
       });
 
+      const colorDeParte: maplibregl.ExpressionSpecification = [
+        "match", ["get", "complejidad"],
+        "facil", colores.parteFacil,
+        "media", colores.parteMedia,
+        "dificil", colores.parteDificil,
+        colores.parteSinClasificar,
+      ];
       mapa.addLayer({
-        id: "ruta-linea",
-        type: "line",
-        source: FUENTE_RUTA,
+        id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
+        filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: {
-          "line-color": ["coalesce", ["get", "color"], colores.linea],
+        paint: { "line-color": colores.rectanguloZona, "line-width": 2, "line-opacity": 0.75 },
+      });
+      for (const [paso, capa, guiones] of [
+        ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5]],
+        ["transitable", CAPAS_DE_CAMINOS[2], null],
+        ["a_pie", CAPAS_DE_CAMINOS[3], [0.45, 1.5]],
+        ["sin_paso", CAPAS_DE_CAMINOS[4], null],
+      ] as const) {
+        const filtro: maplibregl.FilterSpecification = ["==", ["get", "paso"], paso];
+        const estilo = {
+          "line-color": colorDeParte,
           "line-width": 5,
-          "line-opacity": 0.95,
+          "line-opacity": 0.98,
+          ...(guiones ? { "line-dasharray": [...guiones] } : {}),
+        };
+        mapa.addLayer({
+          id: `${capa}-borde`, type: "line", source: FUENTE_CAMINOS, filter: filtro,
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": colores.parteX, "line-width": 7, "line-opacity": 0.85,
+            ...(guiones ? { "line-dasharray": [...guiones] } : {}) },
+        });
+        mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
+          layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
+      }
+      mapa.addLayer({
+        id: "camino-sin-paso-x", type: "symbol", source: "x-sin-paso-caminos",
+        layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
+        paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 },
+      });
+      mapa.addLayer({
+        id: "vertices-de-camino", type: "circle", source: "vertices-de-camino",
+        paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
+          "circle-stroke-width": 3, "circle-stroke-color": colores.parteX },
+      });
+      for (const [paso, capa, guiones] of [
+        ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5]],
+        ["transitable", CAPAS_DE_PARTES[1], null],
+        ["a_pie", CAPAS_DE_PARTES[2], [0.45, 1.5]],
+        ["sin_paso", CAPAS_DE_PARTES[3], null],
+      ] as const) {
+        mapa.addLayer({
+          id: capa,
+          type: "line",
+          source: FUENTE_RUTA,
+          filter: ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso],
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": colorDeParte,
+            "line-width": 5,
+            "line-opacity": 0.98,
+            ...(guiones ? { "line-dasharray": [...guiones] } : {}),
+          },
+        });
+      }
+      mapa.addLayer({
+        id: "ruta-sin-paso-x",
+        type: "symbol",
+        source: "x-sin-paso",
+        layout: {
+          "text-field": "×",
+          "text-font": ["Noto Sans Regular"],
+          "text-size": 25,
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": colores.parteX,
+          "text-halo-color": colores.parteXHalo,
+          "text-halo-width": 2,
+        },
+      });
+      mapa.addLayer({
+        id: "extremos-de-parte-punto",
+        type: "circle",
+        source: "extremos-de-parte",
+        paint: {
+          "circle-radius": 9,
+          "circle-color": colores.rectanguloNuevo,
+          "circle-stroke-width": 3,
+          "circle-stroke-color": colores.parteXHalo,
+        },
+      });
+      mapa.addLayer({
+        id: "extremos-de-parte-nombre",
+        type: "symbol",
+        source: "extremos-de-parte",
+        layout: {
+          "text-field": ["get", "nombre"],
+          "text-font": ["Noto Sans Regular"],
+          "text-size": 15,
+          "text-offset": [0, -1.5],
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": colores.parteX,
+          "text-halo-color": colores.parteXHalo,
+          "text-halo-width": 2,
         },
       });
 
@@ -719,19 +848,41 @@ export function Mapa({
     if (!mapa) return;
 
     const pintar = () => {
-      if (!mapa.getLayer("ruta-linea")) return;
+      if (!mapa.getLayer(CAPAS_DE_PARTES[0])) return;
       const colores = coloresDelMapa();
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
       setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas));
 
-      // Cada ruta puede traer su color; el del modo es solo para la que no.
-      mapa.setPaintProperty("ruta-linea", "line-color", [
-        "coalesce",
-        ["get", "color"],
-        colores.linea,
-      ]);
+      for (const capa of CAPAS_DE_PARTES) {
+        mapa.setPaintProperty(capa, "line-color", [
+          "match", ["get", "complejidad"],
+          "facil", colores.parteFacil,
+          "media", colores.parteMedia,
+          "dificil", colores.parteDificil,
+          colores.parteSinClasificar,
+        ]);
+      }
+      for (const capa of CAPAS_DE_CAMINOS.slice(1)) {
+        mapa.setPaintProperty(capa, "line-color", [
+          "match", ["get", "complejidad"],
+          "facil", colores.parteFacil, "media", colores.parteMedia,
+          "dificil", colores.parteDificil, colores.parteSinClasificar,
+        ]);
+        mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.parteX);
+      }
+      mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.rectanguloZona);
+      mapa.setPaintProperty("camino-sin-paso-x", "text-color", colores.parteX);
+      mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("vertices-de-camino", "circle-color", colores.rectanguloNuevo);
+      mapa.setPaintProperty("vertices-de-camino", "circle-stroke-color", colores.parteX);
+      mapa.setPaintProperty("ruta-sin-paso-x", "text-color", colores.parteX);
+      mapa.setPaintProperty("ruta-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("extremos-de-parte-punto", "circle-color", colores.rectanguloNuevo);
+      mapa.setPaintProperty("extremos-de-parte-punto", "circle-stroke-color", colores.parteXHalo);
+      mapa.setPaintProperty("extremos-de-parte-nombre", "text-color", colores.parteX);
+      mapa.setPaintProperty("extremos-de-parte-nombre", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
       mapa.setPaintProperty(
         "mi-posicion-punto",
@@ -804,6 +955,7 @@ export function Mapa({
 
     const poner = () => {
       ponerDatos(mapa, FUENTE_RUTA, recorrido ?? VACIO);
+      ponerDatos(mapa, "x-sin-paso", recorrido ? puntosSinPaso(recorrido) : VACIO);
 
       if (encuadre && !(encuadrarSoloAlAbrir && yaEncuadroRef.current)) {
         mapa.fitBounds(limitesDe(encuadre), { padding: 28, animate: false });
@@ -813,6 +965,79 @@ export function Mapa({
 
     cuandoEsteListo(poner);
   }, [recorrido, encuadre, encuadrarSoloAlAbrir]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => {
+      ponerDatos(mapa, FUENTE_CAMINOS, caminos ?? VACIO);
+      ponerDatos(mapa, "x-sin-paso-caminos", caminos ? puntosSinPaso(caminos) : VACIO);
+    });
+  }, [caminos]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "vertices-de-camino", {
+      type: "FeatureCollection",
+      features: (verticesDeCamino ?? []).map((punto, indice) => ({
+        type: "Feature" as const,
+        properties: { indice },
+        geometry: { type: "Point" as const, coordinates: [punto[0], punto[1]] },
+      })),
+    }));
+  }, [verticesDeCamino]);
+
+  const editandoVertices = verticesDeCamino !== null && alMoverVerticeDeCamino !== undefined;
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !editandoVertices) return;
+    let arrastrando: number | null = null;
+    const empezar = (evento: EventoDelPuntero) => {
+      const encontrados = mapa.queryRenderedFeatures(evento.point, { layers: ["vertices-de-camino"] });
+      const indice = Number(encontrados[0]?.properties?.indice);
+      if (!Number.isInteger(indice) || indice < 0 || indice >= (verticesDeCaminoRef.current?.length ?? 0)) return;
+      arrastrando = indice;
+      mapa.dragPan.disable();
+      evento.preventDefault();
+    };
+    const mover = (evento: EventoDelPuntero) => {
+      if (arrastrando === null) return;
+      moverVerticeRef.current?.(arrastrando, evento.lngLat.lng, evento.lngLat.lat);
+    };
+    const terminar = () => {
+      arrastrando = null;
+      mapa.dragPan.enable();
+    };
+    mapa.on("mousedown", empezar);
+    mapa.on("touchstart", empezar);
+    mapa.on("mousemove", mover);
+    mapa.on("touchmove", mover);
+    mapa.on("mouseup", terminar);
+    mapa.on("touchend", terminar);
+    return () => {
+      mapa.off("mousedown", empezar); mapa.off("touchstart", empezar);
+      mapa.off("mousemove", mover); mapa.off("touchmove", mover);
+      mapa.off("mouseup", terminar); mapa.off("touchend", terminar);
+      mapa.dragPan.enable();
+    };
+  }, [editandoVertices]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "extremos-de-parte", {
+      type: "FeatureCollection",
+      features: ([
+        ["Inicio", extremosDeParte?.inicio],
+        ["Final", extremosDeParte?.final],
+      ] as const).filter(([, punto]) => punto && punto.length >= 2).map(([nombre, punto]) => ({
+        type: "Feature" as const,
+        properties: { nombre },
+        geometry: { type: "Point" as const, coordinates: punto! },
+      })),
+    }));
+  }, [extremosDeParte]);
 
   // Los puntos y trazos.
   useEffect(() => {
@@ -1091,20 +1316,58 @@ export function Mapa({
       );
       return zonaEnElLugar(zonas, evento.lngLat.lng, evento.lngLat.lat)?.id ?? null;
     };
+    const buscarRuta = (evento: maplibregl.MapMouseEvent) => {
+      const capas = CAPAS_DE_PARTES.filter((capa) => mapa.getLayer(capa));
+      if (capas.length === 0) return null;
+      const { x, y } = evento.point;
+      return mapa.queryRenderedFeatures([[x - 9, y - 9], [x + 9, y + 9]], { layers: capas })[0] ?? null;
+    };
+    const buscarCamino = (evento: maplibregl.MapMouseEvent) => {
+      const capas = CAPAS_DE_CAMINOS.filter((capa) => mapa.getLayer(capa));
+      if (capas.length === 0) return null;
+      const { x, y } = evento.point;
+      return mapa.queryRenderedFeatures([[x - 9, y - 9], [x + 9, y + 9]], { layers: capas })[0] ?? null;
+    };
     const mover = (evento: maplibregl.MapMouseEvent) => {
       const sobrePunto = mapa.getLayer("anotaciones-punto")
         ? mapa.queryRenderedFeatures(evento.point, { layers: ["anotaciones-punto"] }).length > 0
         : false;
       const sobreZona = alSenalarZona ? buscarZona(evento) !== null : false;
-      mapa.getCanvas().style.cursor = sobrePunto || sobreZona ? "pointer" : "";
+      const sobreRuta = alTocarRuta ? buscarRuta(evento) !== null : false;
+      const sobreCamino = alTocarCamino ? buscarCamino(evento) !== null : false;
+      mapa.getCanvas().style.cursor = sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
     };
     const tocar = (evento: maplibregl.MapMouseEvent) => {
+      if (alTocarVerticeDeCamino && mapa.getLayer("vertices-de-camino")) {
+        const vertices = mapa.queryRenderedFeatures(evento.point, { layers: ["vertices-de-camino"] });
+        const indice = Number(vertices[0]?.properties?.indice);
+        if (Number.isInteger(indice)) {
+          alTocarVerticeDeCamino(indice);
+          return;
+        }
+      }
       const id = buscarAnotacion(evento);
       if (id !== null) {
         setAnotacionTocadaId(id);
         alTocarAnotacion?.(id);
         alSenalarZona?.(null);
         return;
+      }
+      if (alTocarRuta) {
+        const parte = buscarRuta(evento);
+        if (parte) {
+          alTocarRuta(evento.lngLat.lng, evento.lngLat.lat, parte.properties ?? {});
+          alSenalarZona?.(null);
+          return;
+        }
+      }
+      if (alTocarCamino) {
+        const parte = buscarCamino(evento);
+        if (parte) {
+          alTocarCamino(evento.lngLat.lng, evento.lngLat.lat, parte.properties ?? {});
+          alSenalarZona?.(null);
+          return;
+        }
       }
       if (alSenalarZona) alSenalarZona(buscarZona(evento));
     };
@@ -1121,7 +1384,7 @@ export function Mapa({
       mapa.off("click", tocar);
       mapa.getCanvas().style.cursor = "";
     };
-  }, [alSenalarZona, alTocarAnotacion, marcandoPunto]);
+  }, [alSenalarZona, alTocarAnotacion, alTocarRuta, alTocarCamino, alTocarVerticeDeCamino, marcandoPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {

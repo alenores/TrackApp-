@@ -22,6 +22,7 @@ export default async function AppLayout({
     <Armazon
       miPerfilId={user.id}
       soyAdministrador={miPerfil?.categoria === "administrador"}
+      miCategoria={miPerfil?.categoria ?? "normal"}
       userName={nombreParaMostrar(user)}
       userEmail={user.email ?? ""}
       userAvatarUrl={userAvatarUrl}

@@ -11,6 +11,12 @@
 
 export type ColoresDelMapa = {
   linea: string;
+  parteFacil: string;
+  parteMedia: string;
+  parteDificil: string;
+  parteSinClasificar: string;
+  parteX: string;
+  parteXHalo: string;
   gps: string;
   anotacion: string;
   rectanguloNuevo: string;
@@ -34,6 +40,12 @@ export type ColoresDelMapa = {
 /** Por si se pregunta antes de que el navegador tenga las variables listas. */
 const DE_RESPALDO: ColoresDelMapa = {
   linea: "#52b788",
+  parteFacil: "#2de083",
+  parteMedia: "#ffd43b",
+  parteDificil: "#ff6262",
+  parteSinClasificar: "#cbd5e1",
+  parteX: "#111827",
+  parteXHalo: "#ffffff",
   gps: "#60a5fa",
   anotacion: "#f472b6",
   rectanguloNuevo: "#67e8f9",
@@ -60,6 +72,12 @@ function leer(nombre: string, deRespaldo: string): string {
 export function coloresDelMapa(): ColoresDelMapa {
   return {
     linea: leer("--mapa-linea", DE_RESPALDO.linea),
+    parteFacil: leer("--parte-facil", DE_RESPALDO.parteFacil),
+    parteMedia: leer("--parte-media", DE_RESPALDO.parteMedia),
+    parteDificil: leer("--parte-dificil", DE_RESPALDO.parteDificil),
+    parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
+    parteX: leer("--parte-x", DE_RESPALDO.parteX),
+    parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
     gps: leer("--gps", DE_RESPALDO.gps),
     anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
     rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),

@@ -43,7 +43,7 @@ describe("mapa general", () => {
       expect(contenedor.querySelector("[data-puntos]")?.getAttribute("data-puntos")).toBe("1");
       expect(contenedor.querySelector("[data-altura-extendida]")?.getAttribute("data-altura-extendida")).toBe("true");
       await act(async () => {
-        (contenedor.querySelector("button") as HTMLButtonElement).click();
+        ([...contenedor.querySelectorAll("button")].find((boton) => boton.textContent === "Señalar zona") as HTMLButtonElement).click();
       });
       expect(contenedor.textContent).toContain("Zona de prueba");
       expect(contenedor.textContent).toContain("4 sectores");
@@ -66,7 +66,7 @@ describe("mapa general", () => {
       await act(async () => raiz.render(
         <MapaGeneralDeZonas zonas={[zona]} anotaciones={[]} sectoresPorZona={{ 1: 4 }} />,
       ));
-      await act(async () => (contenedor.querySelector("button") as HTMLButtonElement).click());
+      await act(async () => ([...contenedor.querySelectorAll("button")].find((boton) => boton.textContent === "Señalar zona") as HTMLButtonElement).click());
       expect(contenedor.querySelector("[data-ficha-zona]")).not.toBeNull();
       const ficha = contenedor.querySelector("[data-ficha-zona]") as HTMLElement;
       const adentro = new Event("pointerdown", { bubbles: true });
@@ -78,7 +78,7 @@ describe("mapa general", () => {
       await act(async () => document.body.dispatchEvent(afuera));
       expect(contenedor.querySelector("[data-ficha-zona]")).toBeNull();
 
-      await act(async () => (contenedor.querySelector("button") as HTMLButtonElement).click());
+      await act(async () => ([...contenedor.querySelectorAll("button")].find((boton) => boton.textContent === "Señalar zona") as HTMLButtonElement).click());
       const toqueAfuera = new Event("pointerdown", { bubbles: true });
       Object.defineProperty(toqueAfuera, "pointerType", { value: "touch" });
       await act(async () => document.body.dispatchEvent(toqueAfuera));

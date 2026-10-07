@@ -10,43 +10,52 @@
 | **Premium** | Los amigos de Ale. |
 | **Normal** | El resto: amigos de amigos y cualquiera que llegue. |
 
-Esto es lo único que está decidido, y alcanza para que la base de datos y el
-sistema de permisos nazcan preparados.
+Los permisos se definen para cada función. Los del contenido del mapa ya están
+decididos y figuran más abajo.
 
-## Lo primero que sí se definió (2026-09-18)
+## Primera definición de Rutas (2026-09-18)
 
-**Sobre las rutas:** cualquier usuario ve y consulta todas las rutas, de
-cualquier otro usuario. Solo el creador puede editar o eliminar el suyo.
+**Sobre las rutas de la app anterior:** cualquier usuario ve y consulta todas
+las rutas, de cualquier otro usuario. La regla de edición de este módulo se
+revisará cuando se construyan Circuitos; no define permisos de Caminos.
 
 Ver `decisiones/008-tres-modos-de-uso-y-permisos.md`.
 
-**Sobre zonas y sectores:** **solo el administrador** los crea y descarga sus
-mapas. Ni siquiera el usuario premium puede. Es tarea exclusiva del
-administrador mientras el producto sea chico.
+**Sobre zonas y sectores:** **solo el administrador** los crea. Ni siquiera el
+usuario Premium puede. Son unidades de descarga de mapas, no de clasificación
+del contenido del mapa.
 
 Ver `decisiones/009-cobertura-de-mapas-de-un-ruta.md`.
 
-**Sobre las anotaciones (2026-09-24):** **cualquier usuario** —administrador,
-premium o normal— anota desde la navegación. Nada es privado: todos ven todas.
-Cada uno cambia y borra lo suyo; el administrador, todo. Crearlas desde la
-pantalla del sector, con la computadora, sigue siendo del administrador.
+**Sobre las anotaciones:** la regla de 2026-09-24 que dejaba anotar a todos fue
+reemplazada el 2026-10-05. Administrador y Premium pueden sumar puntos y trazos
+y cambiar los propios; Administrador puede cambiar todos. Normal solo consulta.
+Las anotaciones marcadas navegando por Administrador o Premium quedan en el
+celular y suben con señal y la navegación cerrada. Una anotación pendiente de
+una cuenta Normal queda visible en el celular con un aviso de que no se subirá.
 
-Ver `decisiones/023-anotar-desde-la-navegacion.md`.
-
-**Sobre puntos sin sector (2026-09-30):** solo el administrador puede entrar
-por **Zonas → Puntos** para cargarlos pegando coordenadas, editarlos y borrarlos.
-El acceso aparece solo con señal; conocer la dirección no habilita a las otras
-categorías. Los puntos siguen siendo visibles para todos en sus mapas.
+**Sobre puntos sin sector:** Administrador y Premium pueden sumarlos desde
+**Mapas → Anotaciones**; Premium cambia los propios y Administrador todos.
+La antigua dirección **Zonas → Puntos** lleva a esa pestaña.
 Ver `decisiones/027-puntos-sin-sector.md`.
 
-## Lo que NO está definido
+## Permisos decididos para el contenido del mapa
 
-**Qué puede hacer cada categoría.** Y no se inventa.
+**Decisión de Ale, 2026-10-05:**
+Administrador y Premium pueden sumar Caminos, puntos, trazos y anotaciones al
+mapa, y editar los propios. El Administrador puede editar los de todos. Normal
+solo puede consultar ese contenido: **no puede crear ni editar anotaciones
+durante la navegación**. Puede cargar fotos en su propia Salida y registrar
+una Salida durante el paseo para subirla al recuperar la señal.
 
-Los permisos no son una decisión que se pueda tomar en el aire: son una
-consecuencia de las funciones que tenga la app, y la app todavía se está
-definiendo funcionalmente. Decidir hoy si un usuario normal puede o no hacer
-algo que todavía no existe es construir sobre nada.
+**Circuitos (decisión de Ale, 2026-10-05):** Administrador y Premium podrán
+crearlos y editar los propios; el Administrador podrá editar todos. Normal
+solo podrá consultarlos. Circuitos todavía no existe en la app.
+
+## Funciones futuras
+
+Los permisos de una función nueva se deciden cuando se define esa función.
+No se deducen de permisos de otros módulos.
 
 **Regla:** cada vez que se defina una función nueva, en esa misma definición se
 establece qué categoría la puede usar. No antes.

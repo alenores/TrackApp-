@@ -10,24 +10,28 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresPorZona } from "@/lib/mapas/general";
 import { AnotacionesDeCordoba } from "@/components/anotaciones/anotaciones-de-cordoba";
 import { PantallaDeDescargas } from "@/components/zonas/pantalla-de-descargas";
+import { PantallaDeCaminos } from "@/components/caminos/pantalla-de-caminos";
+import type { CategoriaUsuario } from "@/types/database";
+import { puedeSumarAlMapa } from "@/lib/mapas/permisos";
 
-type Propiedades = { soyAdministrador: boolean; pestañaInicial?: Pestana };
-type Pestana = "zonas" | "mapa" | "anotaciones" | "descargas";
+type Propiedades = { categoria: CategoriaUsuario; miPerfilId: string | null; pestañaInicial?: Pestana };
+type Pestana = "zonas" | "mapa" | "caminos" | "anotaciones" | "descargas";
 
 /** El módulo Mapas: lista de zonas y vista general de Córdoba. */
-export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: Propiedades) {
-  const puedeAdministrar = usePuedeAdministrar(soyAdministrador);
+export function PantallaDeZonas({ categoria, miPerfilId, pestañaInicial = "mapa" }: Propiedades) {
+  const puedeAdministrar = usePuedeAdministrar(categoria === "administrador");
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const [pestana, setPestana] = useState<Pestana>(pestañaInicial);
-  const pestanaActiva = pestana === "anotaciones" && !puedeAdministrar ? "mapa" : pestana;
+  const pestanaActiva = pestana;
 
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
   const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
   const anotaciones = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
+  const caminos = useMemo(() => paquete?.caminos ?? [], [paquete]);
   const cantidades = useMemo(() => sectoresPorZona(sectores), [sectores]);
 
   const alMoverEntrePestanas = (evento: KeyboardEvent<HTMLDivElement>) => {
-    const pestanas: Pestana[] = puedeAdministrar ? ["zonas", "mapa", "anotaciones", "descargas"] : ["zonas", "mapa", "descargas"];
+    const pestanas: Pestana[] = ["zonas", "mapa", "caminos", "anotaciones", "descargas"];
     const indice = pestanas.indexOf(pestanaActiva);
     const siguiente = evento.key === "ArrowRight"
       ? pestanas[(indice + 1) % pestanas.length]
@@ -58,13 +62,16 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
           variante={pestanaActiva === "mapa" ? "principal" : "fantasma"} onClick={() => setPestana("mapa")}>
           Mapa
         </Boton>
-        {puedeAdministrar ? (
-          <Boton role="tab" id="pestana-anotaciones" aria-controls="panel-anotaciones" aria-selected={pestanaActiva === "anotaciones"}
+        <Boton role="tab" id="pestana-caminos" aria-controls="panel-caminos" aria-selected={pestanaActiva === "caminos"}
+          tabIndex={pestanaActiva === "caminos" ? 0 : -1}
+          variante={pestanaActiva === "caminos" ? "principal" : "fantasma"} onClick={() => setPestana("caminos")}>
+          Caminos
+        </Boton>
+        <Boton role="tab" id="pestana-anotaciones" aria-controls="panel-anotaciones" aria-selected={pestanaActiva === "anotaciones"}
             tabIndex={pestanaActiva === "anotaciones" ? 0 : -1}
             variante={pestanaActiva === "anotaciones" ? "principal" : "fantasma"} onClick={() => setPestana("anotaciones")}>
             Anotaciones
-          </Boton>
-        ) : null}
+        </Boton>
         <Boton role="tab" id="pestana-descargas" aria-controls="panel-descargas" aria-selected={pestanaActiva === "descargas"}
           tabIndex={pestanaActiva === "descargas" ? 0 : -1}
           variante={pestanaActiva === "descargas" ? "principal" : "fantasma"} onClick={() => setPestana("descargas")}>
@@ -104,11 +111,15 @@ export function PantallaDeZonas({ soyAdministrador, pestañaInicial = "mapa" }: 
             </div>
           ) : pestanaActiva === "mapa" ? (
             <div role="tabpanel" id="panel-mapa" aria-labelledby="pestana-mapa">
-              <MapaGeneralDeZonas zonas={zonas} anotaciones={anotaciones} sectoresPorZona={cantidades} />
+              <MapaGeneralDeZonas zonas={zonas} anotaciones={anotaciones} caminos={caminos} sectoresPorZona={cantidades} />
+            </div>
+          ) : pestanaActiva === "caminos" ? (
+            <div role="tabpanel" id="panel-caminos" aria-labelledby="pestana-caminos">
+              <PantallaDeCaminos caminos={caminos} puedeSumar={puedeSumarAlMapa(categoria)} miPerfilId={miPerfilId} esAdministrador={categoria === "administrador"} />
             </div>
           ) : pestanaActiva === "anotaciones" ? (
             <div role="tabpanel" id="panel-anotaciones" aria-labelledby="pestana-anotaciones">
-              <AnotacionesDeCordoba soyAdministrador={puedeAdministrar} />
+              <AnotacionesDeCordoba puedeAnotar={puedeSumarAlMapa(categoria)} miPerfilId={miPerfilId} esAdministrador={categoria === "administrador"} />
             </div>
           ) : (
             <div role="tabpanel" id="panel-descargas" aria-labelledby="pestana-descargas">

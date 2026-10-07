@@ -66,6 +66,13 @@
 
   --mapa-fondo: #16202f;
   --mapa-linea: #52b788;
+  /* Cada parte de ruta tiene su complejidad propia; sin dato queda neutra. */
+  --parte-facil: #2de083;
+  --parte-media: #ffd43b;
+  --parte-dificil: #ff6262;
+  --parte-sin-clasificar: #cbd5e1;
+  --parte-x: #111827;
+  --parte-x-halo: #ffffff;
   /* El sendero a pie: no es un camino de auto y no se dibuja igual. */
   --mapa-sendero: #e8a765;
   /* Arroyos y ríos: referencia para ubicarse y para cargar agua. */
@@ -152,6 +159,12 @@
 
   --mapa-fondo: #e8eef4;
   --mapa-linea: #1b4332;
+  --parte-facil: #047857;
+  --parte-media: #a16207;
+  --parte-dificil: #b91c1c;
+  --parte-sin-clasificar: #475569;
+  --parte-x: #111827;
+  --parte-x-halo: #ffffff;
   --mapa-sendero: #8a4b1a;
   --mapa-agua: #1d6f96;
   --mapa-curva: #a21caf;

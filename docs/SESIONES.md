@@ -4,6 +4,301 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-07 — Caminos integrados en Mapas
+
+### Estado al inicio
+
+La tabla de Caminos estaba aplicada y su lógica de guardado preparada. Faltaban
+la pantalla de importación y edición, las capas del mapa, la lectura desde el
+paquete del celular y la restricción efectiva de Anotaciones para Normal.
+
+### Lo que se hizo
+
+- Se integraron Caminos en Mapas y navegación libre, con clasificación por
+  actividad, condición de paso y complejidad de cada parte. Todos permanecen
+  visibles; la actividad principal se recuerda en el celular.
+- Se incorporó la importación de KML, KMZ y GPX para decidir cada línea y punto,
+  con vista previa en el mapa y sin conservar el archivo original.
+- Se agregó el editor para clasificar, partir y corregir un Camino. La línea
+  permite mover, agregar y quitar puntos sin cambiar las clasificaciones.
+- Se incorporaron las líneas de Caminos al paquete del celular y se aplicaron
+  las reglas de la base que limitan Anotaciones a Administrador y Premium.
+- Pasaron tipos, lint y 739 pruebas automáticas. Una lectura aislada del KML de
+  Ascochinga confirmó siete líneas y ningún punto; no creó contenido en la app.
+- Se inspeccionaron las pantallas de Mapas y de importación en modo sol y noche.
+  La herramienta de navegador impidió elegir el KML local en el formulario,
+  por lo que no se probó el flujo completo de importación en pantalla.
+
+### Decisiones tomadas
+
+Ale confirmó que corregir una línea también debe permitir agregar y quitar
+puntos, además de moverlos.
+
+### Documentos actualizados
+
+Reglas de agentes, glosario, usuarios, arquitectura, esquema, riesgos y plan.
+
+### Deuda o inconsistencias detectadas
+
+El riesgo R32 continúa abierto hasta probar los permisos con cuentas reales de
+las tres categorías. Tampoco se completó aún la prueba real en modo avión.
+
+### Pendientes para la próxima
+
+Completar la prueba integral de importación y edición en pantalla, la prueba
+con tres cuentas y la navegación libre en modo avión antes de considerarlo
+apto para una salida al cerro. Circuitos se desarrolla en otra etapa.
+
+## Sesión 2026-10-06 — Boceto de Caminos aprobado e integración iniciada
+
+### Estado al inicio
+
+Ale revisó el boceto interactivo de Mapas/Caminos y pidió la opinión de Codex
+para seguir. La lógica y el guardado estaban preparados, pero sin tabla aplicada,
+sin integración visual ni descarga para navegar.
+
+### Lo que se hizo
+
+- Ale aprobó el boceto y Codex confirmó que corresponde a las decisiones de
+  producto. La revisión independiente de Codex fue estática; la herramienta de
+  navegador no permitió abrir visualmente ese archivo local.
+- Se reforzó la propuesta de seguridad de la tabla: ni siquiera el
+  Administrador podrá editar o recuperar un Camino retirado. La propuesta aún
+  no se aplicó a la base.
+- Se empezó a incorporar Caminos al paquete del celular: sus datos livianos
+  quedan en el paquete, y las líneas en un depósito grande con versiones para
+  que una puesta al día cortada no invalide la línea anterior.
+- Pasaron la revisión de tipos, lint y las 729 pruebas del proyecto, incluidas
+  las 98 de lógica de Caminos y las del nuevo depósito. Falta verificar el flujo
+completo porque la tabla aún no existe y las pantallas no están conectadas.
+
+### Decisiones tomadas
+
+El boceto visual de Mapas/Caminos quedó aprobado para implementarse. Circuitos
+sigue como etapa posterior.
+
+### Documentos actualizados
+
+Notas del boceto, plan de Mapas/Caminos, arquitectura y este registro.
+
+### Deuda o inconsistencias detectadas
+
+La regla vieja del mapa general en `AGENTS.md` todavía describe solo zonas y
+puntos. La decisión nueva de Ale incluye Caminos y trazos; se actualizará esa
+regla junto con la implementación visible. No se presenta el código local como
+una función terminada.
+
+### Pendientes para la próxima
+
+Conectar lista, importador, editor y capas de Caminos; corregir permisos de
+Anotaciones; completar navegación libre sin señal; verificar la propuesta de
+tabla en la base antes de aplicarla y hacer la prueba integral.
+
+## Sesión 2026-10-06 — Revisión del guardado propuesto de Caminos
+
+Claude preparó la segunda etapa de guardado y permisos. No ejecutó el SQL ni
+modificó pantallas. Informó 727 pruebas aprobadas.
+
+Alejandro confirmó que la fecha de comprobación nunca puede ser futura. Se
+registró en la decisión 038 y en el plan. La revisión encontró que el SQL
+aceptaba coordenadas imposibles o un largo declarado distinto al de la línea.
+Se reforzó el SQL propuesto para validar coordenadas, medir la línea y rechazar
+fechas futuras. **El SQL todavía no se ejecutó**: estas reglas y los permisos
+requieren pruebas con la base antes de integrarse a la app.
+Alejandro también confirmó los límites de 120 caracteres para el nombre, 2.000
+para la descripción y 1.000 para la observación. Quedaron en la decisión 039.
+La validación de la app se ajustó para contar caracteres Unicode igual que la
+base, y se agregó una prueba de ese límite; no pudo ejecutarse en este entorno.
+Alejandro decidió que la app no ofrecerá recuperar Caminos retirados, ni al
+administrador. Se registró en la decisión 040.
+También decidió que no se guarda el archivo KML original después de importar:
+solo quedan los Caminos, puntos y trazos elegidos. Se registró en la decisión
+041.
+La revisión de solo lectura del catálogo de TrackApp confirmó los nombres de
+actividades, categorías, columnas del perfil y la función de fecha que usa el
+SQL propuesto. No se consultaron filas de usuarios ni se modificó la base.
+Se comprobó que el proyecto no tiene una rama de base de datos para probar el
+SQL por separado. El plan quedó actualizado con el orden de guardado, boceto
+del editor, Mapas y preparación sin señal. La tabla todavía requiere revisión
+final y aprobación antes de aplicarse a la base real.
+Se preparó un encargo acotado para que Claude haga en paralelo un boceto
+estático del editor de Caminos, sin modificar la app ni la base. Las reglas de
+`AGENTS.md` exigen la aprobación de Ale antes de cambiar una pantalla.
+Claude entregó ese boceto en dos archivos. La revisión del contenido detectó
+que no completa una importación de solo puntos, oculta Anotaciones a Premium y
+cuenta ciertos símbolos como dos caracteres. Se preparó un encargo de
+corrección limitado a los dos archivos del boceto; todavía no se aprobó el
+diseño. El navegador integrado bloqueó abrir el archivo local, por lo que
+Codex no lo verificó visualmente ni afirmó haberlo visto funcionar.
+
+Codex no pudo repetir las pruebas en este entorno: Node recibió un bloqueo de
+lectura y la revisión automática para ejecutarlo sin esa restricción no pudo
+completarse por falta de capacidad. No se hizo commit ni push.
+
+---
+
+## Sesión 2026-10-06 — La corrección del dibujo conserva las clasificaciones
+
+### Estado al inicio
+Claude entregó la primera etapa de `lib/caminos`: lector y lógica pura, con
+42 pruebas. Su función de corregir la línea reiniciaba la parte modificada a
+«por explorar» y exigía confirmarla.
+
+### Decisión tomada
+Alejandro aclaró que corregir una línea suele resultar de haberla relevado en
+el terreno. La corrección conserva condición y complejidad de las partes que
+siguen en la línea, incluida la redibujada. La persona puede cambiar esos
+datos por separado si lo desea.
+También decidió que la observación y la fecha de comprobación son únicas por
+parte y se comparten entre las actividades de esa parte.
+Confirmó que la fecha de comprobación nunca puede ser futura.
+
+### Lo que se hizo
+Se revisó la entrega y se verificaron sus 42 pruebas iniciales, tipos y lint. Se corrigió
+la lógica local para conservar las clasificaciones al adaptar los límites de
+las partes al nuevo dibujo, sin marca de revisión. Se actualizaron las pruebas
+de esa regla. Se agregó a cada parte una observación y fecha compartidas, con
+edición independiente de la línea y la clasificación. La base, las pantallas
+y la navegación no se tocaron. Al cerrar, pasaron las **673 pruebas de la app**,
+tipos sin errores y lint sin errores (34 avisos previos).
+
+### Documentos actualizados
+Decisiones 037 y 038, plan de Mapas/Caminos/Circuitos, encargo histórico de la primera
+etapa, reglas para agentes y este registro.
+Quedó preparado el encargo detallado de la segunda etapa para Claude:
+guardado y permisos de Caminos, con SQL solo para revisión y sin cambios en
+la base real ni en las pantallas.
+
+### Pendientes
+Integrar el módulo de Caminos con guardado, editor, mapa y uso sin señal.
+
+---
+
+## Sesión 2026-10-05 — Separar caminos del mapa y circuitos planificados
+
+### Estado al inicio
+El prototipo local guardaba las condiciones de paso en partes de una «Ruta».
+Ale aclaró que esas alternativas pertenecen al mapa y que «Circuitos» debe ser
+una planificación separada. Circuitos todavía no existe.
+
+### Lo que se hizo
+- Se documentó la estructura actual y la separación propuesta entre Mapas,
+  Circuitos y Salidas, sin modificar código ni base de datos.
+- Se dejó un encargo detallado para que Claude audite la futura capa de caminos
+  antes de implementarla, con límites precisos para no pisar los cambios locales.
+- Codex auditó la otra mitad: qué funciones actuales de Rutas corresponderían
+  a Circuitos y qué dependencias hay con navegación, offline y Salidas. Dejó
+  preguntas de producto explícitas en lugar de convertirlas en código.
+- Se señaló que la decisión 033 y el glosario describen el prototipo actual, no
+  el destino final de esta reorganización.
+
+### Decisiones tomadas
+Los caminos explorables forman parte de Mapas; los circuitos planifican una
+salida sin agregar caminos. Salidas sigue siendo lo efectivamente realizado.
+La estructura de datos todavía requiere definición.
+
+Después de la auditoría de Claude, Ale confirmó que al importar Google Earth
+se elige **para cada línea** si se guarda como camino explorable o como trazo
+de referencia; la app no lo infiere del color.
+También confirmó **Caminos** como nombre definitivo de la capa de Mapas,
+incluidos los pasos de kayak.
+Si el archivo de Earth trae puntos, la misma importación los ofrecerá como
+puntos del mapa, con vista previa y sin exigir un sector.
+Administrador y Premium podrán cargar Caminos y puntos, cada uno editará los
+propios y el Administrador podrá editar todos. Ale aclaró después que la misma
+regla incluye trazos y anotaciones: Normal solo consulta el contenido del mapa,
+también durante la navegación. Puede cargar fotos en su propia Salida y
+registrar una Salida para subirla cuando vuelva la señal. El permiso actual de
+anotar para Normal contradice esta decisión y debe corregirse en interfaz,
+servidor y base antes de dar la función por lista.
+Ale confirmó la misma separación para Circuitos: Administrador y Premium los
+crean y editan, con edición de los propios y control total del Administrador;
+Normal solo los consulta.
+Ale precisó después que un Circuito puede incorporar partes de Caminos sin
+redibujarlas y agregar partes dibujadas solo para ese Circuito. También puede
+dibujarse sin usar Caminos, por ejemplo sobre una vía evidente del mapa. Esto
+corrige la interpretación anterior de una línea siempre independiente. Su
+desarrollo puede esperar mientras se construye y prueba Mapas/Caminos. También
+quedó decidido que el mapa general de Mapas y la navegación libre mostrarán
+todos los Caminos, puntos y trazos.
+Ale definió además que Zonas y Sectores tienen un único propósito: organizar
+la cobertura y descarga de mapas. No asignan, delimitan ni parten Caminos,
+Circuitos o anotaciones. Para preparar una salida se determina qué mapas bajar
+según el Circuito planificado o el área que se quiere explorar sin plan previo.
+Cada Camino tendrá al menos una actividad obligatoria y podrá tener varias.
+La condición de paso y complejidad de cada parte se clasificarán por actividad:
+podrán ser diferentes para Mountain bike, Trekking o Kayak. Ale confirmó luego
+que se elige una
+actividad principal: sus Caminos muestran la clasificación correspondiente;
+los de otras actividades permanecen visibles y consultables, pero con menos
+protagonismo. Un Camino de varias actividades muestra la clasificación de la
+elegida y deja consultar las demás al tocarlo.
+Ale confirmó que un Camino mal dibujado se puede corregir en la app sin crear
+otro Camino. Las partes intactas conservan sus clasificaciones; solo la parte
+modificada pide revisión. Aclaró que la condición y complejidad pueden cambiar
+sin cambiar la línea. Las actividades de Caminos serán las cinco que la app ya
+usa: Trekking, Correr, Mountain bike, Kayak y Canyoning.
+Ale confirmó que cada persona elige la actividad principal desde el mapa y
+que la app recuerda la última elección.
+Se dejó preparado un encargo de implementación aislado para Claude: lector de
+archivos y lógica pura de Caminos, sin tocar base, pantallas, navegación ni el
+prototipo local. Codex integrará la pieza después de revisar su entrega.
+
+### Documentos actualizados
+Plan de separación, encargos de diagnóstico e implementación inicial para
+Claude, auditoría de Circuitos,
+glosario, decisiones 033, 034, 035, 036 y 037, arquitectura, reglas para agentes y este
+registro.
+
+### Deuda o inconsistencias detectadas
+La regla actual de «Ruta» como palabra definitiva y varias descripciones de
+Rutas en la documentación deberán revisarse cuando Ale apruebe el vocabulario
+y el modelo nuevos. La implementación local anterior sigue sin publicar.
+
+### Pendientes para la próxima
+Revisar el plan con Ale, hacer la auditoría de Claude, responder las decisiones
+que bloquean el modelo y recién entonces repartir implementación en copias
+aisladas. Sigue pendiente la prueba real de navegación en modo avión.
+
+---
+
+## Sesión 2026-10-05 — Partes de ruta para explorar y comprobar
+
+### Estado al inicio
+Una ruta importada se dibujaba con un único color. Un KML con varias líneas se
+podía guardar como una sola ruta, sumando alternativas desconectadas. La app no
+distinguía posibilidades de pasos comprobados o cerrados.
+
+### Lo que se hizo
+- Se agregó el editor de computadora para marcar el inicio y el final de una
+  parte, su condición, complejidad, observación y fecha de comprobación.
+- El mapa dibuja cuatro formas de línea y los tres colores de complejidad; lo
+  no clasificado queda gris. Las partes sin paso siguen visibles con X.
+- Al tocar una parte durante la navegación se abre su detalle. Los datos viajan
+  en la geometría de la ruta que se guarda en el celular.
+- Al traer un proyecto KML con varias líneas, se elige una por nombre y se
+  genera un archivo de respaldo individual.
+- Se verificó el editor con una ruta ficticia en el navegador, en modo sol y
+  noche. La vista temporal se retiró. Pasaron tipos, lint y 630 pruebas.
+
+### Decisiones tomadas
+Condición y complejidad pertenecen a cada parte. El esfuerzo y la dificultad
+técnica de la ficha global no controlan el dibujo de la línea. Ver decisión 033.
+
+### Documentos actualizados
+`SCHEMA.md`, `ARQUITECTURA.md`, `GLOSARIO.md`, `DISENO_EXTERIOR.md`,
+`decisiones/033-partes-de-una-ruta.md` y este registro.
+
+### Deuda o inconsistencias detectadas
+La columna anterior de color de ruta sigue en la base para compatibilidad, pero
+ya no controla la línea ni se elige en el formulario.
+
+### Pendientes para la próxima
+Comprobar la navegación con una sesión real y el teléfono en modo avión. La
+vista de prueba local permitió revisar el dibujo pero no una sesión de salida.
+
+---
+
 ## Sesión 2026-10-02 — Salidas rehecha desde cero
 
 ### Estado al inicio

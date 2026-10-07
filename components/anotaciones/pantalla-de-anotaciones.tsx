@@ -21,7 +21,8 @@ import {
   resumenDeImportacion,
   type RespuestaDeOsm,
 } from "@/lib/anotaciones/importar";
-import type { Anotacion, Sector } from "@/types/database";
+import type { Anotacion, CategoriaUsuario, Sector } from "@/types/database";
+import { puedeSumarAlMapa } from "@/lib/mapas/permisos";
 
 /**
  * Las anotaciones de un sector. Es la pantalla de anotaciones compartida, la
@@ -36,6 +37,8 @@ import type { Anotacion, Sector } from "@/types/database";
 type Props = {
   zonaId: number;
   sectorId: number;
+  categoria: CategoriaUsuario;
+  miPerfilId: string | null;
 };
 
 type Trayendo = {
@@ -43,7 +46,7 @@ type Trayendo = {
   importacion: Importacion;
 };
 
-export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
+export function PantallaDeAnotaciones({ zonaId, sectorId, categoria, miPerfilId }: Props) {
   const { paquete, estado } = useDatosDeLaApp();
   const sector = paquete?.sectores.find((cada) => cada.id === sectorId) ?? null;
   const zona = paquete?.zonas.find((cada) => cada.id === zonaId) ?? null;
@@ -73,13 +76,13 @@ export function PantallaDeAnotaciones({ zonaId, sectorId }: Props) {
           </p>
         </Tarjeta>
       ) : (
-        <AnotacionesDelSector sector={sector} todas={paquete?.anotaciones ?? []} />
+        <AnotacionesDelSector sector={sector} todas={paquete?.anotaciones ?? []} categoria={categoria} miPerfilId={miPerfilId} />
       )}
     </div>
   );
 }
 
-function AnotacionesDelSector({ sector, todas }: { sector: Sector; todas: Anotacion[] }) {
+function AnotacionesDelSector({ sector, todas, categoria, miPerfilId }: { sector: Sector; todas: Anotacion[]; categoria: CategoriaUsuario; miPerfilId: string | null }) {
   const router = useRouter();
   const [trayendo, setTrayendo] = useState<Trayendo | null>(null);
   const [errorAlTraer, setErrorAlTraer] = useState<string | null>(null);
@@ -260,7 +263,9 @@ function AnotacionesDelSector({ sector, todas }: { sector: Sector; todas: Anotac
   return (
     <EditorDeAnotaciones
       lugar={{ clase: "sector", sector }}
-      puedeAnotar
+      puedeAnotar={puedeSumarAlMapa(categoria)}
+      miPerfilId={miPerfilId}
+      esAdministrador={categoria === "administrador"}
       herramientas={herramientas}
       anotacionesPorAgregar={porAgregar}
       trayendo={trayendo !== null}

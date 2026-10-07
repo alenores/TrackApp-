@@ -95,12 +95,51 @@ edita y borra.**
 | `largo_km` | numeric | **lo calcula la app desde el archivo. Nunca a mano** |
 | `desnivel_positivo_m` | integer | ídem |
 | `desnivel_negativo_m` | integer | ídem |
-| `geometria` | jsonb | la línea del recorrido, obligatorio |
+| `geometria` | jsonb | GeoJSON de la ruta, obligatorio. Cada parte de línea lleva `linea`, `desde_m`, `hasta_m`, `paso`, `complejidad`, `observacion` y `comprobado_el` en sus propiedades; ver decisión 033 |
 | `archivo_url` | text | el archivo original subido |
+| `color` | text | columna anterior; ya no decide el color de la línea en el mapa |
 | `lat_norte` `lat_sur` `lon_este` `lon_oeste` | double | el rectángulo que la abarca, obligatorio |
 
 **Permisos:** todos los que tienen sesión las ven. **Solo el creador edita y
 borra la suya.**
+
+La dificultad técnica y el esfuerzo de esta tabla describen la ruta completa.
+No se usan para colorear ninguna parte. Las partes recién importadas quedan
+`por_explorar` y con complejidad vacía hasta que alguien las clasifique. La
+edición de partes actualiza el JSON de `geometria` y `actualizado_en`, para que
+la puesta al día descargue la nueva línea al celular.
+
+---
+
+## caminos
+
+Creada el 2026-10-06 con la migración `crear_caminos_en_mapas`. Es la capa de
+alternativas que se ve en Mapas; **no** es una salida planificada ni pertenece a
+una zona o sector. Un archivo con siete líneas elegidas como Caminos produce
+siete filas independientes.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | autor; no se puede cambiar |
+| `nombre` | text | obligatorio, hasta 120 caracteres |
+| `descripcion` | text | hasta 2.000 caracteres |
+| `actividades` | actividad_ruta[] | al menos una, sin repetir |
+| `geometria` | jsonb | GeoJSON `LineString`, coordenadas reales; la base verifica el largo |
+| `partes` | jsonb | cubren toda la línea, sin huecos; paso y complejidad por actividad, observación y fecha únicas por parte |
+| `largo_m` | numeric | calculado desde la línea |
+| `version_forma` | integer | aumenta al corregir la geometría |
+| `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | fechas habituales; retiro lógico |
+
+**Permisos:** todos los usuarios con sesión leen, también los retirados para
+detectar bajas al ponerse al día. Administrador y Premium crean; Premium cambia
+o retira lo propio y Administrador cualquiera. Normal solo lee. La tabla tiene
+seguridad por fila, permisos de lectura y escritura por columna, y no concede
+`DELETE` ni `TRUNCATE`. Nadie puede recuperar ni editar un Camino retirado.
+
+La base rechaza coordenadas imposibles, largo falso, partes incoherentes y
+fechas de comprobación futuras. El editor y las capas del mapa ya consultan
+esta tabla; falta la prueba completa de uso antes de publicar el cambio.
 
 ---
 
@@ -130,12 +169,12 @@ fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21)
 **La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
 un trazo lleva color y no lleva ícono.
 
-**Permisos (desde 2026-09-24):** todos los que tienen sesión las ven, también
-las borradas —así un borrado mueve la fecha de novedades en todos los
-celulares; la app pide siempre solo las vivas—. **Cualquiera crea las suyas y
-cambia y borra solo las suyas. El administrador, todas.** Scripts:
-`scripts/supabase-anotaciones-desde-la-navegacion.sql` y
-`scripts/supabase-anotaciones-borradas-se-notan.sql`.
+**Permisos (desde 2026-10-07):** todos los que tienen sesión las ven, también
+las retiradas para detectar bajas en los celulares; la app pide solo las vivas.
+Administrador y Premium crean. Premium cambia o retira las propias;
+Administrador, cualquiera. Normal solo lee. La base tampoco permite borrar
+físicamente, cambiar el autor ni recuperar una anotación retirada. Migración:
+`restringir_anotaciones_del_mapa_por_categoria`.
 
 **Fotos:** en el depósito `fotos-anotaciones`, en la carpeta de quien la subió:
 `<perfil>/<anotación>.webp` la grande y `<perfil>/<anotación>-chica.webp` la

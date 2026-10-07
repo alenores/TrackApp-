@@ -21,11 +21,13 @@ import { useSubirRegistros } from "@/hooks/use-subir-registros";
 import { useRegistros } from "@/hooks/use-registros";
 import { cuantosPendientesQuedan } from "@/lib/anotaciones/en-pantalla";
 import { anotarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
+import type { CategoriaUsuario } from "@/types/database";
 
 type AppShellProps = {
   /** El id de quien usa la app. Se guarda en el celular para usarlo sin señal. */
   miPerfilId: string;
   soyAdministrador: boolean;
+  miCategoria: CategoriaUsuario;
   userName: string;
   userEmail: string;
   userAvatarUrl?: string | null;
@@ -35,6 +37,7 @@ type AppShellProps = {
 export function Armazon({
   miPerfilId,
   soyAdministrador,
+  miCategoria,
   userName,
   userEmail,
   userAvatarUrl,
@@ -51,11 +54,11 @@ export function Armazon({
 
   // Quién sos, guardado para la navegación, que no le pregunta a la base.
   useEffect(() => {
-    anotarMiPerfil(miPerfilId, soyAdministrador);
-  }, [miPerfilId, soyAdministrador]);
+    anotarMiPerfil(miPerfilId, miCategoria);
+  }, [miPerfilId, miCategoria]);
 
   // Lo marcado sin señal sube solo apenas hay señal y no estás navegando.
-  useSubirPendientes(miPerfilId);
+  useSubirPendientes(miPerfilId, miCategoria);
   // Y las salidas registradas navegando, igual: con señal y fuera del mapa.
   useSubirRegistros(miPerfilId);
   const showNewRouteFab = pathname === "/rutas" || pathname === "/";

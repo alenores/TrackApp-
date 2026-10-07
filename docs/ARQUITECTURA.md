@@ -2,6 +2,18 @@
 
 > Última revisión: 2026-09-19 (app reescrita entera sobre la base nueva)
 
+> **Decisión de producto posterior, aún sin implementar (2026-10-05):**
+> Mapas tendrá Caminos independientes para las alternativas de paso.
+> Circuitos podrá combinar partes de Caminos existentes, sin redibujarlas,
+> con partes dibujadas solo para el plan. Se puede implementar y probar
+> Mapas/Caminos antes
+> de desarrollar Circuitos. Ver decisión 034. El resto de este documento
+> describe la arquitectura que hoy tiene la app.
+>
+> **Decisión de producto adicional, aún sin implementar:** zonas y sectores
+> solo organizan la cobertura y descarga de mapas. Los Caminos y Circuitos no
+> pertenecen a ellos ni se dividen por cruzarlos. Ver decisión 035.
+
 ## Stack
 
 Next.js · TypeScript · Tailwind · Supabase · Vercel · App web instalable (PWA).
@@ -25,12 +37,22 @@ De ahí salen tres capas y no se mezclan:
 
 Dos guardados, separados por una razón de tamaño:
 
-- **El paquete.** Todo lo liviano: las rutas con sus textos y sus números, las
-  zonas, los sectores y las anotaciones. Es texto y coordenadas: pesa nada.
+- **El paquete.** Todo lo liviano: las rutas y los Caminos sin sus líneas, las
+  zonas, los sectores y las anotaciones. La incorporación de Caminos está
+  preparada localmente y todavía no se aplicó a la base ni se integró al mapa.
 - **Las líneas de los recorridos.** Van aparte, en el depósito grande del
   navegador. Una sola ruta puede traer miles de puntos; unas decenas de rutas
   desbordan el guardado simple, y cuando eso pasa **la app no puede guardar nada
   más**, ni siquiera lo liviano.
+  Cada parte de una ruta lleva ahí mismo su condición de paso, complejidad y
+  observación. La edición en casa cambia el GeoJSON de la ruta; la puesta al día
+  lo descarga antes de salir. Navegando, el mapa dibuja exclusivamente esa
+  copia local, sin consultar la base (decisión 033).
+- **Las líneas de los Caminos.** Tienen un estante propio en el mismo depósito
+  grande. Cada versión usa una clave distinta: si se corta la puesta al día,
+  el paquete anterior sigue encontrando su línea. Las versiones sobrantes se
+  borran solo después de guardar el paquete nuevo. Todavía falta dibujarlas en
+  los mapas y probar la navegación sin señal.
 - **Los pedazos de mapa.** También en el depósito grande, y también por peso.
   A diferencia de lo anterior, **estos los elige el usuario**: bajan cuando pide
   el mapa de un sector, y se van cuando lo saca.

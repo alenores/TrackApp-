@@ -23,6 +23,14 @@ import { useGps } from "@/hooks/use-gps";
 import { useRecorridosDeRutas } from "@/hooks/use-rutas-en-area";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { areaDeLasZonas, sectorDondeEstas } from "@/lib/navegacion/mapa-libre";
+import { datosDeParte, type DatosDeParte } from "@/lib/rutas/partes";
+import { FichaDeParte, ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
+import type { ActividadRuta } from "@/types/database";
+import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
+import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
+import { dibujarCaminos } from "@/lib/caminos/dibujo";
+import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
+import { SelectorDeActividadPrincipal } from "@/components/caminos/selector-de-actividad-principal";
 
 /**
  * El mapa libre: todos los mapas bajados, todas las anotaciones y las rutas
@@ -61,6 +69,12 @@ export function PantallaDeMapaLibre() {
 
   const [apagadas, setApagadas] = useState<Set<number>>(() => new Set());
   const [eligiendoRutas, setEligiendoRutas] = useState(false);
+  const [parteTocada, setParteTocada] = useState<{
+    nombre: string; actividades: ActividadRuta[]; datos: DatosDeParte;
+  } | null>(null);
+  const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
+  const [elegirActividad, setElegirActividad] = useState(false);
+  const [actividadPrincipal, cambiarActividad] = useActividadPrincipal();
   const [centrarGps, setCentrarGps] = useState(0);
 
   usePantallaDespierta(estadoDelGps === "andando");
@@ -69,6 +83,10 @@ export function PantallaDeMapaLibre() {
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
   const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
   const anotaciones = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
+  const caminosSinLinea = useMemo(() => paquete?.caminos ?? [], [paquete]);
+  const { caminos, error: errorDeCaminos } = useCaminosGuardados(caminosSinLinea);
+  const dibujoDeCaminos = useMemo(() => dibujarCaminos(caminos, actividadPrincipal), [caminos, actividadPrincipal]);
+  const caminoElegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
   // Todas las anotaciones: el mapa libre muestra todo lo bajado.
   const deAnotaciones = useAnotacionesEnElMapa({ delPaquete: anotaciones, gps, centrarEnMi });
@@ -132,6 +150,7 @@ export function PantallaDeMapaLibre() {
         <div className="absolute inset-0">
           <CargadorDeMapa
             recorrido={recorridos}
+            caminos={dibujoDeCaminos}
             anotaciones={deAnotaciones.enElMapa}
             marcandoPunto={deAnotaciones.marcandoPunto}
             alMarcarPunto={deAnotaciones.alMarcarPunto}
@@ -144,16 +163,54 @@ export function PantallaDeMapaLibre() {
             forzarCentradoEn={centrarGps}
             sinMapaDescargado={mapasBajados.length === 0}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
+            alTocarRuta={(_lon, _lat, propiedades) => {
+              const ruta = rutas.find((cada) => cada.id === Number(propiedades.ruta_id));
+              setParteTocada({
+                nombre: ruta?.nombre ?? "Ruta",
+                actividades: ruta?.actividades ?? [],
+                datos: datosDeParte(propiedades),
+              });
+            }}
+            alTocarCamino={(_lon, _lat, propiedades) => {
+              const id = Number(propiedades.camino_id);
+              const indice = Number(propiedades.parte_indice);
+              if (Number.isInteger(id) && Number.isInteger(indice)) {
+                setCaminoTocado({ id, indice });
+                setParteTocada(null);
+              }
+            }}
             mostrarFichaAnotacion={false}
           />
         </div>
 
         {deAnotaciones.aviso}
+        {errorDeCaminos ? (
+          <div role="alert" className="absolute inset-x-3 top-3 rounded-xl border border-ambar-borde bg-ambar-fondo p-3 text-lg text-ambar-texto">
+            {errorDeCaminos}
+          </div>
+        ) : null}
 
         {deAnotaciones.anotando ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
         ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
+          {parteTocada ? (
+            <div className="pointer-events-auto">
+              <FichaDeParte nombreRuta={parteTocada.nombre} actividades={parteTocada.actividades} datos={parteTocada.datos} alCerrar={() => setParteTocada(null)} />
+            </div>
+          ) : null}
+          {caminoElegido && caminoTocado ? (
+            <div className="pointer-events-auto">
+              <FichaDeCamino camino={caminoElegido} indice={caminoTocado.indice} alCerrar={() => setCaminoTocado(null)} />
+            </div>
+          ) : null}
+          {elegirActividad ? (
+            <div className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2">
+              <SelectorDeActividadPrincipal actividad={actividadPrincipal} alCambiar={(nueva) => { cambiarActividad(nueva); setElegirActividad(false); }} />
+              <Boton variante="fantasma" onClick={() => setElegirActividad(false)}>Cerrar</Boton>
+            </div>
+          ) : null}
+          <ReferenciaDePartes navegando />
           {posicionVieja ? (
             <div
               role="alert"
@@ -199,6 +256,7 @@ export function PantallaDeMapaLibre() {
             <BotonRedondo etiqueta="Rutas en el mapa" onClick={() => setEligiendoRutas(true)}>
               {ICONOS_DEL_CERRO.rutas}
             </BotonRedondo>
+            <Boton variante="secundario" onClick={() => setElegirActividad(true)}>Actividad</Boton>
             <span className="flex-1" />
             {registro.enCurso ? (
               <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!posicion} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useHaySenal } from "@/hooks/use-hay-senal";
@@ -11,6 +11,7 @@ import {
   ponerAlDiaLasFotosChicas,
 } from "@/lib/anotaciones/descarga";
 import type { Anotacion } from "@/types/database";
+import { categoriaGuardada, mirarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 
 /**
  * Lo que el inicio tiene que decir de las anotaciones, **en casa y con señal**.
@@ -27,6 +28,7 @@ type Props = { anotaciones: Anotacion[] };
 
 export function AvisoDeAnotaciones({ anotaciones }: Props) {
   const haySenal = useHaySenal();
+  const categoria = useSyncExternalStore(mirarMiPerfil, categoriaGuardada, () => null);
   const pendientes = usePendientes().filter((cada) => !cada.terminada);
   const [fotosQueFaltan, setFotosQueFaltan] = useState(0);
   const [bajando, setBajando] = useState(false);
@@ -71,7 +73,9 @@ export function AvisoDeAnotaciones({ anotaciones }: Props) {
             {pendientes.length === 1
               ? "Está guardada en este celular y se ve en tu mapa. Los demás la van a ver cuando se suba. "
               : "Están guardadas en este celular y se ven en tu mapa. Los demás las van a ver cuando se suban. "}
-            {haySenal ? "Con señal se suben solas." : "Se suben solas apenas tengas señal."}
+            {categoria === "normal"
+              ? "Tu cuenta no puede modificar el mapa. Estos cambios quedan en el celular sin subirse; consultá al Administrador."
+              : haySenal ? "Con señal se suben solas." : "Se suben solas apenas tengas señal."}
           </p>
 
           {conError.length > 0 ? (
@@ -88,7 +92,7 @@ export function AvisoDeAnotaciones({ anotaciones }: Props) {
             </ul>
           ) : null}
 
-          {haySenal && conError.length > 0 ? (
+          {haySenal && conError.length > 0 && categoria !== "normal" ? (
             <Boton variante="secundario" anchoCompleto onClick={pedirQueSeSubaYa}>
               Probar de nuevo
             </Boton>

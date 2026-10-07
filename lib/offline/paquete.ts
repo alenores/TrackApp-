@@ -1,4 +1,5 @@
 import type { Anotacion, RutaSinRecorrido, Sector, Zona } from "@/types/database";
+import type { CaminoSinLinea } from "@/lib/caminos/datos";
 import { completarAnotacionVieja } from "@/lib/anotaciones/fila";
 
 /**
@@ -23,6 +24,7 @@ const CLAVE_GALLETITA = "trackapp-tiene-paquete";
 
 export type Paquete = {
   rutas: RutaSinRecorrido[];
+  caminos: CaminoSinLinea[];
   zonas: Zona[];
   sectores: Sector[];
   anotaciones: Anotacion[];
@@ -44,12 +46,13 @@ export type Paquete = {
  * La forma actual del paquete.
  *
  * La 2 sumó a las anotaciones la foto chica, quién las hizo y cuándo se
- * marcaron (2026-09-24).
+ * marcaron (2026-09-24). La 3 suma los Caminos sin sus líneas pesadas.
  */
-export const FORMATO_DEL_PAQUETE = 2;
+export const FORMATO_DEL_PAQUETE = 3;
 
 const PAQUETE_VACIO: Paquete = {
   rutas: [],
+  caminos: [],
   zonas: [],
   sectores: [],
   anotaciones: [],
@@ -109,6 +112,7 @@ export function leerPaquete(): Paquete | null {
       ...PAQUETE_VACIO,
       ...paquete,
       rutas: paquete.rutas ?? [],
+      caminos: paquete.caminos ?? [],
       zonas: paquete.zonas ?? [],
       sectores: paquete.sectores ?? [],
       anotaciones: (paquete.anotaciones ?? []).map(completarAnotacionVieja),

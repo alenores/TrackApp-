@@ -23,9 +23,10 @@ type Props = {
   cuantas: { mias: number; delAdministrador: number; deOtros: number };
   /** Empieza a marcar una anotación nueva. */
   alAgregar: () => void;
+  puedeAgregar: boolean;
 };
 
-export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar, cuantas, alAgregar }: Props) {
+export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar, cuantas, alAgregar, puedeAgregar }: Props) {
   const renglon = (clave: keyof FiltroDeAnotaciones, texto: string) => (
     <RenglonConCasilla
       prendido={filtro[clave]}
@@ -47,9 +48,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
       }
     >
       <div className="space-y-4">
-        <Boton anchoCompleto onClick={alAgregar}>
-          Agregar una anotación
-        </Boton>
+        {puedeAgregar ? <Boton anchoCompleto onClick={alAgregar}>Agregar una anotación</Boton> : null}
 
         <section className="space-y-2">
           <h3 className={CLASE_DE_TITULO_DE_SECCION}>Cuáles se ven en el mapa</h3>

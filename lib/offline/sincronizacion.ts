@@ -3,6 +3,8 @@ import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { esperarConexion } from "@/lib/conexion";
 import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import { leerRectangulo } from "@/lib/datos/rectangulo";
+import { COLUMNAS_DE_CAMINO, leerFilaDeCamino, type CaminoGuardado, type CaminoSinLinea } from "@/lib/caminos/datos";
+import { borrarLineasDeCaminosQueSobran, guardarLineasDeCaminos } from "@/lib/offline/lineas-de-caminos";
 import {
   elPaqueteQuedoViejo,
   guardarPaquete,
@@ -40,7 +42,7 @@ import type {
  * Ver docs/decisiones/012-modelo-de-descarga.md
  */
 
-const TABLAS_DEL_PAQUETE = ["rutas", "zonas", "sectores", "anotaciones"] as const;
+const TABLAS_DEL_PAQUETE = ["rutas", "zonas", "sectores", "anotaciones", "caminos"] as const;
 
 export type ResultadoDeSincronizacion =
   | { clase: "al_dia"; paquete: Paquete | null }
@@ -59,12 +61,14 @@ async function ultimaModificacionEnLaBase(): Promise<string | null> {
 
   const fechas = await Promise.all(
     TABLAS_DEL_PAQUETE.map(async (tabla) => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from(tabla)
         .select("actualizado_en")
         .order("actualizado_en", { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      if (error) throw new Error(`No se pudo revisar si hay novedades en ${tabla}: ${error.message}. Probá de nuevo con conexión antes de salir.`);
 
       return (data as { actualizado_en: string } | null)?.actualizado_en ?? null;
     }),
@@ -226,6 +230,43 @@ async function bajarAnotaciones(): Promise<{
   };
 }
 
+/** La lista y las líneas de Caminos viajan juntas; una fila rota bloquea esta actualización. */
+async function bajarCaminos(): Promise<{
+  caminos: CaminoGuardado[];
+  completa: boolean;
+  motivo?: string;
+}> {
+  const supabase = crearClienteEnElNavegador();
+  const { count, error: errorDelTotal } = await supabase
+    .from("caminos")
+    .select("id", { count: "exact", head: true })
+    .is("eliminado_en", null);
+  if (errorDelTotal || count === null) {
+    return { caminos: [], completa: false, motivo: `No se pudo contar los Caminos: ${errorDelTotal?.message ?? "la base no devolvió el total"}.` };
+  }
+
+  const resultado = await traerTodasLasFilas<Record<string, unknown>>((desde, hasta) =>
+    supabase
+      .from("caminos")
+      .select(COLUMNAS_DE_CAMINO)
+      .is("eliminado_en", null)
+      .order("id", { ascending: true })
+      .range(desde, hasta),
+  );
+  if (!resultado.completa) return { caminos: [], completa: false, motivo: `La lista de Caminos llegó cortada: ${resultado.motivo}.` };
+  if (resultado.filas.length !== count) {
+    return { caminos: [], completa: false, motivo: `Llegaron ${resultado.filas.length} Caminos de ${count}. Probá de nuevo antes de salir.` };
+  }
+
+  const caminos: CaminoGuardado[] = [];
+  for (const fila of resultado.filas) {
+    const leido = leerFilaDeCamino(fila);
+    if (!leido.ok) return { caminos: [], completa: false, motivo: leido.error };
+    caminos.push(leido.datos);
+  }
+  return { caminos, completa: true };
+}
+
 /**
  * Pone el paquete al día si hace falta.
  *
@@ -246,11 +287,12 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       return { clase: "al_dia", paquete: guardado };
     }
 
-    const [rutas, zonas, sectores, anotaciones] = await Promise.all([
+    const [rutas, zonas, sectores, anotaciones, caminos] = await Promise.all([
       bajarRutas(),
       bajarZonas(),
       bajarSectores(),
       bajarAnotaciones(),
+      bajarCaminos(),
     ]);
 
     // Si algo vino cortado, lo que había sigue sirviendo. No se pisa a medias.
@@ -258,25 +300,45 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       !rutas.completa ||
       !zonas.completa ||
       !sectores.completa ||
-      !anotaciones.completa
+      !anotaciones.completa ||
+      !caminos.completa
     ) {
       return {
         clase: "fallo",
         paquete: guardado,
         motivo:
-          rutas.motivo ??
+          rutas.motivo ?? caminos.motivo ??
           "La descarga vino cortada, así que se dejó lo que ya estaba guardado.",
       };
     }
 
     for (const [rutaId, recorrido] of rutas.recorridos) {
-      await guardarRecorrido(rutaId, recorrido);
+      if (!(await guardarRecorrido(rutaId, recorrido))) {
+        return {
+          clase: "fallo",
+          paquete: guardado,
+          motivo: "Una línea de ruta no se pudo guardar en este celular. Liberá espacio y abrí la app de nuevo con conexión antes de salir.",
+        };
+      }
     }
 
-    await borrarRecorridosQueSobran(rutas.resumenes.map((ruta) => ruta.id));
+    if (!(await guardarLineasDeCaminos(caminos.caminos))) {
+      return {
+        clase: "fallo",
+        paquete: guardado,
+        motivo: "Las líneas de Caminos no entraron en este celular. Liberá espacio y abrí la app con conexión antes de salir.",
+      };
+    }
+
+    const caminosSinLinea: CaminoSinLinea[] = caminos.caminos.map(({ coordenadas, ...camino }) => {
+      // La línea ya quedó en el depósito grande; no la dupliques en el guardado simple.
+      void coordenadas;
+      return camino;
+    });
 
     const nuevo: Omit<Paquete, "guardadoEn"> = {
       rutas: rutas.resumenes,
+      caminos: caminosSinLinea,
       zonas: zonas.zonas,
       sectores: sectores.sectores,
       anotaciones: anotaciones.anotaciones,
@@ -294,6 +356,9 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
           : "El navegador no dejó guardar los datos en este celular.",
       };
     }
+
+    await borrarLineasDeCaminosQueSobran(caminosSinLinea);
+    await borrarRecorridosQueSobran(rutas.resumenes.map((ruta) => ruta.id));
 
     return {
       clase: "actualizado",

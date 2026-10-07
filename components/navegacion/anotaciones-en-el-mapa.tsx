@@ -75,11 +75,11 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     tocadaId === null ? null : (cerro.todas.find((cada) => cada.id === tocadaId) ?? null);
 
   const enElMapa = useMemo(() => {
-    if (!marcado.abierto) return cerro.visibles;
+    if (!cerro.puedeAnotar || !marcado.abierto) return cerro.visibles;
     const cambiando = marcado.borrador?.cambiando?.id;
     const sinLaQueSeCambia = cerro.visibles.filter((cada) => cada.id !== cambiando);
     return marcado.vistaPrevia ? [...sinLaQueSeCambia, marcado.vistaPrevia] : sinLaQueSeCambia;
-  }, [cerro.visibles, marcado.abierto, marcado.borrador, marcado.vistaPrevia]);
+  }, [cerro.visibles, cerro.puedeAnotar, marcado.abierto, marcado.borrador, marcado.vistaPrevia]);
 
   const alTocarAnotacion = useCallback((anotacionId: number) => {
     vibrarAlTocar();
@@ -92,24 +92,27 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
 
   const empezar = useCallback(
     (tipo: "punto" | "trazo") => {
+      if (!cerro.puedeAnotar) return;
       setEligiendoTipo(false);
       marcado.empezar(tipo);
       // La pantalla de anotar abre siempre donde está el GPS.
       centrarEnMi();
     },
-    [marcado, centrarEnMi],
+    [cerro.puedeAnotar, marcado, centrarEnMi],
   );
 
   const cambiar = useCallback(
     (anotacion: AnotacionEnPantalla) => {
+      if (!cerro.puedoCambiar(anotacion)) return;
       setTocadaId(null);
       marcado.cambiar(anotacion);
     },
-    [marcado],
+    [cerro, marcado],
   );
 
   const borrar = useCallback(
     async (anotacion: AnotacionEnPantalla) => {
+      if (!cerro.puedoCambiar(anotacion)) return;
       const seguro = await confirmar({
         titulo: "¿Borrar esta anotación?",
         mensaje:
@@ -136,7 +139,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
         });
       }
     },
-    [confirmar, avisar],
+    [cerro, confirmar, avisar],
   );
 
   // Agregar y elegir cuáles se ven van juntos, detrás de un solo círculo.
@@ -147,18 +150,19 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   );
 
   const agregar = useCallback(() => {
+    if (!cerro.puedeAnotar) return;
     setEligiendoFiltro(false);
     setEligiendoTipo(true);
-  }, []);
+  }, [cerro.puedeAnotar]);
 
-  const panel = (
+  const panel = cerro.puedeAnotar ? (
     <PanelDeAnotar
       marcado={marcado}
       gps={gps}
       alCentrarEnMi={centrarEnMi}
       alGuardar={() => setGuardadoHace(Date.now())}
     />
-  );
+  ) : null;
 
   const aviso =
     guardadoHace !== null ? (
@@ -175,7 +179,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   const resto = (
     <>
 
-      <ElegirQueAnotar abierto={eligiendoTipo} alCerrar={cerrarElegirTipo} alElegir={empezar} />
+      {cerro.puedeAnotar ? <ElegirQueAnotar abierto={eligiendoTipo} alCerrar={cerrarElegirTipo} alElegir={empezar} /> : null}
 
       <ElegirAnotacionesDelMapa
         abierto={eligiendoFiltro}
@@ -184,6 +188,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
         alCambiar={cerro.cambiarFiltro}
         cuantas={cerro.cuantas}
         alAgregar={agregar}
+        puedeAgregar={cerro.puedeAnotar}
       />
 
       <FichaDeAnotacion
@@ -198,10 +203,10 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
 
   return {
     enElMapa,
-    marcandoPunto: marcado.marcandoEnElMapa,
-    alMarcarPunto: marcado.alTocarElMapa,
+    marcandoPunto: cerro.puedeAnotar && marcado.marcandoEnElMapa,
+    alMarcarPunto: cerro.puedeAnotar ? marcado.alTocarElMapa : () => {},
     alTocarAnotacion,
-    anotando: marcado.abierto,
+    anotando: cerro.puedeAnotar && marcado.abierto,
     boton,
     panel,
     aviso,

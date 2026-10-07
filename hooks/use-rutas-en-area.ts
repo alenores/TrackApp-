@@ -4,7 +4,6 @@ import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import type { Rectangulo, RutaResumen } from "@/types/database";
 import { leerRecorrido } from "@/lib/offline/recorridos";
-import { hexDeLaRuta } from "@/lib/rutas/colores";
 
 /**
  * Encuentra qué rutas cruzan un área y maneja cuáles están encendidas, 
@@ -78,11 +77,13 @@ export function useRecorridosDeRutas(
         if (!geo) return [];
 
         const ruta = rutas.find((cada) => cada.id === id);
-        const color = hexDeLaRuta(ruta?.color ?? "naranja");
-
         return geo.features.map((feature) => ({
           ...feature,
-          properties: { ...feature.properties, color },
+          properties: {
+            ...feature.properties,
+            ruta_id: id,
+            nombre_ruta: ruta?.nombre ?? "Ruta",
+          },
         }));
       }),
     };

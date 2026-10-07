@@ -13,6 +13,7 @@ import type { Paquete } from "@/lib/offline/paquete";
 
 const VACIO: Paquete = {
   rutas: [],
+  caminos: [],
   zonas: [],
   sectores: [],
   anotaciones: [],

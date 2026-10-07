@@ -15,8 +15,9 @@ import {
   type FiltroDeAnotaciones,
 } from "@/lib/anotaciones/filtro";
 import {
+  categoriaGuardada,
   miPerfilGuardado,
-  soyAdministradorGuardado,
+  mirarMiPerfil,
 } from "@/lib/cuenta/mi-perfil-en-el-celular";
 import type { Anotacion } from "@/types/database";
 
@@ -36,14 +37,10 @@ export type AnotacionesDelCerro = {
   cambiarFiltro: (filtro: FiltroDeAnotaciones) => void;
   cuantas: { mias: number; delAdministrador: number; deOtros: number };
   miPerfilId: string | null;
+  puedeAnotar: boolean;
   /** ¿Puedo cambiar o borrar esta? Las mías, o todas si soy administrador. */
   puedoCambiar: (anotacion: AnotacionEnPantalla) => boolean;
 };
-
-/** Quién sos no cambia mientras la pantalla está abierta. */
-function sinCambios(): () => void {
-  return () => {};
-}
 
 export function useAnotacionesDelCerro(delPaquete: Anotacion[]): AnotacionesDelCerro {
   const pendientes = usePendientes();
@@ -54,9 +51,9 @@ export function useAnotacionesDelCerro(delPaquete: Anotacion[]): AnotacionesDelC
     filtroGuardado,
     () => TODAS_LAS_ANOTACIONES,
   );
-  const miId = useSyncExternalStore(sinCambios, miPerfilGuardado, () => null);
-  const administrador = useSyncExternalStore(sinCambios, soyAdministradorGuardado, () => false);
-  const quienSoy = useMemo(() => ({ id: miId, administrador }), [miId, administrador]);
+  const miId = useSyncExternalStore(mirarMiPerfil, miPerfilGuardado, () => null);
+  const categoria = useSyncExternalStore(mirarMiPerfil, categoriaGuardada, () => null);
+  const quienSoy = useMemo(() => ({ id: miId, categoria }), [miId, categoria]);
   const cambiarFiltro = guardarElFiltro;
 
   const todas = useMemo(
@@ -81,9 +78,11 @@ export function useAnotacionesDelCerro(delPaquete: Anotacion[]): AnotacionesDelC
 
   const puedoCambiar = useCallback(
     (anotacion: AnotacionEnPantalla) =>
-      quienSoy.administrador ||
-      anotacion.codigoDeLaMarca !== null ||
-      (quienSoy.id !== null && anotacion.perfilId === quienSoy.id),
+      quienSoy.categoria === "administrador" ||
+      (quienSoy.categoria === "premium" && (
+        anotacion.codigoDeLaMarca !== null ||
+        (quienSoy.id !== null && anotacion.perfilId === quienSoy.id)
+      )),
     [quienSoy],
   );
 
@@ -94,6 +93,7 @@ export function useAnotacionesDelCerro(delPaquete: Anotacion[]): AnotacionesDelC
     cambiarFiltro,
     cuantas,
     miPerfilId: quienSoy.id,
+    puedeAnotar: quienSoy.categoria === "administrador" || quienSoy.categoria === "premium",
     puedoCambiar,
   };
 }

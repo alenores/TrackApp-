@@ -8,12 +8,24 @@
  */
 
 const CLAVE = "trackapp-mi-perfil";
-const CLAVE_ADMINISTRADOR = "trackapp-soy-administrador";
+const CLAVE_CATEGORIA = "trackapp-mi-categoria";
+const EVENTO_PERFIL = "trackapp-mi-perfil-cambio";
 
-export function anotarMiPerfil(perfilId: string, soyAdministrador: boolean): void {
+export function mirarMiPerfil(avisar: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(EVENTO_PERFIL, avisar);
+  window.addEventListener("storage", avisar);
+  return () => {
+    window.removeEventListener(EVENTO_PERFIL, avisar);
+    window.removeEventListener("storage", avisar);
+  };
+}
+
+export function anotarMiPerfil(perfilId: string, categoria: "administrador" | "premium" | "normal"): void {
   try {
     if (localStorage.getItem(CLAVE) !== perfilId) localStorage.setItem(CLAVE, perfilId);
-    localStorage.setItem(CLAVE_ADMINISTRADOR, soyAdministrador ? "1" : "0");
+    localStorage.setItem(CLAVE_CATEGORIA, categoria);
+    window.dispatchEvent(new Event(EVENTO_PERFIL));
   } catch {
     // Sin guardado, la navegación no sabe cuáles son tuyas: no rompe nada más.
   }
@@ -23,11 +35,12 @@ export function anotarMiPerfil(perfilId: string, soyAdministrador: boolean): voi
  * ¿Quien usa el celular es el administrador? Puede cambiar y borrar cualquier
  * anotación, también desde el cerro. La base lo verifica igual al subir.
  */
-export function soyAdministradorGuardado(): boolean {
+export function categoriaGuardada(): "administrador" | "premium" | "normal" | null {
   try {
-    return localStorage.getItem(CLAVE_ADMINISTRADOR) === "1";
+    const categoria = localStorage.getItem(CLAVE_CATEGORIA);
+    return categoria === "administrador" || categoria === "premium" || categoria === "normal" ? categoria : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -42,7 +55,9 @@ export function miPerfilGuardado(): string | null {
 export function olvidarMiPerfil(): void {
   try {
     localStorage.removeItem(CLAVE);
-    localStorage.removeItem(CLAVE_ADMINISTRADOR);
+    localStorage.removeItem(CLAVE_CATEGORIA);
+    localStorage.removeItem("trackapp-soy-administrador");
+    window.dispatchEvent(new Event(EVENTO_PERFIL));
   } catch {
     // Ídem.
   }

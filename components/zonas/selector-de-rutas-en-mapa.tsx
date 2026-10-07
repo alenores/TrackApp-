@@ -5,7 +5,6 @@ import { Emergente } from "@/components/ui/emergente";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import type { RutaResumen } from "@/types/database";
-import { hexDeLaRuta } from "@/lib/rutas/colores";
 
 type SelectorProps = {
   rutasCruzadas: RutaResumen[];
@@ -70,7 +69,6 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
           ) : (
             rutasCruzadas.map((ruta) => {
               const encendida = idsEncendidos.includes(ruta.id);
-            const color = hexDeLaRuta(ruta.color);
 
             return (
               <label
@@ -78,13 +76,6 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
                 className="flex items-center justify-between gap-3 px-1 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="h-4 w-4 rounded-full border-2"
-                    style={{
-                      backgroundColor: encendida ? color : "transparent",
-                      borderColor: color,
-                    }}
-                  />
                   <div className="flex flex-col">
                     <span className="text-base text-texto">{ruta.nombre}</span>
                     {ruta.largoKm && (

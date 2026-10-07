@@ -41,6 +41,17 @@ no se muestran y los íconos que se pisan se ocultan. Ver
 abre su ficha con el nombre del ícono, el comentario y la foto disponible. En
 PC, el cursor cambia a una mano al pasar por encima.
 
+### Partes de una ruta en el mapa
+
+Cada parte combina dos señales independientes: el **color** expresa su
+complejidad local (verde, amarillo, rojo o gris si todavía no se clasificó),
+y la **forma de la línea** expresa cómo se pasa. Por explorar va entrecortada,
+transitable va continua, a pie con equipo va punteada, y sin paso conserva su
+línea con X negras. Una X no vuelve roja la línea por sí sola. Al tocar una
+parte se ven su condición, complejidad, observación y fecha disponible. La
+valoración de esfuerzo y dificultad técnica de la ruta completa queda en su
+ficha y no interviene en el dibujo. Ver decisión 033.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

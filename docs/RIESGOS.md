@@ -638,6 +638,33 @@ la falla. Con sus pruebas, y mirado en el navegador forzando la pieza faltante.
 
 ---
 
+## 🔴 R32 — El usuario Normal todavía puede modificar el contenido del mapa
+
+**Decisión nueva de Ale (2026-10-05).** El mapa es contenido curado:
+Administrador y Premium pueden agregar Caminos, puntos, trazos y anotaciones;
+cada uno edita los propios y el Administrador puede editar todos. Normal solo
+consulta ese contenido. Su registro y fotos de una Salida propia siguen
+permitidos.
+
+**Avance 2026-10-07.** La interfaz y las acciones ya distinguen las tres
+categorías, y las reglas nuevas de la base fueron aplicadas. Una anotación
+pendiente de una cuenta Normal queda visible con aviso y no se intenta subir.
+Las pruebas de lógica pasan, pero falta la prueba integral con cuentas reales
+de cada categoría.
+
+**Riesgo.** Un usuario Normal puede sumar al mapa información que Ale no
+autorizó a curar. Ocultar el botón sin cerrar servidor y base no lo resuelve.
+
+**Cómo se cierra.** Ajustar juntos interfaz, acciones de guardado, sincronización
+de anotaciones pendientes y permisos de la base; probar con cuentas de las
+tres categorías que Normal no escribe y que Premium y Administrador conservan
+sus permisos. Mostrar un aviso claro si hubiera una anotación pendiente de
+Normal que ya no puede subirse. No se marca resuelto hasta comprobarlo.
+
+**Detectado:** 2026-10-05, al definir los permisos con Ale. **Estado:** abierto.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

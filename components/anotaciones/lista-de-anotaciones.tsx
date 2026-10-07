@@ -32,6 +32,7 @@ type Props = {
   deTodaCordoba: boolean;
   /** Sin esto, los renglones se miran pero no se abren. */
   alAbrir?: (id: number) => void;
+  puedeAbrir?: (anotacion: Anotacion) => boolean;
   /** La que está abierta en el formulario, para marcarla. */
   abiertaId: number | null;
 };
@@ -42,7 +43,7 @@ const OPCIONES_DE_TIPO: { valor: FiltroDeTipo; etiqueta: string }[] = [
   { valor: "trazo", etiqueta: "Trazos" },
 ];
 
-export function ListaDeAnotaciones({ anotaciones, zonas, sectores, deTodaCordoba, alAbrir, abiertaId }: Props) {
+export function ListaDeAnotaciones({ anotaciones, zonas, sectores, deTodaCordoba, alAbrir, puedeAbrir, abiertaId }: Props) {
   const [filtros, setFiltros] = useState<FiltrosDeAnotaciones>(SIN_FILTROS_DE_ANOTACIONES);
 
   const opcionesDeLugar = useMemo(
@@ -148,7 +149,7 @@ export function ListaDeAnotaciones({ anotaciones, zonas, sectores, deTodaCordoba
             ].join(" ");
             return (
               <li key={anotacion.id}>
-                {alAbrir ? (
+                {alAbrir && (puedeAbrir?.(anotacion) ?? true) ? (
                   <button
                     type="button"
                     onClick={() => alAbrir(anotacion.id)}

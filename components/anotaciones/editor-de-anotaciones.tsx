@@ -26,6 +26,8 @@ type Props = {
   lugar: LugarDeAnotaciones;
   /** Quién puede anotar acá. Sin señal, igual, nadie. */
   puedeAnotar: boolean;
+  miPerfilId?: string | null;
+  esAdministrador?: boolean;
   /** Lo que el lugar suma abajo de las acciones: traer de Google Earth, en el sector. */
   herramientas?: ReactNode;
   /** Lo que se está por traer de afuera, dibujado antes de agregarlo. */
@@ -37,6 +39,8 @@ type Props = {
 export function EditorDeAnotaciones({
   lugar,
   puedeAnotar,
+  miPerfilId = null,
+  esAdministrador = false,
   herramientas,
   anotacionesPorAgregar = [],
   trayendo = false,
@@ -44,6 +48,8 @@ export function EditorDeAnotaciones({
   const anotar = useAnotaciones(lugar);
   const formulario = useRef<HTMLDivElement>(null);
   const editable = puedeAnotar && anotar.haySenal;
+  const puedeCambiar = (cada: Anotacion) =>
+    editable && (esAdministrador || (miPerfilId !== null && cada.perfilId === miPerfilId));
   const deTodaCordoba = lugar.clase === "cordoba";
   const abiertoId = anotar.seleccionado?.id ?? null;
   const hayFormulario = anotar.borrador !== null;
@@ -107,8 +113,7 @@ export function EditorDeAnotaciones({
           anotaciones={[...anotar.enElMapa, ...anotacionesPorAgregar]}
           marcandoPunto={anotar.marcando}
           alMarcarPunto={anotar.alTocarElMapa}
-          alTocarAnotacion={editable && !anotar.marcando && !trayendo ? anotar.abrir : undefined}
-          mostrarFichaAnotacion={!editable}
+          mostrarFichaAnotacion
         />
         {queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
       </div>
@@ -155,6 +160,7 @@ export function EditorDeAnotaciones({
         sectores={anotar.sectores}
         deTodaCordoba={deTodaCordoba}
         alAbrir={editable && !trayendo ? anotar.abrir : undefined}
+        puedeAbrir={puedeCambiar}
         abiertaId={abiertoId}
       />
     </div>

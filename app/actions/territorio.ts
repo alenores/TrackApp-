@@ -7,7 +7,8 @@ import {
   quitarLasFotosDeLaAnotacion,
   subirLasFotosDeLaAnotacion,
 } from "@/lib/anotaciones/subir-fotos";
-import { soyAdministrador } from "@/lib/perfiles/datos";
+import { traerMiPerfil } from "@/lib/perfiles/datos";
+import { puedeCambiarDelMapa, puedeSumarAlMapa } from "@/lib/mapas/permisos";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
   escribirRectangulo,
@@ -24,9 +25,9 @@ import type { IconoPunto, Rectangulo, TipoAnotacion } from "@/types/database";
 /**
  * Alta, edición y borrado de zonas, sectores y anotaciones.
  *
- * Las tres cosas son territorio, y las tres son **tarea exclusiva del
- * administrador** mientras el producto sea chico. La base lo verifica por su
- * cuenta; acá se valida antes para poder decir qué pasó en criollo.
+ * Las zonas y sectores conservan sus permisos propios. Las anotaciones del
+ * mapa las suman Administrador y Premium; Normal solo las consulta. La base
+ * también verifica ese límite por su cuenta.
  *
  * Borrar es marcar `eliminado_en`. Nada se borra de verdad.
  */
@@ -362,7 +363,38 @@ export async function borrarSector(sectorId: number): Promise<Resultado> {
  * persona. Cada uno edita y borra lo suyo; el administrador, todo.
  */
 const NO_ES_TUYA =
-  "No se cambió nada: esa anotación ya no está o la hizo otra persona. Cada uno puede editar y borrar solo las suyas.";
+  "No se cambió nada: esa anotación ya no está o tu cuenta no puede cambiarla. Premium cambia lo suyo; el administrador puede cambiar todas.";
+
+async function motivoSiNoPuedeSumarAlMapa(): Promise<string | null> {
+  const perfil = await traerMiPerfil();
+  return puedeSumarAlMapa(perfil?.categoria ?? null)
+    ? null
+    : "Tu cuenta solo puede consultar el mapa. Pedile al administrador que te dé acceso Premium para sumar puntos o trazos.";
+}
+
+async function motivoSiNoPuedeCambiarAnotacion(
+  supabase: Awaited<ReturnType<typeof crearClienteEnElServidor>>,
+  anotacionId: number,
+  usuarioId: string,
+): Promise<string | null> {
+  const perfil = await traerMiPerfil();
+  if (!puedeSumarAlMapa(perfil?.categoria ?? null)) {
+    return "Tu cuenta solo puede consultar el mapa. No puede cambiar ni borrar puntos o trazos.";
+  }
+  const { data, error } = await supabase
+    .from("anotaciones")
+    .select("perfil_id, eliminado_en")
+    .eq("id", anotacionId)
+    .maybeSingle();
+  if (error) return `No se pudo revisar quién marcó la anotación: ${traducirErrorDeBase(error.message)}`;
+  if (!data || (data as { eliminado_en: string | null }).eliminado_en !== null) {
+    return "Esa anotación ya no está en el mapa. Actualizá la pantalla y probá de nuevo.";
+  }
+  const autorId = String((data as { perfil_id: unknown }).perfil_id);
+  return puedeCambiarDelMapa(perfil?.categoria ?? null, usuarioId, autorId)
+    ? null
+    : "Esa anotación la marcó otra persona. Premium solo puede cambiar las suyas.";
+}
 
 export type DatosDeAnotacion = {
   /**
@@ -412,13 +444,11 @@ export async function crearAnotacion(
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
 
+  const sinPermiso = await motivoSiNoPuedeSumarAlMapa();
+  if (sinPermiso) return falla(sinPermiso);
+
   const problema = revisarAnotacion(datos);
   if (problema) return falla(problema);
-
-  // Puntos y trazos sin sector, desde Mapas: solo el administrador (decisión 027).
-  if (datos.sectorId === null && !(await soyAdministrador())) {
-    return falla("Anotar sin sector lo puede hacer solo el administrador. Entrá a un sector para anotar ahí.");
-  }
 
   const supabase = await crearClienteEnElServidor();
   const { data, error } = await supabase
@@ -486,12 +516,15 @@ export async function crearAnotacion(
  * guardar el resto.
  */
 export async function crearAnotacionesEnTanda(
-  sectorId: number,
+  sectorId: number | null,
   lista: Array<Omit<DatosDeAnotacion, "sectorId" | "foto" | "fotoChica" | "quitarLaFoto">>,
   origen: "google_earth" | "openstreetmap"
 ): Promise<Resultado<{ creadas: number }>> {
   const usuario = await exigirSesion();
   if (!usuario) return falla(SIN_SESION);
+
+  const sinPermiso = await motivoSiNoPuedeSumarAlMapa();
+  if (sinPermiso) return falla(sinPermiso);
 
   if (lista.length === 0) return exito({ creadas: 0 });
 
@@ -538,6 +571,8 @@ export async function editarAnotacion(
   if (problema) return falla(problema);
 
   const supabase = await crearClienteEnElServidor();
+  const sinPermiso = await motivoSiNoPuedeCambiarAnotacion(supabase, anotacionId, usuario.id);
+  if (sinPermiso) return falla(sinPermiso);
 
   let fotos: { foto_url: string | null; foto_chica_url: string | null } | undefined;
 
@@ -587,6 +622,8 @@ export async function borrarAnotacion(anotacionId: number): Promise<Resultado> {
   if (!usuario) return falla(SIN_SESION);
 
   const supabase = await crearClienteEnElServidor();
+  const sinPermiso = await motivoSiNoPuedeCambiarAnotacion(supabase, anotacionId, usuario.id);
+  if (sinPermiso) return falla(sinPermiso);
   const { error, count } = await supabase
     .from("anotaciones")
     .update({ eliminado_en: new Date().toISOString() }, { count: "exact" })

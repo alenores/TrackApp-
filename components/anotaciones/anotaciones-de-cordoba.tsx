@@ -7,8 +7,8 @@ import { EditorDeAnotaciones } from "@/components/anotaciones/editor-de-anotacio
  * misma del sector, mirando toda Córdoba. Lo que se marca acá no queda atado
  * a un sector: manda dónde está (decisión 027).
  *
- * Solo el administrador; la base lo exige por su cuenta.
+ * Todos la consultan; Administrador y Premium pueden aportar al mapa.
  */
-export function AnotacionesDeCordoba({ soyAdministrador }: { soyAdministrador: boolean }) {
-  return <EditorDeAnotaciones lugar={{ clase: "cordoba" }} puedeAnotar={soyAdministrador} />;
+export function AnotacionesDeCordoba({ puedeAnotar, miPerfilId, esAdministrador }: { puedeAnotar: boolean; miPerfilId: string | null; esAdministrador: boolean }) {
+  return <EditorDeAnotaciones lugar={{ clase: "cordoba" }} puedeAnotar={puedeAnotar} miPerfilId={miPerfilId} esAdministrador={esAdministrador} />;
 }
