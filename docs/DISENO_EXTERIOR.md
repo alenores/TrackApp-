@@ -76,6 +76,11 @@ complejidad y partes sin unir. Cuando cambia la información de un Camino,
 el resumen se actualiza; no se abre un modal ni aparece un cartel superpuesto.
 Ver decisión 047.
 
+Si el Circuito terminaba en la punta de un Camino corregido, su final queda
+en el lugar marcado originalmente. Si la nueva línea del Camino ya no lo
+alcanza, el mapa muestra la separación y el resumen indica «Partes sin unir»;
+no se dibuja una conexión supuesta. Ver decisión 048.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

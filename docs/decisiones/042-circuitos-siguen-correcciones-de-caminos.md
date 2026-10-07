@@ -11,6 +11,9 @@ información vigente antes de salir y en la copia descargada: navegar no
 consulta internet. La decisión 047 reemplazó el aviso separado por ese
 resumen siempre visible debajo del mapa.
 
+Si el Circuito terminaba en la punta corregida del Camino, su final conserva
+el lugar anterior, de acuerdo con la decisión posterior 048.
+
 Corregir la línea de un Camino no cambia automáticamente su condición de paso,
 complejidad, observación o fecha de comprobación. Esos datos se modifican solo
 mediante una edición expresa, según la decisión 037.

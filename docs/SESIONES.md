@@ -1705,3 +1705,30 @@ La pantalla de detalle, el guardado y la navegación de Circuitos aún no existe
 ### Pendientes para la próxima
 
 Integrar el resumen al detalle de Circuitos cuando exista y comprobar que se actualiza al poner al día los Caminos descargados.
+
+## Sesión 2026-10-07 — Final del Circuito cuando se corrige un Camino
+
+### Estado al inicio
+
+Estaba decidido que el Circuito seguiría la corrección de un Camino, pero faltaba decidir qué ocurría con su final si se modificaba la punta del Camino.
+
+### Lo que se hizo
+
+- Se comprobó cómo la lógica actual de Caminos mueve los límites de sus partes y que Circuitos todavía no tiene guardado ni traslado de puntos.
+- Se asentó la regla del final fijo y la separación visible cuando un Camino acortado ya no llega a él.
+
+### Decisiones tomadas
+
+Ale decidió conservar el lugar donde terminaba el Circuito. Ver decisión 048.
+
+### Documentos actualizados
+
+Decisiones 042 y 048; glosario, diseño e informe técnico de Circuitos.
+
+### Deuda o inconsistencias detectadas
+
+La lógica actual de Caminos mueve automáticamente su límite final a la punta nueva; esa regla no sirve para el final del Circuito y no debe copiarse allí.
+
+### Pendientes para la próxima
+
+Guardar la ubicación elegida para el final del Circuito e integrarla con la corrección de Caminos al implementar Circuitos.

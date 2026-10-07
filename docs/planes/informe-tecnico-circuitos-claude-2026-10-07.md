@@ -30,6 +30,13 @@ los Caminos retirados. Reemplaza los avisos en modales o carteles superpuestos
 propuestos más abajo. El cálculo y la pieza visual están preparados, pero el
 detalle, el guardado y la navegación de Circuitos aún no existen.
 
+**Decisión posterior de Alejandro (048):** si el Circuito terminaba en la punta
+de un Camino y esa punta se corrige, el final del Circuito conserva su lugar.
+La pregunta 5 de la sección 8 está respondida. Los ejemplos y el traslado
+automático de extremos de este informe son propuestas anteriores; el final
+fijo tiene prioridad. Si el Camino acortado no llega a él, se muestran partes
+sin unir, sin inventar una conexión.
+
 Cada afirmación importante lleva una marca:
 
 - **[verificada]**: comprobada hoy en el código, en la migración o en el
@@ -423,9 +430,9 @@ Camino de 1.000 m, versión 1. Un Circuito usa `desde 200 → hasta 600`, a favo
    empezaba en 200, la proporción lo lleva cerca de 100 de la línea nueva; el
    testigo dice que está a menos de 1 m de su lugar: estado `siguio`. Si el
    Circuito empezaba en **0** (el comienzo del Camino), sigue al comienzo nuevo,
-   que está 100 m más adelante: `siguio`, con aviso. Si se **alarga** una punta
-   que el Circuito usaba hasta el final, el Circuito se alarga con ella; si eso
-   es lo que Ale quiere es la pregunta 5.
+   que está 100 m más adelante: `siguio`, con aviso. **Este ejemplo es anterior
+   a la decisión 048:** si el Circuito terminaba en esa punta, conserva el
+   lugar anterior al alargarse o acortarse el Camino.
 5. **Ambigüedad imposible de resolver con certeza.** (a) El Camino es un rulo
    que empieza y termina en el mismo lugar, y la corrección lo da vuelta:
    `corregirLinea` no detecta la inversión porque comienzo y final coinciden, y
@@ -707,9 +714,8 @@ Solo decisiones de uso. Cada una tiene la consecuencia si no se responde.
 4. **El aviso «cambió el Circuito»:** (a) se va cuando lo mirás en tu celular, o
    (b) queda hasta que el autor del Circuito lo revise y lo vuelva a guardar.
    *Sin respuesta:* queda hasta que el autor lo revise (avisar de más en casa).
-5. **Si un Camino se alarga o se acorta justo en la punta donde terminaba tu
-   Circuito:** (a) el Circuito sigue la punta nueva, o (b) se queda en el lugar
-   donde terminaba. *Sin respuesta:* sigue la punta nueva y avisa.
+5. **Respondida en la decisión 048.** Si un Camino se alarga o acorta justo en
+   la punta donde terminaba el Circuito, conserva el lugar donde terminaba.
 
 **Pueden esperar al boceto:**
 

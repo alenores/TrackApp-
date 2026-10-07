@@ -233,6 +233,8 @@ Su detalle lleva siempre un resumen escrito debajo del mapa: distingue partes
 propias y tomadas de Caminos, y refleja las clasificaciones actuales de estos.
 También informa partes sin unir y Caminos retirados, sin avisos superpuestos
 por cada cambio. Ver decisión 047.
+Si terminaba en la punta de un Camino y esa punta se corrige, conserva su
+lugar anterior. Ver decisión 048.
 
 **Ruta**
 La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,
