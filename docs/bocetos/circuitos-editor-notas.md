@@ -15,9 +15,9 @@ superior con borde punteado solo existe en el boceto.
 
 - **Decidido por Ale:** un Circuito puede mezclar partes tomadas de Caminos y
   partes propias; hacerlo no altera el mapa. El Camino incorporado sigue sus
-  correcciones. Se avisa antes de salir. Un plan con partes sin unir se puede
-  guardar con aviso de plan incompleto y sin dibujar una unión inventada.
-- **Propuesta visual de Codex para revisar:** panel con los datos del plan a
+  correcciones. Se avisa antes de salir. Un Circuito con partes sin unir se
+  puede guardar con un aviso, sin dibujar una unión inventada.
+- **Propuesta visual de Codex para revisar:** panel con los datos del Circuito a
   un lado, mapa al otro, lista ordenada de partes debajo, dos botones para
   agregar partes y avisos encima. La línea del Circuito se superpone a las
   alternativas del mapa con un color propio; las partes dibujadas se distinguen
@@ -51,5 +51,5 @@ revisar la propuesta. La implementación visual espera esa revisión.
 ## Auditoría de fuentes
 
 - **Leído en tiempo real:** decisiones 034-043, plan de separación, boceto aprobado de Caminos y reglas de diseño exterior.
-- **Inferido:** el panel y la lista ordenada facilitan distinguir plan, alternativas y huecos sin introducir un nuevo Camino.
+- **Inferido:** el panel y la lista ordenada facilitan distinguir Circuito, alternativas y espacios sin unir sin introducir un nuevo Camino.
 - **Pendiente de verificación:** respuesta de Ale a las decisiones abiertas, revisión visual del boceto, informe técnico de Claude y comportamiento real cuando se implemente.

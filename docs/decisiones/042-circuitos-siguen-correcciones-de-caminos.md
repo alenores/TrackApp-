@@ -6,7 +6,7 @@
 
 Cuando un Circuito incorpora una parte de un Camino, conserva el vínculo con
 ese Camino. Si luego se corrige el dibujo del Camino, el Circuito debe seguir
-la línea corregida. Antes de salir, la app debe avisar que cambió el plan y
+la línea corregida. Antes de salir, la app debe avisar que cambió el Circuito y
 mostrar lo necesario para revisarlo con señal. El aviso debe llegar también a
 quien tenga el Circuito descargado: navegar no consulta internet.
 

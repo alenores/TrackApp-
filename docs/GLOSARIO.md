@@ -220,6 +220,8 @@ Las partes propias pueden seguir vías evidentes del mapa de fondo. Los puntos
 y trazos sirven de referencia, sin ser obligatorios. Armar un Circuito no crea
 ni modifica contenido de Mapas. Su desarrollo queda para una etapa posterior.
 Es distinto de una **Salida**, que cuenta lo que ocurrió realmente.
+En la pantalla se dice **Circuito**; no se introduce «plan» como nombre
+alternativo. Si sus partes quedan separadas, se avisa **«Partes sin unir»**.
 
 **Ruta**
 La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,

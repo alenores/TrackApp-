@@ -24,8 +24,8 @@ evidente en el mapa, aunque esa vía nunca se haya marcado como Camino.
   preparar una auditoría técnica por separado con límites claros.
 - Una parte incorporada desde un Camino mantiene el vínculo: el Circuito sigue
   las correcciones de la línea y avisa antes de salir. Ver decisión 042.
-- Se puede guardar un Circuito con partes sin unir, con aviso de plan
-  incompleto y sin inventar el enlace. Ver decisión 043.
+- Se puede guardar un Circuito con partes sin unir, con un aviso claro de esa
+  separación y sin inventar el enlace. Ver decisión 043.
 - Quedan pendientes cálculos, sincronización y relación con Salidas para la
   etapa de Circuitos.
 

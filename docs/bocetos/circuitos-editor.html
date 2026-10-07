@@ -101,9 +101,9 @@ header h1 { margin:0; font-size:26px; }
   <div id="aviso-principal" class="estado" role="status" aria-live="polite"></div>
   <div class="pantalla">
     <section class="panel" aria-label="Datos y herramientas del Circuito">
-      <h2>Tu plan</h2>
+      <h2>Tu Circuito</h2>
       <label class="campo"><span>Nombre</span><input id="nombre" value="Vuelta de exploración a la cascada"></label>
-      <p class="ayuda">Los datos globales del Circuito describen el plan completo. No cambian el color ni la condición de los Caminos.</p>
+      <p class="ayuda">Los datos globales del Circuito describen el Circuito completo. No cambian el color ni la condición de los Caminos.</p>
       <div class="fila"><strong>Actividad:</strong> <span id="actividad-ejemplo">Mountain bike (ejemplo; por decidir)</span></div>
       <hr class="separador">
       <h3>Agregar una parte</h3>
@@ -113,7 +113,7 @@ header h1 { margin:0; font-size:26px; }
         <button id="dibujar">Dibujar parte propia</button>
       </div>
       <p id="instruccion" class="ayuda">Todavía no elegiste un Camino.</p>
-      <div class="nota">Los Caminos, puntos y trazos siguen siendo parte de Mapas. Guardar este plan no suma ni cambia nada allí.</div>
+      <div class="nota">Los Caminos, puntos y trazos siguen siendo parte de Mapas. Guardar este Circuito no suma ni cambia nada allí.</div>
     </section>
     <section aria-label="Mapa y partes del Circuito">
       <div class="mapa">
@@ -130,9 +130,9 @@ header h1 { margin:0; font-size:26px; }
         <div class="mapa-pie"><span><i class="muestra camino"></i>Camino del mapa</span><span><i class="muestra"></i>Parte usada del Camino</span><span><i class="muestra propio"></i>Parte propia del Circuito</span></div>
       </div>
       <div class="panel inferior">
-        <h2>Partes del plan, en orden</h2>
+        <h2>Partes del Circuito, en orden</h2>
         <ol id="partes" class="lista"></ol>
-        <p class="ayuda">El orden y el sentido indican por dónde pensás avanzar. Si dos partes quedan separadas, el plan se guarda con aviso; la app no inventa el enlace.</p>
+        <p class="ayuda">El orden y el sentido indican por dónde pensás avanzar. Si dos partes quedan separadas, el Circuito se guarda con aviso; la app no inventa el enlace.</p>
         <div class="fila"><button id="terminar-dibujo" hidden>Terminar parte dibujada</button><button id="cancelar-dibujo" hidden>Cancelar dibujo</button></div>
       </div>
     </section>
@@ -178,13 +178,13 @@ function dibujarPantalla(){
   });
   if(puntosDibujo.length){const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',trazo(puntosDibujo));el.setAttribute('class','circuito-propio');g.append(el)}
   const lista=$("partes");lista.replaceChildren();
-  partes.forEach((p,i)=>{const li=document.createElement('li');const texto=document.createElement('span');texto.innerHTML=`<span class="numero">${i+1}</span> <strong>${p.tipo==='propio'?'Parte dibujada para este Circuito':caminos[p.id].nombre}</strong><small>${p.tipo==='propio'?'Solo vive en este plan':`Vinculada al Camino · ${Math.round(p.desde*100)}–${Math.round(p.hasta*100)} % · ${p.invertido?'vuelta':'ida'}`}</small>`;
+  partes.forEach((p,i)=>{const li=document.createElement('li');const texto=document.createElement('span');texto.innerHTML=`<span class="numero">${i+1}</span> <strong>${p.tipo==='propio'?'Parte dibujada para este Circuito':caminos[p.id].nombre}</strong><small>${p.tipo==='propio'?'Solo pertenece a este Circuito':`Vinculada al Camino · ${Math.round(p.desde*100)}–${Math.round(p.hasta*100)} % · ${p.invertido?'vuelta':'ida'}`}</small>`;
     const acciones=document.createElement('span');acciones.className='acciones';[['↑',()=>mover(i,-1),'Subir'],['↓',()=>mover(i,1),'Bajar'],['×',()=>{partes.splice(i,1);dibujarPantalla()},'Quitar']].forEach(([nombre,fn,etiqueta])=>{const b=document.createElement('button');b.textContent=nombre;b.title=etiqueta;b.setAttribute('aria-label',etiqueta+' parte '+(i+1));b.onclick=fn;acciones.append(b)});li.append(texto,acciones);lista.append(li)});
   if(!partes.length)lista.innerHTML='<li>Todavía no agregaste partes. Elegí un Camino o dibujá una.</li>';
   const n=huecos(),avisos=[];
-  if(n)avisos.push(`<div class="aviso"><strong>Plan incompleto</strong>Hay ${n} espacio${n===1?'':'s'} sin unir entre partes. Podés guardarlo, pero revisalo antes de salir.</div>`);
-  if(corregido&&partes.some(p=>p.tipo==='camino'&&p.id==='a'))avisos.push('<div class="aviso"><strong>Un Camino de este Circuito cambió</strong>La línea del Circuito sigue la corrección. Revisá el plan y sus mapas antes de salir.</div>');
-  $("aviso-principal").innerHTML=avisos.join('')||'<div class="ayuda">Agregá partes al plan. Los avisos aparecerán aquí y antes de salir.</div>';
+  if(n)avisos.push(`<div class="aviso"><strong>Partes sin unir</strong>Hay ${n} espacio${n===1?'':'s'} sin unir en este Circuito. Podés guardarlo, pero revisalo antes de salir.</div>`);
+  if(corregido&&partes.some(p=>p.tipo==='camino'&&p.id==='a'))avisos.push('<div class="aviso"><strong>Un Camino de este Circuito cambió</strong>La línea del Circuito sigue la corrección. Revisá el Circuito y sus mapas antes de salir.</div>');
+  $("aviso-principal").innerHTML=avisos.join('')||'<div class="ayuda">Agregá partes al Circuito. Los avisos aparecerán aquí y antes de salir.</div>';
 }
 function mover(i,n){const j=i+n;if(j<0||j>=partes.length)return;[partes[i],partes[j]]=[partes[j],partes[i]];dibujarPantalla()}
 function elegir(id){elegido=id;document.querySelectorAll('.camino').forEach(el=>el.classList.toggle('seleccionado',el.id==='camino-'+id));$('usar-camino').disabled=false;$('instruccion').textContent=`Elegiste ${caminos[id].nombre}. Podés tomar una porción sin volver a dibujarla.`}
@@ -202,7 +202,7 @@ $('cancelar-dibujo').onclick=salirDibujo;
 $('simular-cambio').onclick=()=>{corregido=!corregido;caminos.a.puntos[3]=corregido?[350,205]:[330,250];$('camino-a').setAttribute('d',trazo(caminos.a.puntos));$('simular-cambio').textContent=corregido?'Deshacer corrección simulada':'Simular un Camino corregido';dibujarPantalla()};
 $('modo').onclick=()=>{const nuevo=document.documentElement.dataset.modo==='sol'?'noche':'sol';document.documentElement.dataset.modo=nuevo;$('modo').textContent=nuevo==='sol'?'Modo noche':'Modo sol'};
 $('reiniciar').onclick=()=>{partes=[];elegido=null;corregido=false;caminos.a.puntos[3]=[330,250];$('camino-a').setAttribute('d',trazo(caminos.a.puntos));$('simular-cambio').textContent='Simular un Camino corregido';document.querySelectorAll('.camino').forEach(el=>el.classList.remove('seleccionado'));$('usar-camino').disabled=true;salirDibujo()};
-$('guardar').onclick=()=>{if(!$('nombre').value.trim()){$('aviso-principal').innerHTML='<div class="aviso"><strong>Falta el nombre</strong>Escribí un nombre para guardar este plan.</div>';return}if(!partes.length){$('aviso-principal').innerHTML='<div class="aviso"><strong>El Circuito está vacío</strong>Agregá una parte desde un Camino o dibujala.</div>';return}const n=huecos();$('aviso-principal').innerHTML=`<div class="aviso"><strong>Guardado simulado</strong>Este boceto no guarda datos. ${n?'El plan conservaría el aviso de partes sin unir.':'El plan no tiene separaciones en este ejemplo.'}</div>`};
+$('guardar').onclick=()=>{if(!$('nombre').value.trim()){$('aviso-principal').innerHTML='<div class="aviso"><strong>Falta el nombre</strong>Escribí un nombre para guardar este Circuito.</div>';return}if(!partes.length){$('aviso-principal').innerHTML='<div class="aviso"><strong>El Circuito está vacío</strong>Agregá una parte desde un Camino o dibujala.</div>';return}const n=huecos();$('aviso-principal').innerHTML=`<div class="aviso"><strong>Guardado simulado</strong>Este boceto no guarda datos. ${n?'El Circuito conservaría el aviso de partes sin unir.':'El Circuito no tiene separaciones en este ejemplo.'}</div>`};
 $('volver').onclick=()=>{$('aviso-principal').innerHTML='<div class="aviso"><strong>Solo es un boceto</strong>En la app, este botón volvería a la lista de Circuitos.</div>'};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('modal').classList.contains('abierto'))$('modal').classList.remove('abierto');else if(e.key==='Escape'&&dibujando)salirDibujo()});
 dibujarPantalla();

@@ -27,7 +27,7 @@ actividad, esfuerzo y dificultad globales. Esa mezcla originó la revisión.
   navegación y un registro en la tabla `rutas`. Una ruta guarda su línea y
   también actividad, largo, desniveles, dificultad técnica y esfuerzo global.
 - **Salidas** ya existe y significa lo que efectivamente ocurrió un día. Su
-  registro puede referirse a `ruta_id`; no es sinónimo de un plan futuro.
+  registro puede referirse a `ruta_id`; no es sinónimo de un Circuito futuro.
 - **Circuitos no existe**: no hay módulo, tabla ni editor con ese nombre.
 - Hay un **prototipo local sin publicar y sin confirmar** que divide una ruta
   actual en partes, les asigna condición de paso y complejidad, las dibuja en
@@ -57,9 +57,9 @@ actividad, esfuerzo y dificultad globales. Esa mezcla originó la revisión.
    transitable, puntos para ir a pie y X para sin paso.
 4. **Circuitos** será la planificación: se podrán incorporar partes de Caminos
    ya marcados sin redibujarlas y sumar partes dibujadas solo para ese
-   Circuito. También se podrá dibujar todo el plan sin usar Caminos, por
+   Circuito. También se podrá dibujar todo el Circuito sin usar Caminos, por
    ejemplo sobre una vía evidente del mapa de fondo. Los puntos y trazos son
-   referencias, no piezas obligatorias del plan. Armar o editar un Circuito
+   referencias, no piezas obligatorias del Circuito. Armar o editar un Circuito
    no agrega ni modifica contenido de Mapas. Su desarrollo se deja para una
    etapa posterior; no bloquea construir y probar Mapas/Caminos.
 5. **Salidas** conserva su significado actual: lo que ocurrió realmente.
@@ -152,7 +152,7 @@ Mapas
   └─ caminos: alternativas transitables o por explorar, con partes clasificadas
 
 Circuitos
-  └─ plan que combina partes de Caminos reutilizadas y partes propias dibujadas
+  └─ Circuito que combina partes de Caminos reutilizadas y partes propias dibujadas
 
 Salidas
   └─ relato y, si existe, registro GPS de lo que se hizo realmente
@@ -162,7 +162,7 @@ Un Circuito puede utilizar partes de varios Caminos sin obligar a redibujarlas.
 También puede seguir vías del fondo del mapa que no sean Caminos marcados. Las
 partes tomadas de un Camino conservan el vínculo y siguen las correcciones de
 su línea. Antes de salir se avisa del cambio (decisión 042). Si partes del
-Circuito quedan sin unir, se permite guardarlo con aviso de plan incompleto y
+Circuito quedan sin unir, se permite guardarlo con aviso de partes sin unir y
 sin inventar el enlace (decisión 043).
 
 ## Decisiones pendientes antes de implementar
@@ -171,7 +171,7 @@ Estas preguntas no se responderán por suposición ni por lo que hace la app
 vieja. Se plantearán a Ale en conversaciones breves y se esperará su respuesta:
 
 1. **Armado de un circuito:** debe poder combinar partes de Caminos sin
-   redibujarlas y partes dibujadas solo para el plan. Ya se decidió que las
+   redibujarlas y partes dibujadas solo para el Circuito. Ya se decidió que las
    partes vinculadas siguen las correcciones del Camino y que las separaciones
    se guardan con aviso; faltan las reglas concretas de selección y edición.
 2. **Permisos:** las categorías para el contenido del mapa y los Circuitos
@@ -211,7 +211,7 @@ navegación antigua sin un contrato revisado y las decisiones pendientes.
 | 0. Diagnóstico | Inventario del código y de las reglas afectadas; propuesta de modelo con alternativas y preguntas para Ale. Sin editar la app. | Claude estudia Mapas y el futuro camino; Codex estudia Circuitos y las dependencias comunes. |
 | 1. Contrato de Mapas/Caminos | Cerrar sus decisiones de producto, permisos, estructura de datos y bocetos que correspondan. Circuitos no bloquea esta etapa. | Codex redacta y coordina; Ale decide. |
 | 2. Mapas/Caminos | Implementar y probar la importación y edición de Caminos, puntos y trazos, su visibilidad y permisos, sin modificar Circuitos ni convertir Rutas por inercia. | Asignación concreta a acordar antes de programar. |
-| 3. Circuitos, etapa posterior | Diseñar y desarrollar el plan que combina partes de Caminos existentes y partes dibujadas. Puede encargarse por separado a Claude con un encargo completo. | Asignación futura. |
+| 3. Circuitos, etapa posterior | Diseñar y desarrollar Circuitos que combinan partes de Caminos existentes y partes dibujadas. Puede encargarse por separado a Claude con un encargo completo. | Asignación futura. |
 | 4. Integración y entrega | Integrar navegación, sincronización y Salidas cuando corresponda; verificar en modo avión, en sol/noche y con el KML real antes de publicar. | Codex coordina; Ale prueba el uso real. |
 
 ### Próxima secuencia concreta, 2026-10-06

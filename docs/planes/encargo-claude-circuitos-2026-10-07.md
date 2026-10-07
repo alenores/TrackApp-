@@ -14,7 +14,7 @@ Alejandro planifica salidas desde su computadora. En Google Earth marca varias
 posibilidades; luego en el terreno descubre cuáles sirven, cuáles exigen ir a
 pie con el equipo y cuáles no tienen paso. **Caminos** son esas alternativas
 marcadas en Mapas. Sus partes tienen clasificación propia, por actividad. Un
-**Circuito** es un plan de salida que se puede dibujar sobre el mapa, incorporar
+**Circuito** es una salida prevista que se puede dibujar sobre el mapa, incorporar
 porciones de Caminos existentes sin volver a trazarlas o combinar ambas cosas.
 **Salidas** documenta lo que realmente ocurrió. Son tres conceptos distintos.
 
@@ -23,7 +23,7 @@ con `Ascochinga Bike 1.kml`: aparecen siete líneas y ningún punto. Aún faltan
 pruebas de guardado y edición completas, permisos con las tres categorías y
 modo avión. **Circuitos todavía no existe** como módulo, tabla ni editor. La
 pantalla vieja llamada **Rutas** mezcla un recorrido importado con los datos
-globales de un plan. Su implementación y las filas antiguas de la base no son
+globales de un Circuito. Su implementación y las filas antiguas de la base no son
 un modelo aprobado ni datos a migrar. En el árbol de trabajo también hay un
 prototipo local de «partes de ruta» sin confirmar; no lo modifiques ni lo
 consideres una decisión de producto.
@@ -47,12 +47,12 @@ consideres una decisión de producto.
    sí sola la condición, complejidad, observación ni fecha de las partes del
    Camino. Ver decisiones 037 y 042.
 4. Se puede guardar un Circuito con partes separadas sin dibujar el enlace.
-   Debe mostrarse un aviso de **plan incompleto**, también antes de salir.
+   Debe mostrarse un aviso de **partes sin unir**, también antes de salir.
    Ninguna línea inventada puede simular la conexión. Ver decisión 043.
 5. Administrador y Premium pueden crear Circuitos. Premium edita los propios;
    Administrador edita todos; Normal solo los consulta. Ver `docs/USUARIOS.md`.
 6. Zonas y Sectores solo fragmentan descargas de mapas. No poseen ni delimitan
-   Caminos o Circuitos. Antes de salir, el plan permite saber qué mapas bajar.
+   Caminos o Circuitos. Antes de salir, el Circuito permite saber qué mapas bajar.
 7. En la navegación no hay solicitudes a internet. Toda geometría, mapa y dato
    necesario se prepara con señal; faltantes y cambios relevantes se informan
    antes de salir. El GPS envejecido y las fallas se muestran, no se ocultan.
@@ -107,15 +107,15 @@ Escribí un informe técnico que incluya:
    con certeza. La regla de producto es seguir la corrección y avisar; si un
    caso exige revisión humana, proponé cómo comunicarlo sin cambiar esa regla
    silenciosamente.
-4. **Integridad del plan:** cómo detectar partes separadas y mostrar el aviso
+4. **Integridad del Circuito:** cómo detectar partes separadas y mostrar el aviso
    sin bloquear el guardado ni completar huecos automáticamente. Separá el
-   estado de un plan incompleto de la condición «sin paso» de un Camino.
+   estado de un Circuito con partes sin unir de la condición «sin paso» de un Camino.
    Describí las preguntas que aún requieren decisión sobre Caminos retirados,
    clasificaciones que cambian, orden, repetición y relación con Salidas.
 5. **Preparación sin señal:** qué se guarda, cómo se actualiza cuando cambia un
    Camino, cómo se sabe antes de salir si un Circuito quedó desactualizado y
    cómo se evita mezclar versiones de geometría. Incluí los avisos de mapas
-   faltantes y plan incompleto. Navegar jamás hace pedidos de red.
+   faltantes y partes sin unir. Navegar jamás hace pedidos de red.
 6. **Permisos y seguridad:** propuesta de tablas y controles por fila, con
    borrado lógico, `creado_en`, `actualizado_en`, RLS y permisos SQL explícitos
    desde el comienzo. Tratá la concurrencia de ediciones y la invalidez de

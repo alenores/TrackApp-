@@ -28,6 +28,8 @@ edición, permisos y modo avión. Circuitos todavía no existía.
 
 Ale confirmó las dos reglas anteriores. Las decisiones de selección, orden,
 relación con Salidas y otras respuestas de uso siguen pendientes.
+Después corrigió la terminología: la pantalla debe decir «Circuito» y «Partes
+sin unir», sin introducir «plan» como nombre alternativo.
 
 ### Documentos actualizados
 
