@@ -20,6 +20,9 @@ edición, permisos y modo avión. Circuitos todavía no existía.
   con aviso de plan incompleto y sin dibujar un enlace supuesto.
 - Se preparó un encargo técnico detallado y limitado para que Claude estudie
   Circuitos en paralelo, sin tocar la app ni la base.
+- Se preparó un primer boceto local del editor de Circuitos, todavía sin
+  aprobación: combina partes de Caminos y partes dibujadas, muestra las
+  separaciones y simula una corrección de Camino.
 
 ### Decisiones tomadas
 
@@ -28,8 +31,8 @@ relación con Salidas y otras respuestas de uso siguen pendientes.
 
 ### Documentos actualizados
 
-Decisiones 034, 042 y 043; plan de separación; encargo técnico de Claude y
-este registro.
+Decisiones 034, 042 y 043; plan de separación; encargo técnico de Claude,
+boceto del editor y sus notas, y este registro.
 
 ### Deuda o inconsistencias detectadas
 
@@ -38,7 +41,7 @@ reflejan el concepto anterior. No se renombrarán ni migrarán por inercia.
 
 ### Pendientes para la próxima
 
-Recibir el informe de Claude, diseñar y aprobar el boceto de Circuitos,
+Recibir el informe de Claude, revisar y aprobar el boceto de Circuitos,
 resolver las decisiones de producto que el editor exige, y recién entonces
 implementar por etapas. Completar la prueba independiente de Caminos.
 

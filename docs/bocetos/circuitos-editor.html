@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es" data-modo="sol">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto · Editor de Circuitos</title>
+<style>
+:root[data-modo="sol"] {
+  --fondo:#f8fafc; --superficie:#fff; --superficie-alta:#e2e8f0;
+  --texto:#0f172a; --texto-suave:#334155; --borde:#94a3b8;
+  --acento:#14532d; --acento-texto:#fff; --enlace:#174ea6;
+  --aviso-fondo:#fff3c4; --aviso-texto:#633900; --aviso-borde:#a35a00;
+  --mapa:#e6ede7; --mapa-camino:#8c9a96; --mapa-trazo:#3282a1;
+  --mapa-circuito:#173e8c; --mapa-propio:#733baa; --punto:#834318;
+  color-scheme:light;
+}
+:root[data-modo="noche"] {
+  --fondo:#0f172a; --superficie:#1e293b; --superficie-alta:#334155;
+  --texto:#f8fafc; --texto-suave:#d7e0e9; --borde:#94a3b8;
+  --acento:#166534; --acento-texto:#fff; --enlace:#a7c7ff;
+  --aviso-fondo:#39290d; --aviso-texto:#ffe4a4; --aviso-borde:#d69734;
+  --mapa:#1c2b30; --mapa-camino:#9aaca7; --mapa-trazo:#6bd2f5;
+  --mapa-circuito:#a7c7ff; --mapa-propio:#dda9ff; --punto:#f4b76b;
+  color-scheme:dark;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--fondo); color:var(--texto); font:16px/1.4 system-ui,Arial,sans-serif; }
+button,input { font:inherit; }
+button { min-height:38px; padding:7px 12px; border:1px solid var(--borde); border-radius:9px; color:var(--texto); background:var(--superficie); cursor:pointer; }
+button:hover { background:var(--superficie-alta); }
+button:focus-visible,input:focus-visible { outline:3px solid var(--enlace); outline-offset:2px; }
+button.principal { background:var(--acento); border-color:var(--acento); color:var(--acento-texto); }
+button:disabled { opacity:.5; cursor:not-allowed; }
+.barra-boceto { border-bottom:2px dashed var(--borde); padding:10px 20px; background:var(--superficie-alta); display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; font-size:14px; }
+.barra-boceto strong { margin-right:auto; }
+.envoltura { max-width:1560px; margin:auto; padding:20px; }
+header { display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:18px; }
+header h1 { margin:0; font-size:26px; }
+.miga { color:var(--texto-suave); font-size:14px; }
+.fila { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.pantalla { display:grid; grid-template-columns:minmax(300px,360px) minmax(0,1fr); gap:16px; align-items:start; }
+.panel { border:1px solid var(--borde); border-radius:14px; background:var(--superficie); padding:16px; }
+.panel h2 { margin:0 0 12px; font-size:20px; }
+.panel h3 { margin:18px 0 8px; font-size:17px; }
+.campo { display:block; margin:0 0 10px; font-weight:600; }
+.campo span { display:block; margin-bottom:5px; }
+.campo input { width:100%; min-height:38px; border:1px solid var(--borde); border-radius:8px; background:var(--fondo); color:var(--texto); padding:7px 10px; }
+.ayuda { color:var(--texto-suave); font-size:14px; margin:6px 0 12px; }
+.separador { border:0; border-top:1px solid var(--borde); margin:16px 0; }
+.botones { display:flex; flex-wrap:wrap; gap:8px; }
+.aviso { background:var(--aviso-fondo); color:var(--aviso-texto); border:1px solid var(--aviso-borde); border-radius:10px; padding:10px 12px; margin:10px 0; }
+.aviso strong { display:block; }
+.estado { min-height:48px; }
+.mapa { position:relative; border:1px solid var(--borde); border-radius:14px; overflow:hidden; background:var(--mapa); }
+.mapa svg { display:block; width:100%; height:auto; min-height:460px; }
+.mapa .terreno { fill:none; stroke:var(--superficie-alta); stroke-width:16; opacity:.5; }
+.mapa .agua { fill:none; stroke:var(--mapa-trazo); stroke-width:6; stroke-dasharray:5 5; opacity:.65; }
+.mapa .camino { fill:none; stroke:var(--mapa-camino); stroke-width:7; stroke-linecap:round; stroke-linejoin:round; cursor:pointer; }
+.mapa .camino:hover,.mapa .camino.seleccionado { stroke-width:11; }
+.mapa .circuito-camino { fill:none; stroke:var(--mapa-circuito); stroke-width:7; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.mapa .circuito-propio { fill:none; stroke:var(--mapa-propio); stroke-width:6; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.mapa .punto { fill:var(--punto); stroke:var(--superficie); stroke-width:3; }
+.mapa text { fill:var(--texto); paint-order:stroke; stroke:var(--mapa); stroke-width:5; stroke-linejoin:round; font:600 16px system-ui,sans-serif; pointer-events:none; }
+.mapa .marcador { fill:var(--aviso-fondo); stroke:var(--aviso-borde); stroke-width:2; }
+.mapa .extremo { fill:var(--mapa-circuito); stroke:var(--superficie); stroke-width:3; }
+.mapa .clic { cursor:crosshair; }
+.mapa-pie { display:flex; gap:10px 18px; align-items:center; flex-wrap:wrap; padding:10px 12px; background:var(--superficie); border-top:1px solid var(--borde); font-size:14px; }
+.muestra { display:inline-block; width:20px; vertical-align:middle; border-top:5px solid var(--mapa-circuito); margin-right:4px; }
+.muestra.propio { border-color:var(--mapa-propio); }
+.muestra.camino { border-color:var(--mapa-camino); }
+.lista { list-style:none; padding:0; margin:10px 0; display:grid; gap:8px; }
+.lista li { border:1px solid var(--borde); border-radius:10px; padding:9px 10px; display:flex; gap:12px; align-items:center; justify-content:space-between; }
+.lista small { color:var(--texto-suave); display:block; }
+.numero { background:var(--superficie-alta); border-radius:100px; padding:3px 8px; font-weight:700; }
+.acciones { display:flex; gap:5px; }
+.acciones button { min-width:38px; padding:5px; }
+.inferior { margin-top:16px; }
+.modal-fondo { position:fixed; inset:0; background:rgb(0 0 0 / .55); display:none; place-items:center; z-index:10; padding:16px; }
+.modal-fondo.abierto { display:grid; }
+.modal { width:min(480px,100%); padding:20px; background:var(--superficie); color:var(--texto); border-radius:14px; border:2px solid var(--borde); }
+.modal h2 { margin:0 0 8px; }
+.modal label { display:block; margin:12px 0; }
+.modal input[type="range"] { width:100%; }
+.nota { border:1px dashed var(--borde); border-radius:10px; padding:10px 12px; margin-top:12px; color:var(--texto-suave); font-size:14px; }
+@media(max-width:850px) { .pantalla { grid-template-columns:1fr; } .mapa svg { min-height:300px; } }
+</style>
+</head>
+<body>
+<div class="barra-boceto">
+  <strong>BOCETO PARA REVISAR · No guarda nada</strong>
+  <span>Ejemplo inventado de uso en computadora</span>
+  <button id="simular-cambio">Simular un Camino corregido</button>
+  <button id="modo">Modo noche</button>
+  <button id="reiniciar">Reiniciar ejemplo</button>
+</div>
+<main class="envoltura">
+  <header>
+    <div><div class="miga">Circuitos / Nuevo</div><h1>Armar un Circuito</h1></div>
+    <div class="fila"><button id="volver">Volver</button><button class="principal" id="guardar">Guardar Circuito</button></div>
+  </header>
+  <div id="aviso-principal" class="estado" role="status" aria-live="polite"></div>
+  <div class="pantalla">
+    <section class="panel" aria-label="Datos y herramientas del Circuito">
+      <h2>Tu plan</h2>
+      <label class="campo"><span>Nombre</span><input id="nombre" value="Vuelta de exploración a la cascada"></label>
+      <p class="ayuda">Los datos globales del Circuito describen el plan completo. No cambian el color ni la condición de los Caminos.</p>
+      <div class="fila"><strong>Actividad:</strong> <span id="actividad-ejemplo">Mountain bike (ejemplo; por decidir)</span></div>
+      <hr class="separador">
+      <h3>Agregar una parte</h3>
+      <p class="ayuda">Tocá un Camino gris en el mapa y elegí qué porción usar, o dibujá una parte que solo pertenecerá a este Circuito.</p>
+      <div class="botones">
+        <button id="usar-camino" disabled>Usar parte del Camino elegido</button>
+        <button id="dibujar">Dibujar parte propia</button>
+      </div>
+      <p id="instruccion" class="ayuda">Todavía no elegiste un Camino.</p>
+      <div class="nota">Los Caminos, puntos y trazos siguen siendo parte de Mapas. Guardar este plan no suma ni cambia nada allí.</div>
+    </section>
+    <section aria-label="Mapa y partes del Circuito">
+      <div class="mapa">
+        <svg id="svg" viewBox="0 0 900 500" role="img" aria-label="Mapa ilustrativo con Caminos y partes de un Circuito">
+          <path class="terreno" d="M20 110 Q180 150 260 100 T510 80 T850 100 M0 400 Q240 330 360 420 T900 380" />
+          <path class="agua" d="M80 70 C190 110 190 230 270 260 S380 310 450 440" />
+          <path id="camino-a" class="camino" d="M95 365 L185 330 L250 280 L330 250 L405 220 L500 195" tabindex="0" aria-label="Camino del mirador" />
+          <path id="camino-b" class="camino" d="M540 180 L610 205 L685 245 L760 225 L835 285" tabindex="0" aria-label="Camino de la cascada" />
+          <path id="camino-c" class="camino" d="M260 280 L275 365 L355 385 L450 440" tabindex="0" aria-label="Bajada al arroyo" />
+          <g id="circuito-dibujo"></g>
+          <circle class="punto" cx="250" cy="280" r="8"/><circle class="punto" cx="760" cy="225" r="8"/>
+          <text x="268" y="271">Mirador</text><text x="742" y="203">Cascada</text>
+        </svg>
+        <div class="mapa-pie"><span><i class="muestra camino"></i>Camino del mapa</span><span><i class="muestra"></i>Parte usada del Camino</span><span><i class="muestra propio"></i>Parte propia del Circuito</span></div>
+      </div>
+      <div class="panel inferior">
+        <h2>Partes del plan, en orden</h2>
+        <ol id="partes" class="lista"></ol>
+        <p class="ayuda">El orden y el sentido indican por dónde pensás avanzar. Si dos partes quedan separadas, el plan se guarda con aviso; la app no inventa el enlace.</p>
+        <div class="fila"><button id="terminar-dibujo" hidden>Terminar parte dibujada</button><button id="cancelar-dibujo" hidden>Cancelar dibujo</button></div>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="modal" class="modal-fondo" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
+    <h2 id="titulo-modal">Usar parte de un Camino</h2>
+    <p id="camino-elegido"></p>
+    <p class="ayuda">En este boceto los extremos se eligen con controles de ejemplo. La forma exacta de marcarlos en el mapa queda por diseñar.</p>
+    <label>Desde <output id="desde-valor">0</output>% del Camino<input id="desde" type="range" min="0" max="90" step="10" value="0"></label>
+    <label>Hasta <output id="hasta-valor">100</output>% del Camino<input id="hasta" type="range" min="10" max="100" step="10" value="100"></label>
+    <div class="fila"><button id="invertir">Sentido: ida →</button><button id="cerrar-modal">Cancelar</button><button class="principal" id="agregar-camino">Sumar al Circuito</button></div>
+  </div>
+</div>
+<script>
+const caminos = {
+  a:{nombre:"Camino del mirador", puntos:[[95,365],[185,330],[250,280],[330,250],[405,220],[500,195]]},
+  b:{nombre:"Camino de la cascada", puntos:[[540,180],[610,205],[685,245],[760,225],[835,285]]},
+  c:{nombre:"Bajada al arroyo", puntos:[[260,280],[275,365],[355,385],[450,440]]}
+};
+let partes=[], elegido=null, dibujando=false, puntosDibujo=[], invertido=false, corregido=false;
+const $=id=>document.getElementById(id);
+function puntoCamino(c,t){
+  const pos=t*(c.puntos.length-1), i=Math.min(Math.floor(pos),c.puntos.length-2), f=pos-i;
+  const a=c.puntos[i],b=c.puntos[i+1]; return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];
+}
+function puntosSeleccionados(parte){
+  if(parte.tipo==="propio")return parte.puntos;
+  const c=caminos[parte.id], pasos=18, puntos=[];
+  for(let i=0;i<=pasos;i++)puntos.push(puntoCamino(c,parte.desde+(parte.hasta-parte.desde)*i/pasos));
+  return parte.invertido?puntos.reverse():puntos;
+}
+function trazo(puntos){return puntos.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')}
+function distancia(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1])}
+function huecos(){let n=0; for(let i=1;i<partes.length;i++){const a=puntosSeleccionados(partes[i-1]),b=puntosSeleccionados(partes[i]);if(distancia(a.at(-1),b[0])>16)n++}return n}
+function dibujarPantalla(){
+  const g=$("circuito-dibujo");g.replaceChildren();
+  partes.forEach((parte)=>{
+    const pts=puntosSeleccionados(parte),el=document.createElementNS('http://www.w3.org/2000/svg','path');
+    el.setAttribute('d',trazo(pts));el.setAttribute('class',parte.tipo==='propio'?'circuito-propio':'circuito-camino');g.append(el);
+    for(const p of [pts[0],pts.at(-1)]){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',p[0]);c.setAttribute('cy',p[1]);c.setAttribute('r',6);c.setAttribute('class','extremo');g.append(c)}
+  });
+  if(puntosDibujo.length){const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('d',trazo(puntosDibujo));el.setAttribute('class','circuito-propio');g.append(el)}
+  const lista=$("partes");lista.replaceChildren();
+  partes.forEach((p,i)=>{const li=document.createElement('li');const texto=document.createElement('span');texto.innerHTML=`<span class="numero">${i+1}</span> <strong>${p.tipo==='propio'?'Parte dibujada para este Circuito':caminos[p.id].nombre}</strong><small>${p.tipo==='propio'?'Solo vive en este plan':`Vinculada al Camino · ${Math.round(p.desde*100)}–${Math.round(p.hasta*100)} % · ${p.invertido?'vuelta':'ida'}`}</small>`;
+    const acciones=document.createElement('span');acciones.className='acciones';[['↑',()=>mover(i,-1),'Subir'],['↓',()=>mover(i,1),'Bajar'],['×',()=>{partes.splice(i,1);dibujarPantalla()},'Quitar']].forEach(([nombre,fn,etiqueta])=>{const b=document.createElement('button');b.textContent=nombre;b.title=etiqueta;b.setAttribute('aria-label',etiqueta+' parte '+(i+1));b.onclick=fn;acciones.append(b)});li.append(texto,acciones);lista.append(li)});
+  if(!partes.length)lista.innerHTML='<li>Todavía no agregaste partes. Elegí un Camino o dibujá una.</li>';
+  const n=huecos(),avisos=[];
+  if(n)avisos.push(`<div class="aviso"><strong>Plan incompleto</strong>Hay ${n} espacio${n===1?'':'s'} sin unir entre partes. Podés guardarlo, pero revisalo antes de salir.</div>`);
+  if(corregido&&partes.some(p=>p.tipo==='camino'&&p.id==='a'))avisos.push('<div class="aviso"><strong>Un Camino de este Circuito cambió</strong>La línea del Circuito sigue la corrección. Revisá el plan y sus mapas antes de salir.</div>');
+  $("aviso-principal").innerHTML=avisos.join('')||'<div class="ayuda">Agregá partes al plan. Los avisos aparecerán aquí y antes de salir.</div>';
+}
+function mover(i,n){const j=i+n;if(j<0||j>=partes.length)return;[partes[i],partes[j]]=[partes[j],partes[i]];dibujarPantalla()}
+function elegir(id){elegido=id;document.querySelectorAll('.camino').forEach(el=>el.classList.toggle('seleccionado',el.id==='camino-'+id));$('usar-camino').disabled=false;$('instruccion').textContent=`Elegiste ${caminos[id].nombre}. Podés tomar una porción sin volver a dibujarla.`}
+for(const id of Object.keys(caminos)){const el=$('camino-'+id);el.onclick=()=>{if(!dibujando)elegir(id)};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();elegir(id)}}}
+$('usar-camino').onclick=()=>{if(!elegido)return;$('camino-elegido').textContent=caminos[elegido].nombre;$('modal').classList.add('abierto');$('desde').value='0';$('hasta').value='100';invertido=false;actualizarModal()};
+function actualizarModal(){$('desde-valor').textContent=$('desde').value;$('hasta-valor').textContent=$('hasta').value;$('invertir').textContent=invertido?'Sentido: vuelta ←':'Sentido: ida →'}
+$('desde').oninput=actualizarModal;$('hasta').oninput=actualizarModal;$('invertir').onclick=()=>{invertido=!invertido;actualizarModal()};
+$('cerrar-modal').onclick=()=>{$('modal').classList.remove('abierto')};
+$('agregar-camino').onclick=()=>{const desde=Number($('desde').value)/100,hasta=Number($('hasta').value)/100;if(desde>=hasta){$('camino-elegido').textContent='El inicio debe quedar antes que el final. Ajustá los controles.';return}partes.push({tipo:'camino',id:elegido,desde,hasta,invertido});$('modal').classList.remove('abierto');dibujarPantalla()};
+function salirDibujo(){dibujando=false;puntosDibujo=[];$('svg').classList.remove('clic');$('terminar-dibujo').hidden=true;$('cancelar-dibujo').hidden=true;$('dibujar').disabled=false;$('instruccion').textContent=elegido?`Elegiste ${caminos[elegido].nombre}.`:'Todavía no elegiste un Camino.';dibujarPantalla()}
+$('dibujar').onclick=()=>{dibujando=true;puntosDibujo=[];$('svg').classList.add('clic');$('terminar-dibujo').hidden=false;$('cancelar-dibujo').hidden=false;$('dibujar').disabled=true;$('instruccion').textContent='Tocá el mapa para poner puntos. Tocá «Terminar parte dibujada» cuando termines.'};
+$('svg').addEventListener('click',e=>{if(!dibujando)return;const p=$('svg').createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform($('svg').getScreenCTM().inverse());puntosDibujo.push([q.x,q.y]);dibujarPantalla()});
+$('terminar-dibujo').onclick=()=>{if(puntosDibujo.length<2){$('instruccion').textContent='Marcá al menos dos puntos antes de terminar la parte.';return}partes.push({tipo:'propio',puntos:[...puntosDibujo]});salirDibujo()};
+$('cancelar-dibujo').onclick=salirDibujo;
+$('simular-cambio').onclick=()=>{corregido=!corregido;caminos.a.puntos[3]=corregido?[350,205]:[330,250];$('camino-a').setAttribute('d',trazo(caminos.a.puntos));$('simular-cambio').textContent=corregido?'Deshacer corrección simulada':'Simular un Camino corregido';dibujarPantalla()};
+$('modo').onclick=()=>{const nuevo=document.documentElement.dataset.modo==='sol'?'noche':'sol';document.documentElement.dataset.modo=nuevo;$('modo').textContent=nuevo==='sol'?'Modo noche':'Modo sol'};
+$('reiniciar').onclick=()=>{partes=[];elegido=null;corregido=false;caminos.a.puntos[3]=[330,250];$('camino-a').setAttribute('d',trazo(caminos.a.puntos));$('simular-cambio').textContent='Simular un Camino corregido';document.querySelectorAll('.camino').forEach(el=>el.classList.remove('seleccionado'));$('usar-camino').disabled=true;salirDibujo()};
+$('guardar').onclick=()=>{if(!$('nombre').value.trim()){$('aviso-principal').innerHTML='<div class="aviso"><strong>Falta el nombre</strong>Escribí un nombre para guardar este plan.</div>';return}if(!partes.length){$('aviso-principal').innerHTML='<div class="aviso"><strong>El Circuito está vacío</strong>Agregá una parte desde un Camino o dibujala.</div>';return}const n=huecos();$('aviso-principal').innerHTML=`<div class="aviso"><strong>Guardado simulado</strong>Este boceto no guarda datos. ${n?'El plan conservaría el aviso de partes sin unir.':'El plan no tiene separaciones en este ejemplo.'}</div>`};
+$('volver').onclick=()=>{$('aviso-principal').innerHTML='<div class="aviso"><strong>Solo es un boceto</strong>En la app, este botón volvería a la lista de Circuitos.</div>'};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('modal').classList.contains('abierto'))$('modal').classList.remove('abierto');else if(e.key==='Escape'&&dibujando)salirDibujo()});
+dibujarPantalla();
+</script>
+</body>
+</html>
