@@ -9,7 +9,9 @@
 > pruebas. El mapa compartido también tiene capas separadas para las partes
 > propias del Circuito y las tomadas de Caminos; la pantalla todavía no las
 > alimenta. Aún no hay tabla, pantalla ni navegación de Circuitos. Ver
-> decisiones 034, 044 y 046. El resto de este documento describe principalmente la
+> decisiones 034, 044, 046 y 047. El cálculo puro del resumen permanente y su
+> pieza visual ya están preparados, pero todavía no hay detalle donde mostrarlos.
+> El resto de este documento describe principalmente la
 > arquitectura anterior de Rutas.
 >
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores

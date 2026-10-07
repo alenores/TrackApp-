@@ -1679,3 +1679,29 @@ celular, aunque en PC ya tenía el icono de descarga.
 ### Pendientes para la próxima
 
 - No se subió el cambio; quedan otras observaciones por revisar.
+## Sesión 2026-10-07 — Resumen permanente de Circuitos
+
+### Estado al inicio
+
+El dibujo de Circuitos y sus capas de mapa estaban preparados. Circuitos aún no tenía pantalla ni guardado.
+
+### Lo que se hizo
+
+- Se preparó el cálculo del resumen por actividad, con proporciones de partes propias y de Caminos, clasificaciones, tramos que requieren caminar, tramos sin paso, Caminos retirados y partes sin unir.
+- Se preparó una pieza visual para mostrar el resumen debajo del futuro mapa del detalle. Se agregaron pruebas de recálculo al modificar un Camino.
+
+### Decisiones tomadas
+
+Ale confirmó que el resumen es permanente y se actualiza con los Caminos. Reemplaza los modales y carteles superpuestos por cambios; ver decisión 047.
+
+### Documentos actualizados
+
+Decisiones 042, 043, 045 y 047; glosario, diseño y arquitectura.
+
+### Deuda o inconsistencias detectadas
+
+La pantalla de detalle, el guardado y la navegación de Circuitos aún no existen. El resumen no puede verse en la app hasta integrarlos. Seguir automáticamente las correcciones de forma de un Camino también está pendiente.
+
+### Pendientes para la próxima
+
+Integrar el resumen al detalle de Circuitos cuando exista y comprobar que se actualiza al poner al día los Caminos descargados.

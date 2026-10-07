@@ -5,9 +5,10 @@
 ## Decisión
 
 Si se retira de Mapas un Camino que forma parte de un Circuito, esa parte del
-Circuito sigue visible. La app muestra un aviso antes de salir para que la
-persona sepa que el Camino fue retirado del mapa general. No borra la parte
-del Circuito ni dibuja una unión nueva en su lugar.
+Circuito sigue visible. El resumen permanente debajo del mapa indica que ese
+Camino fue retirado de Mapas. No borra la parte del Circuito ni dibuja una
+unión nueva en su lugar. La decisión 047 reemplazó el aviso separado: no
+aparece un modal ni un cartel superpuesto.
 
 Esta decisión responde la primera pregunta del informe técnico de Circuitos.
 Todavía no define cómo se conservará la línea al guardar el Circuito ni cómo

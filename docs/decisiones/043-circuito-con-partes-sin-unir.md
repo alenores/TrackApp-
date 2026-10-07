@@ -9,13 +9,14 @@ y todavía no se haya trazado la unión. La app debe avisar claramente que el
 Circuito tiene partes sin unir. La separación sigue visible en el mapa; no se inventa
 una conexión ni se dibuja una línea que el usuario no marcó.
 
-Antes de salir, el estado incompleto se vuelve a mostrar para que la persona
-sepa dónde falta definir el paso, junto con los demás avisos del Circuito.
+Antes de salir, «Partes sin unir» queda en el resumen permanente debajo del
+mapa para que la persona sepa dónde falta definir el paso. La decisión 047
+reemplazó los avisos separados: no aparece un modal ni un cartel superpuesto.
 
 ## Alcance pendiente
 
-La pantalla exacta del aviso y la manera de seleccionar, ordenar y unir las
-partes se diseñarán en el editor de Circuitos. Esta decisión no establece una
+La manera de seleccionar, ordenar y unir las partes se resolverá en el editor
+de Circuitos. Esta decisión no establece una
 distancia mínima que convierta una separación pequeña en un enlace: esa regla
 necesita diseño y validación.
 

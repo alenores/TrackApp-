@@ -69,6 +69,13 @@ paso. Al armar el Circuito se elige una actividad y se puede mostrar Caminos
 de una o varias; al pasar el mouse, el Camino indica todas sus actividades.
 Ver decisión 046.
 
+Debajo del mapa, el detalle de todo Circuito muestra siempre un resumen
+escrito. Distingue lo dibujado libremente de lo tomado de Caminos, expresa
+porcentajes sobre el largo total, y detalla exploración, forma de pasar,
+complejidad y partes sin unir. Cuando cambia la información de un Camino,
+el resumen se actualiza; no se abre un modal ni aparece un cartel superpuesto.
+Ver decisión 047.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

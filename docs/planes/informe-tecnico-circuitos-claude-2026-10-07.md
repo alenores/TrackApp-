@@ -23,6 +23,13 @@ se retira de Mapas, esa parte sigue visible dentro del Circuito con un aviso
 antes de salir. Responde la pregunta 1 de la sección 8; el mecanismo técnico
 de conservación y sincronización sigue pendiente.
 
+**Decisión posterior de Alejandro (047):** el detalle de todo Circuito lleva
+un resumen escrito permanente debajo del mapa. Se actualiza con las
+clasificaciones de los Caminos y contiene el estado vigente, las partes sin unir y
+los Caminos retirados. Reemplaza los avisos en modales o carteles superpuestos
+propuestos más abajo. El cálculo y la pieza visual están preparados, pero el
+detalle, el guardado y la navegación de Circuitos aún no existen.
+
 Cada afirmación importante lleva una marca:
 
 - **[verificada]**: comprobada hoy en el código, en la migración o en el
