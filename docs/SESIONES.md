@@ -4,6 +4,44 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-07 — Inicio del diseño de Circuitos en paralelo
+
+### Estado al inicio
+
+Mapas/Caminos estaba publicado y Ale comprobó que la importación muestra las
+siete líneas de su KML. Seguían pendientes las pruebas completas de guardado,
+edición, permisos y modo avión. Circuitos todavía no existía.
+
+### Lo que se hizo
+
+- Se documentó el vínculo dinámico entre Circuitos y Caminos y el aviso previo
+  cuando se corrige la línea de un Camino.
+- Se documentó que un Circuito con partes sin unir puede guardarse, siempre
+  con aviso de plan incompleto y sin dibujar un enlace supuesto.
+- Se preparó un encargo técnico detallado y limitado para que Claude estudie
+  Circuitos en paralelo, sin tocar la app ni la base.
+
+### Decisiones tomadas
+
+Ale confirmó las dos reglas anteriores. Las decisiones de selección, orden,
+relación con Salidas y otras respuestas de uso siguen pendientes.
+
+### Documentos actualizados
+
+Decisiones 034, 042 y 043; plan de separación; encargo técnico de Claude y
+este registro.
+
+### Deuda o inconsistencias detectadas
+
+La pantalla vieja Rutas y algunas descripciones históricas del plan todavía
+reflejan el concepto anterior. No se renombrarán ni migrarán por inercia.
+
+### Pendientes para la próxima
+
+Recibir el informe de Claude, diseñar y aprobar el boceto de Circuitos,
+resolver las decisiones de producto que el editor exige, y recién entonces
+implementar por etapas. Completar la prueba independiente de Caminos.
+
 ## Sesión 2026-10-07 — Caminos integrados en Mapas
 
 ### Estado al inicio

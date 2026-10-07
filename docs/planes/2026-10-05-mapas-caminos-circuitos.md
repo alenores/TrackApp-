@@ -1,11 +1,10 @@
 # Separar el mapa de caminos de la planificación de circuitos
 
-**Estado al 2026-10-07:** decisiones de datos y boceto de Mapas/Caminos
-aprobados por Ale. Lector, guardado, editor, importador, mapa general y paquete
-sin señal integrados localmente. Las tablas y permisos están aplicados a la
-base. Pasan tipos, lint y pruebas automáticas; faltan una prueba integral con
-las tres categorías de cuenta y una prueba real en modo avión. Circuitos queda
-para otra etapa.
+**Estado al 2026-10-07:** Mapas/Caminos está publicado y Ale empezó la prueba
+de importación con su KML: aparecen siete líneas y ningún punto. Falta probar
+el guardado y la edición completos, los permisos con las tres categorías y el
+uso real en modo avión. En paralelo comienza el diseño de Circuitos; todavía
+no existe como módulo, tabla ni editor.
 
 ## Por qué se plantea
 
@@ -160,20 +159,21 @@ Salidas
 ```
 
 Un Circuito puede utilizar partes de varios Caminos sin obligar a redibujarlas.
-También puede seguir vías del fondo del mapa que no sean Caminos marcados. Aún
-no está decidido si las partes tomadas de un Camino quedan vinculadas a sus
-cambios posteriores o conservan una copia al incorporarse. Esa decisión y los
-avisos relacionados se tratarán cuando se desarrolle Circuitos.
+También puede seguir vías del fondo del mapa que no sean Caminos marcados. Las
+partes tomadas de un Camino conservan el vínculo y siguen las correcciones de
+su línea. Antes de salir se avisa del cambio (decisión 042). Si partes del
+Circuito quedan sin unir, se permite guardarlo con aviso de plan incompleto y
+sin inventar el enlace (decisión 043).
 
 ## Decisiones pendientes antes de implementar
 
 Estas preguntas no se responderán por suposición ni por lo que hace la app
 vieja. Se plantearán a Ale en conversaciones breves y se esperará su respuesta:
 
-1. **Armado de un circuito, diferido:** debe poder combinar partes de Caminos
-   sin redibujarlas y partes dibujadas solo para el plan. Las reglas concretas
-   del editor y del vínculo con un Camino se decidirán al desarrollar
-   Circuitos; no bloquean Mapas/Caminos.
+1. **Armado de un circuito:** debe poder combinar partes de Caminos sin
+   redibujarlas y partes dibujadas solo para el plan. Ya se decidió que las
+   partes vinculadas siguen las correcciones del Camino y que las separaciones
+   se guardan con aviso; faltan las reglas concretas de selección y edición.
 2. **Permisos:** las categorías para el contenido del mapa y los Circuitos
    ya están definidas arriba. Para clasificar una parte de un Camino se aplica
    la regla de edición del Camino. Falta traducir la decisión a controles de
@@ -199,9 +199,10 @@ vieja. Se plantearán a Ale en conversaciones breves y se esperará su respuesta
    siguen en la línea conservan sus clasificaciones. Falta diseñar la
    interacción exacta del editor.
 
-Para implementar Mapas/Caminos solo hace falta cerrar sus propias decisiones.
-Nadie crea tablas de Circuitos, renombra `rutas`, mueve `ruta_id`, convierte
-registros ni cambia su navegación por adelantado.
+Mapas/Caminos se prueba de manera independiente. La etapa de Circuitos empieza
+con el diseño de su vínculo con Caminos y sus pantallas. Nadie crea tablas de
+Circuitos, renombra `rutas`, mueve `ruta_id`, convierte registros ni cambia la
+navegación antigua sin un contrato revisado y las decisiones pendientes.
 
 ## Plan de ejecución y responsables
 

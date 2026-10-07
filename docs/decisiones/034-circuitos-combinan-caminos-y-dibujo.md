@@ -19,12 +19,15 @@ evidente en el mapa, aunque esa vía nunca se haya marcado como Camino.
   y trazos sirven como referencia visual; no son componentes obligatorios.
 - Crear o editar un Circuito no crea ni modifica Caminos, puntos o trazos.
 - Mapas/Caminos se puede implementar y probar como funcionalidad independiente.
-  El diseño detallado y desarrollo de Circuitos se hará después, o se podrá
-  encargar por separado a Claude con un encargo completo y límites claros.
-- Queda pendiente definir si una parte incorporada desde un Camino mantiene
-  un vínculo que refleje cambios posteriores o conserva la línea tal como se
-  incorporó. También quedan pendientes cálculos, sincronización y relación
-  con Salidas para la etapa de Circuitos.
+  El diseño de Circuitos comienza en paralelo con las pruebas de Caminos;
+  su desarrollo seguirá las decisiones y el boceto aprobados. Claude puede
+  preparar una auditoría técnica por separado con límites claros.
+- Una parte incorporada desde un Camino mantiene el vínculo: el Circuito sigue
+  las correcciones de la línea y avisa antes de salir. Ver decisión 042.
+- Se puede guardar un Circuito con partes sin unir, con aviso de plan
+  incompleto y sin inventar el enlace. Ver decisión 043.
+- Quedan pendientes cálculos, sincronización y relación con Salidas para la
+  etapa de Circuitos.
 
 La propuesta anterior de exigir que todo Circuito se construya únicamente con
 partes de Caminos queda descartada. También queda descartada la interpretación
