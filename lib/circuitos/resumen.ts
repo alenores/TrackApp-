@@ -2,6 +2,7 @@ import type { Feature, LineString, Position } from "geojson";
 import type { ActividadRuta } from "@/types/database";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { largoDeLinea } from "@/lib/caminos/geometria";
+import { distanciaEnMetros, puntoDeCoordenada } from "@/lib/geo";
 import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import { partesDelCircuitoEnElMapa, type PropiedadDeParteDelCircuito } from "@/lib/circuitos/en-el-mapa";
 import { exito, falla, type Resultado } from "@/lib/datos/resultado";
@@ -33,6 +34,7 @@ export type ResumenDelCircuito = {
   tramosDeOtraActividad: number;
   tramosDeCaminosRetirados: number;
   partesSinUnir: number;
+  separacionDelFinalM: number;
   consideraciones: ConsideracionDelCircuito[];
 };
 
@@ -60,6 +62,7 @@ export function resumirCircuito(
   partes: readonly ParteDibujada[],
   caminos: readonly CaminoGuardado[],
   actividad: ActividadRuta,
+  finalConservado: Position | null = null,
 ): Resultado<ResumenDelCircuito> {
   const dibujo = partesDelCircuitoEnElMapa(partes, caminos, actividad);
   if (!dibujo.ok) return dibujo;
@@ -121,6 +124,11 @@ export function resumirCircuito(
     }
   }
 
+  const separacionDelFinalM = finalConservado && ultimoFin
+    ? distanciaEnMetros(puntoDeCoordenada(finalConservado), puntoDeCoordenada(ultimoFin))
+    : 0;
+  if (separacionDelFinalM > 0.5 || (finalConservado && !ultimoFin)) partesSinUnir += 1;
+
   const contar = (tipo: TipoDeConsideracion) => consideraciones.filter((cada) => cada.tipo === tipo).length;
   const pasos = Object.fromEntries(PASOS.map((paso) => [paso, medir(metrosPorPaso[paso], metrosTotales)])) as Record<Paso, Medida>;
   const complejidades = Object.fromEntries(COMPLEJIDADES.map((nivel) => [nivel, medir(metrosPorComplejidad[nivel], metrosTotales)])) as Record<Complejidad, Medida>;
@@ -136,6 +144,7 @@ export function resumirCircuito(
     tramosDeOtraActividad: contar("otra_actividad"),
     tramosDeCaminosRetirados: contar("camino_retirado"),
     partesSinUnir,
+    separacionDelFinalM: separacionDelFinalM > 0.5 ? separacionDelFinalM : 0,
     consideraciones,
   });
 }

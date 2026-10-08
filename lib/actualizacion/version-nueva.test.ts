@@ -104,6 +104,7 @@ describe("cuándo recargar al llegar la versión nueva", () => {
   it("reconoce la pantalla de navegar por su dirección", () => {
     expect(esLaPantallaDeNavegar("/navegacion/12")).toBe(true);
     expect(esLaPantallaDeNavegar("/mapa-libre")).toBe(true);
+    expect(esLaPantallaDeNavegar("/circuitos/41/navegar")).toBe(true);
     expect(esLaPantallaDeNavegar("/mapas")).toBe(false);
     expect(esLaPantallaDeNavegar("/rutas/12")).toBe(false);
     expect(esLaPantallaDeNavegar("/")).toBe(false);

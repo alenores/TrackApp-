@@ -13,6 +13,15 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
+    href: "/circuitos",
+    label: "Circuitos",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+        <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/rutas",
     label: "Rutas",
     icon: (

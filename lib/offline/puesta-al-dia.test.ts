@@ -144,6 +144,14 @@ describe("navegando una ruta", () => {
     expect(sincronizar).not.toHaveBeenCalled();
   });
 
+  it("navegar un Circuito tampoco consulta internet", async () => {
+    sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
+    abrirEn("/circuitos/41/navegar");
+    await ponerAlDiaUnaVezPorApertura();
+    expect(sincronizar).not.toHaveBeenCalled();
+    expect(calentar).not.toHaveBeenCalled();
+  });
+
   it("al salir de la navegación, la primera pantalla sí se pone al día", async () => {
     sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
     abrirEn("/navegacion/12");

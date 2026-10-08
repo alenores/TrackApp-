@@ -1,0 +1,152 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { leerCircuitoCompleto, retirarCircuito } from "@/app/actions/circuitos";
+import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import type { TipoDeFondo } from "@/components/mapa/capas-base";
+import { Boton } from "@/components/ui/boton";
+import { Enlace } from "@/components/ui/enlace";
+import { Tarjeta } from "@/components/ui/tarjeta";
+import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
+import { useDialogos } from "@/components/ui/dialogos";
+import { actualizarCircuito } from "@/lib/circuitos/actualizar";
+import { caminosParaArmarCircuito, partesDelCircuitoEnElMapa } from "@/lib/circuitos/en-el-mapa";
+import { resumirCircuito } from "@/lib/circuitos/resumen";
+import { calcularCobertura } from "@/lib/cobertura";
+import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
+import { exito } from "@/lib/datos/resultado";
+import { leerCircuitoPreparado, type CircuitoPreparado } from "@/lib/offline/circuitos";
+import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
+import { useHaySenal } from "@/hooks/use-hay-senal";
+import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
+import type { CircuitoGuardado } from "@/lib/circuitos/datos";
+import type { ParteDibujada } from "@/lib/circuitos/dibujo";
+import type { CaminoGuardado } from "@/lib/caminos/datos";
+import type { CorreccionDeCamino } from "@/lib/circuitos/actualizar";
+import { ACTIVIDADES_RUTA } from "@/types/database";
+import { mostrarActividad } from "@/lib/rutas/actividades";
+
+type Completo = { circuito: CircuitoGuardado; caminos: CaminoGuardado[]; correcciones: CorreccionDeCamino[] };
+
+export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, alEditar, alRetirar }: {
+  id: number;
+  miPerfilId: string | null;
+  esAdministrador: boolean;
+  alVolver: () => void;
+  alEditar: (circuito: CircuitoGuardado, partes: ParteDibujada[], finalSeparado: boolean, caminos: CaminoGuardado[]) => void;
+  alRetirar: () => void;
+}) {
+  const { confirmar } = useDialogos();
+  const [completo, setCompleto] = useState<Completo | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const [preparado, setPreparado] = useState<CircuitoPreparado | null>(null);
+  const paquete = usePaqueteGuardado();
+  const fichaGuardada = paquete?.circuitos.find((cada) => cada.id === id) ?? null;
+  const haySenal = useHaySenal();
+  const mapasBajados = useMapasBajados();
+  useEffect(() => {
+    if (!haySenal) return;
+    let vigente = true;
+    void leerCircuitoCompleto(id).then((resultado) => {
+      if (!vigente) return;
+      if (resultado.ok) { setCompleto(resultado.datos); setAviso(null); }
+      else setAviso(resultado.error);
+      setCargando(false);
+    }).catch((error) => {
+      if (!vigente) return;
+      setAviso(`No se pudo abrir el Circuito: ${error instanceof Error ? error.message : String(error)}. Volvé a intentar con señal.`);
+      setCargando(false);
+    });
+    return () => { vigente = false; };
+  }, [id, haySenal]);
+  useEffect(() => {
+    let vigente = true;
+    if (!fichaGuardada) return;
+    void leerCircuitoPreparado(fichaGuardada).then((resultado) => {
+      if (vigente) { setPreparado(resultado); setCargando(false); }
+    });
+    return () => { vigente = false; };
+  }, [fichaGuardada]);
+
+  const actualizado = useMemo(() => completo
+    ? actualizarCircuito(completo.circuito, completo.caminos, completo.correcciones) : null, [completo]);
+  const dibujo = useMemo(() => completo && actualizado?.ok
+    ? partesDelCircuitoEnElMapa(actualizado.datos.partes, completo.caminos, completo.circuito.actividad) : null,
+  [completo, actualizado]);
+  const resumen = useMemo(() => completo && actualizado?.ok
+    ? resumirCircuito(actualizado.datos.partes, completo.caminos, completo.circuito.actividad, actualizado.datos.finalSeparado) : null,
+  [completo, actualizado]);
+  const encuadre = useMemo(() => {
+    if (!actualizado?.ok) return null;
+    const puntos: [number, number][] = actualizado.datos.partes.flatMap((parte) => parte.coordenadas.map((punto): [number, number] => [punto[0], punto[1]]));
+    if (actualizado.datos.finalSeparado) puntos.push([actualizado.datos.finalSeparado[0], actualizado.datos.finalSeparado[1]]);
+    return puntos.length ? rectanguloQueAbarca(puntos) : null;
+  }, [actualizado]);
+  const caminosDelFondo = useMemo(() => completo
+    ? caminosParaArmarCircuito(completo.caminos, completo.circuito.actividad, ACTIVIDADES_RUTA)
+    : null, [completo]);
+  const ficha = completo?.circuito ?? fichaGuardada;
+  const dibujoMostrado = dibujo?.ok ? dibujo.datos : preparado?.dibujo ?? null;
+  const resumenMostrado = resumen ?? (preparado ? exito(preparado.resumen) : null);
+  const finalMostrado = actualizado?.ok ? actualizado.datos.finalSeparado : preparado?.finalSeparado ?? null;
+  const encuadreMostrado = encuadre ?? fichaGuardada?.rectangulo ?? null;
+  const yaBajados = useMemo(() => new Set(mapasBajados.map((mapa) => mapa.sectorId)), [mapasBajados]);
+  const cobertura = useMemo(() => dibujoMostrado
+    ? calcularCobertura(dibujoMostrado, paquete?.sectores ?? [], yaBajados) : null,
+  [dibujoMostrado, paquete?.sectores, yaBajados]);
+  const sectoresNecesarios = cobertura?.sectores.map((cada) => cada.sector) ?? [];
+  const faltanMapas = cobertura?.sectores.filter((cada) => cada.estado === "falta_descargar") ?? [];
+  const fondosDisponibles: TipoDeFondo[] = [];
+  if (mapasBajados.some((mapa) => sectoresNecesarios.some((sector) => sector.id === mapa.sectorId) && mapa.tipo === "simple")) fondosDisponibles.push("dibujo");
+  if (mapasBajados.some((mapa) => sectoresNecesarios.some((sector) => sector.id === mapa.sectorId) && mapa.tipo === "satelital")) fondosDisponibles.push("satelital");
+  const versionVigente = completo?.caminos.reduce((ultima, camino) => camino.actualizadoEn > ultima ? camino.actualizadoEn : ultima,
+    completo.circuito.actualizadoEn) ?? preparado?.actualizadoEn;
+  const preparadoAlDia = preparado && preparado.actualizadoEn === versionVigente;
+
+  const retirar = async () => {
+    if (!completo || ocupado) return;
+    const seguro = await confirmar({ titulo: "¿Retirar este Circuito?",
+      mensaje: "Dejará de aparecer en la lista. Los Caminos del mapa quedan como están.",
+      textoDeAceptar: "Retirar Circuito", destructivo: true });
+    if (!seguro) return;
+    setOcupado(true);
+    try {
+      const resultado = await retirarCircuito(completo.circuito.id, completo.circuito.actualizadoEn);
+      if (resultado.ok) alRetirar();
+      else setAviso(resultado.error);
+    } catch (error) {
+      setAviso(`No se pudo retirar el Circuito: ${error instanceof Error ? error.message : String(error)}. Probá de nuevo.`);
+    } finally { setOcupado(false); }
+  };
+
+  return <div className="space-y-4">
+    <div className="flex flex-wrap items-center gap-2">
+      <Boton variante="secundario" onClick={alVolver}>Volver</Boton>
+      <h1 className="text-2xl font-bold text-texto">{ficha?.nombre ?? "Circuito"}</h1>
+    </div>
+    {cargando && (haySenal || fichaGuardada) ? <Tarjeta><p role="status" className="text-base text-texto">Abriendo el Circuito…</p></Tarjeta> : null}
+    {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
+    {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
+    {ficha ? <>
+      <p className="text-base text-texto">{mostrarActividad(ficha.actividad).etiqueta}</p>
+      {actualizado && !actualizado.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{actualizado.error}</p></Tarjeta> : null}
+      {dibujo && !dibujo.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
+      {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} principal encuadre={encuadreMostrado}
+        caminos={caminosDelFondo} circuito={dibujoMostrado}
+        finalConservadoDelCircuito={finalMostrado} fondosDisponibles={fondosDisponibles} /> : null}
+      {resumenMostrado ? <ResumenDeCircuito resultado={resumenMostrado} /> : null}
+      {faltanMapas.length > 0 ? <Tarjeta franja="ambar"><p className="text-base text-texto">Antes de salir, descargá {faltanMapas.length === 1 ? `el mapa de ${faltanMapas[0].sector.nombre}` : `los mapas de ${faltanMapas.length} sectores que cruza este Circuito`}. Podés hacerlo en Mapas → Descargas.</p></Tarjeta> : null}
+      {cobertura && cobertura.metrosSinCobertura > 0 ? <Tarjeta franja="ambar"><p className="text-base text-texto">Hay {Math.round(cobertura.metrosSinCobertura / 100) / 10} km del Circuito fuera de los sectores con mapas descargables. Revisá esa parte en Mapas antes de salir.</p></Tarjeta> : null}
+      {preparadoAlDia ? <Enlace variante="principal" href={`/circuitos/${id}/navegar`}>Navegar Circuito</Enlace>
+        : <Tarjeta franja="ambar"><p className="text-base text-texto">Este Circuito aún no quedó preparado en el celular. Abrí la app con señal en casa para descargarlo antes de salir.</p></Tarjeta>}
+      {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ? <div className="flex gap-2">
+        <Boton variante="secundario" disabled={!actualizado?.ok}
+          onClick={() => { if (actualizado?.ok) alEditar(completo.circuito,
+            actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); }}>Editar Circuito</Boton>
+        <Boton variante="destructivo" disabled={ocupado} onClick={() => void retirar()}>Retirar Circuito</Boton>
+      </div> : null}
+    </> : null}
+  </div>;
+}

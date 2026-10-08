@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { crearCamino } from "@/lib/caminos/partes";
+import { largoDeLinea } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { dibujarCircuito, toqueLibre, toqueSobreCamino } from "@/lib/circuitos/dibujo";
 import { resumirCircuito } from "@/lib/circuitos/resumen";
@@ -74,5 +75,23 @@ describe("Resumen permanente del Circuito", () => {
   it("no informa porcentajes como actuales si falta el Camino vinculado", () => {
     const datos = camino();
     expect(resumirCircuito(partes(datos), [], "trekking")).toMatchObject({ ok: false });
+  });
+
+  it("cuenta el final conservado como parte sin unir cuando el Camino corregido ya no llega", () => {
+    const datos = camino();
+    const dibujo = partes(datos);
+    datos.coordenadas = [[0, 0], [0.001, 0], [0.0015, 0]];
+    datos.largoM = largoDeLinea(datos.coordenadas);
+    const anterior = dibujo.at(-1)!;
+    dibujo[dibujo.length - 1] = {
+      ...anterior, coordenadas: [[0, 0], [0.001, 0], [0.0015, 0]],
+      hastaM: datos.largoM,
+    };
+    datos.partes = [{ ...datos.partes[0], hastaM: datos.largoM }];
+    const resultado = resumirCircuito(dibujo, [datos], "trekking", [0.002, 0]);
+    if (!resultado.ok) throw new Error(resultado.error);
+    expect(resultado.datos.partesSinUnir).toBe(1);
+    expect(resultado.datos.separacionDelFinalM).toBeGreaterThan(50);
+    expect(resultado.datos.metrosTotales).toBeLessThan(300);
   });
 });

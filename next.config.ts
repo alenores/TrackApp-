@@ -186,6 +186,7 @@ const withPWA = withPWAInit({
       urlPattern: ({ request, url }: { request: Request; url: URL }) =>
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
         (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
+          /^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
           /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
@@ -203,6 +204,7 @@ const withPWA = withPWAInit({
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
         (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
+          /^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
           /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
@@ -238,7 +240,7 @@ const withPWA = withPWAInit({
       }) =>
         sameOrigin &&
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
-        (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/(?:rutas|zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA_INTERNO,
@@ -254,7 +256,7 @@ const withPWA = withPWAInit({
       /** El documento de las pantallas de entrada: igual que su pedido interno. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
-        (url.pathname === "/" || /^\/(?:rutas|zonas)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/(?:rutas|zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA,

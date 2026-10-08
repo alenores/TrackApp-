@@ -530,11 +530,10 @@ rompe algo** — hasta que falla en el cerro.
 
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
   Sin excepciones.
-- **La app actual llama `ruta` al recorrido subido.** La nueva estructura,
-  todavía sin implementar, separará **Camino** (posibilidad de paso marcada en
-  Mapas) de **Circuito** (plan que puede combinar partes de Caminos existentes
-  con partes dibujadas solo para él, sin redibujar los Caminos). Ver decisión
-  034. **Prohibido «track», «trayecto» y
+- **La app anterior llama `ruta` al recorrido subido.** La estructura nueva
+  separa **Camino** (posibilidad de paso marcada en Mapas) de **Circuito**
+  (puede combinar partes de Caminos existentes con partes dibujadas solo para
+  él, sin redibujar los Caminos). Ver decisión 034. **Prohibido «track», «trayecto» y
   «recorrido» como nombres alternativos de esos conceptos.** La única
   excepción es `TrackApp`, que es el nombre del producto.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
@@ -573,7 +572,8 @@ producto), **premium** (sus amigos) y **normal** (el resto).
 
 **Para contenido de Mapas y Circuitos ya hay permisos decididos**. En Mapas se
 aplicaron a interfaz, acciones y base; faltan pruebas con las tres categorías
-reales. Circuitos sigue sin implementar. Administrador y Premium crean y editan lo propio;
+reales. Circuitos ya tiene editor, detalle, guardado y navegación; faltan pruebas
+de uso sin señal en un celular real. Administrador y Premium crean y editan lo propio;
 Administrador edita todo; Normal solo consulta. Normal puede registrar su
 Salida y cargarle fotos. No se inventan permisos para otras funciones. Ver
 `docs/USUARIOS.md`.

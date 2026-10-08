@@ -1,18 +1,14 @@
 # Arquitectura de TrackApp
 
-> Última revisión: 2026-10-07
+> Última revisión: 2026-10-08
 
-> **Estado de la separación (2026-10-07):** Mapas ya tiene Caminos
-> independientes para las alternativas de paso. Circuitos se dibuja punto por
-> punto; si dos toques seguidos caen en un mismo Camino, sigue su línea. La
-> lógica pura de ese dibujo está preparada en `lib/circuitos/dibujo.ts` y tiene
-> pruebas. El mapa compartido también tiene capas separadas para las partes
-> propias del Circuito y las tomadas de Caminos; la pantalla todavía no las
-> alimenta. Aún no hay tabla, pantalla ni navegación de Circuitos. Ver
-> decisiones 034, 044, 046 y 047. El cálculo puro del resumen permanente y su
-> pieza visual ya están preparados, pero todavía no hay detalle donde mostrarlos.
-> El resto de este documento describe principalmente la
-> arquitectura anterior de Rutas.
+> **Estado de la separación (2026-10-08):** Mapas tiene Caminos independientes.
+> Circuitos tiene tabla, editor punto por punto, detalle con resumen permanente
+> y navegación desde la copia preparada en el celular. Al abrir un Circuito,
+> las correcciones de sus Caminos se aplican en orden usando la historia de
+> geometrías de la base. La puesta al día prepara la línea y el resumen antes
+> de salir; navegar no pide datos a internet. El módulo anterior de Rutas
+> todavía convive con Circuitos.
 >
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores
 > solo organizan la cobertura y descarga de mapas. Los Caminos y Circuitos no

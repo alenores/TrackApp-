@@ -3,6 +3,8 @@ import { olvidarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
 import { borrarTodosLosMapasDelCelular } from "@/lib/mapas/descarga";
 import { borrarPaquete } from "@/lib/offline/paquete";
 import { borrarTodosLosRecorridos } from "@/lib/offline/recorridos";
+import { borrarCircuitosPreparadosQueSobran } from "@/lib/offline/circuitos";
+import { borrarLineasDeCaminosQueSobran } from "@/lib/offline/lineas-de-caminos";
 import { borrarTodosLosRegistros } from "@/lib/salidas/registro";
 
 /**
@@ -29,6 +31,9 @@ export async function borrarLoGuardadoEnElCelular(): Promise<void> {
   } catch {
     // Ídem.
   }
+
+  await borrarCircuitosPreparadosQueSobran([]);
+  await borrarLineasDeCaminosQueSobran([]);
 
   olvidarMiPerfil();
 

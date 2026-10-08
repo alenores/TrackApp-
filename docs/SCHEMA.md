@@ -143,6 +143,46 @@ esta tabla; falta la prueba completa de uso antes de publicar el cambio.
 
 ---
 
+## circuitos
+
+Creada el 2026-10-08. Guarda el Circuito como una secuencia de puntos y partes
+propias o vinculadas a Caminos. No pertenece a una zona ni a un sector.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `perfil_id` | uuid | autor, inmutable |
+| `nombre` | varchar(120) | obligatorio |
+| `actividad` | actividad_ruta | una de las cinco actividades existentes |
+| `puntos` | jsonb | puntos elegidos al dibujar, incluidos los que caen sobre Caminos |
+| `partes` | jsonb | partes propias y tomadas de Caminos, en orden |
+| `caminos_base` | jsonb | línea y versión de cada Camino usado al guardar |
+| `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | fechas habituales; retiro lógico |
+
+Administrador y Premium crean; Premium edita o retira lo propio y Administrador
+cualquiera. Normal solo consulta. RLS está activo y no se concede borrado físico.
+El resumen del Circuito se calcula desde las partes y la clasificación vigente
+de los Caminos; no se guarda como texto. La navegación lee una copia preparada
+en el celular.
+
+## correcciones_de_caminos
+
+Guarda cada cambio de forma de un Camino para trasladar las partes vinculadas
+de los Circuitos cuando se los vuelve a abrir o descargar.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | bigint | número correlativo |
+| `camino_id` | bigint | Camino corregido |
+| `version_anterior`, `version_nueva` | integer | versiones consecutivas |
+| `geometria_anterior`, `geometria_nueva` | jsonb | líneas antes y después |
+| `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | fechas habituales |
+
+La inserta un disparador al corregir `caminos.geometria`. Los usuarios con
+sesión pueden leerla; no pueden escribir ni borrar directamente.
+
+---
+
 ## anotaciones
 
 | Columna | Tipo | Notas |
@@ -315,3 +355,7 @@ usuario logueado.
 de la base ese día (`storage.buckets`) y reemplazan lo que decía antes, que era
 un resumen y le faltaba `text/xml`. El depósito `fotos-anotaciones` se agregó el
 mismo día, al crear las anotaciones con foto.
+
+**Actualizado el 2026-10-08.** Se aplicó la migración de `circuitos` y
+`correcciones_de_caminos` al proyecto TrackApp y se verificó que ambas tablas
+tienen RLS activo y sus políticas. No se leyeron filas de usuarios.

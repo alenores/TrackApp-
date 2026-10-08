@@ -48,9 +48,10 @@ solo puede consultar ese contenido: **no puede crear ni editar anotaciones
 durante la navegación**. Puede cargar fotos en su propia Salida y registrar
 una Salida durante el paseo para subirla al recuperar la señal.
 
-**Circuitos (decisión de Ale, 2026-10-05):** Administrador y Premium podrán
-crearlos y editar los propios; el Administrador podrá editar todos. Normal
-solo podrá consultarlos. Circuitos todavía no existe en la app.
+**Circuitos (decisión de Ale, 2026-10-05):** Administrador y Premium pueden
+crearlos y editar los propios; el Administrador puede editar todos. Normal
+solo puede consultarlos. Estos permisos se aplican en la interfaz, las acciones
+y la base; faltan pruebas con las tres categorías reales.
 
 ## Funciones futuras
 

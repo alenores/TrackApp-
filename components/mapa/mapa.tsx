@@ -61,6 +61,7 @@ const CAPAS_DE_PARTES = ["ruta-por-explorar", "ruta-transitable", "ruta-a-pie", 
 const FUENTE_CAMINOS = "caminos";
 const CAPAS_DE_CAMINOS = ["camino-otra-actividad", "camino-por-explorar", "camino-transitable", "camino-a-pie", "camino-sin-paso"];
 const FUENTE_CIRCUITO = "circuito";
+const FUENTE_FINAL_CONSERVADO = "final-conservado-del-circuito";
 const CAPAS_DEL_CIRCUITO = ["circuito-propio", "circuito-camino-por-explorar", "circuito-camino-transitable", "circuito-camino-a-pie", "circuito-camino-sin-paso"];
 const FUENTE_POSICION = "mi-posicion";
 const FUENTE_ANOTACIONES = "anotaciones";
@@ -131,6 +132,8 @@ type MapaProps = {
   caminos?: FeatureCollection | null;
   /** El Circuito conserva distintas las partes propias y las tomadas de Caminos. */
   circuito?: FeatureCollection | null;
+  /** Final marcado que ya no toca al Camino corregido: se ve sin unirlo con una línea supuesta. */
+  finalConservadoDelCircuito?: number[] | null;
   /** En PC, muestra junto al cursor las actividades de cada Camino. */
   mostrarActividadesDeCaminoAlPasar?: boolean;
   /** Un clic en cualquier lugar arma el Circuito; caminoId es nulo fuera de un Camino. */
@@ -318,6 +321,7 @@ export function Mapa({
   recorrido = null,
   caminos = null,
   circuito = null,
+  finalConservadoDelCircuito = null,
   mostrarActividadesDeCaminoAlPasar = false,
   alMarcarPuntoDelCircuito,
   verticesDeCamino = null,
@@ -564,6 +568,7 @@ export function Mapa({
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_CAMINOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_CIRCUITO, { type: "geojson", data: VACIO });
+      mapa.addSource(FUENTE_FINAL_CONSERVADO, { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-circuito", { type: "geojson", data: VACIO });
       mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
@@ -715,6 +720,13 @@ export function Mapa({
       mapa.addLayer({ id: "circuito-sin-paso-x", type: "symbol", source: "x-sin-paso-circuito",
         layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
         paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 } });
+      mapa.addLayer({ id: "circuito-final-conservado", type: "circle", source: FUENTE_FINAL_CONSERVADO,
+        paint: { "circle-color": colores.circuitoPropio, "circle-radius": 7,
+          "circle-stroke-color": colores.circuitoBorde, "circle-stroke-width": 3 } });
+      mapa.addLayer({ id: "circuito-final-conservado-nombre", type: "symbol", source: FUENTE_FINAL_CONSERVADO,
+        layout: { "text-field": "Fin marcado", "text-font": ["Noto Sans Regular"],
+          "text-size": 15, "text-offset": [0, 1.6], "text-allow-overlap": true },
+        paint: { "text-color": colores.circuitoPropio, "text-halo-color": colores.circuitoBorde, "text-halo-width": 2 } });
       mapa.addLayer({
         id: "vertices-de-camino", type: "circle", source: "vertices-de-camino",
         paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
@@ -925,6 +937,10 @@ export function Mapa({
       }
       mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("circuito-final-conservado", "circle-color", colores.circuitoPropio);
+      mapa.setPaintProperty("circuito-final-conservado", "circle-stroke-color", colores.circuitoBorde);
+      mapa.setPaintProperty("circuito-final-conservado-nombre", "text-color", colores.circuitoPropio);
+      mapa.setPaintProperty("circuito-final-conservado-nombre", "text-halo-color", colores.circuitoBorde);
       mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.rectanguloZona);
       mapa.setPaintProperty("camino-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
@@ -1036,6 +1052,16 @@ export function Mapa({
       ponerDatos(mapa, "x-sin-paso-circuito", circuito ? puntosSinPaso(circuito) : VACIO);
     });
   }, [circuito]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, FUENTE_FINAL_CONSERVADO, finalConservadoDelCircuito ? {
+      type: "FeatureCollection",
+      features: [{ type: "Feature", properties: {},
+        geometry: { type: "Point", coordinates: finalConservadoDelCircuito } }],
+    } : VACIO));
+  }, [finalConservadoDelCircuito]);
 
   useEffect(() => {
     const mapa = mapaRef.current;

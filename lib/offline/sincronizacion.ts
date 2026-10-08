@@ -4,6 +4,10 @@ import { esperarConexion } from "@/lib/conexion";
 import { traerTodasLasFilas } from "@/lib/supabase/listas";
 import { leerRectangulo } from "@/lib/datos/rectangulo";
 import { COLUMNAS_DE_CAMINO, leerFilaDeCamino, type CaminoGuardado, type CaminoSinLinea } from "@/lib/caminos/datos";
+import { COLUMNAS_DE_CIRCUITO, leerFilaDeCircuito, type CircuitoGuardado } from "@/lib/circuitos/datos";
+import { prepararCircuitosParaElCelular } from "@/lib/circuitos/preparacion";
+import type { CorreccionDeCamino } from "@/lib/circuitos/actualizar";
+import { borrarCircuitosPreparadosQueSobran, guardarCircuitosPreparados } from "@/lib/offline/circuitos";
 import { borrarLineasDeCaminosQueSobran, guardarLineasDeCaminos } from "@/lib/offline/lineas-de-caminos";
 import {
   elPaqueteQuedoViejo,
@@ -42,7 +46,7 @@ import type {
  * Ver docs/decisiones/012-modelo-de-descarga.md
  */
 
-const TABLAS_DEL_PAQUETE = ["rutas", "zonas", "sectores", "anotaciones", "caminos"] as const;
+const TABLAS_DEL_PAQUETE = ["rutas", "zonas", "sectores", "anotaciones", "caminos", "circuitos", "correcciones_de_caminos"] as const;
 
 export type ResultadoDeSincronizacion =
   | { clase: "al_dia"; paquete: Paquete | null }
@@ -239,8 +243,7 @@ async function bajarCaminos(): Promise<{
   const supabase = crearClienteEnElNavegador();
   const { count, error: errorDelTotal } = await supabase
     .from("caminos")
-    .select("id", { count: "exact", head: true })
-    .is("eliminado_en", null);
+    .select("id", { count: "exact", head: true });
   if (errorDelTotal || count === null) {
     return { caminos: [], completa: false, motivo: `No se pudo contar los Caminos: ${errorDelTotal?.message ?? "la base no devolvió el total"}.` };
   }
@@ -249,7 +252,6 @@ async function bajarCaminos(): Promise<{
     supabase
       .from("caminos")
       .select(COLUMNAS_DE_CAMINO)
-      .is("eliminado_en", null)
       .order("id", { ascending: true })
       .range(desde, hasta),
   );
@@ -265,6 +267,57 @@ async function bajarCaminos(): Promise<{
     caminos.push(leido.datos);
   }
   return { caminos, completa: true };
+}
+
+async function bajarCircuitos(): Promise<{ circuitos: CircuitoGuardado[]; completa: boolean; motivo?: string }> {
+  const base = crearClienteEnElNavegador();
+  const total = await base.from("circuitos").select("id", { count: "exact", head: true })
+    .is("eliminado_en", null);
+  if (total.error || total.count === null) {
+    return { circuitos: [], completa: false, motivo: `No se pudo contar los Circuitos: ${total.error?.message ?? "la base no contestó"}.` };
+  }
+  const filas = await traerTodasLasFilas<Record<string, unknown>>((desde, hasta) =>
+    base.from("circuitos").select(COLUMNAS_DE_CIRCUITO).is("eliminado_en", null)
+      .order("id", { ascending: true }).range(desde, hasta));
+  if (!filas.completa || filas.filas.length !== total.count) {
+    return { circuitos: [], completa: false, motivo: "La lista de Circuitos llegó incompleta. Volvé a poner la app al día con señal." };
+  }
+  const circuitos: CircuitoGuardado[] = [];
+  for (const fila of filas.filas) {
+    const leido = leerFilaDeCircuito(fila);
+    if (!leido.ok) return { circuitos: [], completa: false, motivo: leido.error };
+    circuitos.push(leido.datos);
+  }
+  return { circuitos, completa: true };
+}
+
+async function bajarCorrecciones(): Promise<{ correcciones: CorreccionDeCamino[]; completa: boolean; motivo?: string }> {
+  const base = crearClienteEnElNavegador();
+  const total = await base.from("correcciones_de_caminos").select("id", { count: "exact", head: true });
+  if (total.error || total.count === null) {
+    return { correcciones: [], completa: false, motivo: `No se pudo contar las correcciones de Caminos: ${total.error?.message ?? "la base no contestó"}.` };
+  }
+  const filas = await traerTodasLasFilas<Record<string, unknown>>((desde, hasta) =>
+    base.from("correcciones_de_caminos")
+      .select("id, camino_id, version_anterior, version_nueva, geometria_anterior, geometria_nueva")
+      .order("id", { ascending: true }).range(desde, hasta));
+  if (!filas.completa || filas.filas.length !== total.count) {
+    return { correcciones: [], completa: false, motivo: "La historia de Caminos llegó incompleta. Volvé a poner la app al día con señal." };
+  }
+  const correcciones: CorreccionDeCamino[] = [];
+  for (const fila of filas.filas) {
+    const anterior = fila.geometria_anterior as { coordinates?: unknown } | null;
+    const nueva = fila.geometria_nueva as { coordinates?: unknown } | null;
+    if (!Number.isInteger(Number(fila.camino_id)) || !Number.isInteger(fila.version_anterior)
+      || !Number.isInteger(fila.version_nueva) || !Array.isArray(anterior?.coordinates)
+      || !Array.isArray(nueva?.coordinates)) {
+      return { correcciones: [], completa: false, motivo: "Una corrección de Camino llegó incompleta. Avisale al administrador." };
+    }
+    correcciones.push({ caminoId: Number(fila.camino_id), versionAnterior: fila.version_anterior as number,
+      versionNueva: fila.version_nueva as number,
+      coordenadasAnteriores: anterior.coordinates as number[][], coordenadasNuevas: nueva.coordinates as number[][] });
+  }
+  return { correcciones, completa: true };
 }
 
 /**
@@ -287,12 +340,14 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       return { clase: "al_dia", paquete: guardado };
     }
 
-    const [rutas, zonas, sectores, anotaciones, caminos] = await Promise.all([
+    const [rutas, zonas, sectores, anotaciones, caminos, circuitos, correcciones] = await Promise.all([
       bajarRutas(),
       bajarZonas(),
       bajarSectores(),
       bajarAnotaciones(),
       bajarCaminos(),
+      bajarCircuitos(),
+      bajarCorrecciones(),
     ]);
 
     // Si algo vino cortado, lo que había sigue sirviendo. No se pisa a medias.
@@ -301,13 +356,13 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       !zonas.completa ||
       !sectores.completa ||
       !anotaciones.completa ||
-      !caminos.completa
+      !caminos.completa || !circuitos.completa || !correcciones.completa
     ) {
       return {
         clase: "fallo",
         paquete: guardado,
         motivo:
-          rutas.motivo ?? caminos.motivo ??
+          rutas.motivo ?? caminos.motivo ?? circuitos.motivo ?? correcciones.motivo ??
           "La descarga vino cortada, así que se dejó lo que ya estaba guardado.",
       };
     }
@@ -322,7 +377,16 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       }
     }
 
-    if (!(await guardarLineasDeCaminos(caminos.caminos))) {
+    const preparados = prepararCircuitosParaElCelular(circuitos.circuitos, caminos.caminos, correcciones.correcciones);
+    if (!preparados.ok) {
+      return { clase: "fallo", paquete: guardado, motivo: preparados.error };
+    }
+    if (!(await guardarCircuitosPreparados(preparados.datos.dibujos))) {
+      return { clase: "fallo", paquete: guardado,
+        motivo: "Los Circuitos no entraron en este celular. Liberá espacio y abrí la app con conexión antes de salir." };
+    }
+    const caminosVivos = caminos.caminos.filter((camino) => camino.eliminadoEn === null);
+    if (!(await guardarLineasDeCaminos(caminosVivos))) {
       return {
         clase: "fallo",
         paquete: guardado,
@@ -330,7 +394,7 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       };
     }
 
-    const caminosSinLinea: CaminoSinLinea[] = caminos.caminos.map(({ coordenadas, ...camino }) => {
+    const caminosSinLinea: CaminoSinLinea[] = caminosVivos.map(({ coordenadas, ...camino }) => {
       // La línea ya quedó en el depósito grande; no la dupliques en el guardado simple.
       void coordenadas;
       return camino;
@@ -339,6 +403,7 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
     const nuevo: Omit<Paquete, "guardadoEn"> = {
       rutas: rutas.resumenes,
       caminos: caminosSinLinea,
+      circuitos: preparados.datos.fichas,
       zonas: zonas.zonas,
       sectores: sectores.sectores,
       anotaciones: anotaciones.anotaciones,
@@ -358,6 +423,7 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
     }
 
     await borrarLineasDeCaminosQueSobran(caminosSinLinea);
+    await borrarCircuitosPreparadosQueSobran(preparados.datos.fichas);
     await borrarRecorridosQueSobran(rutas.resumenes.map((ruta) => ruta.id));
 
     return {

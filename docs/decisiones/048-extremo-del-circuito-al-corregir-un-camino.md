@@ -1,6 +1,6 @@
 # 048 — Conservar el lugar donde termina el Circuito
 
-**Decidido por Alejandro:** 2026-10-07 · **Estado:** definición de producto; implementación pendiente
+**Decidido por Alejandro:** 2026-10-07 · **Estado:** implementado el 2026-10-08
 
 ## Decisión
 
@@ -23,4 +23,4 @@ clasifica el Camino.
 - **Leído en tiempo real:** decisiones 042, 043, 044 y 047; pregunta 5 del informe técnico de Circuitos; lógica actual de dibujo y corrección de Caminos.
 - **Decidido por Alejandro:** conservar el lugar anterior del final del Circuito cuando se corrige la punta del Camino.
 - **Inferido:** si la línea corregida ya no llega a ese lugar, no se dibuja una unión inexistente; se aplica la regla ya aprobada de partes sin unir.
-- **Pendiente de verificación:** guardado del punto final, traslado de los demás puntos al corregir el Camino e integración en la futura pantalla de Circuitos.
+- **Pendiente de verificación:** prueba en un celular real de un Circuito cuyo Camino se acorta antes de salir.

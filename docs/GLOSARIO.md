@@ -213,12 +213,12 @@ mismo Camino en la app, sin crear otro.
 No es una anotación de trazo ni una salida planificada. Ale confirmó el nombre
 «Caminos» el 2026-10-05.
 
-**Circuito** — *concepto aprobado, todavía no existe en la app*
+**Circuito** — *implementado en su propio módulo*
 La salida que se planifica tomando partes de Caminos ya marcados, dibujando
 partes propias o combinando ambas. Al tomar un Camino no hace falta redibujarlo.
 Las partes propias pueden seguir vías evidentes del mapa de fondo. Los puntos
 y trazos sirven de referencia, sin ser obligatorios. Armar un Circuito no crea
-ni modifica contenido de Mapas. Su desarrollo queda para una etapa posterior.
+ni modifica contenido de Mapas.
 Es distinto de una **Salida**, que cuenta lo que ocurrió realmente.
 En la pantalla se dice **Circuito**; no se introduce «plan» como nombre
 alternativo. Si sus partes quedan separadas, se avisa **«Partes sin unir»**.

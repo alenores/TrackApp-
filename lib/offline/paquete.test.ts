@@ -11,6 +11,7 @@ function paquete(ultimaModificacion: string | null): Paquete {
   return {
     rutas: [],
     caminos: [],
+    circuitos: [],
     zonas: [],
     sectores: [],
     anotaciones: [],

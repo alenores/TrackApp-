@@ -35,6 +35,7 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
       {datos.tramosDeOtraActividad > 0 ? <p className="text-base text-texto">{datos.tramosDeOtraActividad} {datos.tramosDeOtraActividad === 1 ? "tramo usa" : "tramos usan"} Caminos de otra actividad. Mirá el detalle antes de salir.</p> : null}
       {datos.tramosDeCaminosRetirados > 0 ? <p className="text-base text-texto">{datos.tramosDeCaminosRetirados} {datos.tramosDeCaminosRetirados === 1 ? "tramo pertenece" : "tramos pertenecen"} a Caminos retirados de Mapas.</p> : null}
       {datos.partesSinUnir > 0 ? <p className="text-base font-semibold text-texto">Partes sin unir: {datos.partesSinUnir}. Revisá dónde se interrumpe el Circuito antes de salir.</p> : null}
+      {datos.separacionDelFinalM > 0 ? <p className="text-base text-texto">El Camino corregido termina {kilometros(datos.separacionDelFinalM)} antes del final que marcaste. En el mapa se ven los dos lugares sin dibujar una unión.</p> : null}
       {datos.consideraciones.length > 0 ? (
         <div>
           <h3 className="text-lg font-semibold text-texto">Consideraciones</h3>

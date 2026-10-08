@@ -24,14 +24,16 @@ const NOMBRE = "trackapp-offline";
  * fotos de las anotaciones. La 4 suma las anotaciones marcadas sin señal que
  * esperan para subirse. La 5 suma las salidas registradas navegando.
  *
- * La 6 suma las líneas de Caminos. Subir de número **no borra nada**: al abrir, solo se agregan los estantes que
+ * La 6 suma las líneas de Caminos. La 7 suma los Circuitos preparados.
+ * Subir de número **no borra nada**: al abrir, solo se agregan los estantes que
  * faltan; lo que ya estaba guardado queda como estaba.
  */
-const VERSION = 6;
+const VERSION = 7;
 
 export const ESTANTES = {
   recorridos: "recorridos",
   lineasDeCaminos: "lineas-de-caminos",
+  circuitosPreparados: "circuitos-preparados",
   teselas: "teselas",
   mapasDeSector: "mapas-de-sector",
   fotosDeAnotacion: "fotos-de-anotacion",

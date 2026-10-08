@@ -1,6 +1,6 @@
 # 047 — Resumen permanente de cada Circuito
 
-**Decidido por Alejandro:** 2026-10-07 · **Estado:** definición de producto; cálculo y presentación preparados, integración pendiente
+**Decidido por Alejandro:** 2026-10-07 · **Estado:** integrado al detalle de Circuitos el 2026-10-08
 
 ## Decisión
 
@@ -14,7 +14,7 @@ Las decisiones 042, 043 y 045 mantienen el comportamiento del Circuito y sus Cam
 
 ## Estado de implementación
 
-La función que calcula el resumen y la pieza visual están preparadas y probadas en aislamiento. Circuitos todavía no tiene pantalla de detalle, guardado ni navegación; por eso el resumen aún no es visible en la app.
+El detalle muestra el resumen debajo del mapa. La preparación del celular lo recalcula con las clasificaciones vigentes de los Caminos, y las pruebas automáticas cubren cambios de clasificación, un Camino retirado y un final separado.
 
 ## Auditoría de fuentes
 

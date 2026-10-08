@@ -14,6 +14,7 @@ import type { Paquete } from "@/lib/offline/paquete";
 const VACIO: Paquete = {
   rutas: [],
   caminos: [],
+  circuitos: [],
   zonas: [],
   sectores: [],
   anotaciones: [],
@@ -35,7 +36,7 @@ function direcciones(p: Paquete): string[] {
 
 describe("qué pantallas se dejan listas", () => {
   it("las de entrada y el mapa libre van siempre, aunque no haya nada cargado", () => {
-    expect(direcciones(VACIO)).toEqual(["/", "/rutas", "/zonas", "/mapa-libre"]);
+    expect(direcciones(VACIO)).toEqual(["/", "/rutas", "/zonas", "/circuitos", "/mapa-libre"]);
   });
 
   it("cada zona del paquete tiene la suya", () => {
@@ -49,6 +50,16 @@ describe("qué pantallas se dejan listas", () => {
     const cuales = direcciones(paquete([], [12]));
     expect(cuales).toContain("/rutas/12");
     expect(cuales).toContain("/navegacion/12");
+  });
+
+  it("cada Circuito deja lista su navegación sin señal", () => {
+    const conCircuito = { ...VACIO, circuitos: [{ id: 41, nombre: "Vuelta", actividad: "trekking" as const,
+      actualizadoEn: "2026-10-08", rectangulo: null }] };
+    const pantallas = pantallasParaCalentar(conCircuito);
+    const navegacion = pantallas.find((cada) => cada.direccion === "/circuitos/41/navegar");
+    expect(navegacion?.deposito).toBe(
+      pantallas.find((cada) => cada.direccion === "/mapa-libre")?.deposito,
+    );
   });
 
   it("el mapa libre queda listo siempre, en el depósito del cerro", () => {

@@ -1,5 +1,6 @@
 import type { Anotacion, RutaSinRecorrido, Sector, Zona } from "@/types/database";
 import type { CaminoSinLinea } from "@/lib/caminos/datos";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
 import { completarAnotacionVieja } from "@/lib/anotaciones/fila";
 
 /**
@@ -25,6 +26,7 @@ const CLAVE_GALLETITA = "trackapp-tiene-paquete";
 export type Paquete = {
   rutas: RutaSinRecorrido[];
   caminos: CaminoSinLinea[];
+  circuitos: CircuitoSinDibujo[];
   zonas: Zona[];
   sectores: Sector[];
   anotaciones: Anotacion[];
@@ -47,12 +49,14 @@ export type Paquete = {
  *
  * La 2 sumó a las anotaciones la foto chica, quién las hizo y cuándo se
  * marcaron (2026-09-24). La 3 suma los Caminos sin sus líneas pesadas.
+ * La 4 suma las fichas de Circuitos; su dibujo preparado vive en el depósito grande.
  */
-export const FORMATO_DEL_PAQUETE = 3;
+export const FORMATO_DEL_PAQUETE = 4;
 
 const PAQUETE_VACIO: Paquete = {
   rutas: [],
   caminos: [],
+  circuitos: [],
   zonas: [],
   sectores: [],
   anotaciones: [],
@@ -113,6 +117,7 @@ export function leerPaquete(): Paquete | null {
       ...paquete,
       rutas: paquete.rutas ?? [],
       caminos: paquete.caminos ?? [],
+      circuitos: paquete.circuitos ?? [],
       zonas: paquete.zonas ?? [],
       sectores: paquete.sectores ?? [],
       anotaciones: (paquete.anotaciones ?? []).map(completarAnotacionVieja),
@@ -191,8 +196,8 @@ export function elPaqueteQuedoViejo(
   ultimaModificacionEnLaBase: string | null,
 ): boolean {
   if (!paquete) return true;
-  if (!ultimaModificacionEnLaBase) return false;
   if (paquete.formato !== FORMATO_DEL_PAQUETE) return true;
+  if (!ultimaModificacionEnLaBase) return false;
   if (!paquete.ultimaModificacion) return true;
 
   return (

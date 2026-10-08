@@ -4,6 +4,51 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-08 — Circuitos guardados y navegación
+
+### Estado al inicio
+
+Estaban preparados el dibujo punto por punto, las capas diferenciadas del mapa,
+el resumen permanente y las decisiones de producto. Faltaban el guardado, las
+pantallas y la copia para navegar sin señal.
+
+### Lo que se hizo
+
+- Se creó la tabla de Circuitos y la historia de correcciones de Caminos, con
+  permisos por categoría. La migración se aplicó a la base de TrackApp.
+- Se integraron lista, editor, detalle y navegación de Circuitos. El editor
+  dibuja libremente y sigue un Camino cuando dos puntos caen sobre él.
+- El detalle muestra el resumen permanente, las clasificaciones vigentes, los
+  Caminos retirados y las separaciones. También avisa si faltan mapas o parte
+  del Circuito queda fuera de los sectores descargables.
+- La puesta al día prepara la línea y el resumen para el celular. La pantalla
+  de navegar solo lee lo guardado, con GPS y avisos si la posición envejece.
+- Se corrigió el salto de escala al marcar el primer punto. Se comprobó el
+  editor visualmente en modo sol y noche. Pasaron TypeScript, ESLint y 765
+  pruebas automáticas.
+
+### Decisiones tomadas
+
+Se implementaron las decisiones 034 y 042–048 ya aprobadas por Alejandro. No
+se introdujo una nueva decisión de producto.
+
+### Documentos actualizados
+
+AGENTS, arquitectura, esquema, glosario, usuarios, decisiones 042, 047 y 048,
+y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Queda verificar la navegación de un Circuito real en un celular con modo avión
+y probar crear/editar/consultar con cuentas reales de las tres categorías. No
+se crearon Circuitos de prueba en la base de producción.
+
+### Pendientes para la próxima
+
+Hacer la prueba guiada con Alejandro, en particular un Circuito que tome un
+Camino y otro con una parte libre. El módulo anterior de Rutas sigue
+conviviendo hasta definir su retiro.
+
 ## Sesión 2026-10-07 — Inicio del diseño de Circuitos en paralelo
 
 ### Estado al inicio

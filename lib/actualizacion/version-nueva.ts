@@ -131,5 +131,7 @@ export function cuandoRecargarPorVersionNueva(estado: {
  * mapa libre. Mientras están abiertas no se recarga la app ni se pone al día.
  */
 export function esLaPantallaDeNavegar(camino: string): boolean {
-  return camino.startsWith("/navegacion/") || /^\/mapa-libre\/?$/.test(camino);
+  return camino.startsWith("/navegacion/")
+    || /^\/circuitos\/\d+\/navegar\/?$/.test(camino)
+    || /^\/mapa-libre\/?$/.test(camino);
 }

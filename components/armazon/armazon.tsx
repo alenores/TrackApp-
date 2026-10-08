@@ -68,6 +68,7 @@ export function Armazon({
    * de la pantalla**.
    */
   const pantallaAncha =
+    pathname === "/circuitos" ||
     pathname === "/zonas" ||
     /^\/zonas\/(nueva|\d+(\/(editar|sectores\/(nueva|\d+\/(editar|anotaciones))))?)$/.test(
       pathname,
