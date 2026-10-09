@@ -13,6 +13,13 @@
 
 ## Mapas y offline
 
+**Mapa de Google**
+Imagen satelital que se mira con conexión en las fichas y mapas de consulta.
+Muestra Caminos, Circuitos, zonas, sectores y anotaciones que TrackApp ya tiene.
+No se usa para editar ni para navegar; no se descarga. Hasta activarlo se ve
+el satelital propio; si Google activado falla, la consulta lo explica.
+
+
 **Mapas**
 El módulo para explorar Córdoba. Tiene pestañas de zonas, mapa general,
 Caminos, Anotaciones y descargas. Administrador y Premium pueden sumar y editar

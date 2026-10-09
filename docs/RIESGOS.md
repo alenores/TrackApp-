@@ -1,5 +1,20 @@
 # Riesgos y deuda técnica
 
+## 🟡 Google en consultas: activación, costo y condiciones
+
+**Detectado:** 2026-10-09. La integración de Map Tiles API está preparada, pero
+falta crear el proyecto facturable, habilitar la API y cargar una clave de
+servidor. Sin eso se ve el satelital propio. Antes de activar conviene
+fijar un cupo diario en Google Cloud. Todavía no hubo prueba visual con imágenes
+reales.
+
+El código pide créditos para el área visible y excluye las imágenes del motor
+offline. Sigue sin confirmación de Google la interpretación contractual de usar
+su mapa de consulta dentro de una app que también tiene otro proveedor en otras
+pantallas. Ver decisión 050.
+
+---
+
 > Última revisión: 2026-09-21 (la versión nueva rompía la pantalla abierta)
 > Estado: `🔴 abierto` · `🟡 mitigado` · `✅ resuelto`
 

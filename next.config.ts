@@ -127,6 +127,13 @@ const withPWA = withPWAInit({
       options: {},
     },
     {
+      /** Las imágenes de Google son solo de consulta con señal y jamás van al depósito offline. */
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+        sameOrigin && url.pathname.startsWith("/api/mapa-google/"),
+      handler: "NetworkOnly",
+      options: {},
+    },
+    {
       urlPattern: /\/_next\/static\/chunks\/.+\.js$/i,
       handler: "CacheFirst",
       options: {

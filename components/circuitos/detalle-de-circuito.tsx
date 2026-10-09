@@ -175,7 +175,7 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
       {dibujo && !dibujo.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
         <div className="space-y-4">
-          {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} principal encuadre={encuadreMostrado}
+          {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} consultaGoogle={haySenal} principal encuadre={encuadreMostrado}
             caminos={caminosDelFondo} circuito={dibujoMostrado} puntoSenalado={puntoSenalado}
             finalConservadoDelCircuito={finalMostrado} fondosDisponibles={fondosDisponibles} /> : null}
           {alturasMostradas ? <AlturasDeCircuito alturas={alturasMostradas}

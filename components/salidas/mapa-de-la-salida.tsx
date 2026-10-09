@@ -129,6 +129,7 @@ export function MapaDeLaSalida({
           recorrido={recorrido}
           encuadre={encuadre}
           enVivo
+          consultaGoogle
           pantallaCompleta
           alCerrarPantallaCompleta={alCerrar}
           className="h-full"

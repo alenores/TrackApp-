@@ -4,6 +4,54 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-09 — Google satelital solo en consultas
+
+### Estado al inicio
+
+Producción y el proyecto local estaban en la misma versión. El mapa offline
+usaba los proveedores ya elegidos; consultas y editores compartían el fondo
+propio en vivo. No había una clave de Google configurada.
+
+### Lo que se hizo
+
+- Ale aprobó el boceto de consulta con Google, edición con el mapa propio y
+  navegación con los descargados.
+- Las consultas de Mapas, zona, Circuito y Salida pueden mostrar la imagen
+  satelital oficial de Google con sus créditos por área visible. El logotipo
+  proviene del paquete oficial de Google y distingue su imagen de los datos de
+  TrackApp. Editores y las dos navegaciones no ofrecen Google.
+- Un puente con cuenta iniciada mantiene la clave en el servidor. Sin clave,
+  la consulta conserva el satelital propio; si Google activado falla, muestra
+  el motivo y vuelve a ese fondo.
+- El motor offline publicado tiene la regla de Google `NetworkOnly` antes de
+  guardar imágenes. Las pruebas comprueban acceso, `no-store`, coordenadas
+  válidas y que Google no aparezca en la navegación.
+- Pasaron TypeScript, lint sin errores, compilación y 812 pruebas automáticas.
+
+### Decisiones tomadas
+
+Decisión 050. La cuenta de Google y la prueba de imágenes reales siguen
+pendientes. Ale necesita los pasos de activación.
+
+### Documentos actualizados
+
+AGENTS, arquitectura, glosario, riesgos, decisión 050, notas del boceto y este
+registro.
+
+### Deuda o inconsistencias detectadas
+
+El uso de Google en una app que también incluye otro proveedor no cuenta con
+confirmación contractual de Google. La aplicación no pudo probarse con imágenes
+reales ni con un celular en modo avión durante esta sesión.
+
+### Pendientes para la próxima
+
+Crear y limitar el proyecto de Google Maps Platform, configurar la clave de
+Map Tiles API, hacer la prueba visual real en sol y noche y probar navegación en
+modo avión en un celular.
+
+---
+
 ## Sesión 2026-10-08 (tarde) — Alturas, Circuitos completos y retiro de Rutas
 
 ### Estado al inicio

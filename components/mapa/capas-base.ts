@@ -28,10 +28,27 @@ import type { Modo } from "@/lib/modo";
  * docs/decisiones/007-de-donde-salen-los-mapas.md
  */
 
-export type TipoDeFondo = "dibujo" | "satelital";
+export type TipoDeFondo = "dibujo" | "satelital" | "google";
+
+/** La navegación solo puede ofrecer fondos descargados; Google requiere consulta y señal. */
+export function opcionesDelMapa({
+  enVivo, consultaGoogle, haySenal, sesionGoogle, falloGoogle, fondosDescargados,
+}: {
+  enVivo: boolean;
+  consultaGoogle: boolean;
+  haySenal: boolean;
+  sesionGoogle: boolean;
+  falloGoogle: boolean;
+  fondosDescargados: TipoDeFondo[];
+}): TipoDeFondo[] {
+  if (!enVivo) return fondosDescargados.filter((fondo) => fondo !== "google");
+  if (!consultaGoogle) return ["dibujo", "satelital"];
+  return haySenal && sesionGoogle && !falloGoogle ? ["google"] : ["satelital"];
+}
 
 /** El nombre con el que el mapa conoce a la foto satelital. */
 export const FUENTE_SATELITAL = "satelital";
+export const FUENTE_GOOGLE = "google";
 
 /**
  * La foto del terreno, en vivo: solo en las pantallas de administrar.
@@ -154,6 +171,9 @@ export function capasDelFondo(
   );
 
   if (tipo === "dibujo") return dibujo;
+  if (tipo === "google") {
+    return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE }];
+  }
 
   /*
     Sobre la foto van solo los nombres. Los caminos y el relleno del dibujo
@@ -182,7 +202,7 @@ export function capasDelFondo(
 
 /** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */
 export function todasLasCapasDelFondo(modo: Modo): LayerSpecification[] {
-  return [...capasDelFondo(modo, "dibujo"), ...capasDelFondo(modo, "satelital")];
+  return [...capasDelFondo(modo, "dibujo"), ...capasDelFondo(modo, "satelital"), ...capasDelFondo(modo, "google")];
 }
 
 /**

@@ -6,7 +6,9 @@ import * as maplibregl from "maplibre-gl";
 import {
   capasDelFondo,
   estiloDelMapa,
+  FUENTE_GOOGLE,
   iconosDelFondo,
+  opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
   todasLasCapasDelFondo,
   type TipoDeFondo,
@@ -16,12 +18,14 @@ import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 import { useModo } from "@/hooks/use-modo";
+import { useHaySenal } from "@/hooks/use-hay-senal";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
+import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
 import {
   ALTURAS,
   CAPAS_DE_RELIEVE,
@@ -249,6 +253,8 @@ type MapaProps = {
    * ella. La única pantalla que trabaja sin señal es la de navegar.
    */
   enVivo?: boolean;
+  /** Solo consulta: ofrece imagen de Google con señal, nunca en edición ni navegación. */
+  consultaGoogle?: boolean;
   /**
    * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, donde
    * va Simple/Satelital, aparece un cartel chico: «Sin mapa descargado».
@@ -364,6 +370,7 @@ export function Mapa({
   alSenalarZona,
   fichaSobreElMapa,
   enVivo = false,
+  consultaGoogle = false,
   sinMapaDescargado = false,
   miniatura = false,
   className = "",
@@ -441,6 +448,7 @@ export function Mapa({
   /** Lo que se quiso dibujar antes de que el mapa terminara de armarse. */
   const esperandoRef = useRef<Array<() => void>>([]);
   const { modo } = useModo();
+  const haySenal = useHaySenal();
   /**
    * El modo actual, para el armado del mapa.
    *
@@ -459,10 +467,16 @@ export function Mapa({
    */
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno: el que eligió el usuario. */
-  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(fondoInicial);
-  const opcionesDeFondo: TipoDeFondo[] = enVivo
-    ? ["dibujo", "satelital"]
-    : (fondosDisponibles ?? []);
+  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && fondoInicial === "dibujo" ? "google" : fondoInicial);
+  const [sesionGoogle, setSesionGoogle] = useState<string | null>(null);
+  const [googleNoConfigurado, setGoogleNoConfigurado] = useState(false);
+  const [creditosGoogle, setCreditosGoogle] = useState<string | null>(null);
+  const [falloGoogle, setFalloGoogle] = useState<string | null>(null);
+  const sesionGoogleActiva = consultaGoogle && enVivo && haySenal ? sesionGoogle : null;
+  const opcionesDeFondo = opcionesDelMapa({
+    enVivo, consultaGoogle, haySenal, sesionGoogle: Boolean(sesionGoogleActiva),
+    falloGoogle: Boolean(falloGoogle), fondosDescargados: fondosDisponibles ?? [],
+  });
   /**
    * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
    * simple no hay botón: se ven siempre.
@@ -471,7 +485,7 @@ export function Mapa({
   /** El que se ve: el elegido si está bajado; si no, el que haya. */
   const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
     ? tipoElegido
-    : (opcionesDeFondo[0] ?? "dibujo");
+    : (consultaGoogle && tipoElegido === "google" && enVivo ? "satelital" : (opcionesDeFondo[0] ?? "dibujo"));
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -501,7 +515,7 @@ export function Mapa({
       ];
     }
     setAPantallaCompleta(false);
-  }, []);
+  }, [setAPantallaCompleta]);
   /** Cuántas cosas hay dibujadas encima del fondo. */
   const [dibujado, setDibujado] = useState(0);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
@@ -545,6 +559,82 @@ export function Mapa({
     if (listoRef.current) dibujar();
     else esperandoRef.current.push(dibujar);
   };
+
+  // La sesión se abre solo para consulta con señal. No participa del mapa offline.
+  useEffect(() => {
+    if (!consultaGoogle || !enVivo || !haySenal || sesionGoogle || googleNoConfigurado) return;
+    let activo = true;
+    void (async () => {
+      try {
+        const sesion = await abrirSesionDeGoogle();
+        if (activo) {
+          setSesionGoogle(sesion);
+          setGoogleNoConfigurado(sesion === null);
+          setFalloGoogle(null);
+        }
+      } catch (error) {
+        if (activo) {
+          setSesionGoogle(null);
+          setFalloGoogle(error instanceof Error ? error.message : "Google no respondió. Usá el mapa Satelital.");
+        }
+      }
+    })();
+    return () => { activo = false; };
+  }, [consultaGoogle, enVivo, haySenal, sesionGoogle, googleNoConfigurado]);
+
+  useEffect(() => {
+    if (!sesionGoogleActiva) return;
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => {
+      if (!mapa.getSource(FUENTE_GOOGLE)) {
+        mapa.addSource(FUENTE_GOOGLE, {
+          type: "raster",
+          tiles: [`${window.location.origin}/api/mapa-google/tesela/{z}/{x}/{y}?sesion=${encodeURIComponent(sesionGoogleActiva)}`],
+          tileSize: 256,
+          maxzoom: 22,
+        });
+      }
+      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current));
+    });
+  }, [sesionGoogleActiva]);
+
+  useEffect(() => {
+    if (!sesionGoogleActiva || tipoDeFondo !== "google") return;
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    let activo = true;
+    let pedido = 0;
+    const actualizar = () => {
+      if (!listoRef.current) return;
+      const actual = ++pedido;
+      const limites = mapa.getBounds();
+      const normalizar = (valor: number) => ((valor + 180) % 360 + 360) % 360 - 180;
+      const ancho = limites.getEast() - limites.getWest();
+      const consulta = new URLSearchParams({
+        sesion: sesionGoogleActiva,
+        zoom: String(Math.max(0, Math.min(22, Math.round(mapa.getZoom())))),
+        north: String(Math.min(89.999, limites.getNorth())),
+        south: String(Math.max(-89.999, limites.getSouth())),
+        west: String(ancho >= 360 ? -179.999 : normalizar(limites.getWest())),
+        east: String(ancho >= 360 ? 179.999 : normalizar(limites.getEast())),
+      });
+      void (async () => {
+        try {
+          const derechos = await traerCreditosDeGoogle(consulta);
+          if (activo && actual === pedido) setCreditosGoogle(derechos);
+        } catch (error) {
+          if (activo && actual === pedido) {
+            setTipoDeFondo("satelital");
+            setFalloGoogle(error instanceof Error ? error.message : "Google no informó los créditos de la imagen. Usá el mapa Satelital.");
+          }
+        }
+      })();
+    };
+    mapa.on("moveend", actualizar);
+    cuandoEsteListo(actualizar);
+    return () => { activo = false; mapa.off("moveend", actualizar); };
+  }, [sesionGoogleActiva, tipoDeFondo]);
 
   // Armado del mapa. Una sola vez.
   useEffect(() => {
@@ -907,7 +997,12 @@ export function Mapa({
     // Un fondo que no carga no puede quedarse callado.
     mapa.on("error", (evento) => {
       const motivo = evento?.error?.message;
-      if (motivo) setAvisoDelFondo(motivo);
+      if (motivo) {
+        if (tipoDeFondoRef.current === "google") {
+          setTipoDeFondo("satelital");
+          setFalloGoogle(`Google no entregó la imagen: ${motivo}. Usá el mapa Satelital.`);
+        } else setAvisoDelFondo(motivo);
+      }
     });
 
     mapaRef.current = mapa;
@@ -1792,6 +1887,10 @@ export function Mapa({
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           Armando el mapa…
         </p>
+      ) : falloGoogle ? (
+        <p role="alert" className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
+          {falloGoogle}
+        </p>
       ) : avisoDelFondo ? (
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
           El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
@@ -1818,7 +1917,11 @@ export function Mapa({
       {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
-            {opcionesDeFondo.length > 0 ? (
+            {consultaGoogle ? (
+              <span className="pointer-events-auto flex h-7 items-center rounded-full border border-borde-fuerte bg-superficie px-3 text-xs font-semibold text-texto shadow-[var(--sombra-alta)]">
+                {tipoDeFondo === "google" ? "Imagen: Google · datos: TrackApp" : "Consulta · Satelital"}
+              </span>
+            ) : opcionesDeFondo.length > 0 ? (
               <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
                 {(
                   [
@@ -1900,9 +2003,24 @@ export function Mapa({
       ) : null}
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
-      {opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
+      {tipoDeFondo === "google" ? (
+        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-3 text-xs leading-4 text-texto-suave">
+          <span className="rounded bg-superficie px-3 pb-2 pt-3">
+            {/* Los dos archivos son los logotipos oficiales, sin modificaciones. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-4 w-auto" />
+          </span>
+          <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? "Cargando créditos de Google…"}</span>
+        </div>
+      ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
           {QUIEN_HIZO_LA_FOTO}
+        </p>
+      ) : null}
+
+      {consultaGoogle && haySenal && !sesionGoogle && !falloGoogle && !googleNoConfigurado ? (
+        <p role="status" className="pointer-events-none absolute bottom-6 left-2 rounded bg-superficie px-2 py-1 text-sm text-texto">
+          Preparando imagen de Google…
         </p>
       ) : null}
 

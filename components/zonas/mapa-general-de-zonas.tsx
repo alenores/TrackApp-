@@ -65,6 +65,7 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLine
       {errorDeCaminos ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{errorDeCaminos}</p></Tarjeta> : null}
       <CargadorDeMapa
         enVivo
+        consultaGoogle
         principal
         alturaExtendida
         encuadre={CORDOBA_COMPLETA}

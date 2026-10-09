@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es" data-modo="sol">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto · Mapa de consulta y mapa de edición</title>
+<style>
+:root[data-modo="sol"]{--fondo:#f4f7f5;--superficie:#fff;--texto:#10241a;--suave:#3b5145;--borde:#b0c2b6;--boton:#155b39;--boton-texto:#fff;--mapa:#d5dbc9;--cerro:#adbb99;--camino:#126b38;--circuito:#174ea6;--agua:#478fb0;--aviso:#f7edda;--aviso-borde:#9c6500;color-scheme:light}
+:root[data-modo="noche"]{--fondo:#0d1720;--superficie:#192a38;--texto:#f4f9f6;--suave:#d7e3dc;--borde:#8099a0;--boton:#197347;--boton-texto:#fff;--mapa:#314443;--cerro:#4f665e;--camino:#63ed91;--circuito:#a7caff;--agua:#70c3e3;--aviso:#463b27;--aviso-borde:#ffd266;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--fondo);color:var(--texto);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+button{font:inherit;min-height:38px;padding:7px 12px;border:1px solid var(--borde);border-radius:9px;background:var(--superficie);color:var(--texto);font-weight:650;cursor:pointer}
+button.principal{background:var(--boton);border-color:var(--boton);color:var(--boton-texto)}
+.nota,.marco{max-width:1300px;margin:16px auto;padding:16px;background:var(--superficie);border:1px solid var(--borde);border-radius:14px}
+.nota{background:var(--aviso);border-color:var(--aviso-borde)}.nota p{margin:6px 0}.nota strong{font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.cabecera{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--borde);padding-bottom:13px}.marca{font-weight:850;font-size:19px}.marca span{color:var(--boton)}
+h1{font-size:27px;line-height:1.2;margin:18px 0 6px}.sub{color:var(--suave);margin:0 0 16px}.columnas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{border:1px solid var(--borde);border-radius:14px;overflow:hidden}.panel h2{font-size:20px;margin:0}.encabezado{padding:14px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.encabezado p{margin:3px 0 0;color:var(--suave)}
+.mapa{height:360px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 20% 12%,var(--cerro),transparent 29%),radial-gradient(ellipse at 78% 71%,var(--cerro),transparent 38%),repeating-linear-gradient(152deg,transparent 0 36px,rgba(255,255,255,.12) 37px 41px,transparent 43px 75px),var(--mapa)}
+.mapa svg{width:100%;height:100%;display:block}.mapa .rio{fill:none;stroke:var(--agua);stroke-width:9;opacity:.8}.mapa .camino{fill:none;stroke:var(--camino);stroke-width:8;stroke-linecap:round;stroke-dasharray:12 8}.mapa .circuito{fill:none;stroke:var(--circuito);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}.mapa .punto{fill:#a45e00;stroke:white;stroke-width:3}
+.etiqueta{position:absolute;top:12px;left:12px;background:var(--superficie);border:1px solid var(--borde);border-radius:9px;padding:7px 10px;font-weight:700}.atribucion{position:absolute;bottom:7px;right:8px;background:var(--superficie);border:1px solid var(--borde);border-radius:5px;padding:3px 6px;font-size:12px;color:var(--texto)}
+.pie{padding:12px 15px;border-top:1px solid var(--borde);min-height:76px}.pie p{margin:0;color:var(--suave)}.acciones{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.leyenda{display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--suave);margin-top:10px}.muestra{display:inline-block;width:20px;border-top:4px solid var(--camino);vertical-align:middle}.muestra.azul{border-color:var(--circuito)}
+@media(max-width:800px){.nota,.marco{margin:10px}.columnas{grid-template-columns:1fr}.mapa{height:290px}.cabecera{padding-bottom:10px}}
+</style>
+</head>
+<body>
+<aside class="nota">
+  <strong>Para Alejandro · boceto, no es la app</strong>
+  <p>La imagen de fondo es inventada. Sirve para revisar dónde aparecerían los datos y los botones; no reproduce la foto de Google.</p>
+  <p>Propuesta: Google muestra lo que TrackApp ya tiene guardado. Las herramientas que crean o cambian coordenadas usan nuestro mapa en vivo. Las dos navegaciones siguen con los mapas descargados.</p>
+  <button id="modo" type="button">Ver modo noche</button>
+</aside>
+<main class="marco">
+  <header class="cabecera"><div class="marca">TRACKAPP <span>/ MAPAS</span></div><span>Vista de ejemplo</span></header>
+  <h1>Dos usos del mapa</h1>
+  <p class="sub">A la izquierda, consultar. A la derecha, editar. El usuario no elige proveedor dentro de cada mapa.</p>
+  <div class="columnas">
+    <section class="panel" aria-labelledby="consulta">
+      <div class="encabezado"><div><h2 id="consulta">Consulta con conexión</h2><p>Mapas, fichas de zonas y Circuitos</p></div><button type="button">Ver mapa en grande</button></div>
+      <div class="mapa" role="img" aria-label="Esquema de mapa de consulta con un Camino, un Circuito y una anotación">
+        <span class="etiqueta">Consulta · imagen de Google</span>
+        <svg viewBox="0 0 600 360" aria-hidden="true"><path class="rio" d="M95 -20 C145 95 160 140 195 175 S278 287 275 390"/><path class="camino" d="M35 280 L105 255 L177 225 L245 180 L310 150 L380 128 L495 95"/><path class="circuito" d="M80 300 L120 250 L177 225 L245 180 L310 150 L350 190 L445 240"/><circle class="punto" cx="310" cy="150" r="8"/></svg>
+        <span class="atribucion">Google Maps · atribución de la imagen</span>
+      </div>
+      <div class="pie"><p>Podés abrir fichas y mirar las líneas. Este mapa no agrega puntos ni cambia dibujos.</p><div class="leyenda"><span><i class="muestra"></i> Camino</span><span><i class="muestra azul"></i> Circuito</span><span>● Anotación</span></div></div>
+    </section>
+    <section class="panel" aria-labelledby="edicion">
+      <div class="encabezado"><div><h2 id="edicion">Edición con conexión</h2><p>Zonas, sectores, Caminos, Circuitos y anotaciones</p></div><button class="principal" type="button">Guardar</button></div>
+      <div class="mapa" role="img" aria-label="Esquema de mapa propio para editar una línea">
+        <span class="etiqueta">Edición · nuestro mapa</span>
+        <svg viewBox="0 0 600 360" aria-hidden="true"><path class="rio" d="M95 -20 C145 95 160 140 195 175 S278 287 275 390"/><path class="camino" d="M35 280 L105 255 L177 225 L245 180 L310 150 L380 128 L495 95"/><path class="circuito" d="M80 300 L120 250 L177 225 L245 180 L310 150 L350 190 L445 240"/><circle cx="120" cy="250" r="7" fill="var(--superficie)" stroke="var(--circuito)" stroke-width="3"/><circle cx="245" cy="180" r="7" fill="var(--superficie)" stroke="var(--circuito)" stroke-width="3"/><circle cx="350" cy="190" r="7" fill="var(--superficie)" stroke="var(--circuito)" stroke-width="3"/></svg>
+        <span class="atribucion">Protomaps · OpenStreetMap</span>
+      </div>
+      <div class="pie"><p>Acá se agregan, mueven o quitan puntos y se guarda el cambio.</p><div class="acciones"><button type="button">Deshacer punto</button><button type="button">Volver</button></div></div>
+    </section>
+  </div>
+</main>
+<script>
+const boton=document.getElementById('modo');boton.addEventListener('click',()=>{const noche=document.documentElement.dataset.modo==='noche';document.documentElement.dataset.modo=noche?'sol':'noche';boton.textContent=noche?'Ver modo noche':'Ver modo sol'});
+</script>
+</body>
+</html>

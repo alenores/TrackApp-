@@ -8,6 +8,7 @@ import {
   FUENTE_DEL_FONDO,
   FUENTE_SATELITAL,
   iconosDelFondo,
+  opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
   todasLasCapasDelFondo,
 } from "@/components/mapa/capas-base";
@@ -59,6 +60,29 @@ function pilasDeLetras(): Set<string> {
 }
 
 describe("la receta del fondo", () => {
+  it("Google solo aparece en consulta con conexión y sesión; navegar conserva únicamente lo descargado", () => {
+    const datos = {
+      enVivo: true,
+      consultaGoogle: true,
+      haySenal: true,
+      sesionGoogle: true,
+      falloGoogle: false,
+      fondosDescargados: ["dibujo", "satelital", "google"] as Array<"dibujo" | "satelital" | "google">,
+    };
+    expect(opcionesDelMapa(datos)).toEqual(["google"]);
+    expect(opcionesDelMapa({ ...datos, haySenal: false })).toEqual(["satelital"]);
+    expect(opcionesDelMapa({ ...datos, falloGoogle: true })).toEqual(["satelital"]);
+    expect(opcionesDelMapa({ ...datos, enVivo: false })).toEqual(["dibujo", "satelital"]);
+    expect(opcionesDelMapa({ ...datos, consultaGoogle: false })).toEqual(["dibujo", "satelital"]);
+  });
+
+  it("el fondo de Google no mezcla nombres ni teselas del proveedor propio", () => {
+    const capas = capasDelFondo("sol", "google");
+    expect(capas).toHaveLength(1);
+    expect(capas[0].id).toBe("foto-google");
+    expect(estiloDelMapa("sol", false).sources).not.toHaveProperty("google");
+  });
+
   it("las direcciones son completas, no atajos", () => {
     // El motor del mapa rechaza un camino que arranca con barra, y al
     // rechazarlo no arma nada: ni el fondo, ni la ruta, ni el punto del GPS.

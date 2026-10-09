@@ -116,8 +116,15 @@ pérdida hasta que la base lo acepte. Ver la decisión 021.
 
 ## El mapa
 
-**Hay un solo mapa en toda la app.** Los tres modos —sin mapa, mapa simple y
-mapa satelital— son ese mismo mapa con distinto fondo. No son tres pantallas.
+**Hay un solo mapa en toda la app.** Los fondos se cambian en el mismo motor.
+En las dos navegaciones se usan exclusivamente los mapas descargados, simple o
+satelital. Los editores usan los fondos propios en vivo. Las vistas de consulta
+con señal muestran Google satelital con los datos propios superpuestos; si falta
+su configuración, conservan el satelital propio; si Google ya activado falla,
+muestran el satelital propio y el motivo. La imagen
+de Google pasa por un puente con sesión iniciada y clave solo en el servidor;
+no entra a la precarga ni al depósito offline. Sus créditos se actualizan al
+mover el área visible. Ver decisión 050.
 
 **El fondo sale de lo que el usuario bajó, sector por sector.** Un sector con
 mapa bajado se dibuja; uno sin bajar no dibuja nada y se ve el fondo liso de la
