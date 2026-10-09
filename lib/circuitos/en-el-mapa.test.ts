@@ -9,7 +9,7 @@ function camino(id: number, actividades: Array<"mountain_bike" | "trekking">): C
   if (!creado.ok) throw new Error(creado.error);
   return {
     ...(creado.datos as Camino), id, perfilId: "autor", nombre: `Camino ${id}`,
-    descripcion: null, versionForma: 1, creadoEn: "2026-10-07", actualizadoEn: "2026-10-07", eliminadoEn: null,
+    descripcion: null, alturas: null, versionForma: 1, creadoEn: "2026-10-07", actualizadoEn: "2026-10-07", eliminadoEn: null,
   };
 }
 

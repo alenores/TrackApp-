@@ -21,8 +21,14 @@ import type { Zona } from "@/types/database";
 
 type BloqueDeCoberturaProps = {
   cobertura: Cobertura;
-  /** Las zonas que la ruta toca. Puede no tocar ninguna, o tocar cinco. */
-  zonas: Zona[];
+  /**
+   * Las zonas que la ruta toca. Puede no tocar ninguna, o tocar cinco. Sin
+   * este dato no se muestra la lista: en un Circuito las zonas solo organizan
+   * las descargas (decisión 035).
+   */
+  zonas?: Zona[];
+  /** Cómo se nombra lo que se mira: «esta ruta» o «este Circuito». */
+  este?: string;
   /** El id de zona al que mandar para crear el sector que falta, si se sabe. */
   zonaParaCrearSector?: number | null;
 };
@@ -35,6 +41,7 @@ export function BloqueDeCobertura({
   cobertura,
   zonas,
   zonaParaCrearSector = null,
+  este = "esta ruta",
 }: BloqueDeCoberturaProps) {
   // Crear una zona o un sector escribe en la base: sin señal esos botones no
   // existen. El aviso de que falta mapa sí queda: eso es información.
@@ -58,7 +65,7 @@ export function BloqueDeCobertura({
   return (
     <Tarjeta franja={franja} className="space-y-3">
       <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-        El mapa de esta ruta
+        El mapa de {este}
       </h2>
 
       <div className="flex items-start gap-3">
@@ -80,7 +87,7 @@ export function BloqueDeCobertura({
                 <strong className="font-semibold text-rojo-texto">
                   {enKm(cobertura.metrosSinCobertura)}
                 </strong>{" "}
-                de esta ruta caen fuera de todo sector. Ahí el punto azul se va a
+                de {este} caen fuera de todo sector. Ahí el punto azul se va a
                 ver igual, pero sin mapa atrás.
               </p>
             </>
@@ -91,16 +98,16 @@ export function BloqueDeCobertura({
               </p>
               <p className="mt-1 text-sm leading-6 text-texto-suave">
                 {cobertura.sectores.length === 1
-                  ? "El sector que cruza esta ruta está descargado en este celular."
-                  : `Los ${cobertura.sectores.length} sectores que cruza esta ruta están descargados en este celular.`}
+                  ? `El sector que cruza ${este} está descargado en este celular.`
+                  : `Los ${cobertura.sectores.length} sectores que cruza ${este} están descargados en este celular.`}
               </p>
             </>
           ) : (
             <>
               <p className="text-base font-semibold text-ambar-texto">
                 {faltanBajar.length === 1
-                  ? "Te falta un mapa para esta ruta"
-                  : `Te faltan ${faltanBajar.length} mapas para esta ruta`}
+                  ? `Te falta un mapa para ${este}`
+                  : `Te faltan ${faltanBajar.length} mapas para ${este}`}
               </p>
             </>
           )}
@@ -132,7 +139,7 @@ export function BloqueDeCobertura({
         donde pasa la ruta ya está organizado. Una ruta puede no tocar ninguna,
         o tocar cinco.
       */}
-      <div className="space-y-1.5">
+      {zonas ? <div className="space-y-1.5">
         {zonas.length === 0 ? (
           <p className="rounded-lg border border-borde-suave bg-fondo px-3 py-2 text-sm leading-6 text-texto-suave">
             Esta ruta no cae en ninguna zona tuya. Podés hacerla igual: la zona
@@ -153,7 +160,7 @@ export function BloqueDeCobertura({
             </div>
           ))
         )}
-      </div>
+      </div> : null}
 
       <BajarLosMapasQueFaltan
         sectoresNecesarios={cobertura.sectores}

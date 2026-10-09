@@ -12,7 +12,6 @@ import type { Paquete } from "@/lib/offline/paquete";
  */
 
 const VACIO: Paquete = {
-  rutas: [],
   caminos: [],
   circuitos: [],
   zonas: [],
@@ -22,11 +21,10 @@ const VACIO: Paquete = {
   guardadoEn: "",
 };
 
-function paquete(zonas: number[], rutas: number[]): Paquete {
+function paquete(zonas: number[]): Paquete {
   return {
     ...VACIO,
     zonas: zonas.map((id) => ({ id }) as unknown as Paquete["zonas"][number]),
-    rutas: rutas.map((id) => ({ id }) as unknown as Paquete["rutas"][number]),
   };
 }
 
@@ -36,20 +34,16 @@ function direcciones(p: Paquete): string[] {
 
 describe("qué pantallas se dejan listas", () => {
   it("las de entrada y el mapa libre van siempre, aunque no haya nada cargado", () => {
-    expect(direcciones(VACIO)).toEqual(["/", "/rutas", "/zonas", "/circuitos", "/mapa-libre"]);
+    expect(direcciones(VACIO)).toEqual(["/", "/zonas", "/circuitos", "/mapa-libre"]);
   });
 
   it("cada zona del paquete tiene la suya", () => {
-    expect(direcciones(paquete([3, 7], []))).toContain("/zonas/3");
-    expect(direcciones(paquete([3, 7], []))).toContain("/zonas/7");
+    expect(direcciones(paquete([3, 7]))).toContain("/zonas/3");
+    expect(direcciones(paquete([3, 7]))).toContain("/zonas/7");
   });
 
-  it("cada ruta lleva su ficha Y su navegación", () => {
-    // Sin la de navegación, salir a caminar sin señal termina en la pantalla
-    // de rescate, que es justo el momento en que no se puede hacer nada.
-    const cuales = direcciones(paquete([], [12]));
-    expect(cuales).toContain("/rutas/12");
-    expect(cuales).toContain("/navegacion/12");
+  it("ya no deja listas pantallas de Rutas, que se retiró", () => {
+    expect(direcciones(paquete([3])).some((cada) => cada.startsWith("/rutas") || cada.startsWith("/navegacion/"))).toBe(false);
   });
 
   it("cada Circuito deja lista su navegación sin señal", () => {
@@ -64,27 +58,27 @@ describe("qué pantallas se dejan listas", () => {
 
   it("el mapa libre queda listo siempre, en el depósito del cerro", () => {
     // Se abre en el cerro, sin señal: si no está guardado, no existe.
-    const pantallas = pantallasParaCalentar(paquete([], [12]));
+    const pantallas = pantallasParaCalentar({ ...paquete([3]), circuitos: [{ id: 12, nombre: "Vuelta", actividad: "trekking" as const, actualizadoEn: "2026-10-08", rectangulo: null }] });
     const mapaLibre = pantallas.find((cada) => cada.direccion === "/mapa-libre");
     expect(mapaLibre?.deposito).toBe(
-      pantallas.find((cada) => cada.direccion === "/navegacion/12")?.deposito,
+      pantallas.find((cada) => cada.direccion === "/circuitos/12/navegar")?.deposito,
     );
   });
 
   it("NO se calientan las pantallas de crear ni de editar", () => {
     // Escriben en la base: sin señal no sirven, y guardarlas sería guardar un
     // formulario que al tocarlo falla.
-    const cuales = direcciones(paquete([3], [12]));
+    const cuales = direcciones({ ...paquete([3]), circuitos: [{ id: 12, nombre: "Vuelta", actividad: "trekking" as const, actualizadoEn: "2026-10-08", rectangulo: null }] });
     expect(cuales.some((cual) => /nueva|editar|perfil/.test(cual))).toBe(false);
   });
 
-  it("la ruta y la navegación van al depósito del cerro; las zonas, al de entrada", () => {
-    const pantallas = pantallasParaCalentar(paquete([3], [12]));
+  it("la navegación del Circuito va al depósito del cerro; las zonas, al de entrada", () => {
+    const pantallas = pantallasParaCalentar({ ...paquete([3]), circuitos: [{ id: 12, nombre: "Vuelta", actividad: "trekking" as const, actualizadoEn: "2026-10-08", rectangulo: null }] });
     const deposito = (direccion: string) =>
       pantallas.find((cada) => cada.direccion === direccion)?.deposito;
 
-    expect(deposito("/navegacion/12")).toBe(deposito("/rutas/12"));
+    expect(deposito("/circuitos/12/navegar")).toBe(deposito("/mapa-libre"));
     expect(deposito("/zonas/3")).toBe(deposito("/zonas"));
-    expect(deposito("/zonas/3")).not.toBe(deposito("/rutas/12"));
+    expect(deposito("/zonas/3")).not.toBe(deposito("/circuitos/12/navegar"));
   });
 });

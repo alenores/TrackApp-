@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import {
+  circuitosSinMapa,
   mapasPerdidos,
-  rutasSinMapa,
+  type CircuitoSinMapa,
   type MapaPerdido,
-  type RutaSinMapa,
 } from "@/lib/mapas/lo-que-falta";
 import { loSacasteVos } from "@/lib/offline/sacados-a-proposito";
 import { claveDeMapa } from "@/lib/offline/mapas";
@@ -31,13 +31,13 @@ import {
 export type LoQueFalta = {
   /** Los que la base dice que tenías y ya no están. */
   perdidos: MapaPerdido[];
-  /** Las rutas que nunca tuvieron el mapa bajado. */
-  rutas: RutaSinMapa[];
+  /** Los Circuitos que nunca tuvieron el mapa bajado. */
+  circuitos: CircuitoSinMapa[];
   /** Por qué no se pudo saber, cuando no se pudo. */
   aviso: string | null;
 };
 
-const VACIO: LoQueFalta = { perdidos: [], rutas: [], aviso: null };
+const VACIO: LoQueFalta = { perdidos: [], circuitos: [], aviso: null };
 
 type LoQueDijoLaBase =
   | { paso: "buscando" }
@@ -81,7 +81,7 @@ export function useLoQueFalta(paquete: Paquete | null): LoQueFalta {
     if (laBase.paso === "no_se_pudo") {
       return {
         perdidos: [],
-        rutas: [],
+        circuitos: [],
         aviso: `No se pudo revisar si te falta algún mapa: ${laBase.motivo} Probá de nuevo con mejor señal.`,
       };
     }
@@ -97,7 +97,7 @@ export function useLoQueFalta(paquete: Paquete | null): LoQueFalta {
 
     return {
       perdidos,
-      rutas: rutasSinMapa(paquete.rutas, paquete.sectores, conMapa, perdidos),
+      circuitos: circuitosSinMapa(paquete.circuitos, paquete.sectores, conMapa, perdidos),
       aviso: null,
     };
   }, [paquete, laBase, conMapa, mapasEnElCelular]);

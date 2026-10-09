@@ -1,5 +1,6 @@
 import { seSuperponen } from "@/lib/datos/rectangulo";
 import type { Rectangulo, RutaResumen, Sector, Zona } from "@/types/database";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
 
 /**
  * Las cuentas del mapa libre: ver todo lo bajado sin seguir una ruta.
@@ -104,4 +105,35 @@ function abarcar(rectangulos: Rectangulo[]): Rectangulo | null {
  */
 export function areaDeLasZonas(zonas: Zona[]): Rectangulo | null {
   return abarcar(zonas.map((zona) => zona.rectangulo));
+}
+
+/**
+ * Los Circuitos que cruzan un sector, por nombre. Se usan los sectores que
+ * cruza su línea; si el paquete es viejo y no los trae, su rectángulo.
+ */
+export function circuitosDelSector(circuitos: CircuitoSinDibujo[], sector: Sector): CircuitoSinDibujo[] {
+  return circuitos
+    .filter((circuito) => circuito.sectores
+      ? circuito.sectores.includes(sector.id)
+      : circuito.rectangulo !== null && seSuperponen(circuito.rectangulo, sector.rectangulo))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+/** El sector por donde pasa la mayor parte de un Circuito: ahí abre la lista al navegarlo. */
+export function sectorPrincipalDelCircuito(circuito: CircuitoSinDibujo, sectores: Sector[]): Sector | null {
+  const porId = new Map(sectores.map((sector) => [sector.id, sector]));
+  if (circuito.sectores?.length) return porId.get(circuito.sectores[0]) ?? null;
+  return circuito.rectangulo
+    ? sectores.find((sector) => seSuperponen(sector.rectangulo, circuito.rectangulo!)) ?? null
+    : null;
+}
+
+/** Los Circuitos que pasan por alguno de los sectores de una zona, por nombre. */
+export function circuitosDeLaZona(circuitos: CircuitoSinDibujo[], sectoresDeLaZona: Sector[], rectanguloDeLaZona: Rectangulo): CircuitoSinDibujo[] {
+  const ids = new Set(sectoresDeLaZona.map((sector) => sector.id));
+  return circuitos
+    .filter((circuito) => circuito.sectores
+      ? circuito.sectores.some((id) => ids.has(id))
+      : circuito.rectangulo !== null && seSuperponen(circuito.rectangulo, rectanguloDeLaZona))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }

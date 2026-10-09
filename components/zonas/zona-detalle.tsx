@@ -1,25 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { TarjetaDeSector } from "@/components/zonas/tarjeta-de-sector";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { sectoresEnElMapa } from "@/lib/mapas/rectangulos";
 import { mostrarTamano } from "@/lib/territorio/tamano";
-import type { Rectangulo } from "@/types/database";
-import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
-import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
+import { useDibujosDeCircuitos } from "@/hooks/use-dibujos-de-circuitos";
+import { SelectorDeCircuitosEnMapa } from "@/components/zonas/selector-de-circuitos-en-mapa";
+import { circuitosDeLaZona as circuitosDeLaZonaEnElPaquete } from "@/lib/navegacion/mapa-libre";
 import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 
 /**
  * Una zona con sus sectores.
  *
  * Lo que importa acá no es la lista: es **cuánto de la zona todavía no tiene
- * sector encima**. Ese hueco es lo que después deja una ruta sin mapa, y se
+ * sector encima**. Ese hueco es lo que después deja un Circuito sin mapa, y se
  * tiene que ver en casa, no en el cerro.
  */
 
@@ -29,7 +28,6 @@ type ZonaDetalleProps = {
 };
 
 export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
-  const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
   const puedeAdministrar = usePuedeAdministrar(miPerfilId !== null);
 
@@ -41,19 +39,16 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
   );
 
   /**
-   * Las rutas que cruzan la zona se piden **antes de los carteles de abajo**.
-   *
-   * Abriendo la pantalla en frío —por el link, recargando, o al volver a abrir
-   * la app— el paquete todavía no está y la pantalla sale por el cartel de
-   * «abriendo». Pedirlas después de ese cartel hace que en el primer dibujado
-   * no se pidan y en el segundo sí, y React rompe la pantalla entera cuando eso
-   * pasa. Mientras no hay zona se pregunta por un rectángulo vacío, que no
-   * cruza ninguna ruta.
+   * Los Circuitos que pasan por la zona se piden **antes de los carteles de
+   * abajo**: abriendo en frío, el paquete todavía no está y la pantalla sale
+   * por el cartel de «abriendo». Pedirlos después de ese cartel hace que en el
+   * primer dibujado no se pidan y en el segundo sí, y React rompe la pantalla.
    */
-  const { rutasCruzadas, idsEncendidos, toggleRuta, recorridoCombinado } =
-    useRutasEnArea(
-      zona?.rectangulo ?? { latNorte: 0, latSur: 0, lonEste: 0, lonOeste: 0 },
-    );
+  const circuitosDeLaZona = zona ? circuitosDeLaZonaEnElPaquete(paquete?.circuitos ?? [], sectores, zona.rectangulo) : [];
+  const [idsEncendidos, setIdsEncendidos] = useState<number[]>([]);
+  const alternarCircuito = (id: number) => setIdsEncendidos((antes) =>
+    antes.includes(id) ? antes.filter((cada) => cada !== id) : [...antes, id]);
+  const circuitosPrendidos = useDibujosDeCircuitos(circuitosDeLaZona, idsEncendidos);
 
   if (estado === "abriendo") {
     return (
@@ -132,12 +127,12 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         <CargadorDeMapa
           enVivo
           principal
-          recorrido={recorridoCombinado}
+          otrosCircuitos={circuitosPrendidos}
           controlesAdicionales={
-            <SelectorDeRutasEnMapa
-              rutasCruzadas={rutasCruzadas}
+            <SelectorDeCircuitosEnMapa
+              circuitos={circuitosDeLaZona}
               idsEncendidos={idsEncendidos}
-              toggleRuta={toggleRuta}
+              alternar={alternarCircuito}
             />
           }
           anotaciones={anotacionesDelMapa}

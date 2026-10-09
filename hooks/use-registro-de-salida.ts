@@ -94,9 +94,9 @@ export function useRegistroDeSalida(gps: Gps) {
     setMarcaRecien(true);
   }, [gps, grabar, enCurso, ultimoDe]);
 
-  const empezar = useCallback(async (rutaId: number | null, nombreDeLaRuta: string | null) => {
+  const empezar = useCallback(async (circuitoId: number | null, nombreDelCircuito: string | null) => {
     try {
-      await empezarUnRegistro(rutaId, nombreDeLaRuta);
+      await empezarUnRegistro(circuitoId, nombreDelCircuito);
       setError(null);
     } catch (causa) {
       setError(

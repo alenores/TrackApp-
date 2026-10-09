@@ -154,10 +154,10 @@ describe("navegando una ruta", () => {
 
   it("al salir de la navegación, la primera pantalla sí se pone al día", async () => {
     sincronizar.mockResolvedValue({ clase: "actualizado", paquete: PAQUETE });
-    abrirEn("/navegacion/12");
+    abrirEn("/circuitos/12/navegar");
     await ponerAlDiaUnaVezPorApertura();
 
-    abrirEn("/rutas/12");
+    abrirEn("/circuitos");
     expect((await ponerAlDiaUnaVezPorApertura()).clase).toBe("actualizado");
     expect(sincronizar).toHaveBeenCalledTimes(1);
   });

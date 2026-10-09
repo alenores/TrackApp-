@@ -20,13 +20,9 @@ import {
   leerFilaDeAnotacion,
   type FilaDeAnotacion,
 } from "@/lib/anotaciones/fila";
-import {
-  borrarRecorridosQueSobran,
-  guardarRecorrido,
-} from "@/lib/offline/recorridos";
+import { borrarTodosLosRecorridos } from "@/lib/offline/recorridos";
 import type {
   Anotacion,
-  RutaSinRecorrido,
   Sector,
   Zona,
 } from "@/types/database";
@@ -46,7 +42,8 @@ import type {
  * Ver docs/decisiones/012-modelo-de-descarga.md
  */
 
-const TABLAS_DEL_PAQUETE = ["rutas", "zonas", "sectores", "anotaciones", "caminos", "circuitos", "correcciones_de_caminos"] as const;
+// Rutas ya no viaja: se retiró (decisión 049).
+const TABLAS_DEL_PAQUETE = ["zonas", "sectores", "anotaciones", "caminos", "circuitos", "correcciones_de_caminos"] as const;
 
 export type ResultadoDeSincronizacion =
   | { clase: "al_dia"; paquete: Paquete | null }
@@ -92,64 +89,6 @@ type FilaConRectangulo = {
   lon_este: number;
   lon_oeste: number;
 };
-
-async function bajarRutas(): Promise<{
-  resumenes: RutaSinRecorrido[];
-  recorridos: Map<number, FeatureCollection>;
-  completa: boolean;
-  motivo?: string;
-}> {
-  const supabase = crearClienteEnElNavegador();
-
-  const resultado = await traerTodasLasFilas<
-    FilaConRectangulo & Record<string, unknown>
-  >((desde, hasta) =>
-    supabase
-      .from("rutas")
-      .select("*")
-      .is("eliminado_en", null)
-      .order("id", { ascending: true })
-      .range(desde, hasta),
-  );
-
-  const resumenes: RutaSinRecorrido[] = [];
-  const recorridos = new Map<number, FeatureCollection>();
-
-  for (const fila of resultado.filas) {
-    const id = Number(fila.id);
-
-    resumenes.push({
-      id,
-      perfilId: String(fila.perfil_id),
-      nombre: String(fila.nombre),
-      descripcion: (fila.descripcion as string | null) ?? null,
-      actividades: (fila.actividades as RutaSinRecorrido["actividades"]) ?? [],
-      dificultadTecnica: (fila.dificultad_tecnica as number | null) ?? null,
-      nivelEsfuerzo: (fila.nivel_esfuerzo as RutaSinRecorrido["nivelEsfuerzo"]) ?? null,
-      largoKm: fila.largo_km === null ? null : Number(fila.largo_km),
-      desnivelPositivoM: (fila.desnivel_positivo_m as number | null) ?? null,
-      desnivelNegativoM: (fila.desnivel_negativo_m as number | null) ?? null,
-      // Lo que hay que poder leer en el cerro, donde no hay señal.
-      comentario: (fila.comentario as string | null) ?? null,
-      equipo: (fila.equipo as string | null) ?? null,
-      complicaciones: (fila.complicaciones as string | null) ?? null,
-      archivoUrl: (fila.archivo_url as string | null) ?? null,
-      rectangulo: leerRectangulo(fila),
-      color: (fila.color as string | null) ?? "naranja",
-      distanciasPorSector: (fila.distancias_por_sector as Record<string, number> | null) ?? {},
-      creadoEn: String(fila.creado_en),
-      actualizadoEn: String(fila.actualizado_en),
-    });
-
-    if (fila.geometria) {
-      recorridos.set(id, fila.geometria as FeatureCollection);
-    }
-  }
-
-  return resultado.completa
-    ? { resumenes, recorridos, completa: true }
-    : { resumenes, recorridos, completa: false, motivo: resultado.motivo };
-}
 
 async function bajarZonas(): Promise<{ zonas: Zona[]; completa: boolean }> {
   const supabase = crearClienteEnElNavegador();
@@ -340,8 +279,7 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       return { clase: "al_dia", paquete: guardado };
     }
 
-    const [rutas, zonas, sectores, anotaciones, caminos, circuitos, correcciones] = await Promise.all([
-      bajarRutas(),
+    const [zonas, sectores, anotaciones, caminos, circuitos, correcciones] = await Promise.all([
       bajarZonas(),
       bajarSectores(),
       bajarAnotaciones(),
@@ -352,7 +290,6 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
 
     // Si algo vino cortado, lo que había sigue sirviendo. No se pisa a medias.
     if (
-      !rutas.completa ||
       !zonas.completa ||
       !sectores.completa ||
       !anotaciones.completa ||
@@ -362,22 +299,12 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
         clase: "fallo",
         paquete: guardado,
         motivo:
-          rutas.motivo ?? caminos.motivo ?? circuitos.motivo ?? correcciones.motivo ??
+          caminos.motivo ?? circuitos.motivo ?? correcciones.motivo ??
           "La descarga vino cortada, así que se dejó lo que ya estaba guardado.",
       };
     }
 
-    for (const [rutaId, recorrido] of rutas.recorridos) {
-      if (!(await guardarRecorrido(rutaId, recorrido))) {
-        return {
-          clase: "fallo",
-          paquete: guardado,
-          motivo: "Una línea de ruta no se pudo guardar en este celular. Liberá espacio y abrí la app de nuevo con conexión antes de salir.",
-        };
-      }
-    }
-
-    const preparados = prepararCircuitosParaElCelular(circuitos.circuitos, caminos.caminos, correcciones.correcciones);
+    const preparados = prepararCircuitosParaElCelular(circuitos.circuitos, caminos.caminos, correcciones.correcciones, sectores.sectores);
     if (!preparados.ok) {
       return { clase: "fallo", paquete: guardado, motivo: preparados.error };
     }
@@ -394,14 +321,14 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
       };
     }
 
-    const caminosSinLinea: CaminoSinLinea[] = caminosVivos.map(({ coordenadas, ...camino }) => {
-      // La línea ya quedó en el depósito grande; no la dupliques en el guardado simple.
+    const caminosSinLinea: CaminoSinLinea[] = caminosVivos.map(({ coordenadas, alturas, ...camino }) => {
+      // La línea y las alturas ya quedaron en el depósito grande; no las dupliques en el guardado simple.
       void coordenadas;
+      void alturas;
       return camino;
     });
 
     const nuevo: Omit<Paquete, "guardadoEn"> = {
-      rutas: rutas.resumenes,
       caminos: caminosSinLinea,
       circuitos: preparados.datos.fichas,
       zonas: zonas.zonas,
@@ -424,7 +351,8 @@ export async function sincronizarPaquete(): Promise<ResultadoDeSincronizacion> {
 
     await borrarLineasDeCaminosQueSobran(caminosSinLinea);
     await borrarCircuitosPreparadosQueSobran(preparados.datos.fichas);
-    await borrarRecorridosQueSobran(rutas.resumenes.map((ruta) => ruta.id));
+    // Las líneas de Rutas que quedaron de antes ocupan lugar y ya no se usan.
+    await borrarTodosLosRecorridos();
 
     return {
       clase: "actualizado",

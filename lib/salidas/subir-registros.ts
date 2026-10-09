@@ -30,14 +30,19 @@ import type { ActividadRuta } from "@/types/database";
 export type ParaSubirRegistros = {
   supabase: SupabaseClient;
   perfilId: string;
-  /** Las actividades de una ruta, para que el borrador arranque con las de la ruta navegada. */
-  actividadesDeLaRuta: (rutaId: number) => ActividadRuta[];
+  /** Las actividades de un Circuito, para que el borrador arranque con la del Circuito navegado. */
+  actividadesDelCircuito: (circuitoId: number) => ActividadRuta[];
   /** Guarda en el celular el número del borrador, apenas existe. */
   anotarElBorrador: (codigo: string, salidaId: number) => Promise<void>;
 };
 
+/** El nombre del Circuito navegado, o de la ruta en un registro viejo. */
+function nombreDeLoNavegado(registro: Registro): string | null {
+  return registro.nombreDelCircuito ?? registro.nombreDeLaRuta ?? null;
+}
+
 async function elBorrador(
-  { supabase, perfilId, actividadesDeLaRuta, anotarElBorrador }: ParaSubirRegistros,
+  { supabase, perfilId, actividadesDelCircuito, anotarElBorrador }: ParaSubirRegistros,
   registro: Registro,
 ): Promise<number> {
   if (registro.salidaId !== null) return registro.salidaId;
@@ -60,10 +65,12 @@ async function elBorrador(
         perfil_id: perfilId,
         estado: "borrador",
         codigo_local: registro.codigo,
-        ruta_id: registro.rutaId,
-        titulo: tituloDelBorrador(dia, registro.nombreDeLaRuta),
+        circuito_id: registro.circuitoId ?? null,
+        // Solo los registros empezados antes de retirar Rutas traen ruta.
+        ruta_id: registro.rutaId ?? null,
+        titulo: tituloDelBorrador(dia, nombreDeLoNavegado(registro)),
         fecha: dia,
-        actividades: registro.rutaId !== null ? actividadesDeLaRuta(registro.rutaId) : [],
+        actividades: registro.circuitoId != null ? actividadesDelCircuito(registro.circuitoId) : [],
       })
       .select("id")
       .single();
@@ -105,7 +112,7 @@ export async function subirUnRegistro(
       ],
     };
 
-    const nombre = tituloDelBorrador(diaDelMomento(registro.empezadoEn), registro.nombreDeLaRuta);
+    const nombre = tituloDelBorrador(diaDelMomento(registro.empezadoEn), nombreDeLoNavegado(registro));
     const archivo = new File([comoGpx(nombre, registro.puntos)], `salida-${salidaId}.gpx`, {
       type: "application/gpx+xml",
     });

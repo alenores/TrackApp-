@@ -80,6 +80,10 @@ edita y borra.**
 
 ## rutas
 
+> **En desuso desde el 2026-10-08** (decisión 049): Rutas se retiró de la app.
+> La tabla queda (nada se borra de verdad) pero ninguna pantalla la lee ni la
+> escribe, y la puesta al día del celular ya no la baja.
+
 | Columna | Tipo | Notas |
 |---|---|---|
 | `id` | bigint | número correlativo |
@@ -125,9 +129,11 @@ siete filas independientes.
 | `nombre` | text | obligatorio, hasta 120 caracteres |
 | `descripcion` | text | hasta 2.000 caracteres |
 | `actividades` | actividad_ruta[] | al menos una, sin repetir |
-| `geometria` | jsonb | GeoJSON `LineString`, coordenadas reales; la base verifica el largo |
+| `geometria` | jsonb | GeoJSON `LineString`, coordenadas reales; la base verifica el largo. Desde el 2026-10-08 la app guarda solo longitud y latitud: el tercer número en cero de Google Earth se descarta |
 | `partes` | jsonb | cubren toda la línea, sin huecos; paso y complejidad por actividad, observación y fecha únicas por parte |
 | `largo_m` | numeric | calculado desde la línea |
+| `alturas` | jsonb | `{"cada_m": 25, "valores": [...]}`: altura del terreno cada 25 m y en el final, medida con el relieve al guardar (decisión 049). Vacía si no se calculó |
+| `desnivel_positivo_m`, `desnivel_negativo_m` | integer | desde el comienzo de la línea; van junto con `alturas` (las tres o ninguna) |
 | `version_forma` | integer | aumenta al corregir la geometría |
 | `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | fechas habituales; retiro lógico |
 
@@ -157,7 +163,15 @@ propias o vinculadas a Caminos. No pertenece a una zona ni a un sector.
 | `puntos` | jsonb | puntos elegidos al dibujar, incluidos los que caen sobre Caminos |
 | `partes` | jsonb | partes propias y tomadas de Caminos, en orden |
 | `caminos_base` | jsonb | línea y versión de cada Camino usado al guardar |
+| `tecnica` | smallint | 1 a 10, cargada a mano; puede quedar vacía (decisión 049) |
+| `nivel_esfuerzo` | nivel_esfuerzo | bajo, medio, alto o muy alto; puede quedar vacío |
+| `que_llevar`, `complicaciones`, `comentario` | text | hasta 2.000 caracteres cada uno; pueden quedar vacíos |
+| `alturas_propias` | jsonb | una entrada por parte: `{"cada_m", "largo_m", "valores"}` en las dibujadas solo para el Circuito, `null` en las tomadas de un Camino. Vacía en Circuitos guardados antes del 2026-10-08 |
 | `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | fechas habituales; retiro lógico |
+
+El largo y el desnivel del Circuito **no se guardan**: se calculan con las
+partes vigentes, las alturas de los Caminos y `alturas_propias`, porque los
+Caminos pueden cambiar sin que nadie toque el Circuito.
 
 Administrador y Premium crean; Premium edita o retira lo propio y Administrador
 cualquiera. Normal solo consulta. RLS está activo y no se concede borrado físico.
@@ -272,9 +286,10 @@ convenciones y tenía una sola fila de prueba.
 | `desnivel_negativo_m` | integer | opcional, no negativo |
 | `archivo_url` | text | el archivo GPS, en `archivos-ruta`, carpeta del usuario, `salida-<id>.<ext>` |
 | `estado` | text | `borrador` · `publicada`. Por defecto `publicada`. El borrador lo ve solo quien lo hizo (decisión 032) |
-| `ruta_id` | bigint | la ruta navegada, si se registró navegando una |
+| `ruta_id` | bigint | en desuso desde el 2026-10-08: la ruta navegada en Salidas registradas antes de retirar Rutas |
 | `codigo_local` | uuid | el código del celular de una salida registrada. Único: evita dos borradores si una subida se corta |
 | `linea_simplificada` | jsonb | la línea achicada a ~150 puntos `[lon, lat]`, sacada del archivo GPS al cargarlo, para dibujarla sobre la portada. Vacía sin archivo |
+| `circuito_id` | bigint | el Circuito que se navegaba al registrar la Salida, si había (decisión 049) |
 
 Más `creado_en`, `actualizado_en` (con disparador) y `eliminado_en`.
 
@@ -355,6 +370,11 @@ usuario logueado.
 de la base ese día (`storage.buckets`) y reemplazan lo que decía antes, que era
 un resumen y le faltaba `text/xml`. El depósito `fotos-anotaciones` se agregó el
 mismo día, al crear las anotaciones con foto.
+
+**Actualizado el 2026-10-08 (tarde).** Se aplicaron `caminos_alturas`
+(`scripts/supabase-caminos-alturas.sql`) y `circuitos_datos`
+(`scripts/supabase-circuitos-datos.sql`), con sus permisos por columna,
+verificados en la base.
 
 **Actualizado el 2026-10-08.** Se aplicó la migración de `circuitos` y
 `correcciones_de_caminos` al proyecto TrackApp y se verificó que ambas tablas

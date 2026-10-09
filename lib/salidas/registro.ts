@@ -18,9 +18,15 @@ import type { PuntoRegistrado } from "@/lib/salidas/registro-reglas";
 export type Registro = {
   /** El código del celular. Viaja a la base y evita duplicados si una subida se corta. */
   codigo: string;
-  /** La ruta que se navegaba al empezar, si había. */
-  rutaId: number | null;
-  nombreDeLaRuta: string | null;
+  /** El Circuito que se navegaba al empezar, si había (decisión 049). */
+  circuitoId: number | null;
+  nombreDelCircuito: string | null;
+  /**
+   * La ruta, en los registros empezados antes de que se retirara Rutas.
+   * Puede quedar alguno en un celular: sube igual, con su ruta.
+   */
+  rutaId?: number | null;
+  nombreDeLaRuta?: string | null;
   empezadoEn: number;
   /** `null` mientras está en curso. */
   terminadoEn: number | null;
@@ -117,14 +123,14 @@ async function grabar(registro: Registro): Promise<void> {
 }
 
 /** Empieza a registrar. Si ya había una en curso, se sigue con esa. */
-export function empezarUnRegistro(rutaId: number | null, nombreDeLaRuta: string | null): Promise<Registro> {
+export function empezarUnRegistro(circuitoId: number | null, nombreDelCircuito: string | null): Promise<Registro> {
   return enFila(async () => {
     const enCurso = elEnCurso(await releerLosRegistros());
     if (enCurso) return enCurso;
     const nuevo: Registro = {
       codigo: crypto.randomUUID(),
-      rutaId,
-      nombreDeLaRuta,
+      circuitoId,
+      nombreDelCircuito,
       empezadoEn: Date.now(),
       terminadoEn: null,
       puntos: [],

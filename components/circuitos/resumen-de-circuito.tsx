@@ -7,6 +7,11 @@ function kilometros(metros: number): string {
   return metros < 1000 ? `${Math.round(metros)} m` : `${(metros / 1000).toFixed(1).replace(".", ",")} km`;
 }
 
+/** «20,2 %», con coma como se escribe en Argentina. */
+function porciento(valor: number): string {
+  return `${String(valor).replace(".", ",")} %`;
+}
+
 function textoDeConsideracion(cada: ConsideracionDelCircuito): string {
   const actividad = mostrarActividad(cada.actividadDelCamino).etiqueta;
   switch (cada.tipo) {
@@ -29,9 +34,9 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
     <Tarjeta className="space-y-3">
       <h2 className="text-xl font-bold text-texto">Resumen del Circuito</h2>
       <p className="text-base text-texto">{kilometros(datos.metrosTotales)} · {mostrarActividad(datos.actividad).etiqueta}</p>
-      <p className="text-base text-texto">{datos.propia.porcentaje}% dibujado solo para este Circuito · {datos.sobreCaminos.porcentaje}% tomado de Caminos.</p>
+      <p className="text-base text-texto">{porciento(datos.propia.porcentaje)} dibujado solo para este Circuito · {porciento(datos.sobreCaminos.porcentaje)} tomado de Caminos.</p>
       <p className="text-base text-texto">En los Caminos: por explorar {kilometros(datos.pasos.por_explorar.metros)} ({datos.tramosPorExplorar} {datos.tramosPorExplorar === 1 ? "tramo" : "tramos"}); transitables {kilometros(datos.pasos.transitable.metros)}; a pie con el equipo {kilometros(datos.pasos.a_pie.metros)} ({datos.tramosAPie} {datos.tramosAPie === 1 ? "tramo" : "tramos"}); sin paso {kilometros(datos.pasos.sin_paso.metros)} ({datos.tramosSinPaso} {datos.tramosSinPaso === 1 ? "tramo" : "tramos"}).</p>
-      <p className="text-base text-texto">Dificultad sobre el Circuito total: verde {datos.complejidades.facil.porcentaje}%, amarillo {datos.complejidades.media.porcentaje}%, rojo {datos.complejidades.dificil.porcentaje}%.</p>
+      <p className="text-base text-texto">Dificultad sobre el Circuito total: verde {porciento(datos.complejidades.facil.porcentaje)}, amarillo {porciento(datos.complejidades.media.porcentaje)}, rojo {porciento(datos.complejidades.dificil.porcentaje)}.</p>
       {datos.tramosDeOtraActividad > 0 ? <p className="text-base text-texto">{datos.tramosDeOtraActividad} {datos.tramosDeOtraActividad === 1 ? "tramo usa" : "tramos usan"} Caminos de otra actividad. Mirá el detalle antes de salir.</p> : null}
       {datos.tramosDeCaminosRetirados > 0 ? <p className="text-base text-texto">{datos.tramosDeCaminosRetirados} {datos.tramosDeCaminosRetirados === 1 ? "tramo pertenece" : "tramos pertenecen"} a Caminos retirados de Mapas.</p> : null}
       {datos.partesSinUnir > 0 ? <p className="text-base font-semibold text-texto">Partes sin unir: {datos.partesSinUnir}. Revisá dónde se interrumpe el Circuito antes de salir.</p> : null}

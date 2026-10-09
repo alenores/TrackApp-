@@ -86,7 +86,7 @@ export function FormularioDeIngreso() {
         <h1 className="text-2xl font-bold text-texto">TrackApp</h1>
         <p className="text-sm text-texto-suave">
           {mode === "login"
-            ? "Ingresá para acceder a tus rutas"
+            ? "Ingresá para acceder a tus Circuitos"
             : "Creá tu cuenta para empezar"}
         </p>
       </div>

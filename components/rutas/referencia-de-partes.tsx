@@ -30,7 +30,11 @@ const COLORES = [
   ["Sin clasificar", "var(--parte-sin-clasificar)"],
 ] as const;
 
-export function ReferenciaDePartes({ navegando = false }: { navegando?: boolean }) {
+export function ReferenciaDePartes({ navegando = false, conPartesPropias = false }: {
+  navegando?: boolean;
+  /** En un Circuito, suma el color de lo dibujado solo para él. */
+  conPartesPropias?: boolean;
+}) {
   return (
     <div className={`rounded-xl border border-borde-fuerte bg-superficie px-3 py-2 text-texto ${navegando ? "text-lg" : "text-sm"}`}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -41,6 +45,12 @@ export function ReferenciaDePartes({ navegando = false }: { navegando?: boolean 
             {nombre}
           </span>
         ))}
+        {conPartesPropias ? (
+          <span className="inline-flex items-center gap-1">
+            <span aria-hidden className="h-3 w-3 rounded-full border border-borde-fuerte" style={{ backgroundColor: "var(--circuito-propio)" }} />
+            Dibujado solo para el Circuito
+          </span>
+        ) : null}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-semibold">Línea:</span>

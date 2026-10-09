@@ -10,7 +10,7 @@ function camino(): CaminoGuardado {
   if (!creado.ok) throw new Error(creado.error);
   return {
     ...creado.datos, id: 1, perfilId: "autor", nombre: "Sendero", descripcion: null,
-    versionForma: 1, creadoEn: "2026-10-07", actualizadoEn: "2026-10-07", eliminadoEn: null,
+    alturas: null, versionForma: 1, creadoEn: "2026-10-07", actualizadoEn: "2026-10-07", eliminadoEn: null,
   };
 }
 

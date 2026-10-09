@@ -113,7 +113,7 @@ describe("el aviso de que falta mapa", () => {
 
     const aviso = avisoPorFaltaDeMapa(seSale, [CUBRE_TODO], new Set([1]));
 
-    expect(aviso).toContain("km de esta ruta sin mapa");
+    expect(aviso).toContain("km de este Circuito sin mapa");
   });
 
   it("prioriza el hueco sobre el mapa sin bajar, que es lo más grave", () => {

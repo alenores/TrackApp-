@@ -4,6 +4,67 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-08 (tarde) — Alturas, Circuitos completos y retiro de Rutas
+
+### Estado al inicio
+
+Caminos y Circuitos funcionaban, pero sin largo y desnivel del Circuito, sin
+los datos que tenía Rutas y sin alturas: las líneas de Google Earth no las traen.
+
+### Lo que se hizo
+
+- Boceto aprobado por Ale (`docs/bocetos/circuitos-datos-y-alturas.html`).
+- Cada Camino guarda una altura cada 25 m, medida con el relieve del terreno
+  al guardar, y su desnivel positivo y negativo. La ficha del Camino muestra
+  largo, desnivel y el gráfico de alturas; al señalarlo se marca el punto en el
+  mapa. Las alturas viajan al celular con la línea.
+- Cada Circuito suma técnica, esfuerzo, qué llevar, complicaciones y
+  comentario, y las alturas de sus partes propias. Largo y desnivel se calculan
+  con lo vigente de los Caminos, en el sentido del Circuito.
+- La ficha del Circuito sigue el boceto: mapa, gráfico pintado con los colores
+  de los Caminos, resumen, datos y el bloque de mapas con simple y satelital por
+  sector. La lista muestra largo, desnivel, técnica y esfuerzo.
+- La navegación del Circuito tiene el botón «Alturas» con «Estás acá» y lo que
+  falta hasta el final.
+- La lista de Circuitos vuelve a avisar los mapas perdidos y los Circuitos sin
+  mapa, con los sectores que cruza la línea de verdad.
+- Se corrigió que un Circuito sobre un Camino importado de Google Earth no se
+  podía guardar (tercer número de altura en cero).
+- Rutas se retiró: el inicio es la lista de Circuitos; la navegación del
+  Circuito hace todo lo que hacía la de Rutas (registrar la Salida, anotar,
+  «Circuitos en el mapa») más «Alturas»; la Salida queda vinculada al
+  Circuito; la navegación libre quedó con Caminos; en cada zona, «Circuitos
+  en el mapa»; la puesta al día dejó de bajar Rutas y libera sus líneas; las
+  direcciones viejas llevan al inicio. Se borraron pantallas, acciones y piezas
+  propias de Rutas y se descartó el prototipo de «partes de una ruta».
+- Migraciones aplicadas: `caminos_alturas`, `circuitos_datos` y
+  `salidas_circuito`. Pasaron TypeScript, ESLint y todas las pruebas. Se probó
+  en la app con un Camino, un Circuito y una Salida de prueba («Prueba
+  Claude…»), en modo sol y noche.
+
+### Decisiones tomadas
+
+Decisión 049: Caminos y Circuitos reemplazan a Rutas; alturas y desnivel.
+
+### Documentos actualizados
+
+AGENTS, decisión 049, esquema, glosario, notas del boceto y este registro.
+
+### Deuda o inconsistencias detectadas
+
+- Falta probar en un celular real, con GPS y en modo avión: «Estás acá»,
+  registro con puntos y anotaciones desde la navegación del Circuito.
+- La redirección de `/rutas` y `/navegacion/…` necesita reiniciar el servidor
+  de prueba o publicar para verse.
+- Piezas compartidas siguen en carpetas llamadas «rutas» (actividades, lectura
+  de archivos GPS, indicadores, referencia de colores, bloque y aviso de
+  mapas): conviene moverlas a carpetas neutras.
+- La lista de Circuitos no tiene filtro (Rutas sí tenía).
+- La base recuerda los mapas por cuenta, no por aparato: en un navegador donde
+  nunca se bajaron, el aviso los cuenta como perdidos.
+- Quedan en la base el Camino, el Circuito y un borrador de Salida de prueba,
+  más un Camino de prueba retirado.
+
 ## Sesión 2026-10-08 — Circuitos guardados y navegación
 
 ### Estado al inicio

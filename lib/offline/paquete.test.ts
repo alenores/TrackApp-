@@ -9,7 +9,6 @@ import { elPaqueteQuedoViejo, FORMATO_DEL_PAQUETE, type Paquete } from "@/lib/of
 
 function paquete(ultimaModificacion: string | null): Paquete {
   return {
-    rutas: [],
     caminos: [],
     circuitos: [],
     zonas: [],

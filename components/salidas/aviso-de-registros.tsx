@@ -45,7 +45,7 @@ export function AvisoDeRegistros() {
         <Tarjeta franja="verde" className="space-y-3">
           <p className="text-base leading-6 text-texto">
             Tenés una salida registrándose
-            {enCurso.nombreDeLaRuta ? ` en «${enCurso.nombreDeLaRuta}»` : ""}:{" "}
+            {(enCurso.nombreDelCircuito ?? enCurso.nombreDeLaRuta) ? ` en «${enCurso.nombreDelCircuito ?? enCurso.nombreDeLaRuta}»` : ""}:{" "}
             {kilometrosRegistrados(enCurso.puntos).toFixed(1).replace(".", ",")} km hasta ahora. Se
             sigue al volver a navegar, y la terminás al salir del mapa o acá.
           </p>

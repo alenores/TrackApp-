@@ -175,8 +175,8 @@ const withPWA = withPWAInit({
     },
     {
       /**
-       * Pedido interno de las pantallas del cerro: la ruta, la navegación y el
-       * mapa libre.
+       * Pedido interno de las pantallas del cerro: la navegación de un Circuito
+       * y el mapa libre.
        *
        * **Primero lo guardado, sin preguntar.** Son las que se abren caminando,
        * con el celular en la mano y sin señal: mandan la velocidad y la certeza
@@ -185,8 +185,7 @@ const withPWA = withPWAInit({
        */
       urlPattern: ({ request, url }: { request: Request; url: URL }) =>
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
-        (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
-          /^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
+        (/^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
           /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
@@ -203,8 +202,7 @@ const withPWA = withPWAInit({
       /** El documento de esas mismas pantallas: otra respuesta, otro guardado. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
-        (/^\/(?:rutas|navegacion)\/\d+\/?$/.test(url.pathname) ||
-          /^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
+        (/^\/circuitos\/\d+\/navegar\/?$/.test(url.pathname) ||
           /^\/mapa-libre\/?$/.test(url.pathname)),
       handler: "CacheFirst",
       options: {
@@ -219,7 +217,7 @@ const withPWA = withPWAInit({
     },
     {
       /**
-       * Pedido interno de las pantallas de entrada: inicio, lista de rutas,
+       * Pedido interno de las pantallas de entrada: inicio (los Circuitos),
        * zonas y el detalle de una zona.
        *
        * **Lo guardado al instante, y la versión nueva por detrás.** Antes
@@ -240,7 +238,7 @@ const withPWA = withPWAInit({
       }) =>
         sameOrigin &&
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
-        (url.pathname === "/" || /^\/(?:rutas|zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/(?:zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA_INTERNO,
@@ -256,7 +254,7 @@ const withPWA = withPWAInit({
       /** El documento de las pantallas de entrada: igual que su pedido interno. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
-        (url.pathname === "/" || /^\/(?:rutas|zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/(?:zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA,
@@ -370,6 +368,20 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_DEPLOY_SHA: gitShortSha(),
+  },
+  /**
+   * Rutas se retiró (decisión 049). Una app instalada antes abre en `/rutas`
+   * hasta que el celular relee el manifiesto, y alguien puede tener guardado
+   * un enlace viejo: en vez de una pantalla «no existe», van al inicio, que
+   * ahora son los Circuitos. Temporal (307): si algún día vuelve a existir una
+   * dirección así, no queda grabada en los navegadores.
+   */
+  async redirects() {
+    return [
+      { source: "/rutas", destination: "/", permanent: false },
+      { source: "/rutas/:resto*", destination: "/", permanent: false },
+      { source: "/navegacion/:resto*", destination: "/", permanent: false },
+    ];
   },
   async headers() {
     const archivosDeMarca = [

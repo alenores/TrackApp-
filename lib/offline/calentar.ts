@@ -38,7 +38,7 @@ export type PantallaParaCalentar = {
 };
 
 /** Las que no dependen de lo que el usuario tenga cargado. */
-const LAS_DE_SIEMPRE = ["/", "/rutas", "/zonas", "/circuitos"];
+const LAS_DE_SIEMPRE = ["/", "/zonas", "/circuitos"];
 
 /**
  * Qué pantallas hay que dejar listas, sacadas del paquete recién guardado.
@@ -64,10 +64,6 @@ export function pantallasParaCalentar(paquete: Paquete): PantallaParaCalentar[] 
     ...LAS_DE_SIEMPRE.map(deEntrada),
     delCerro("/mapa-libre"),
     ...paquete.zonas.map((zona) => deEntrada(`/zonas/${zona.id}`)),
-    ...paquete.rutas.flatMap((ruta) => [
-      delCerro(`/rutas/${ruta.id}`),
-      delCerro(`/navegacion/${ruta.id}`),
-    ]),
     ...paquete.circuitos.map((circuito) => delCerro(`/circuitos/${circuito.id}/navegar`)),
   ];
 }

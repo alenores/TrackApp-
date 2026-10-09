@@ -144,6 +144,13 @@ type MapaProps = {
   alTocarVerticeDeCamino?: (indice: number) => void;
   /** Extremos elegidos en el editor de partes. */
   extremosDeParte?: { inicio: number[] | null; final: number[] | null };
+  /** El lugar que se está señalando en el gráfico de alturas. */
+  puntoSenalado?: number[] | null;
+  /**
+   * Otros Circuitos prendidos para ubicarse: más finos y tenues, por debajo
+   * del que se navega, así nunca se confunden con él.
+   */
+  otrosCircuitos?: FeatureCollection | null;
   /** Los puntos y trazos dibujados sobre el territorio. */
   anotaciones?: Anotacion[];
   /** Dónde está el usuario, si el GPS está andando. */
@@ -328,6 +335,8 @@ export function Mapa({
   alMoverVerticeDeCamino,
   alTocarVerticeDeCamino,
   extremosDeParte,
+  puntoSenalado = null,
+  otrosCircuitos = null,
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
@@ -574,6 +583,8 @@ export function Mapa({
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
       mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO });
+      mapa.addSource("punto-senalado", { type: "geojson", data: VACIO });
+      mapa.addSource("otros-circuitos", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
       mapa.addSource("punto-de-ajuste", { type: "geojson", data: VACIO });
@@ -693,6 +704,9 @@ export function Mapa({
         layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
         paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 },
       });
+      mapa.addLayer({ id: "otros-circuitos", type: "line", source: "otros-circuitos",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.circuitoPropio, "line-width": 4, "line-opacity": 0.55 } });
       const filtroPropio: maplibregl.FilterSpecification = ["==", ["get", "clase"], "propia"];
       mapa.addLayer({ id: "circuito-propio-borde", type: "line", source: FUENTE_CIRCUITO,
         filter: filtroPropio, layout: { "line-cap": "round", "line-join": "round" },
@@ -775,6 +789,17 @@ export function Mapa({
         paint: {
           "circle-radius": 9,
           "circle-color": colores.rectanguloNuevo,
+          "circle-stroke-width": 3,
+          "circle-stroke-color": colores.parteXHalo,
+        },
+      });
+      mapa.addLayer({
+        id: "punto-senalado",
+        type: "circle",
+        source: "punto-senalado",
+        paint: {
+          "circle-radius": 8,
+          "circle-color": colores.parteX,
           "circle-stroke-width": 3,
           "circle-stroke-color": colores.parteXHalo,
         },
@@ -952,6 +977,9 @@ export function Mapa({
       mapa.setPaintProperty("extremos-de-parte-punto", "circle-stroke-color", colores.parteXHalo);
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-color", colores.parteX);
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("otros-circuitos", "line-color", colores.circuitoPropio);
+      mapa.setPaintProperty("punto-senalado", "circle-color", colores.parteX);
+      mapa.setPaintProperty("punto-senalado", "circle-stroke-color", colores.parteXHalo);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
       mapa.setPaintProperty(
         "mi-posicion-punto",
@@ -1126,6 +1154,21 @@ export function Mapa({
       })),
     }));
   }, [extremosDeParte]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "punto-senalado", puntoSenalado && puntoSenalado.length >= 2 ? {
+      type: "FeatureCollection",
+      features: [{ type: "Feature" as const, properties: {}, geometry: { type: "Point" as const, coordinates: puntoSenalado } }],
+    } : VACIO));
+  }, [puntoSenalado]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "otros-circuitos", otrosCircuitos ?? VACIO));
+  }, [otrosCircuitos]);
 
   // Los puntos y trazos.
   useEffect(() => {

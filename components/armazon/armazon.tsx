@@ -12,7 +12,6 @@ import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Avatar } from "@/components/ui/avatar";
 import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progreso";
 import { MenuLateral } from "@/components/armazon/menu-lateral";
-import { BotonDeSubirRuta } from "@/components/rutas/boton-de-subir-ruta";
 import { BotonFlotanteDeAgregar } from "@/components/ui/boton-flotante-de-agregar";
 import { useDialogos } from "@/components/ui/dialogos";
 import { usePendientes } from "@/hooks/use-pendientes";
@@ -61,13 +60,13 @@ export function Armazon({
   useSubirPendientes(miPerfilId, miCategoria);
   // Y las salidas registradas navegando, igual: con señal y fuera del mapa.
   useSubirRegistros(miPerfilId);
-  const showNewRouteFab = pathname === "/rutas" || pathname === "/";
 
   /**
    * Las pantallas que dibujan un rectángulo sobre el mapa usan **todo el ancho
    * de la pantalla**.
    */
   const pantallaAncha =
+    pathname === "/" ||
     pathname === "/circuitos" ||
     pathname === "/zonas" ||
     /^\/zonas\/(nueva|\d+(\/(editar|sectores\/(nueva|\d+\/(editar|anotaciones))))?)$/.test(
@@ -93,7 +92,7 @@ export function Armazon({
             ]
               .filter(Boolean)
               .join(", y ")}: eso se pierde. Si podés, esperá a que se suba.`
-          : "Se borra de este celular todo lo bajado: las rutas, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
+          : "Se borra de este celular todo lo bajado: los Circuitos, los Caminos, los sectores y los mapas. Para volver a tenerlo vas a necesitar señal.",
       textoDeAceptar: "Cerrar sesión",
       destructivo: true,
     });
@@ -168,7 +167,6 @@ export function Armazon({
 
         <BarraInferior />
 
-        {showNewRouteFab ? <BotonDeSubirRuta /> : null}
         {pathname === "/salidas" ? (
           <BotonFlotanteDeAgregar href="/salidas/nueva" etiqueta="Cargar una salida" />
         ) : null}

@@ -1,5 +1,5 @@
-import { EsqueletoDeListaDeRutas } from "@/components/rutas/esqueleto-de-lista";
+import { EsqueletoDeLista } from "@/components/ui/esqueleto-de-lista";
 
 export default function ZonasLoading() {
-  return <EsqueletoDeListaDeRutas />;
+  return <EsqueletoDeLista />;
 }

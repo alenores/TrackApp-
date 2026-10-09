@@ -11,7 +11,7 @@ import {
 } from "@/lib/mapas/descarga";
 import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
 import { comoLista, sectoresDeLasRutas } from "@/lib/mapas/lo-que-falta";
-import type { MapaPerdido, RutaSinMapa } from "@/lib/mapas/lo-que-falta";
+import type { CircuitoSinMapa, MapaPerdido } from "@/lib/mapas/lo-que-falta";
 import { NOMBRE_DEL_TIPO, TIPOS_DE_MAPA, type TipoDeMapa } from "@/lib/offline/mapas";
 import type { Sector } from "@/types/database";
 
@@ -35,7 +35,7 @@ import type { Sector } from "@/types/database";
 
 type PropiedadesDelAviso = {
   perdidos: MapaPerdido[];
-  rutas: RutaSinMapa[];
+  circuitos: CircuitoSinMapa[];
   /** Por qué no se pudo revisar, cuando no se pudo. Nunca se traga. */
   aviso: string | null;
 };
@@ -47,7 +47,7 @@ type Pendiente = { sector: Sector; tipo: TipoDeMapa };
 
 export function AvisoDeMapasQueFaltan({
   perdidos,
-  rutas,
+  circuitos,
   aviso,
 }: PropiedadesDelAviso) {
   const haySenal = useHaySenal();
@@ -64,7 +64,7 @@ export function AvisoDeMapasQueFaltan({
     };
   }, []);
 
-  const sectoresSinBajar = useMemo(() => sectoresDeLasRutas(rutas), [rutas]);
+  const sectoresSinBajar = useMemo(() => sectoresDeLasRutas(circuitos), [circuitos]);
 
   const pesoDeLosPerdidos = perdidos.reduce(
     (suma, cada) =>
@@ -114,18 +114,18 @@ export function AvisoDeMapasQueFaltan({
   if (aviso) {
     return (
       <Tarjeta franja="ambar">
-        <p role="alert" className="text-sm leading-6 text-texto-suave">
+        <p role="alert" className="text-base leading-6 text-texto-suave">
           {aviso}
         </p>
       </Tarjeta>
     );
   }
 
-  if (perdidos.length === 0 && rutas.length === 0) return null;
+  if (perdidos.length === 0 && circuitos.length === 0) return null;
 
   const enFila = bajando !== null;
   const unoSolo = perdidos.length === 1;
-  const unaSolaRuta = rutas.length === 1;
+  const unoSoloCircuito = circuitos.length === 1;
 
   return (
     <div className="space-y-3">
@@ -139,7 +139,7 @@ export function AvisoDeMapasQueFaltan({
                   ? "Te falta un mapa que ya tenías bajado"
                   : `Te faltan ${perdidos.length} mapas que ya tenías bajados`}
               </h2>
-              <p className="text-sm leading-6 text-texto-suave">
+              <p className="text-base leading-6 text-texto-suave">
                 El celular necesitó espacio y se{" "}
                 {unoSolo ? "lo llevó" : "los llevó"}. Sin{" "}
                 {unoSolo ? "él" : "ellos"}, en el cerro no vas a ver el terreno.{" "}
@@ -150,16 +150,16 @@ export function AvisoDeMapasQueFaltan({
           </div>
 
           <ul className="space-y-1.5">
-            {perdidos.map(({ sector }) => (
+            {perdidos.map(({ sector, tipo }) => (
               <li
-                key={sector.id}
+                key={`${sector.id}-${tipo}`}
                 className="flex items-center gap-2 rounded-lg border border-ambar-borde bg-ambar-fondo px-2.5 py-2"
               >
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ambar-texto">
-                  {sector.nombre}
+                <span className="min-w-0 flex-1 truncate text-base font-medium text-ambar-texto">
+                  {sector.nombre} · {NOMBRE_DEL_TIPO[tipo]}
                 </span>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-ambar-texto">
-                  {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo))}
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-ambar-texto">
+                  {mostrarPeso(pesoAproximadoDelMapa(sector.rectangulo, undefined, tipo))}
                 </span>
               </li>
             ))}
@@ -186,24 +186,24 @@ export function AvisoDeMapasQueFaltan({
         </Tarjeta>
       ) : null}
 
-      {rutas.length > 0 ? (
+      {circuitos.length > 0 ? (
         <Tarjeta className="space-y-3">
           <div className="flex items-start gap-3">
             <IconoDeMapa />
             <div className="min-w-0 flex-1 space-y-1.5">
               <h2 className="text-base font-semibold leading-snug text-texto">
-                {unaSolaRuta
-                  ? "Una ruta nunca tuvo el mapa bajado"
-                  : `${rutas.length} rutas nunca tuvieron el mapa bajado`}
+                {unoSoloCircuito
+                  ? "Un Circuito nunca tuvo el mapa bajado"
+                  : `${circuitos.length} Circuitos nunca tuvieron el mapa bajado`}
               </h2>
-              <p className="text-sm leading-6 text-texto-suave">
-                {comoLista(rutas.map((cada) => cada.ruta.nombre))}.{" "}
+              <p className="text-base leading-6 text-texto-suave">
+                {comoLista(circuitos.map((cada) => cada.circuito.nombre))}.{" "}
                 {haySenal
-                  ? `Si pensás ${unaSolaRuta ? "hacerla" : "hacerlas"}, bajá ${
-                      unaSolaRuta ? "el mapa" : "los mapas"
+                  ? `Si pensás ${unoSoloCircuito ? "hacerlo" : "hacerlos"}, bajá ${
+                      sectoresSinBajar.length === 1 ? "el mapa" : "los mapas"
                     } ahora.`
                   : `Vas a poder bajar ${
-                      unaSolaRuta ? "el mapa" : "los mapas"
+                      sectoresSinBajar.length === 1 ? "el mapa" : "los mapas"
                     } cuando tengas señal.`}
               </p>
             </div>
@@ -239,7 +239,7 @@ export function AvisoDeMapasQueFaltan({
       {fallo ? (
         <p
           role="alert"
-          className="rounded-xl bg-rojo-fondo px-3 py-2 text-sm leading-6 text-rojo-texto"
+          className="rounded-xl bg-rojo-fondo px-3 py-2 text-base leading-6 text-rojo-texto"
         >
           «{fallo.nombre}» quedó a medio bajar: {fallo.motivo} Lo que entró queda
           guardado, así que reintentar tarda menos.

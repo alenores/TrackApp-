@@ -1,6 +1,6 @@
 # TrackApp — reglas para agentes de IA
 
-> App de navegación de rutas al aire libre. Se usa caminando, con sol fuerte,
+> App de navegación de Circuitos al aire libre. Se usa caminando, con sol fuerte,
 > sin señal y con la batería como recurso escaso.
 > Última revisión: 2026-09-21
 
@@ -87,7 +87,7 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
 el uso. No sirven.
 
 - **Todo botón de la app tiene el tamaño normal**: el de las pantallas de
-  administración. **También al navegar una ruta y en la navegación libre.** No existe un
+  administración. **También al navegar un Circuito y en la navegación libre.** No existe un
   tamaño «para navegar» ni «para el cerro».
 - **Prohibido agrandar un botón por encima de ese tamaño.** Ni la zona que
   responde al toque, ni el dibujo, ni la letra.
@@ -133,6 +133,13 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   continúan, también la redibujada; no reinicia «por explorar» ni pide
   revisión automática. La clasificación puede editarse por separado sin
   modificar la línea. Decisión 037.
+- **Largo, alturas y desnivel nunca se cargan a mano.** Las alturas de un
+  Camino y de las partes propias de un Circuito salen del relieve del terreno
+  al guardar, con conexión; si el relieve no contesta, no se guarda. El
+  desnivel de un Circuito se calcula sobre su propia línea y en su sentido, con
+  lo vigente de sus Caminos: nunca sumando los números de cada Camino. Técnica,
+  esfuerzo, qué llevar, complicaciones y comentario del Circuito sí se cargan a
+  mano. Decisión 049.
 
 - **El mapa general de «Mapas» debe dibujar perímetros y nombres de zonas,
   más todos los Caminos, puntos y trazos marcados.** La navegación libre también
@@ -144,18 +151,19 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   acercarse y no se amontonan con poco zoom. Ver `docs/decisiones/029`.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
   comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
-  puntos. Navegación libre y navegación de rutas conservan su ficha completa.
+  puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
-  celular un mapa chico no alcanza para ver si la ruta queda adentro de un
+  celular un mapa chico no alcanza para ver si el Circuito queda adentro de un
   sector. Al agrandarse y al cerrarse se vuelve a encuadrar lo que hay que
   mirar, no lo que se estaba mirando. **Única excepción:** el mapa de la zona
-  adentro de «Rutas en el mapa», que va sin botones propios (decisión 025).
+  adentro de «Circuitos en el mapa», que va sin botones propios (decisión 025).
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
   salir.** No hay botón para prenderlo. Abajo a la izquierda van salir,
-  anotaciones y rutas; no hay carteles de desvío. Ver `docs/decisiones/025`.
+  anotaciones y «Circuitos en el mapa»; no hay carteles de desvío. Ver
+  `docs/decisiones/025` y `049`.
 - **La pantalla no se apaga mientras se está navegando.**
 
 ---
@@ -166,7 +174,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 **El 99% de las salidas se hacen sin señal.** Por lo tanto:
 
-- **Navegar una ruta con el punto de GPS NO consulta internet. Nunca. Por ningún
+- **Navegar un Circuito con el punto de GPS NO consulta internet. Nunca. Por ningún
   motivo.** Ni para un dato suelto, ni para "enriquecer", ni para verificar algo,
   ni como respaldo, ni "solo si hay señal".
 - **No existe la excepción.** Si un agente cree haber encontrado un caso donde
@@ -181,7 +189,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 **Lo único que se usa en el cerro es ver el recorrido sobre el mapa
 descargado.** Nada más.
 
-Administrar —crear y editar zonas, sectores y rutas, marcar rectángulos, subir
+Administrar —crear y editar zonas, sectores, Caminos y Circuitos, marcar rectángulos, subir
 archivos— **se hace sentado en la computadora, con conexión.** Esas pantallas
 piden el mapa a internet porque es lo correcto, no porque sea una excepción a
 tolerar. Sin conexión no tienen sentido: las coordenadas se pegan desde Google
@@ -238,7 +246,7 @@ quedaba esperando minutos. Ver `docs/decisiones/026-senal-que-sirve.md`.
 ### Sin señal no se muestra lo que no funciona
 
 **Un botón que al tocarlo falla es información basura.** Sin señal desaparece:
-crear, editar y borrar zonas, sectores y rutas; bajar mapas; la pantalla de
+crear, editar y borrar zonas, sectores, Caminos y Circuitos; bajar mapas; la pantalla de
 perfiles, que muestra datos de los demás y esos no se guardan en el celular.
 
 - **Lo que se esconde es la acción, nunca la información.** «Te falta bajar el
@@ -254,8 +262,8 @@ perfiles, que muestra datos de los demás y esos no se guardan en el celular.
 
 **El usuario no visita las pantallas una por una para que queden guardadas.**
 Apenas el paquete queda al día, con señal, la app recorre y deja listas todas
-las que van a hacer falta sin señal: el inicio, las listas, cada zona, y de cada
-ruta su ficha y su navegación. Sin eso, una zona que nunca se abrió con señal no
+las que van a hacer falta sin señal: el inicio, las listas, cada zona, el mapa
+libre y la navegación de cada Circuito. Sin eso, una zona que nunca se abrió con señal no
 existe en el cerro.
 
 - De cada pantalla se guardan **dos cosas**: el documento y el pedido interno
@@ -287,8 +295,9 @@ no están. Por eso qué mapas bajó cada usuario **se anota también en la base*
 que es la única memoria que el navegador no puede borrar.
 
 - **El inicio avisa dos cosas distintas y no las mezcla:** los mapas que tenías
-  y ya no están —eso es una pérdida, va con franja ámbar y arriba de todo— y las
-  rutas que nunca tuvieron mapa, que son una tarea y van en tarjeta común.
+  y ya no están —eso es una pérdida, va con franja ámbar y arriba de todo— y los
+  Circuitos que nunca tuvieron mapa, que son una tarea y van en tarjeta común.
+  El inicio es la lista de Circuitos (decisión 049).
 - **Sacar un mapa a propósito funciona sin señal; avisarle a la base, no.** El
   sacado queda anotado como pendiente en el celular y no se cuenta como perdido
   hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
@@ -530,10 +539,11 @@ rompe algo** — hasta que falla en el cerro.
 
 - **Todo en español**: lo que se ve en pantalla y lo que se escribe en el código.
   Sin excepciones.
-- **La app anterior llama `ruta` al recorrido subido.** La estructura nueva
+- **Rutas se retiró el 2026-10-08** (decisión 049). La estructura vigente
   separa **Camino** (posibilidad de paso marcada en Mapas) de **Circuito**
   (puede combinar partes de Caminos existentes con partes dibujadas solo para
-  él, sin redibujar los Caminos). Ver decisión 034. **Prohibido «track», «trayecto» y
+  él, sin redibujar los Caminos). Ver decisión 034. «Ruta» solo queda en
+  carpetas de piezas compartidas y en la tabla vieja de la base. **Prohibido «track», «trayecto» y
   «recorrido» como nombres alternativos de esos conceptos.** La única
   excepción es `TrackApp`, que es el nombre del producto.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin

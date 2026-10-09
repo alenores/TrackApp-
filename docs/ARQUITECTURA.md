@@ -1,14 +1,17 @@
 # Arquitectura de TrackApp
 
-> Última revisión: 2026-10-08
+> Última revisión: 2026-10-09
 
 > **Estado de la separación (2026-10-08):** Mapas tiene Caminos independientes.
 > Circuitos tiene tabla, editor punto por punto, detalle con resumen permanente
 > y navegación desde la copia preparada en el celular. Al abrir un Circuito,
 > las correcciones de sus Caminos se aplican en orden usando la historia de
 > geometrías de la base. La puesta al día prepara la línea y el resumen antes
-> de salir; navegar no pide datos a internet. El módulo anterior de Rutas
-> todavía convive con Circuitos.
+> de salir; navegar no pide datos a internet. **Rutas se retiró el
+> 2026-10-08** (decisión 049): el inicio es la lista de Circuitos y la
+> navegación del Circuito registra la Salida, anota y prende otros Circuitos.
+> Caminos y partes propias de Circuitos guardan alturas medidas con el relieve
+> al guardar; largo y desnivel del Circuito se calculan con lo vigente.
 >
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores
 > solo organizan la cobertura y descarga de mapas. Los Caminos y Circuitos no
@@ -37,17 +40,16 @@ De ahí salen tres capas y no se mezclan:
 
 Dos guardados, separados por una razón de tamaño:
 
-- **El paquete.** Todo lo liviano: las rutas y los Caminos sin sus líneas, las
-  zonas, los sectores y las anotaciones. Caminos está aplicado a la base e
-  integrado en el mapa general y la navegación libre.
-- **Las líneas de los recorridos.** Van aparte, en el depósito grande del
-  navegador. Una sola ruta puede traer miles de puntos; unas decenas de rutas
-  desbordan el guardado simple, y cuando eso pasa **la app no puede guardar nada
-  más**, ni siquiera lo liviano.
-  Cada parte de una ruta lleva ahí mismo su condición de paso, complejidad y
-  observación. La edición en casa cambia el GeoJSON de la ruta; la puesta al día
-  lo descarga antes de salir. Navegando, el mapa dibuja exclusivamente esa
-  copia local, sin consultar la base (decisión 033).
+- **El paquete.** Todo lo liviano: los Caminos sin sus líneas, las fichas de
+  los Circuitos (con sus datos, largo, desnivel y los sectores que cruzan), las
+  zonas, los sectores y las anotaciones. Ya no trae Rutas (formato 5).
+- **Lo pesado.** Va aparte, en el depósito grande del navegador: la línea de
+  cada Camino junto con sus alturas, y el dibujo preparado de cada Circuito con
+  su resumen y su gráfico de alturas. Una sola línea puede traer miles de
+  puntos; en el guardado simple desbordaría, y cuando eso pasa **la app no
+  puede guardar nada más**, ni siquiera lo liviano. Navegando, el mapa dibuja
+  exclusivamente esa copia local, sin consultar la base. La puesta al día borra
+  las líneas viejas de Rutas que hubieran quedado.
 - **Las líneas de los Caminos.** Tienen un estante propio en el mismo depósito
   grande. Cada versión usa una clave distinta: si se corta la puesta al día,
   el paquete anterior sigue encontrando su línea. Las versiones sobrantes se

@@ -9,6 +9,7 @@ import {
   type ClasificacionPorActividad,
   type ParteDeCamino,
 } from "@/lib/caminos/partes";
+import { alturasParaLaBase, leerAlturasDeLaBase, type AlturasDeLinea } from "@/lib/alturas/perfil";
 
 /**
  * La traducción entre una fila de la tabla `caminos` y un Camino, y la
@@ -23,7 +24,7 @@ import {
  */
 
 export const COLUMNAS_DE_CAMINO =
-  "id, perfil_id, nombre, descripcion, actividades, geometria, partes, largo_m, version_forma, creado_en, actualizado_en, eliminado_en";
+  "id, perfil_id, nombre, descripcion, actividades, geometria, partes, largo_m, alturas, desnivel_positivo_m, desnivel_negativo_m, version_forma, creado_en, actualizado_en, eliminado_en";
 
 export const LARGO_MAXIMO_DEL_NOMBRE = 120;
 export const LARGO_MAXIMO_DE_LA_DESCRIPCION = 2000;
@@ -40,6 +41,11 @@ export type CaminoGuardado = Camino & {
   perfilId: string;
   nombre: string;
   descripcion: string | null;
+  /**
+   * Las alturas del terreno a lo largo de la línea y su desnivel. Las calcula
+   * la app al guardar (decisión 049). `null`: todavía no se calcularon.
+   */
+  alturas: AlturasDeLinea | null;
   /** Sube cada vez que cambia la línea. La pone la base, nunca la app. */
   versionForma: number;
   creadoEn: string;
@@ -48,8 +54,8 @@ export type CaminoGuardado = Camino & {
   eliminadoEn: string | null;
 };
 
-/** Datos livianos del Camino. Su línea vive en el depósito grande del celular. */
-export type CaminoSinLinea = Omit<CaminoGuardado, "coordenadas">;
+/** Datos livianos del Camino. Su línea y sus alturas viven en el depósito grande del celular. */
+export type CaminoSinLinea = Omit<CaminoGuardado, "coordenadas" | "alturas">;
 
 /** Una parte, como va adentro de la columna `partes`. */
 export type ParteEnLaBase = {
@@ -68,6 +74,9 @@ export type ColumnasDeCamino = {
   geometria: { type: "LineString"; coordinates: Position[] };
   partes: ParteEnLaBase[];
   largo_m: number;
+  alturas?: { cada_m: number; valores: number[] } | null;
+  desnivel_positivo_m?: number | null;
+  desnivel_negativo_m?: number | null;
 };
 
 export type CambiosDeCamino = Partial<ColumnasDeCamino> & { eliminado_en?: string };
@@ -165,6 +174,9 @@ export function leerFilaDeCamino(fila: unknown): Resultado<CaminoGuardado> {
   const largoM = typeof fila.largo_m === "string" ? Number(fila.largo_m) : fila.largo_m;
   if (typeof largoM !== "number" || !Number.isFinite(largoM)) return roto("no tiene el largo de la línea.");
 
+  const alturas = leerAlturasDeLaBase(fila.alturas, fila.desnivel_positivo_m, fila.desnivel_negativo_m, largoM);
+  if (alturas === undefined) return roto("sus alturas no coinciden con la línea.");
+
   const versionForma = Number(fila.version_forma);
   if (!Number.isInteger(versionForma) || versionForma < 1) return roto("no tiene una versión válida de la línea.");
 
@@ -183,6 +195,7 @@ export function leerFilaDeCamino(fila: unknown): Resultado<CaminoGuardado> {
     coordenadas: geometria.coordinates as Position[],
     largoM,
     partes: partes as ParteDeCamino[],
+    alturas,
     versionForma,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,
@@ -217,9 +230,15 @@ function parteParaLaBase(parte: ParteDeCamino, actividades: ActividadRuta[]): Pa
   };
 }
 
-/** Las columnas que se escriben. Nunca llevan el autor: ese queda fijo desde que se crea. */
-export function columnasDelCamino(camino: Camino & { nombre: string; descripcion: string | null }): ColumnasDeCamino {
+/**
+ * Las columnas que se escriben. Nunca llevan el autor: ese queda fijo desde que se crea.
+ * Las alturas viajan solo si el Camino las trae, vacías o no.
+ */
+export function columnasDelCamino(
+  camino: Camino & { nombre: string; descripcion: string | null; alturas?: AlturasDeLinea | null },
+): ColumnasDeCamino {
   return {
+    ...(camino.alturas === undefined ? {} : alturasParaLaBase(camino.alturas)),
     nombre: camino.nombre,
     descripcion: camino.descripcion,
     actividades: [...camino.actividades],
@@ -292,11 +311,17 @@ export function revisarFechaDeComprobacion(fecha: unknown, hoy: string = hoyEnCo
   return exito<string | null>(fecha);
 }
 
+/**
+ * La línea que manda la persona, solo con longitud y latitud. Google Earth
+ * agrega un tercer número, la altura, siempre en cero: no es un dato, y los
+ * Circuitos que toman la línea solo aceptan puntos de dos números. La altura
+ * de verdad la calcula la app aparte (decisión 049).
+ */
 export function revisarCoordenadas(coordenadas: unknown): Resultado<Position[]> {
   if (!Array.isArray(coordenadas) || !coordenadas.every(esPosicion)) {
     return falla("La línea no llegó bien al servidor. Volvé a dibujarla o a elegir el archivo.");
   }
-  return exito(coordenadas as Position[]);
+  return exito((coordenadas as Position[]).map((punto) => [punto[0], punto[1]]));
 }
 
 export function revisarActividad(actividad: unknown): Resultado<ActividadRuta> {

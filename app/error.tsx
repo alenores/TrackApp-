@@ -145,7 +145,7 @@ export default function PantallaRota({ error, reset }: Props) {
     esVersionNueva && consulta === "sin_respuesta"
       ? "Falta una pieza de la app que no está guardada en el celular, y no hay señal para traerla. Volvé a la pantalla anterior, o abrí la app de nuevo cuando tengas señal."
       : esVersionNueva && consulta === "no_existe"
-        ? "Salió una versión nueva de la app y esta pantalla no pudo cargarla sola. Tocá «Probar de nuevo»; si sigue, tocá «Ir a mis rutas»."
+        ? "Salió una versión nueva de la app y esta pantalla no pudo cargarla sola. Tocá «Probar de nuevo»; si sigue, tocá «Ir al inicio»."
         : "No es tu celular ni tu conexión: falló la app. Lo que tenés descargado sigue guardado y no se perdió nada.";
 
   const datos = juntarLosDatos({
@@ -221,7 +221,7 @@ export default function PantallaRota({ error, reset }: Props) {
       <button
         type="button"
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a propósito: la red de rescate no puede usar la navegación interna, que es justo lo que puede estar roto.
-        onClick={() => window.location.assign("/rutas")}
+        onClick={() => window.location.assign("/")}
         style={{
           minHeight: "56px",
           borderRadius: "12px",
@@ -234,7 +234,7 @@ export default function PantallaRota({ error, reset }: Props) {
           cursor: "pointer",
         }}
       >
-        Ir a mis rutas
+        Ir al inicio
       </button>
 
       <DatosDeLaFalla datos={datos} />

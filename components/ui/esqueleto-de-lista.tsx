@@ -1,13 +1,13 @@
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { Tarjeta } from "@/components/ui/tarjeta";
 
-type RutaListSkeletonProps = {
+type PropiedadesDelEsqueleto = {
   titleWidth?: string;
   showFabSpacer?: boolean;
   count?: number;
 };
 
-function RutaCardSkeleton() {
+function EsqueletoDeTarjeta() {
   return (
     <Tarjeta className="space-y-3">
       <div className="space-y-2">
@@ -24,11 +24,12 @@ function RutaCardSkeleton() {
   );
 }
 
-export function EsqueletoDeListaDeRutas({
+/** Lo que se ve mientras abre una lista: tarjetas grises con la forma de las de verdad. */
+export function EsqueletoDeLista({
   titleWidth = "w-40",
   showFabSpacer = false,
   count = 3,
-}: RutaListSkeletonProps) {
+}: PropiedadesDelEsqueleto) {
   return (
     <div className={`space-y-4 ${showFabSpacer ? "pb-16" : ""}`}>
       <div className="space-y-2">
@@ -39,7 +40,7 @@ export function EsqueletoDeListaDeRutas({
       <ul className="space-y-3">
         {Array.from({ length: count }, (_, index) => (
           <li key={index}>
-            <RutaCardSkeleton />
+            <EsqueletoDeTarjeta />
           </li>
         ))}
       </ul>

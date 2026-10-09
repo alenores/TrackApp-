@@ -1,16 +1,17 @@
-import { traerUsuario } from "@/lib/cuenta/sesion";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { CartelDeInstalar } from "@/components/armazon/cartel-de-instalar";
-import { PantallaDeRutas } from "@/components/rutas/pantalla-de-rutas";
+import { PantallaDeCircuitos } from "@/components/circuitos/pantalla-de-circuitos";
+import { traerMiPerfil } from "@/lib/perfiles/datos";
 
+/** El inicio: la lista de Circuitos, desde que se retiró Rutas (decisión 049). */
 export default async function HomePage() {
-  const usuario = await traerUsuario();
+  const perfil = await traerMiPerfil();
 
   return (
     <>
       <MarcaDeAppLista />
       <CartelDeInstalar />
-      <PantallaDeRutas miPerfilId={usuario?.id ?? null} />
+      <PantallaDeCircuitos categoria={perfil?.categoria ?? "normal"} miPerfilId={perfil?.id ?? null} />
     </>
   );
 }

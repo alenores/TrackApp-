@@ -42,8 +42,10 @@ export function useSubirRegistros(miPerfilId: string | null): void {
             {
               supabase: crearClienteEnElNavegador(),
               perfilId: miPerfilId,
-              actividadesDeLaRuta: (rutaId) =>
-                paquete?.rutas.find((ruta) => ruta.id === rutaId)?.actividades ?? [],
+              actividadesDelCircuito: (circuitoId) => {
+                const circuito = paquete?.circuitos.find((cada) => cada.id === circuitoId);
+                return circuito ? [circuito.actividad] : [];
+              },
               anotarElBorrador: (codigo, salidaId) => anotarComoSubio(codigo, { salidaId }),
             },
             registro,

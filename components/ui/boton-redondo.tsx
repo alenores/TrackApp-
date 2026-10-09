@@ -85,7 +85,8 @@ export const ICONOS_DEL_CERRO = {
   anotaciones: (
     <path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
   ),
-  rutas: (
+  /** Otros Circuitos en el mapa. */
+  circuitos: (
     <>
       <circle cx="6" cy="18" r="2.5" />
       <circle cx="18" cy="6" r="2.5" />
@@ -99,4 +100,6 @@ export const ICONOS_DEL_CERRO = {
     </>
   ),
   mapa: <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />,
+  /** El gráfico de alturas: una línea que sube y baja sobre su base. */
+  alturas: <path d="M3 20h18M3 16l5-7 4 4 3-5 6 8" />,
 };

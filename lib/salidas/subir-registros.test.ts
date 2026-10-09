@@ -72,8 +72,8 @@ function baseDePrueba({ yaExiste = false, insertarFalla = false } = {}) {
 
 const REGISTRO: Registro = {
   codigo: "11111111-2222-3333-4444-555555555555",
-  rutaId: 7,
-  nombreDeLaRuta: "Champaquí",
+  circuitoId: 7,
+  nombreDelCircuito: "Champaquí",
   empezadoEn: Date.UTC(2026, 9, 4, 13),
   terminadoEn: Date.UTC(2026, 9, 4, 18),
   puntos: [
@@ -88,7 +88,7 @@ function para(supabase: SupabaseClient): ParaSubirRegistros & { anotarElBorrador
   return {
     supabase,
     perfilId: "ale",
-    actividadesDeLaRuta: () => ["trekking"],
+    actividadesDelCircuito: () => ["trekking"],
     anotarElBorrador: vi.fn(async () => {}),
   };
 }
@@ -104,7 +104,8 @@ describe("subir una salida registrada", () => {
     expect(creado?.datos).toMatchObject({
       estado: "borrador",
       codigo_local: REGISTRO.codigo,
-      ruta_id: 7,
+      circuito_id: 7,
+      ruta_id: null,
       fecha: "2026-10-04",
       titulo: "Champaquí · 4 de octubre de 2026",
       actividades: ["trekking"],
@@ -116,6 +117,18 @@ describe("subir una salida registrada", () => {
     expect(numeros.largo_km).toBeCloseTo(1.11, 1);
     // Sin alturas no hay desnivel: queda vacío, no en cero.
     expect(numeros.desnivel_positivo_m).toBeNull();
+  });
+
+  it("un registro empezado antes de retirar Rutas sube con su ruta y su nombre", async () => {
+    const { supabase, pedidos } = baseDePrueba();
+    const viejo: Registro = { ...REGISTRO, circuitoId: null, nombreDelCircuito: null, rutaId: 3, nombreDeLaRuta: "La Banderita" };
+    expect(await subirUnRegistro(para(supabase), viejo)).toBeNull();
+    expect(pedidos.find((cada) => cada.accion === "insert")?.datos).toMatchObject({
+      circuito_id: null,
+      ruta_id: 3,
+      titulo: "La Banderita · 4 de octubre de 2026",
+      actividades: [],
+    });
   });
 
   it("si el borrador ya existía (una subida anterior se cortó), no crea otro", async () => {

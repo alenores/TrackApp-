@@ -2,6 +2,7 @@ import { seSuperponen } from "@/lib/datos/rectangulo";
 import type { MapaQueTenias } from "@/lib/supabase/mapas-bajados";
 import { claveDeMapa, type TipoDeMapa } from "@/lib/offline/mapas";
 import type { RutaResumen, Sector } from "@/types/database";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
 
 /**
  * Qué mapas le faltan al celular, y por qué le faltan.
@@ -95,8 +96,39 @@ export function rutasSinMapa(
   });
 }
 
-/** Los sectores sueltos de un grupo de rutas, sin repetir. */
-export function sectoresDeLasRutas(rutas: RutaSinMapa[]): Sector[] {
+export type CircuitoSinMapa = {
+  circuito: CircuitoSinDibujo;
+  /** Los sectores que cruza el Circuito y no tienen el mapa en el celular. */
+  sectores: Sector[];
+};
+
+/**
+ * Los Circuitos a los que nunca les bajaste el mapa. Igual que las rutas, pero
+ * con los sectores que cruza su línea de verdad; si el paquete es viejo y no
+ * los trae, con los que toca su rectángulo.
+ */
+export function circuitosSinMapa(
+  circuitos: CircuitoSinDibujo[],
+  sectores: Sector[],
+  sectoresConMapa: Set<number>,
+  perdidos: MapaPerdido[],
+): CircuitoSinMapa[] {
+  const yaAvisados = new Set(perdidos.map((cada) => cada.sector.id));
+  const porId = new Map(sectores.map((sector) => [sector.id, sector]));
+
+  return circuitos.flatMap((circuito) => {
+    const suyos = circuito.sectores
+      ? circuito.sectores.flatMap((id) => porId.get(id) ?? [])
+      : circuito.rectangulo
+        ? sectores.filter((sector) => seSuperponen(sector.rectangulo, circuito.rectangulo!))
+        : [];
+    const faltan = suyos.filter((sector) => !sectoresConMapa.has(sector.id) && !yaAvisados.has(sector.id));
+    return faltan.length === 0 ? [] : [{ circuito, sectores: faltan }];
+  });
+}
+
+/** Los sectores sueltos de un grupo de rutas o Circuitos, sin repetir. */
+export function sectoresDeLasRutas<T extends { sectores: Sector[] }>(rutas: T[]): Sector[] {
   const porId = new Map<number, Sector>();
 
   for (const cada of rutas) {

@@ -37,7 +37,7 @@ describe("el registro de una salida en el celular", () => {
 
     const enCurso = elEnCurso(await releerLosRegistros());
     expect(enCurso?.puntos).toHaveLength(20);
-    expect(enCurso?.rutaId).toBe(7);
+    expect(enCurso?.circuitoId).toBe(7);
   });
 
   it("no empieza una segunda encima de la que está en curso: sigue con esa", async () => {

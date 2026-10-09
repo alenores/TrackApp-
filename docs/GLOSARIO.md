@@ -79,6 +79,24 @@ de cada sector, en un solo acercamiento, y de ahí salen las curvas de nivel.
 Sale de un archivo del mundo distinto del mapa (Mapterhorn, con datos de
 Copernicus). Se pide por el mismo tipo de puente y se guarda en el mismo depósito.
 
+**Alturas de un Camino**
+La altura del terreno cada 25 m a lo largo de la línea, más una en el final.
+Las averigua la app con el **relieve** al guardar el Camino, porque las líneas
+de Google Earth no traen altura. Son una estimación y nunca se cargan a mano.
+De ahí salen el desnivel y el **gráfico de alturas**. Ver decisión 049.
+
+**Gráfico de alturas**
+El dibujo de cuánto sube y baja una línea a lo largo de su largo, como en las
+apps de montaña: abajo la distancia, al costado la altura. Va en la ficha de
+cada Camino y de cada Circuito, pintado con los colores y marcas de las partes.
+Al pasar el dedo o el mouse dice la altura de ese punto y lo marca en el mapa.
+En la navegación de un Circuito lleva la marca **Estás acá**.
+
+**Qué llevar**
+Lo que conviene llevar a un Circuito: agua, repuestos, abrigo. Texto libre.
+Reemplaza a «Equipo» de Rutas, porque **equipo** ya nombra a la bici o el
+kayak en «a pie con el equipo».
+
 **Mapa básico** — *palabra retirada (2026-09-23)*
 No se usa más: se confundía con el mapa simple. La ruta sobre fondo vacío se
 llama **sin mapa** (ver arriba). En la app se dice **simple** o **satelital**.
@@ -235,20 +253,29 @@ También informa partes sin unir y Caminos retirados, sin avisos superpuestos
 por cada cambio. Ver decisión 047.
 Si terminaba en la punta de un Camino y esa punta se corrige, conserva su
 lugar anterior. Ver decisión 048.
+Lleva técnica, esfuerzo, qué llevar, complicaciones y comentario cargados a
+mano; su largo, su desnivel y su **gráfico de alturas** se calculan solos con
+la línea vigente. La lista de Circuitos es el inicio de la app. Al navegarlo
+se puede registrar la Salida, anotar, prender otros Circuitos y ver las
+alturas con «Estás acá». Ver decisión 049.
 
-**Ruta**
-La línea subida a la app desde un archivo. Tiene nombre, distancia, desnivel,
-dificultad técnica y esfuerzo globales, y comentarios. Puede tener varias
-partes con condiciones diferentes; la valoración global no colorea esas partes.
+**Circuitos en el mapa**
+La lista para prender otros Circuitos sobre el mapa al navegar uno, por zona y
+sector, con el mapa chico de la zona. En el detalle de una zona, el botón del
+mapa que muestra los Circuitos que la cruzan.
+
+**Ruta** — *retirada el 2026-10-08 (decisión 049)*
+El módulo viejo: una línea subida desde un archivo con sus datos globales. Lo
+reemplazan **Camino** y **Circuito**: sus datos pasaron al Circuito y su
+navegación, a la navegación del Circuito. No se usa más en pantalla.
 
 **Es la palabra definitiva y la única.** Nunca «track», «trayecto» ni
 «recorrido» para referirse a esto. `TrackApp` sigue siendo el nombre del
 producto: eso no es el concepto y no se renombra.
 
-**Parte de ruta**
-Una sección continua de la línea de una ruta, elegida marcando su inicio y su
-final desde la computadora. Tiene su propia condición de paso y complejidad.
-Puede volver a clasificarse sin cambiar las partes vecinas.
+**Parte de ruta** — *descartada (decisiones 033 y 049)*
+El prototipo que partía una ruta en partes. Esas reglas viven ahora en las
+partes de cada **Camino**.
 
 **Condición de paso**
 Lo que se sabe sobre atravesar una parte: **por explorar** (línea entrecortada),
@@ -298,15 +325,12 @@ a donde estás. Tiene las mismas reglas que la navegación: nunca consulta
 internet.
 
 **Mapa de la zona**
-El mapa chico que se abre con el ícono de mapa en «Rutas en el mapa»: la zona
+El mapa chico que se abre con el ícono de mapa en «Circuitos en el mapa»: la zona
 con sus sectores y tu punto azul. Tocando un sector, la lista pasa a ser la de
 ese sector. Lee solo lo guardado en el celular.
 
-**Filtro de rutas**
-Lo que achica la lista de rutas según zona, para qué sirve, largo, dificultad
-técnica, esfuerzo y si el mapa está en el celular. Muestra lo mismo que la
-tarjeta de la ruta, con los mismos dibujos. Los filtros puestos quedan arriba de
-la lista como pastillas y cada una se saca con su cruz.
+**Filtro de rutas** — *retirado con Rutas (decisión 049)*
+Achicaba la lista de rutas. La lista de Circuitos todavía no tiene filtro.
 
 **Circulitos de técnica**
 Cómo se dibuja la dificultad técnica: cinco circulitos, y cada uno vale 2
@@ -318,8 +342,10 @@ Cómo se dibuja el nivel de esfuerzo: una aguja y un color por nivel, verde
 (bajo), amarillo (medio), rojo (alto) y rojo fuerte (muy alto).
 
 **Desnivel positivo / desnivel negativo**
-Lo que se sube y lo que se baja en una ruta. Se guardan por separado porque
-castigan distinto. Los calcula la app desde el archivo: nunca se cargan a mano.
+Lo que se sube y lo que se baja en un Camino o un Circuito. Se guardan por
+separado porque castigan distinto. Los calcula la app con las **alturas**:
+nunca se cargan a mano. En un Camino se miden desde donde empieza su dibujo; al
+revés se invierten. En un Circuito, en el sentido en que se dibujó.
 La única excepción es una **salida** sin archivo GPS, que es un relato y no se
 usa para navegar: ahí se pueden escribir.
 

@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { ColumnasDeCamino, CambiosDeCamino, CaminoGuardado } from "@/lib/caminos/datos";
 import type { QuienUsa } from "@/lib/caminos/permisos";
 import { clasificacionDe, parteEn } from "@/lib/caminos/partes";
+import { exito, falla } from "@/lib/datos/resultado";
+import { cantidadDeAlturas, type FuenteDeAlturas } from "@/lib/alturas/perfil";
 import {
   cambiarActividadesGuardadas,
   cambiarDatosDeParteGuardada,
@@ -27,6 +29,21 @@ import {
  * Lo que estas pruebas no pueden probar —que la base de verdad exija los
  * permisos aunque alguien se saltee la app— queda para cuando se aplique el SQL.
  */
+
+/** Un relieve inventado: el terreno sube 1 m cada 10 m hacia el este y baja hacia el norte. */
+let medicionesDelRelieve = 0;
+const RELIEVE: FuenteDeAlturas = async (puntos) => {
+  medicionesDelRelieve += 1;
+  return exito(puntos.map(([lon, lat]) => 900 + (lon + 64.5) * 9_500 - (lat + 31.4) * 11_000));
+};
+
+function crear(base: BaseDeCaminos, quien: QuienUsa, pedido: Parameters<typeof crearCaminoGuardado>[2]) {
+  return crearCaminoGuardado(base, quien, pedido, RELIEVE);
+}
+
+function corregir(base: BaseDeCaminos, quien: QuienUsa, id: unknown, actualizadoEn: unknown, coordenadas: unknown) {
+  return corregirLineaGuardada(base, quien, id, actualizadoEn, coordenadas, RELIEVE);
+}
 
 const ADMINISTRADOR: QuienUsa = { perfilId: "aaaaaaaa-0000-4000-8000-000000000001", categoria: "administrador" };
 const PREMIUM: QuienUsa = { perfilId: "bbbbbbbb-0000-4000-8000-000000000002", categoria: "premium" };
@@ -108,7 +125,7 @@ function baseFalsa() {
 }
 
 async function caminoDe(quien: QuienUsa, entorno = baseFalsa()) {
-  const camino = abrir(await crearCaminoGuardado(entorno.base, quien, {
+  const camino = abrir(await crear(entorno.base, quien, {
     nombre: "Huella del filo",
     actividades: ["trekking", "mountain_bike"],
     coordenadas: linea(11),
@@ -127,7 +144,7 @@ describe("crear", () => {
 
   it("Normal no crea, y ni siquiera se le pide nada a la base", async () => {
     const entorno = baseFalsa();
-    const resultado = await crearCaminoGuardado(entorno.base, NORMAL, {
+    const resultado = await crear(entorno.base, NORMAL, {
       nombre: "Atajo", actividades: ["trekking"], coordenadas: linea(3),
     });
     expect(error(resultado)).toMatch(/no sumarlos/);
@@ -136,10 +153,10 @@ describe("crear", () => {
 
   it("un Camino incompleto no se guarda: sin nombre, sin actividad o sin línea", async () => {
     const entorno = baseFalsa();
-    expect(error(await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: " ", actividades: ["trekking"], coordenadas: linea(3) }))).toMatch(/nombre/);
-    expect(error(await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: "A", actividades: [], coordenadas: linea(3) }))).toMatch(/al menos una actividad/);
-    expect(error(await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: "A", actividades: ["trekking"], coordenadas: [[-64.5, -31.4]] }))).toMatch(/dos puntos/);
-    expect(error(await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: "A", actividades: ["trekking"], coordenadas: "nada" }))).toMatch(/no llegó bien/);
+    expect(error(await crear(entorno.base, PREMIUM, { nombre: " ", actividades: ["trekking"], coordenadas: linea(3) }))).toMatch(/nombre/);
+    expect(error(await crear(entorno.base, PREMIUM, { nombre: "A", actividades: [], coordenadas: linea(3) }))).toMatch(/al menos una actividad/);
+    expect(error(await crear(entorno.base, PREMIUM, { nombre: "A", actividades: ["trekking"], coordenadas: [[-64.5, -31.4]] }))).toMatch(/dos puntos/);
+    expect(error(await crear(entorno.base, PREMIUM, { nombre: "A", actividades: ["trekking"], coordenadas: "nada" }))).toMatch(/no llegó bien/);
     expect(entorno.llamadas.insertar).toBe(0);
   });
 });
@@ -229,7 +246,7 @@ describe("cambiar", () => {
       desdeM: 0, hastaM: 300, actividad: "trekking", paso: "transitable", complejidad: "facil",
     }));
     const nuevas = clasificado.coordenadas.map((punto, i) => (i === 7 ? [punto[0], punto[1] + 0.0005] : punto));
-    const corregido = abrir(await corregirLineaGuardada(entorno.base, PREMIUM, camino.id, clasificado.actualizadoEn, nuevas));
+    const corregido = abrir(await corregir(entorno.base, PREMIUM, camino.id, clasificado.actualizadoEn, nuevas));
 
     expect(corregido.id).toBe(camino.id);
     expect(corregido.perfilId).toBe(PREMIUM.perfilId);
@@ -306,7 +323,7 @@ describe("retirar", () => {
 describe("la lista", () => {
   async function conCaminos(cantidad: number) {
     const entorno = baseFalsa();
-    const modelo = abrir(await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: "Modelo", actividades: ["kayak"], coordenadas: linea(3) }));
+    const modelo = abrir(await crear(entorno.base, PREMIUM, { nombre: "Modelo", actividades: ["kayak"], coordenadas: linea(3) }));
     const fila = entorno.filas.get(modelo.id)!;
     for (let id = 2; id <= cantidad; id += 1) entorno.filas.set(id, { ...fila, id, nombre: `Camino ${id}` });
     return entorno;
@@ -341,5 +358,52 @@ describe("la lista", () => {
     expect(lista.conProblemas).toHaveLength(1);
     expect(lista.conProblemas[0].id).toBe(2);
     expect(lista.conProblemas[0].motivo).toMatch(/Camino 2/);
+  });
+});
+
+describe("alturas y desnivel (decisión 049)", () => {
+  it("un Camino nuevo se guarda con una altura cada 25 m y su desnivel", async () => {
+    const { camino } = await caminoDe(PREMIUM);
+    expect(camino.alturas).not.toBeNull();
+    expect(camino.alturas!.valores).toHaveLength(cantidadDeAlturas(camino.largoM, camino.alturas!.cadaM));
+    // La línea va hacia el este: sube unos 95 m y no baja.
+    expect(camino.alturas!.desnivelPositivoM).toBeGreaterThan(85);
+    expect(camino.alturas!.desnivelPositivoM).toBeLessThan(100);
+    expect(camino.alturas!.desnivelNegativoM).toBe(0);
+  });
+
+  it("si el relieve no contesta, no se guarda nada y se dice por qué", async () => {
+    const entorno = baseFalsa();
+    const caido: FuenteDeAlturas = async () => falla("No se pudieron calcular las alturas: tiempo agotado. No se guardó nada. Probá de nuevo en un rato.");
+    const resultado = await crearCaminoGuardado(entorno.base, PREMIUM, { nombre: "Sin relieve", actividades: ["trekking"], coordenadas: linea(3) }, caido);
+    expect(error(resultado)).toMatch(/«Sin relieve».*tiempo agotado/);
+    expect(entorno.llamadas.insertar).toBe(0);
+  });
+
+  it("corregir la línea vuelve a medir: la línea nueva nunca queda con alturas viejas", async () => {
+    const { entorno, camino } = await caminoDe(PREMIUM);
+    // Se alarga hacia el norte, donde el terreno baja.
+    const nuevas = [...camino.coordenadas, [camino.coordenadas[10][0], -31.39]];
+    const corregido = abrir(await corregir(entorno.base, PREMIUM, camino.id, camino.actualizadoEn, nuevas));
+    expect(corregido.alturas!.valores).toHaveLength(cantidadDeAlturas(corregido.largoM, corregido.alturas!.cadaM));
+    expect(corregido.alturas!.desnivelNegativoM).toBeGreaterThan(100);
+  });
+
+  it("si el relieve falla al corregir, la línea vieja queda como estaba", async () => {
+    const { entorno, camino } = await caminoDe(PREMIUM);
+    const caido: FuenteDeAlturas = async () => falla("No se pudieron calcular las alturas: tiempo agotado. No se guardó nada. Probá de nuevo en un rato.");
+    const nuevas = camino.coordenadas.map((punto, i) => (i === 3 ? [punto[0], punto[1] + 0.0005] : punto));
+    expect(error(await corregirLineaGuardada(entorno.base, PREMIUM, camino.id, camino.actualizadoEn, nuevas, caido))).toMatch(/tiempo agotado/);
+    expect(entorno.llamadas.actualizar).toBe(0);
+  });
+
+  it("clasificar una parte no vuelve a medir ni toca las alturas", async () => {
+    const { entorno, camino } = await caminoDe(PREMIUM);
+    const antes = medicionesDelRelieve;
+    const clasificado = abrir(await clasificarParteGuardada(entorno.base, PREMIUM, camino.id, camino.actualizadoEn, {
+      desdeM: 0, hastaM: 300, actividad: "trekking", paso: "transitable", complejidad: "facil",
+    }));
+    expect(medicionesDelRelieve).toBe(antes);
+    expect(clasificado.alturas).toEqual(camino.alturas);
   });
 });

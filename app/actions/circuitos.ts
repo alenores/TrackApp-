@@ -6,8 +6,10 @@ import { exito, falla, type Resultado } from "@/lib/datos/resultado";
 import { ACTIVIDADES_RUTA, CATEGORIAS_USUARIO, type ActividadRuta, type CategoriaUsuario } from "@/types/database";
 import { leerCaminos } from "@/app/actions/caminos";
 import { COLUMNAS_DE_CAMINO, leerFilaDeCamino, type CaminoGuardado } from "@/lib/caminos/datos";
-import { COLUMNAS_DE_CIRCUITO, leerFilaDeCircuito, prepararCircuito,
-  type CircuitoGuardado } from "@/lib/circuitos/datos";
+import { COLUMNAS_DE_CIRCUITO, datosParaLaBase, leerFilaDeCircuito, prepararCircuito,
+  revisarDatosDelCircuito, type CircuitoGuardado } from "@/lib/circuitos/datos";
+import { alturasPropiasParaLaBase, medirAlturasPropias } from "@/lib/circuitos/alturas";
+import { alturasDelRelieve } from "@/lib/alturas/relieve-del-servidor";
 import type { CorreccionDeCamino } from "@/lib/circuitos/actualizar";
 
 type Cliente = Awaited<ReturnType<typeof crearClienteEnElServidor>>;
@@ -85,7 +87,9 @@ export async function leerCircuitos(): Promise<Resultado<CircuitoGuardado[]>> {
   });
 }
 
-export async function crearCircuitoNuevo(pedido: { nombre: unknown; actividad: unknown; puntos: unknown }): Promise<Resultado<CircuitoGuardado>> {
+type PedidoDeCircuito = { nombre: unknown; actividad: unknown; puntos: unknown; datos?: unknown };
+
+export async function crearCircuitoNuevo(pedido: PedidoDeCircuito): Promise<Resultado<CircuitoGuardado>> {
   return conSesion("guardar el Circuito", async (base, quien) => {
     if (quien.categoria === "normal") return falla("Tu cuenta puede consultar Circuitos, pero solo Administrador y Premium pueden crearlos.");
     const caminos = await leerCaminos();
@@ -95,10 +99,16 @@ export async function crearCircuitoNuevo(pedido: { nombre: unknown; actividad: u
     }
     const preparado = prepararCircuito(pedido, caminos.datos.caminos);
     if (!preparado.ok) return preparado;
+    const datos = revisarDatosDelCircuito(pedido.datos);
+    if (!datos.ok) return datos;
+    // Las partes dibujadas solo para el Circuito no tienen Camino del que sacar alturas.
+    const alturas = await medirAlturasPropias(preparado.datos.partes, alturasDelRelieve);
+    if (!alturas.ok) return falla(`No se guardó el Circuito: ${alturas.error}`);
     const { data, error } = await base.from("circuitos").insert({
       perfil_id: quien.perfilId, nombre: preparado.datos.nombre,
       actividad: preparado.datos.actividad, puntos: preparado.datos.puntos,
       partes: preparado.datos.partes, caminos_base: preparado.datos.caminosBase,
+      ...datosParaLaBase(datos.datos), alturas_propias: alturasPropiasParaLaBase(alturas.datos),
     }).select(COLUMNAS_DE_CIRCUITO).abortSignal(tope()).maybeSingle();
     if (error) return falla(`No se guardó el Circuito: ${error.message}. Probá de nuevo.`);
     if (!data) return falla("La base no devolvió el Circuito. Mirá la lista antes de volver a guardarlo.");
@@ -108,7 +118,7 @@ export async function crearCircuitoNuevo(pedido: { nombre: unknown; actividad: u
 
 export async function cambiarCircuito(
   id: number, actualizadoEn: string,
-  pedido: { nombre: unknown; actividad: unknown; puntos: unknown },
+  pedido: PedidoDeCircuito,
 ): Promise<Resultado<CircuitoGuardado>> {
   return conSesion("cambiar el Circuito", async (base, quien) => {
     if (!Number.isInteger(id) || id < 1 || !actualizadoEn) return falla("No se reconoce el Circuito abierto. Volvé a la lista.");
@@ -129,10 +139,17 @@ export async function cambiarCircuito(
     if (!caminos.ok) return falla(`No se pudo comprobar el mapa: ${caminos.error}`);
     const preparado = prepararCircuito(pedido, caminos.datos.caminos);
     if (!preparado.ok) return preparado;
+    const datos = revisarDatosDelCircuito(pedido.datos);
+    if (!datos.ok) return datos;
+    const alturas = await medirAlturasPropias(preparado.datos.partes, alturasDelRelieve);
+    if (!alturas.ok) return falla(`No se guardó el Circuito: ${alturas.error}`);
     const guardado = await base.from("circuitos").update({
       nombre: preparado.datos.nombre, actividad: preparado.datos.actividad,
       puntos: preparado.datos.puntos, partes: preparado.datos.partes,
       caminos_base: preparado.datos.caminosBase,
+      // Si el pedido no trae los datos cargados a mano, quedan como estaban.
+      ...(pedido.datos === undefined ? {} : datosParaLaBase(datos.datos)),
+      alturas_propias: alturasPropiasParaLaBase(alturas.datos),
     }).eq("id", id).eq("actualizado_en", actualizadoEn)
       .select(COLUMNAS_DE_CIRCUITO).abortSignal(tope()).maybeSingle();
     if (guardado.error) return falla(`No se guardó el Circuito: ${guardado.error.message}. Volvé a intentar.`);
@@ -143,7 +160,7 @@ export async function cambiarCircuito(
 
 /** Cambia la ficha sin tocar el dibujo, útil cuando una corrección dejó un final separado. */
 export async function cambiarDatosDelCircuito(
-  id: number, actualizadoEn: string, nombre: string, actividad: ActividadRuta,
+  id: number, actualizadoEn: string, nombre: string, actividad: ActividadRuta, datosCargados?: unknown,
 ): Promise<Resultado<CircuitoGuardado>> {
   return conSesion("cambiar el Circuito", async (base, quien) => {
     if (!Number.isInteger(id) || id < 1 || !actualizadoEn) return falla("No se reconoce el Circuito abierto. Volvé a la lista.");
@@ -151,6 +168,8 @@ export async function cambiarDatosDelCircuito(
       return falla("Escribí un nombre de hasta 120 caracteres para el Circuito.");
     }
     if (!(ACTIVIDADES_RUTA as readonly unknown[]).includes(actividad)) return falla("Elegí una actividad para el Circuito.");
+    const datos = revisarDatosDelCircuito(datosCargados);
+    if (!datos.ok) return datos;
     const leido = await base.from("circuitos").select(COLUMNAS_DE_CIRCUITO)
       .eq("id", id).abortSignal(tope()).maybeSingle();
     if (leido.error) return falla(`No se pudo abrir el Circuito: ${leido.error.message}. Probá de nuevo.`);
@@ -163,7 +182,8 @@ export async function cambiarDatosDelCircuito(
     if (actual.datos.actualizadoEn !== actualizadoEn) {
       return falla("El Circuito cambió desde que lo abriste. No se guardó nada: volvé a abrirlo y revisá la versión nueva.");
     }
-    const guardado = await base.from("circuitos").update({ nombre: nombre.trim(), actividad })
+    const guardado = await base.from("circuitos").update({ nombre: nombre.trim(), actividad,
+      ...(datosCargados === undefined ? {} : datosParaLaBase(datos.datos)) })
       .eq("id", id).eq("actualizado_en", actualizadoEn)
       .select(COLUMNAS_DE_CIRCUITO).abortSignal(tope()).maybeSingle();
     if (guardado.error) return falla(`No se guardó el Circuito: ${guardado.error.message}. Probá de nuevo.`);

@@ -23,7 +23,7 @@ export default function OfflinePage() {
 
         <p className="text-base leading-7 text-texto-suave">
           Volvé al inicio, que sí funciona sin señal. Desde ahí llegás a tus
-          rutas y a los mapas que bajaste.
+          Circuitos y a los mapas que bajaste.
         </p>
 
         {/*

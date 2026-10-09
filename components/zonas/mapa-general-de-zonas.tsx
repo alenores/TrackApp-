@@ -31,6 +31,7 @@ const SIN_CAMINOS: CaminoSinLinea[] = [];
 export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLinea = SIN_CAMINOS, sectoresPorZona }: Propiedades) {
   const [zonaId, setZonaId] = useState<number | null>(null);
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
+  const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const [actividad, elegirActividad] = useActividadPrincipal();
   const { caminos, error: errorDeCaminos, cargando: cargandoCaminos } = useCaminosGuardados(caminosSinLinea);
   const zonaIdRef = useRef<number | null>(null);
@@ -70,6 +71,7 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLine
         rectangulos={rectangulos}
         anotaciones={anotaciones}
         caminos={dibujo}
+        puntoSenalado={puntoSenalado}
         referencia={<ReferenciaDePartes />}
         alTocarCamino={(_lon, _lat, propiedades) => {
           const id = Number(propiedades.camino_id);
@@ -81,7 +83,13 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLine
         }}
         alSenalarZona={senalarZona}
         fichaSobreElMapa={elegido && caminoTocado ? (
-          <FichaDeCamino camino={elegido} indice={caminoTocado.indice} alCerrar={() => setCaminoTocado(null)} />
+          <FichaDeCamino
+            camino={elegido}
+            indice={caminoTocado.indice}
+            actividad={actividad}
+            alSenalarPunto={setPuntoSenalado}
+            alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
+          />
         ) : zonaElegida ? (
           <div data-ficha-zona>
               <Tarjeta className="space-y-3 shadow-[var(--sombra-alta)]">

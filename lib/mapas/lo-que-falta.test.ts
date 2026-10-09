@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  circuitosSinMapa,
   comoLista,
   mapasPerdidos,
   rutasSinMapa,
@@ -7,6 +8,7 @@ import {
   sectoresDeLaRuta,
 } from "@/lib/mapas/lo-que-falta";
 import type { MapaQueTenias } from "@/lib/supabase/mapas-bajados";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
 import type { Rectangulo, RutaResumen, Sector } from "@/types/database";
 
 /**
@@ -193,5 +195,34 @@ describe("los nombres en una oración", () => {
 
   it("con ninguno no devuelve nada", () => {
     expect(comoLista([])).toBe("");
+  });
+});
+
+function circuito(id: number, sectores: number[] | undefined, lonOeste = -64.95): CircuitoSinDibujo {
+  return { id, nombre: `Circuito ${id}`, actividad: "mountain_bike", actualizadoEn: "2026-10-08", rectangulo: rect(lonOeste, 0.3), sectores };
+}
+
+describe("los Circuitos que nunca tuvieron mapa", () => {
+  const sectores = [sector(10, -64.95), sector(11, -64.8), sector(12, -64.7)];
+
+  it("cuenta solo los sectores que cruza la línea, no los que toca su rectángulo", () => {
+    // El rectángulo del Circuito toca los tres sectores, pero la línea cruza solo el 10 y el 11.
+    const sinMapa = circuitosSinMapa([circuito(1, [10, 11])], sectores, new Set([10]), []);
+    expect(sinMapa).toHaveLength(1);
+    expect(sinMapa[0].sectores.map((cada) => cada.id)).toEqual([11]);
+  });
+
+  it("con todos sus mapas bajados no aparece", () => {
+    expect(circuitosSinMapa([circuito(1, [10, 11])], sectores, new Set([10, 11]), [])).toEqual([]);
+  });
+
+  it("un mapa perdido no se cuenta además como nunca bajado", () => {
+    const perdido = { sector: sectores[1], tipo: "simple" as const, acercamientoMaximo: 15 };
+    expect(circuitosSinMapa([circuito(1, [10, 11])], sectores, new Set([10]), [perdido])).toEqual([]);
+  });
+
+  it("con un paquete viejo sin la lista de sectores, usa el rectángulo", () => {
+    const sinMapa = circuitosSinMapa([circuito(1, undefined)], sectores, new Set(), []);
+    expect(sinMapa[0].sectores.map((cada) => cada.id).sort()).toEqual([10, 11, 12]);
   });
 });

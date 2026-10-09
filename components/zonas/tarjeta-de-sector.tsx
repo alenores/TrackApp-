@@ -9,8 +9,6 @@ import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Sector } from "@/types/database";
-import { useRutasEnArea } from "@/hooks/use-rutas-en-area";
-import { SelectorDeRutasEnMapa } from "@/components/zonas/selector-de-rutas-en-mapa";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 
 /**

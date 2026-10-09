@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { PreguntaDeRegistrar } from "@/components/navegacion/registro-de-salida";
+import { BotonFlotante } from "@/components/ui/boton-flotante-de-agregar";
+import { useRegistros } from "@/hooks/use-registros";
+import { elEnCurso, empezarUnRegistro } from "@/lib/salidas/registro";
 import { leerCircuitoCompleto, retirarCircuito } from "@/app/actions/circuitos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
 import { Boton } from "@/components/ui/boton";
-import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
+import { DatosDeCircuito } from "@/components/circuitos/datos-de-circuito";
+import { AlturasDeCircuito } from "@/components/circuitos/alturas-de-circuito";
+import { BloqueDeCobertura } from "@/components/rutas/bloque-de-cobertura";
+import { alturasDelCircuito, puntoEnElCircuito } from "@/lib/circuitos/alturas";
 import { useDialogos } from "@/components/ui/dialogos";
 import { actualizarCircuito } from "@/lib/circuitos/actualizar";
 import { caminosParaArmarCircuito, partesDelCircuitoEnElMapa } from "@/lib/circuitos/en-el-mapa";
@@ -36,12 +44,16 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
   alEditar: (circuito: CircuitoGuardado, partes: ParteDibujada[], finalSeparado: boolean, caminos: CaminoGuardado[]) => void;
   alRetirar: () => void;
 }) {
-  const { confirmar } = useDialogos();
+  const { confirmar, avisar } = useDialogos();
+  const router = useRouter();
+  const hayUnaEnCurso = elEnCurso(useRegistros()) !== null;
+  const [preguntandoSiRegistrar, setPreguntandoSiRegistrar] = useState(false);
   const [completo, setCompleto] = useState<Completo | null>(null);
   const [cargando, setCargando] = useState(true);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [preparado, setPreparado] = useState<CircuitoPreparado | null>(null);
+  const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const paquete = usePaqueteGuardado();
   const fichaGuardada = paquete?.circuitos.find((cada) => cada.id === id) ?? null;
   const haySenal = useHaySenal();
@@ -78,6 +90,9 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
   const resumen = useMemo(() => completo && actualizado?.ok
     ? resumirCircuito(actualizado.datos.partes, completo.caminos, completo.circuito.actividad, actualizado.datos.finalSeparado) : null,
   [completo, actualizado]);
+  const alturas = useMemo(() => completo && actualizado?.ok
+    ? alturasDelCircuito(actualizado.datos.partes, completo.caminos, completo.circuito.alturasPropias) : null,
+  [completo, actualizado]);
   const encuadre = useMemo(() => {
     if (!actualizado?.ok) return null;
     const puntos: [number, number][] = actualizado.datos.partes.flatMap((parte) => parte.coordenadas.map((punto): [number, number] => [punto[0], punto[1]]));
@@ -92,18 +107,43 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
   const resumenMostrado = resumen ?? (preparado ? exito(preparado.resumen) : null);
   const finalMostrado = actualizado?.ok ? actualizado.datos.finalSeparado : preparado?.finalSeparado ?? null;
   const encuadreMostrado = encuadre ?? fichaGuardada?.rectangulo ?? null;
+  const alturasMostradas = alturas ?? preparado?.alturas ?? null;
+  const partesMostradas = actualizado?.ok ? actualizado.datos.partes : preparado?.partes ?? null;
+  const datosDelCircuito = completo?.circuito.datos ?? fichaGuardada?.datos;
+  const largoM = resumenMostrado?.ok ? resumenMostrado.datos.metrosTotales : fichaGuardada?.totales?.largoM ?? null;
   const yaBajados = useMemo(() => new Set(mapasBajados.map((mapa) => mapa.sectorId)), [mapasBajados]);
   const cobertura = useMemo(() => dibujoMostrado
     ? calcularCobertura(dibujoMostrado, paquete?.sectores ?? [], yaBajados) : null,
   [dibujoMostrado, paquete?.sectores, yaBajados]);
   const sectoresNecesarios = cobertura?.sectores.map((cada) => cada.sector) ?? [];
-  const faltanMapas = cobertura?.sectores.filter((cada) => cada.estado === "falta_descargar") ?? [];
   const fondosDisponibles: TipoDeFondo[] = [];
   if (mapasBajados.some((mapa) => sectoresNecesarios.some((sector) => sector.id === mapa.sectorId) && mapa.tipo === "simple")) fondosDisponibles.push("dibujo");
   if (mapasBajados.some((mapa) => sectoresNecesarios.some((sector) => sector.id === mapa.sectorId) && mapa.tipo === "satelital")) fondosDisponibles.push("satelital");
   const versionVigente = completo?.caminos.reduce((ultima, camino) => camino.actualizadoEn > ultima ? camino.actualizadoEn : ultima,
     completo.circuito.actualizadoEn) ?? preparado?.actualizadoEn;
   const preparadoAlDia = preparado && preparado.actualizadoEn === versionVigente;
+
+  const irANavegar = () => router.push(`/circuitos/${id}/navegar`);
+
+  // Antes de navegar se pregunta si registrar la Salida, como hacía la ruta.
+  // Si ya hay una en curso (se dejó para seguir después), se sigue esa.
+  const navegar = () => {
+    if (hayUnaEnCurso) { irANavegar(); return; }
+    setPreguntandoSiRegistrar(true);
+  };
+
+  const registrarYNavegar = async () => {
+    setPreguntandoSiRegistrar(false);
+    try {
+      await empezarUnRegistro(id, ficha?.nombre ?? null);
+    } catch (causa) {
+      await avisar({
+        titulo: "No se pudo empezar a registrar",
+        mensaje: `${causa instanceof Error ? causa.message : String(causa)}. Podés navegar igual y empezar a registrar desde el mapa.`,
+      });
+    }
+    irANavegar();
+  };
 
   const retirar = async () => {
     if (!completo || ocupado) return;
@@ -133,20 +173,46 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
       <p className="text-base text-texto">{mostrarActividad(ficha.actividad).etiqueta}</p>
       {actualizado && !actualizado.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{actualizado.error}</p></Tarjeta> : null}
       {dibujo && !dibujo.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
-      {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} principal encuadre={encuadreMostrado}
-        caminos={caminosDelFondo} circuito={dibujoMostrado}
-        finalConservadoDelCircuito={finalMostrado} fondosDisponibles={fondosDisponibles} /> : null}
-      {resumenMostrado ? <ResumenDeCircuito resultado={resumenMostrado} /> : null}
-      {faltanMapas.length > 0 ? <Tarjeta franja="ambar"><p className="text-base text-texto">Antes de salir, descargá {faltanMapas.length === 1 ? `el mapa de ${faltanMapas[0].sector.nombre}` : `los mapas de ${faltanMapas.length} sectores que cruza este Circuito`}. Podés hacerlo en Mapas → Descargas.</p></Tarjeta> : null}
-      {cobertura && cobertura.metrosSinCobertura > 0 ? <Tarjeta franja="ambar"><p className="text-base text-texto">Hay {Math.round(cobertura.metrosSinCobertura / 100) / 10} km del Circuito fuera de los sectores con mapas descargables. Revisá esa parte en Mapas antes de salir.</p></Tarjeta> : null}
-      {preparadoAlDia ? <Enlace variante="principal" href={`/circuitos/${id}/navegar`}>Navegar Circuito</Enlace>
-        : <Tarjeta franja="ambar"><p className="text-base text-texto">Este Circuito aún no quedó preparado en el celular. Abrí la app con señal en casa para descargarlo antes de salir.</p></Tarjeta>}
-      {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ? <div className="flex gap-2">
-        <Boton variante="secundario" disabled={!actualizado?.ok}
-          onClick={() => { if (actualizado?.ok) alEditar(completo.circuito,
-            actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); }}>Editar Circuito</Boton>
-        <Boton variante="destructivo" disabled={ocupado} onClick={() => void retirar()}>Retirar Circuito</Boton>
-      </div> : null}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
+        <div className="space-y-4">
+          {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} principal encuadre={encuadreMostrado}
+            caminos={caminosDelFondo} circuito={dibujoMostrado} puntoSenalado={puntoSenalado}
+            finalConservadoDelCircuito={finalMostrado} fondosDisponibles={fondosDisponibles} /> : null}
+          {alturasMostradas ? <AlturasDeCircuito alturas={alturasMostradas}
+            alSenalar={(distanciaM) => setPuntoSenalado(distanciaM === null || !partesMostradas
+              ? null : puntoEnElCircuito(partesMostradas, distanciaM))} /> : null}
+          {resumenMostrado ? <ResumenDeCircuito resultado={resumenMostrado} /> : null}
+        </div>
+        <div className="space-y-4">
+          <DatosDeCircuito datos={datosDelCircuito} largoM={largoM}
+            desnivelPositivoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelPositivoM : null}
+            desnivelNegativoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelNegativoM : null} />
+          {cobertura ? <BloqueDeCobertura cobertura={cobertura} este="este Circuito" /> : null}
+          {preparadoAlDia ? <Boton onClick={navegar}>Navegar Circuito</Boton>
+            : <Tarjeta franja="ambar"><p className="text-base text-texto">Este Circuito aún no quedó preparado en el celular. Abrí la app con señal en casa para descargarlo antes de salir.</p></Tarjeta>}
+          {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ? <div className="flex flex-wrap gap-2">
+            <Boton variante="secundario" disabled={!actualizado?.ok}
+              onClick={() => { if (actualizado?.ok) alEditar(completo.circuito,
+                actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); }}>Editar Circuito</Boton>
+            <Boton variante="destructivo" disabled={ocupado} onClick={() => void retirar()}>Retirar Circuito</Boton>
+          </div> : null}
+        </div>
+      </div>
     </> : null}
+    {ficha && preparadoAlDia ? <>
+      {/* En el celular, flotante abajo a la derecha, al alcance del pulgar, como en la ruta. */}
+      <div aria-hidden className="h-12 lg:hidden" />
+      <BotonFlotante etiqueta="Navegar este Circuito" alTocar={navegar} soloCelular>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        <circle cx="12" cy="12" r="6.5" />
+        <circle cx="12" cy="12" r="2.5" />
+      </BotonFlotante>
+    </> : null}
+    <PreguntaDeRegistrar
+      abierta={preguntandoSiRegistrar}
+      alCerrar={() => setPreguntandoSiRegistrar(false)}
+      alSoloNavegar={() => { setPreguntandoSiRegistrar(false); irANavegar(); }}
+      alRegistrar={() => void registrarYNavegar()}
+    />
   </div>;
 }

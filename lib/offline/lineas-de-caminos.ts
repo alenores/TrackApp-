@@ -1,5 +1,6 @@
 import type { Position } from "geojson";
 import type { CaminoGuardado, CaminoSinLinea } from "@/lib/caminos/datos";
+import type { AlturasDeLinea } from "@/lib/alturas/perfil";
 import { ESTANTES, escribirEnElDeposito, leerDelDeposito } from "@/lib/offline/deposito";
 
 /** La fecha forma parte de la clave: una actualización incompleta no pisa la línea anterior. */
@@ -7,12 +8,18 @@ export function claveDeLineaDeCamino(camino: Pick<CaminoSinLinea, "id" | "actual
   return `${camino.id}:${camino.actualizadoEn}`;
 }
 
+/** Lo pesado de un Camino: su línea y sus alturas. Viajan juntas porque se calculan juntas. */
+export type LineaGuardadaDeCamino = { coordenadas: Position[]; alturas: AlturasDeLinea | null };
+
 /** Se guarda toda la tanda en una sola transacción antes de publicar el paquete nuevo. */
 export async function guardarLineasDeCaminos(caminos: CaminoGuardado[]): Promise<boolean> {
   try {
     await escribirEnElDeposito(
       ESTANTES.lineasDeCaminos,
-      caminos.map((camino) => (donde) => donde.put(camino.coordenadas, claveDeLineaDeCamino(camino))),
+      caminos.map((camino) => (donde) => {
+        const guardada: LineaGuardadaDeCamino = { coordenadas: camino.coordenadas, alturas: camino.alturas };
+        return donde.put(guardada, claveDeLineaDeCamino(camino));
+      }),
     );
     return true;
   } catch {
@@ -20,13 +27,15 @@ export async function guardarLineasDeCaminos(caminos: CaminoGuardado[]): Promise
   }
 }
 
-export async function leerLineaDeCamino(camino: CaminoSinLinea): Promise<Position[] | null> {
+export async function leerLineaDeCamino(camino: CaminoSinLinea): Promise<LineaGuardadaDeCamino | null> {
   try {
-    const linea = await leerDelDeposito<Position[] | undefined>(
+    const linea = await leerDelDeposito<LineaGuardadaDeCamino | Position[] | undefined>(
       ESTANTES.lineasDeCaminos,
       (donde) => donde.get(claveDeLineaDeCamino(camino)),
     );
-    return linea ?? null;
+    if (!linea) return null;
+    // Las guardadas antes de las alturas eran solo la línea.
+    return Array.isArray(linea) ? { coordenadas: linea, alturas: null } : linea;
   } catch {
     return null;
   }

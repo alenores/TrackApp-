@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es" data-modo="sol">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto · Datos y alturas de Circuitos y Caminos</title>
+<style>
+:root[data-modo="sol"]{
+  --fondo:#f4f7f5;--superficie:#fff;--superficie-2:#eef3ef;--texto:#10241a;--texto-suave:#3b5145;
+  --borde:#b0c2b6;--boton:#155b39;--boton-texto:#fff;--foco:#1559a5;
+  --mapa:#e9efe8;--relieve:#d4e3d7;--rio:#478fb0;
+  --facil:#16803d;--media:#946000;--dificil:#ba3030;--sin-clasificar:#5f6b65;
+  --propia:#33413a;--marca:#174ea6;--halo:#fff;--x:#000;
+  --relleno-perfil:#dfe9e2;--grilla:#c9d6cd;
+  --ambar-fondo:#fff4d6;--ambar-borde:#946000;
+  --nota:#eee8ff;--nota-borde:#7352af;--nota-texto:#392265;--sombra:0 12px 32px rgb(20 50 30 / .08);color-scheme:light;
+}
+:root[data-modo="noche"]{
+  --fondo:#0d1720;--superficie:#192a38;--superficie-2:#21364a;--texto:#f4f9f6;--texto-suave:#d7e3dc;
+  --borde:#8099a0;--boton:#197347;--boton-texto:#fff;--foco:#a9cfff;
+  --mapa:#21363c;--relieve:#334e4a;--rio:#70c3e3;
+  --facil:#63ed91;--media:#ffd266;--dificil:#ff8585;--sin-clasificar:#b8c4be;
+  --propia:#e8eee9;--marca:#a7caff;--halo:#081923;--x:#fff;
+  --relleno-perfil:#25404f;--grilla:#3b5566;
+  --ambar-fondo:#3a2e10;--ambar-borde:#ffd266;
+  --nota:#302546;--nota-borde:#aa8ce4;--nota-texto:#f2eaff;--sombra:0 12px 32px rgb(0 0 0 / .25);color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--texto);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{min-height:38px;padding:7px 12px;border:1px solid var(--borde);border-radius:9px;background:var(--superficie);color:var(--texto);font-weight:650;cursor:pointer}
+button:hover:not(:disabled){filter:brightness(1.08)}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--foco);outline-offset:2px}
+button.principal{background:var(--boton);border-color:var(--boton);color:var(--boton-texto)}
+button[aria-pressed="true"]{background:var(--boton);border-color:var(--boton);color:var(--boton-texto)}
+.nota{max-width:1180px;margin:18px auto 0;padding:16px 18px;background:var(--nota);border:2px dashed var(--nota-borde);border-radius:14px;color:var(--nota-texto)}
+.nota strong.titulo{display:block;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.nota p{margin:0 0 6px}.nota ul{margin:4px 0 6px;padding-left:22px}
+.nota .controles{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.marco-app{max-width:1180px;margin:18px auto 22px;background:var(--superficie);border:1px solid var(--borde);border-radius:18px;overflow:hidden;box-shadow:var(--sombra)}
+.app-header{display:flex;align-items:center;gap:18px;padding:14px 22px;border-bottom:1px solid var(--borde)}
+.marca{font-size:18px;font-weight:850}.marca span{color:var(--boton)}
+.contenido{padding:18px 22px 24px}
+.miga{font-size:14px;color:var(--texto-suave);margin:0 0 2px}
+h1{font-size:28px;line-height:1.15;margin:0 0 6px}
+h2{font-size:20px;margin:0 0 10px}
+h3{font-size:17px;margin:12px 0 4px}
+p{margin:0}
+.suave{color:var(--texto-suave)}
+.pastilla{display:inline-block;border:1px solid var(--borde);border-radius:99px;padding:2px 10px;font-size:14px;font-weight:650;margin-right:6px}
+.grilla{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+.columna{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tarjeta{border:1px solid var(--borde);border-radius:14px;padding:14px 16px;background:var(--superficie)}
+.tarjeta.ambar{border-left:6px solid var(--ambar-borde);background:var(--ambar-fondo)}
+.mapa{background:var(--mapa);border:1px solid var(--borde);border-radius:14px;overflow:hidden;position:relative}
+.mapa svg{display:block;width:100%;height:auto}
+.mapa .agrandar{position:absolute;right:10px;bottom:10px}
+.cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cifra{background:var(--superficie-2);border-radius:10px;padding:10px 12px}
+.cifra b{display:block;font-size:22px;line-height:1.1}
+.cifra span{font-size:14px;color:var(--texto-suave)}
+.fila{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.circulos{display:inline-flex;gap:5px;vertical-align:middle}
+.circulos i{width:16px;height:16px;border-radius:50%;border:2px solid var(--texto);display:inline-block}
+.circulos i.lleno{background:var(--texto)}
+.texto-largo{white-space:pre-line}
+.perfil svg{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+.perfil .lectura{min-height:24px;font-weight:650}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--texto-suave);margin-top:6px}
+.leyenda i{display:inline-block;width:22px;vertical-align:middle;margin-right:5px;border-top:5px solid}
+.mapas-lista{list-style:none;margin:6px 0 0;padding:0}
+.mapas-lista li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--borde);flex-wrap:wrap}
+.mapas-lista li:first-child{border-top:0}
+.estado-ok{font-weight:650}
+.estado-falta{font-weight:750}
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.campo label,.campo .etiqueta{font-weight:700}
+.campo textarea{min-height:76px;padding:8px 10px;border:1px solid var(--borde);border-radius:9px;background:var(--superficie);color:var(--texto);resize:vertical}
+.opciones{display:flex;gap:6px;flex-wrap:wrap}
+.opciones button{min-width:44px}
+.pantalla{display:none}.pantalla.visible{display:block}
+/* Navegación */
+.telefono{width:375px;max-width:100%;height:740px;margin:0 auto;border:10px solid var(--texto);border-radius:36px;overflow:hidden;position:relative;background:var(--mapa)}
+.telefono .mapa-nav{position:absolute;inset:0}
+.telefono .mapa-nav svg{width:100%;height:100%;display:block}
+.nav-abajo-izq{position:absolute;left:10px;bottom:14px;display:flex;flex-direction:column;gap:8px}
+.nav-abajo-der{position:absolute;right:10px;bottom:14px}
+.telefono button{font-size:18px}
+.panel-alturas{position:absolute;left:0;right:0;bottom:0;background:var(--superficie);border-top:1px solid var(--borde);border-radius:16px 16px 0 0;padding:14px 14px 16px;box-shadow:0 -10px 28px rgb(0 0 0 / .18);font-size:18px;display:none}
+.panel-alturas.visible{display:block}
+.panel-alturas h2{font-size:20px;margin:0 0 4px}
+.panel-alturas .falta{margin:8px 0 10px}
+.ux{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mapa text,.mapa-nav text{fill:var(--texto);font:700 15px system-ui,sans-serif;paint-order:stroke;stroke:var(--mapa);stroke-width:5;stroke-linejoin:round}
+@media(max-width:860px){.grilla{grid-template-columns:1fr}.cifras{grid-template-columns:repeat(2,minmax(0,1fr))}.nota,.marco-app{margin-left:10px;margin-right:10px}.contenido{padding:14px}}
+</style>
+</head>
+<body>
+
+<aside class="nota" aria-label="Explicación del boceto">
+  <strong class="titulo">Para Alejandro · explicación del boceto · no aparece en la app</strong>
+  <p>Son cuatro pantallas de ejemplo. Los datos y el mapa son inventados. Los números (largo, desnivel, porcentajes) sí los calcula el ejemplo con la misma línea y las mismas alturas que dibuja, así que coinciden entre sí.</p>
+  <ul>
+    <li><b>Ficha del Circuito:</b> los datos que tenía Ruta, el gráfico de alturas pintado con los colores de los Caminos, qué mapas hacen falta y el resumen que ya existe.</li>
+    <li><b>Datos al editar:</b> lo que se carga a mano. Largo y desnivel no se cargan: se calculan al guardar.</li>
+    <li><b>Ficha del Camino:</b> largo, desnivel y su propio gráfico.</li>
+    <li><b>Navegando:</b> el botón «Alturas» abre el gráfico con la marca «Estás acá» y lo que falta hasta el final.</li>
+  </ul>
+  <p>Probá pasar el mouse (o el dedo) por los gráficos: el punto se marca también en el mapa.</p>
+  <div class="controles">
+    <span>Ver:</span>
+    <button type="button" data-ver="ficha" aria-pressed="true">Ficha del Circuito</button>
+    <button type="button" data-ver="editar" aria-pressed="false">Datos al editar</button>
+    <button type="button" data-ver="camino" aria-pressed="false">Ficha del Camino</button>
+    <button type="button" data-ver="navegando" aria-pressed="false">Navegando</button>
+    <button type="button" id="cambiar-modo">Pasar a modo noche</button>
+  </div>
+</aside>
+
+<main class="marco-app">
+  <header class="app-header"><div class="marca">Track<span>App</span></div><span class="suave">Mapas · Circuitos · Salidas</span></header>
+
+  <!-- ================= FICHA DEL CIRCUITO ================= -->
+  <section class="pantalla visible contenido" id="pantalla-ficha">
+    <p class="miga">Circuitos</p>
+    <h1>Vuelta por el Filo Norte</h1>
+    <p><span class="pastilla">Mountain bike</span><span class="suave">Armado por Ale</span></p>
+
+    <div class="grilla" style="margin-top:14px">
+      <div class="columna">
+        <div class="mapa" id="mapa-ficha"><button type="button" class="agrandar">Ver en grande</button></div>
+
+        <div class="tarjeta perfil" data-perfil="ficha">
+          <h2>Alturas</h2>
+          <p class="lectura suave" aria-live="polite">Pasá el mouse por el gráfico para ver la altura de cada punto.</p>
+          <div class="grafico"></div>
+          <div class="leyenda">
+            <span><i style="border-color:var(--propia)"></i>Dibujado solo para el Circuito</span>
+            <span><i style="border-color:var(--facil)"></i>Fácil</span>
+            <span><i style="border-color:var(--media)"></i>Media</span>
+            <span><i style="border-color:var(--dificil)"></i>Difícil</span>
+            <span><i style="border-color:var(--sin-clasificar);border-top-style:dashed"></i>Por explorar</span>
+            <span><b style="color:var(--x)">✕</b> Sin paso</span>
+          </div>
+          <p class="suave" style="margin-top:8px;font-size:14px">Las alturas se calculan con el relieve del terreno. Son una estimación.</p>
+        </div>
+
+        <div class="tarjeta" id="resumen-ficha"></div>
+      </div>
+
+      <div class="columna">
+        <div class="tarjeta">
+          <h2>Datos del Circuito</h2>
+          <div class="cifras" id="cifras-ficha"></div>
+          <div class="fila" style="margin-top:14px">
+            <div><div class="suave" style="font-size:14px">Técnica</div><span class="circulos" aria-label="Técnica 7 de 10"><i class="lleno"></i><i class="lleno"></i><i class="lleno"></i><i class="lleno"></i><i></i></span> <b>7</b></div>
+            <div><div class="suave" style="font-size:14px">Esfuerzo</div>
+              <svg width="64" height="38" viewBox="0 0 64 38" aria-label="Esfuerzo alto"><path d="M6 34 A26 26 0 0 1 58 34" fill="none" stroke="var(--borde)" stroke-width="6"/><path d="M6 34 A26 26 0 0 1 49 15" fill="none" stroke="var(--dificil)" stroke-width="6"/><line x1="32" y1="34" x2="49" y2="17" stroke="var(--texto)" stroke-width="3"/><circle cx="32" cy="34" r="3" fill="var(--texto)"/></svg>
+              <b>Alto</b></div>
+          </div>
+          <h3>Qué llevar</h3>
+          <p class="texto-largo">2 litros de agua por persona, cámara de repuesto, cortaviento. En invierno, guantes.</p>
+          <h3>Complicaciones</h3>
+          <p class="texto-largo">Después de la tranquera hay un portón que a veces está cerrado con candado: se pasa la bici por arriba.</p>
+          <h3>Comentario</h3>
+          <p class="texto-largo">Conviene hacerlo en este sentido: la subida fuerte queda a la sombra a la mañana.</p>
+        </div>
+
+        <div class="tarjeta ambar">
+          <h2>Mapas para salir</h2>
+          <p>Este Circuito pasa por 3 mapas. <b>Te falta bajar 1.</b></p>
+          <ul class="mapas-lista">
+            <li><span>Los Hornillos · Quebrada</span><span class="estado-ok">Bajado en simple y satelital</span></li>
+            <li><span>Los Hornillos · Filo Norte</span><span class="estado-ok">Bajado en simple</span></li>
+            <li><span>Los Hornillos · Arroyo Seco</span><span class="estado-falta">Falta bajar <button type="button" class="principal" style="margin-left:8px">Bajar</button></span></li>
+          </ul>
+          <p class="suave" style="margin-top:8px">El botón «Bajar» solo aparece con señal. Sin señal se sigue viendo qué falta.</p>
+        </div>
+
+        <div class="fila"><button type="button" class="principal">Navegar</button><button type="button">Editar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DATOS AL EDITAR ================= -->
+  <section class="pantalla contenido" id="pantalla-editar">
+    <p class="miga">Circuitos · Vuelta por el Filo Norte</p>
+    <h1>Datos del Circuito</h1>
+    <p class="suave" style="margin-bottom:16px">El largo y el desnivel se calculan solos al guardar, con la línea del Circuito y el relieve del terreno. No se cargan a mano.</p>
+    <div class="grilla">
+      <div>
+        <div class="campo"><span class="etiqueta">Técnica, del 1 al 10</span>
+          <div class="opciones" id="opciones-tecnica"></div></div>
+        <div class="campo"><span class="etiqueta">Nivel de esfuerzo</span>
+          <div class="opciones" id="opciones-esfuerzo"></div></div>
+        <div class="campo"><label for="llevar">Qué llevar</label><textarea id="llevar">2 litros de agua por persona, cámara de repuesto, cortaviento. En invierno, guantes.</textarea></div>
+        <div class="campo"><label for="complicaciones">Complicaciones</label><textarea id="complicaciones">Después de la tranquera hay un portón que a veces está cerrado con candado: se pasa la bici por arriba.</textarea></div>
+        <div class="campo"><label for="comentario">Comentario</label><textarea id="comentario">Conviene hacerlo en este sentido: la subida fuerte queda a la sombra a la mañana.</textarea></div>
+        <div class="fila"><button type="button" class="principal">Guardar</button><button type="button">Cancelar</button></div>
+      </div>
+      <div class="tarjeta">
+        <h2>Calculado al guardar</h2>
+        <div class="cifras" id="cifras-editar"></div>
+        <p class="suave" style="margin-top:10px">Si se corrige un Camino que este Circuito usa, estos números se vuelven a calcular solos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FICHA DEL CAMINO ================= -->
+  <section class="pantalla contenido" id="pantalla-camino">
+    <p class="miga">Mapas · Caminos</p>
+    <h1>Filo Norte</h1>
+    <p><span class="pastilla">Mountain bike</span><span class="pastilla">Trekking</span></p>
+    <div class="grilla" style="margin-top:14px">
+      <div class="columna">
+        <div class="mapa" id="mapa-camino"><button type="button" class="agrandar">Ver en grande</button></div>
+        <div class="tarjeta perfil" data-perfil="camino">
+          <h2>Alturas</h2>
+          <p class="lectura suave" aria-live="polite">Pasá el mouse por el gráfico para ver la altura de cada punto.</p>
+          <div class="grafico"></div>
+          <p class="suave" style="margin-top:8px;font-size:14px">Colores según Mountain bike, la actividad elegida en el mapa.</p>
+        </div>
+      </div>
+      <div class="columna">
+        <div class="tarjeta">
+          <h2>Datos del Camino</h2>
+          <div class="cifras" id="cifras-camino"></div>
+          <p class="suave" style="margin-top:10px">El desnivel se mide desde donde empieza el dibujo del Camino. Recorrido al revés, el positivo y el negativo se invierten.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NAVEGANDO ================= -->
+  <section class="pantalla contenido" id="pantalla-navegando">
+    <p class="suave" style="text-align:center;margin-bottom:12px">Así se ve en el celular. El mapa va a pantalla completa.</p>
+    <div class="telefono">
+      <div class="mapa-nav" id="mapa-nav"></div>
+      <div class="nav-abajo-izq">
+        <button type="button" id="abrir-alturas">Alturas</button>
+        <button type="button">Circuitos</button>
+        <button type="button">Anotaciones</button>
+        <button type="button">Salir</button>
+      </div>
+      <div class="nav-abajo-der"><button type="button" id="modo-nav">Modo noche</button></div>
+      <div class="panel-alturas" id="panel-alturas" role="dialog" aria-label="Alturas del Circuito">
+        <h2>Alturas</h2>
+        <p class="falta" id="falta-nav"></p>
+        <div class="perfil" data-perfil="nav"><div class="grafico"></div></div>
+        <div class="fila" style="justify-content:flex-end;margin-top:8px"><button type="button" id="cerrar-alturas">Cerrar</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<aside class="nota" style="margin-bottom:24px">
+  <strong class="titulo">Qué tenés que mirar · no aparece en la app</strong>
+  <ul>
+    <li>¿Está bien el orden de la ficha del Circuito? Mapa, alturas y resumen a la izquierda; datos, mapas para salir y botones a la derecha. En el celular va todo en una columna.</li>
+    <li>¿«Qué llevar» te sirve como nombre? Rutas decía «Equipo», pero «equipo» ya se usa para la bici o el kayak en «a pie con el equipo».</li>
+    <li>Navegando: «Alturas» va arriba de los botones de abajo a la izquierda, con el mismo tamaño que los demás. El panel se cierra con «Cerrar» o con el botón de atrás.</li>
+  </ul>
+</aside>
+
+<script>
+(function(){
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(nombre, atributos, padre){var e=document.createElementNS(NS,nombre);for(var k in atributos)e.setAttribute(k,atributos[k]);if(padre)padre.appendChild(e);return e;}
+  function km(m){return m<1000?Math.round(m)+" m":(m/1000).toFixed(1).replace(".",",")+" km";}
+  function mts(m){return Math.round(m).toLocaleString("es-AR")+" m";}
+
+  // ---------- La línea del Circuito (inventada) ----------
+  var control=[[70,450],[140,400],[210,382],[270,322],[340,292],[410,232],[490,200],[570,160],[640,176],[700,232],[740,300],[790,350],[835,410],[860,470]];
+  var N=90, ESCALA_M=15.6; // metros por unidad de dibujo
+  var largos=[0];for(var i=1;i<control.length;i++){var dx=control[i][0]-control[i-1][0],dy=control[i][1]-control[i-1][1];largos.push(largos[i-1]+Math.hypot(dx,dy));}
+  var total=largos[largos.length-1];
+  var puntos=[];for(var j=0;j<N;j++){var d=total*j/(N-1),s=1;while(s<largos.length-1&&largos[s]<d)s++;var t=(d-largos[s-1])/(largos[s]-largos[s-1]||1);puntos.push([control[s-1][0]+t*(control[s][0]-control[s-1][0]),control[s-1][1]+t*(control[s][1]-control[s-1][1])]);}
+  var distancias=puntos.map(function(_,k){return total*k/(N-1)*ESCALA_M;});
+  var alturas=puntos.map(function(_,k){var t=k/(N-1);var base=t<0.56?740+440*Math.pow(Math.sin(Math.PI/2*t/0.56),1.4):1180-530*Math.pow((t-0.56)/0.44,0.9);return base+16*Math.sin(t*31)+9*Math.sin(t*67);});
+
+  // Qué es cada pedazo de la línea, según dónde cae (fracción del largo).
+  var tramos=[
+    {desde:0,hasta:.15,tipo:"propia"},
+    {desde:.15,hasta:.42,tipo:"camino",camino:"Senda del Pozo",complejidad:"facil",paso:"transitable"},
+    {desde:.42,hasta:.55,tipo:"camino",camino:"Filo Norte",complejidad:"dificil",paso:"transitable"},
+    {desde:.55,hasta:.63,tipo:"camino",camino:"Filo Norte",complejidad:"media",paso:"a_pie"},
+    {desde:.63,hasta:.68,tipo:"camino",camino:"Bajada del Arroyo",complejidad:"sin_clasificar",paso:"sin_paso"},
+    {desde:.68,hasta:.76,tipo:"camino",camino:"Bajada del Arroyo",complejidad:"sin_clasificar",paso:"por_explorar"},
+    {desde:.76,hasta:1,tipo:"propia"}
+  ];
+  function tramoDe(k){var t=k/(N-1);for(var i=0;i<tramos.length;i++)if(t<=tramos[i].hasta+1e-9)return tramos[i];return tramos[tramos.length-1];}
+  function colorDe(tr){if(tr.tipo==="propia")return "var(--propia)";return {facil:"var(--facil)",media:"var(--media)",dificil:"var(--dificil)",sin_clasificar:"var(--sin-clasificar)"}[tr.complejidad];}
+  function trazoDe(tr){if(tr.paso==="por_explorar")return "12 8";if(tr.paso==="a_pie")return "2 9";return "none";}
+
+  function desniveles(desde,hasta){var pos=0,neg=0;for(var k=desde+1;k<=hasta;k++){var dif=alturas[k]-alturas[k-1];if(dif>0)pos+=dif;else neg-=dif;}return {pos:pos,neg:neg};}
+
+  // ---------- Mapa ----------
+  function grupos(k0,k1){var g=[],actual=null;for(var k=k0;k<k1;k++){var tr=tramoDe(k);if(!actual||actual.tr!==tr){actual={tr:tr,desde:k,hasta:k+1};g.push(actual);}else actual.hasta=k+1;}return g;}
+  function dibujarMapa(contenedor,k0,k1,alto){
+    var svg=el("svg",{viewBox:"0 0 900 "+(alto||520),role:"img","aria-label":"Mapa de ejemplo"});
+    contenedor.insertBefore(svg,contenedor.firstChild);
+    [[0,120,900,90],[0,300,900,260],[0,470,900,430]].forEach(function(c){el("path",{d:"M"+c[0]+" "+c[1]+" C 300 "+(c[1]-80)+", 600 "+(c[3]+80)+", "+c[2]+" "+c[3],fill:"none",stroke:"var(--relieve)","stroke-width":13},svg);});
+    el("path",{d:"M120 40 C 260 140, 330 160, 470 120 S 760 60, 880 110",fill:"none",stroke:"var(--rio)","stroke-width":6},svg);
+    var lineas=el("g",{},svg);
+    grupos(k0,k1).forEach(function(g){
+      var pts=puntos.slice(g.desde,g.hasta+1).map(function(p){return p.join(",");}).join(" ");
+      el("polyline",{points:pts,class:"ux",stroke:"var(--halo)","stroke-width":13},lineas);
+      el("polyline",{points:pts,class:"ux",stroke:colorDe(g.tr),"stroke-width":7,"stroke-dasharray":trazoDe(g.tr)},lineas);
+      if(g.tr.paso==="sin_paso"){for(var k=g.desde;k<=g.hasta;k+=2){var p=puntos[k];el("path",{d:"M"+(p[0]-7)+" "+(p[1]-7)+" l14 14 M"+(p[0]+7)+" "+(p[1]-7)+" l-14 14",stroke:"var(--x)","stroke-width":3.5,"stroke-linecap":"round"},lineas);}}
+    });
+    var ini=puntos[k0],fin=puntos[k1];
+    el("circle",{cx:ini[0],cy:ini[1],r:9,fill:"var(--facil)",stroke:"var(--halo)","stroke-width":3},svg);
+    el("rect",{x:fin[0]-8,y:fin[1]-8,width:16,height:16,fill:"var(--dificil)",stroke:"var(--halo)","stroke-width":3},svg);
+    var marca=el("circle",{r:10,fill:"var(--marca)",stroke:"var(--halo)","stroke-width":4,visibility:"hidden"},svg);
+    return {svg:svg,marca:marca};
+  }
+
+  // ---------- Gráfico de alturas ----------
+  function dibujarPerfil(contenedor,k0,k1,opciones){
+    var A=opciones.ancho||900,H=opciones.alto||250,chico=A<500,letra=chico?19:14,izq=chico?74:62,der=chico?6:12,arr=chico?28:12,abj=chico?30:34;
+    var svg=el("svg",{viewBox:"0 0 "+A+" "+H,role:"img","aria-label":"Gráfico de alturas"});contenedor.appendChild(svg);
+    var dmin=distancias[k0],dmax=distancias[k1];
+    var amin=Infinity,amax=-Infinity;for(var k=k0;k<=k1;k++){amin=Math.min(amin,alturas[k]);amax=Math.max(amax,alturas[k]);}
+    amin=Math.floor((amin-40)/100)*100;amax=Math.ceil((amax+40)/100)*100;
+    function x(k){return izq+(distancias[k]-dmin)/(dmax-dmin)*(A-izq-der);}
+    function y(a){return arr+(amax-a)/(amax-amin)*(H-arr-abj);}
+    var paso=(amax-amin)>500?200:100;
+    for(var a=amin;a<=amax;a+=paso){el("line",{x1:izq,x2:A-der,y1:y(a),y2:y(a),stroke:"var(--grilla)","stroke-width":1},svg);var tx=el("text",{x:izq-8,y:y(a)+5,"text-anchor":"end","font-size":letra,fill:"var(--texto-suave)"},svg);tx.textContent=a+" m";}
+    var largoKm=(dmax-dmin)/1000,pasoKm=chico?8:(largoKm>8?2:1);
+    for(var q=0;q<=largoKm+1e-6;q+=pasoKm){var xx=izq+q/largoKm*(A-izq-der);var tk=el("text",{x:xx,y:H-10,"text-anchor":q+pasoKm>largoKm?"end":(q===0?"start":"middle"),"font-size":letra,fill:"var(--texto-suave)"},svg);tk.textContent=q+" km";}
+    var area="M"+x(k0)+" "+y(amin);for(var k2=k0;k2<=k1;k2++)area+=" L"+x(k2)+" "+y(alturas[k2]);area+=" L"+x(k1)+" "+y(amin)+" Z";
+    el("path",{d:area,fill:"var(--relleno-perfil)"},svg);
+    grupos(k0,k1).forEach(function(g){
+      var pts=[];for(var k=g.desde;k<=g.hasta;k++)pts.push(x(k)+","+y(alturas[k]));
+      var color=opciones.colores?colorDe(g.tr):"var(--propia)";
+      el("polyline",{points:pts.join(" "),class:"ux",stroke:color,"stroke-width":4.5,"stroke-dasharray":opciones.colores?trazoDe(g.tr).replace("12 8","9 6").replace("2 9","2 7"):"none"},svg);
+      if(opciones.colores&&g.tr.paso==="sin_paso"){for(var k3=g.desde;k3<=g.hasta;k3+=2){var px=x(k3),py=y(alturas[k3])-14;el("path",{d:"M"+(px-6)+" "+(py-6)+" l12 12 M"+(px+6)+" "+(py-6)+" l-12 12",stroke:"var(--x)","stroke-width":3,"stroke-linecap":"round"},svg);}}
+    });
+    if(opciones.aqui!=null){var xa=x(opciones.aqui),ya=y(alturas[opciones.aqui]);el("line",{x1:xa,x2:xa,y1:arr,y2:H-abj,stroke:"var(--marca)","stroke-width":2.5},svg);el("circle",{cx:xa,cy:ya,r:9,fill:"var(--marca)",stroke:"var(--halo)","stroke-width":3},svg);var t=el("text",{x:xa+8,y:arr-8,"font-size":letra,"font-weight":800,fill:"var(--texto)"},svg);t.textContent="Estás acá";}
+    var guia=el("line",{y1:arr,y2:H-abj,stroke:"var(--texto)","stroke-width":1.5,"stroke-dasharray":"4 4",visibility:"hidden"},svg);
+    var punto=el("circle",{r:7,fill:"var(--texto)",stroke:"var(--halo)","stroke-width":3,visibility:"hidden"},svg);
+    function mover(ev){
+      var r=svg.getBoundingClientRect();var vx=(ev.clientX-r.left)/r.width*A;
+      var d=dmin+(vx-izq)/(A-izq-der)*(dmax-dmin);var mejor=k0;for(var k=k0;k<=k1;k++)if(Math.abs(distancias[k]-d)<Math.abs(distancias[mejor]-d))mejor=k;
+      guia.setAttribute("x1",x(mejor));guia.setAttribute("x2",x(mejor));guia.setAttribute("visibility","visible");
+      punto.setAttribute("cx",x(mejor));punto.setAttribute("cy",y(alturas[mejor]));punto.setAttribute("visibility","visible");
+      if(opciones.mapa){var p=puntos[mejor];opciones.mapa.marca.setAttribute("cx",p[0]);opciones.mapa.marca.setAttribute("cy",p[1]);opciones.mapa.marca.setAttribute("visibility","visible");}
+      if(opciones.lectura){var tr=tramoDe(mejor);var que=tr.tipo==="propia"?"dibujado solo para el Circuito":tr.camino;opciones.lectura.textContent="A "+km(distancias[mejor]-dmin)+" del inicio · "+mts(alturas[mejor])+" de altura"+(opciones.colores?" · "+que:"");opciones.lectura.classList.remove("suave");}
+    }
+    svg.addEventListener("pointermove",mover);svg.addEventListener("pointerdown",mover);
+  }
+
+  function cifras(id,k0,k1){
+    var d=desniveles(k0,k1);
+    document.getElementById(id).innerHTML=
+      '<div class="cifra"><b>'+km(distancias[k1]-distancias[k0])+'</b><span>Largo</span></div>'+
+      '<div class="cifra"><b>'+mts(d.pos)+'</b><span>Desnivel positivo</span></div>'+
+      '<div class="cifra"><b>'+mts(d.neg)+'</b><span>Desnivel negativo</span></div>';
+  }
+
+  // ---------- Ficha del Circuito ----------
+  var mapaFicha=dibujarMapa(document.getElementById("mapa-ficha"),0,N-1);
+  var tarjetaFicha=document.querySelector('[data-perfil="ficha"]');
+  dibujarPerfil(tarjetaFicha.querySelector(".grafico"),0,N-1,{colores:true,mapa:mapaFicha,lectura:tarjetaFicha.querySelector(".lectura")});
+  cifras("cifras-ficha",0,N-1);cifras("cifras-editar",0,N-1);
+
+  // Resumen: el que ya existe hoy, calculado sobre esta misma línea.
+  (function(){
+    var totalM=distancias[N-1];function m(tr){return (tr.hasta-tr.desde)*totalM;}
+    var propia=0,caminos=0,porPaso={transitable:0,a_pie:0,sin_paso:0,por_explorar:0},porComp={facil:0,media:0,dificil:0};
+    tramos.forEach(function(tr){if(tr.tipo==="propia")propia+=m(tr);else{caminos+=m(tr);porPaso[tr.paso]+=m(tr);if(porComp[tr.complejidad]!=null)porComp[tr.complejidad]+=m(tr);}});
+    function pc(v){return Math.round(v/totalM*100)+"%";}
+    document.getElementById("resumen-ficha").innerHTML=
+      "<h2>Resumen del Circuito</h2>"+
+      "<p>"+pc(propia)+" dibujado solo para este Circuito · "+pc(caminos)+" tomado de Caminos.</p>"+
+      "<p style='margin-top:6px'>En los Caminos: transitables "+km(porPaso.transitable)+"; a pie con el equipo "+km(porPaso.a_pie)+" (1 tramo); por explorar "+km(porPaso.por_explorar)+" (1 tramo); sin paso "+km(porPaso.sin_paso)+" (1 tramo).</p>"+
+      "<p style='margin-top:6px'>Dificultad sobre el Circuito total: verde "+pc(porComp.facil)+", amarillo "+pc(porComp.media)+", rojo "+pc(porComp.dificil)+".</p>"+
+      "<h3>Consideraciones</h3><ul style='margin:4px 0 0;padding-left:20px'>"+
+      "<li>Bajada del Arroyo: sin paso para Mountain bike ("+km(m(tramos[4]))+").</li>"+
+      "<li>Bajada del Arroyo: por explorar para Mountain bike ("+km(m(tramos[5]))+").</li>"+
+      "<li>Filo Norte: hay que avanzar a pie con el equipo ("+km(m(tramos[3]))+").</li></ul>"+
+      "<p class='suave' style='margin-top:8px'>Muestra lo último que se bajó al celular. Con señal se pone al día solo al abrir la app.</p>";
+  })();
+
+  // ---------- Ficha del Camino (Filo Norte: tramos 2 y 3) ----------
+  var c0=Math.round(.42*(N-1)),c1=Math.round(.63*(N-1));
+  var mapaCamino=dibujarMapa(document.getElementById("mapa-camino"),c0,c1);
+  (function(){var xs=puntos.slice(c0,c1+1).map(function(p){return p[0];}),ys=puntos.slice(c0,c1+1).map(function(p){return p[1];});
+    var x0=Math.min.apply(null,xs)-60,x1=Math.max.apply(null,xs)+60,y0=Math.min.apply(null,ys)-60,y1=Math.max.apply(null,ys)+60;
+    var ancho=Math.max(x1-x0,(y1-y0)*900/520);var cx=(x0+x1)/2,cy=(y0+y1)/2,alto=ancho*520/900;
+    mapaCamino.svg.setAttribute("viewBox",(cx-ancho/2)+" "+(cy-alto/2)+" "+ancho+" "+alto);})();
+  var tarjetaCamino=document.querySelector('[data-perfil="camino"]');
+  dibujarPerfil(tarjetaCamino.querySelector(".grafico"),c0,c1,{colores:true,mapa:mapaCamino,lectura:tarjetaCamino.querySelector(".lectura")});
+  cifras("cifras-camino",c0,c1);
+
+  // ---------- Navegando ----------
+  var aqui=Math.round(.36*(N-1));
+  var contNav=document.getElementById("mapa-nav");
+  var mapaNav=dibujarMapa(contNav,0,N-1,520);
+  mapaNav.svg.setAttribute("viewBox","330 120 300 600");mapaNav.svg.setAttribute("preserveAspectRatio","xMidYMid slice");
+  var yo=puntos[aqui];el("circle",{cx:yo[0],cy:yo[1],r:11,fill:"var(--marca)",stroke:"var(--halo)","stroke-width":4},mapaNav.svg);
+  dibujarPerfil(document.querySelector('[data-perfil="nav"] .grafico'),0,N-1,{colores:true,aqui:aqui,ancho:360,alto:250});
+  var resto=desniveles(aqui,N-1);
+  document.getElementById("falta-nav").innerHTML="Hasta el final: <b>"+km(distancias[N-1]-distancias[aqui])+"</b> · desnivel positivo <b>"+mts(resto.pos)+"</b> · negativo <b>"+mts(resto.neg)+"</b>";
+  var panel=document.getElementById("panel-alturas");
+  document.getElementById("abrir-alturas").addEventListener("click",function(){panel.classList.add("visible");});
+  document.getElementById("cerrar-alturas").addEventListener("click",function(){panel.classList.remove("visible");});
+
+  // ---------- Pantallas y modo ----------
+  document.querySelectorAll("[data-ver]").forEach(function(b){b.addEventListener("click",function(){
+    document.querySelectorAll("[data-ver]").forEach(function(o){o.setAttribute("aria-pressed",String(o===b));});
+    document.querySelectorAll(".pantalla").forEach(function(p){p.classList.toggle("visible",p.id==="pantalla-"+b.dataset.ver);});
+  });});
+  function alternarModo(){var r=document.documentElement;var noche=r.dataset.modo!=="noche";r.dataset.modo=noche?"noche":"sol";
+    document.getElementById("cambiar-modo").textContent=noche?"Pasar a modo sol":"Pasar a modo noche";
+    document.getElementById("modo-nav").textContent=noche?"Modo sol":"Modo noche";}
+  document.getElementById("cambiar-modo").addEventListener("click",alternarModo);
+  document.getElementById("modo-nav").addEventListener("click",alternarModo);
+
+  // Opciones del formulario
+  var tec=document.getElementById("opciones-tecnica");for(var n=1;n<=10;n++){var b=document.createElement("button");b.type="button";b.textContent=n;b.setAttribute("aria-pressed",String(n===7));tec.appendChild(b);}
+  var esf=document.getElementById("opciones-esfuerzo");["Bajo","Medio","Alto","Muy alto"].forEach(function(t){var b=document.createElement("button");b.type="button";b.textContent=t;b.setAttribute("aria-pressed",String(t==="Alto"));esf.appendChild(b);});
+  [tec,esf].forEach(function(grupo){grupo.addEventListener("click",function(e){if(e.target.tagName!=="BUTTON")return;grupo.querySelectorAll("button").forEach(function(o){o.setAttribute("aria-pressed",String(o===e.target));});});});
+})();
+</script>
+</body>
+</html>

@@ -13,26 +13,12 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    href: "/circuitos",
+    // Los Circuitos son el inicio de la app desde que se retiró Rutas (decisión 049).
+    href: "/",
     label: "Circuitos",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
         <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    href: "/rutas",
-    label: "Rutas",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <path
-          d="M4 18 8 6l4 8 4-5 4 9"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
       </svg>
     ),
   },
@@ -107,7 +93,7 @@ export function BarraInferior() {
       {itemsVisibles.map((item) => {
         const isActive =
           item.href === "/"
-            ? pathname === "/"
+            ? pathname === "/" || pathname.startsWith("/circuitos")
             : pathname.startsWith(item.href);
 
         return (

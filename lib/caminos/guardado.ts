@@ -30,6 +30,7 @@ import {
   type ColumnasDeCamino,
 } from "@/lib/caminos/datos";
 import { puedeCrearCaminos, puedeEditarCamino, type QuienUsa } from "@/lib/caminos/permisos";
+import { medirAlturas, type FuenteDeAlturas } from "@/lib/alturas/perfil";
 
 /**
  * Guardar Caminos: crear, leer, cambiar y retirar.
@@ -42,6 +43,10 @@ import { puedeCrearCaminos, puedeEditarCamino, type QuienUsa } from "@/lib/camin
  *
  * No conoce Supabase: recibe una `BaseDeCaminos` que sabe leer y escribir. La
  * de verdad la arma `app/actions/caminos.ts`; las pruebas usan una falsa.
+ *
+ * **Toda línea nueva se guarda con sus alturas** (decisión 049): al crear y al
+ * corregir el dibujo se miden con la `FuenteDeAlturas` que llega de afuera. Si
+ * no se pueden medir, no se guarda nada y se dice por qué.
  */
 
 export type RespuestaDeBase = { fila: unknown | null; error: string | null };
@@ -88,6 +93,7 @@ export async function crearCaminoGuardado(
   base: BaseDeCaminos,
   quien: QuienUsa,
   pedido: PedidoDeCaminoNuevo,
+  fuenteDeAlturas: FuenteDeAlturas,
 ): Promise<Resultado<CaminoGuardado>> {
   const permiso = puedeCrearCaminos(quien);
   if (!permiso.ok) return permiso;
@@ -104,9 +110,12 @@ export async function crearCaminoGuardado(
   const camino = crearCamino(coordenadas.datos, actividades.datos);
   if (!camino.ok) return camino;
 
+  const alturas = await medirAlturas(camino.datos.coordenadas, fuenteDeAlturas);
+  if (!alturas.ok) return falla(`No se guardó el Camino «${nombre.datos}»: ${alturas.error}`);
+
   const respuesta = await base.insertar({
     perfil_id: quien.perfilId,
-    ...columnasDelCamino({ ...camino.datos, nombre: nombre.datos, descripcion: descripcion.datos }),
+    ...columnasDelCamino({ ...camino.datos, nombre: nombre.datos, descripcion: descripcion.datos, alturas: alturas.datos }),
   });
   if (respuesta.error) return falla(`No se guardó el Camino: ${traducirErrorDeCaminos(respuesta.error)}`);
   if (!respuesta.fila) {
@@ -172,7 +181,8 @@ export async function leerCaminosVivos(base: BaseDeCaminos): Promise<Resultado<L
 
 /**
  * El paso común de todo cambio. `transformar` es una función pura de
- * `partes.ts`: recibe el Camino como está y devuelve cómo queda.
+ * `partes.ts`: recibe el Camino como está y devuelve cómo queda. Si el cambio
+ * toca la línea, hace falta `fuenteDeAlturas` para volver a medirla.
  */
 export async function editarCaminoGuardado(
   base: BaseDeCaminos,
@@ -180,6 +190,7 @@ export async function editarCaminoGuardado(
   id: unknown,
   actualizadoEnEsperado: unknown,
   transformar: (camino: CaminoGuardado) => Resultado<CaminoGuardado>,
+  fuenteDeAlturas?: FuenteDeAlturas,
 ): Promise<Resultado<CaminoGuardado>> {
   const numero = revisarIdDeCamino(id);
   if (!numero.ok) return numero;
@@ -196,14 +207,23 @@ export async function editarCaminoGuardado(
 
   if (!mismoMomento(actual.datos.actualizadoEn, actualizadoEnEsperado)) return falla(CAMBIO_AJENO);
 
-  const nuevo = transformar(actual.datos);
-  if (!nuevo.ok) return nuevo;
-  const problemas = problemasDelCamino(nuevo.datos);
+  const transformado = transformar(actual.datos);
+  if (!transformado.ok) return transformado;
+  const problemas = problemasDelCamino(transformado.datos);
   if (problemas.length > 0) {
     return falla(`El cambio dejaría el Camino con un error: ${problemas[0]} No se guardó nada.`);
   }
 
-  const cambios = cambiosEntre(columnasDelCamino(actual.datos), columnasDelCamino(nuevo.datos));
+  // Una línea nueva con las alturas de la anterior sería un dato falso.
+  let nuevo = transformado.datos;
+  if (JSON.stringify(nuevo.coordenadas) !== JSON.stringify(actual.datos.coordenadas)) {
+    if (!fuenteDeAlturas) return falla("No se pudieron calcular las alturas de la línea nueva. No se guardó nada. Probá de nuevo.");
+    const alturas = await medirAlturas(nuevo.coordenadas, fuenteDeAlturas);
+    if (!alturas.ok) return falla(`No se guardó la línea corregida: ${alturas.error}`);
+    nuevo = { ...nuevo, alturas: alturas.datos };
+  }
+
+  const cambios = cambiosEntre(columnasDelCamino(actual.datos), columnasDelCamino(nuevo));
   if (Object.keys(cambios).length === 0) return actual;
 
   return guardarSiNadieCambio(base, actual.datos, cambios);
@@ -227,10 +247,18 @@ export function corregirLineaGuardada(
   id: unknown,
   actualizadoEnEsperado: unknown,
   coordenadas: unknown,
+  fuenteDeAlturas: FuenteDeAlturas,
 ): Promise<Resultado<CaminoGuardado>> {
   const linea = revisarCoordenadas(coordenadas);
   if (!linea.ok) return Promise.resolve(linea);
-  return editarCaminoGuardado(base, quien, id, actualizadoEnEsperado, (camino) => corregirLinea(camino, linea.datos as Position[]));
+  return editarCaminoGuardado(
+    base,
+    quien,
+    id,
+    actualizadoEnEsperado,
+    (camino) => corregirLinea(camino, linea.datos as Position[]),
+    fuenteDeAlturas,
+  );
 }
 
 export type PedidoDeClasificacion = {

@@ -127,10 +127,12 @@ export function cuandoRecargarPorVersionNueva(estado: {
 }
 
 /**
- * Las pantallas del cerro que no se pueden interrumpir: navegar una ruta y el
- * mapa libre. Mientras están abiertas no se recarga la app ni se pone al día.
+ * Las pantallas del cerro que no se pueden interrumpir: navegar un Circuito y
+ * el mapa libre. Mientras están abiertas no se recarga la app ni se pone al día.
  */
 export function esLaPantallaDeNavegar(camino: string): boolean {
+  // La navegación de Rutas ya no existe (decisión 049), pero un celular puede
+  // tenerla abierta desde antes: sigue contando como navegar.
   return camino.startsWith("/navegacion/")
     || /^\/circuitos\/\d+\/navegar\/?$/.test(camino)
     || /^\/mapa-libre\/?$/.test(camino);

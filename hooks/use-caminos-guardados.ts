@@ -17,7 +17,7 @@ export function useCaminosGuardados(caminosSinLinea: CaminoSinLinea[]): Estado {
         if (!vigente) return;
         const faltantes = leidos.filter(({ linea }) => linea === null).map(({ camino }) => camino.nombre);
         setEstado({
-          caminos: leidos.flatMap(({ camino, linea }) => linea ? [{ ...camino, coordenadas: linea }] : []),
+          caminos: leidos.flatMap(({ camino, linea }) => linea ? [{ ...camino, coordenadas: linea.coordenadas, alturas: linea.alturas }] : []),
           error: faltantes.length > 0
             ? `Falta la línea guardada de ${faltantes.join(", ")}. Abrí la app con conexión en casa para volver a descargarla.`
             : null,

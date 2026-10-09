@@ -5,6 +5,7 @@ import { exito, falla, type Resultado } from "@/lib/datos/resultado";
 import { CATEGORIAS_USUARIO, type CategoriaUsuario } from "@/types/database";
 import { COLUMNAS_DE_CAMINO, traducirErrorDeCaminos, type CaminoGuardado } from "@/lib/caminos/datos";
 import type { QuienUsa } from "@/lib/caminos/permisos";
+import { alturasDelRelieve } from "@/lib/alturas/relieve-del-servidor";
 import {
   cambiarActividadesGuardadas,
   cambiarDatosDeParteGuardada,
@@ -170,7 +171,7 @@ async function soloLeyendo<T>(
 // ---------------------------------------------------------------- acciones
 
 export async function crearCaminoNuevo(pedido: PedidoDeCaminoNuevo): Promise<Resultado<CaminoGuardado>> {
-  return conQuienUsa("guardar el Camino", (base, quien) => crearCaminoGuardado(base, quien, pedido));
+  return conQuienUsa("guardar el Camino", (base, quien) => crearCaminoGuardado(base, quien, pedido, alturasDelRelieve));
 }
 
 export async function leerCamino(id: number): Promise<Resultado<CaminoGuardado>> {
@@ -187,7 +188,7 @@ export async function corregirLineaDelCamino(
   actualizadoEn: string,
   coordenadas: number[][],
 ): Promise<Resultado<CaminoGuardado>> {
-  return conQuienUsa("corregir la línea", (base, quien) => corregirLineaGuardada(base, quien, id, actualizadoEn, coordenadas));
+  return conQuienUsa("corregir la línea", (base, quien) => corregirLineaGuardada(base, quien, id, actualizadoEn, coordenadas, alturasDelRelieve));
 }
 
 export async function clasificarParteDelCamino(

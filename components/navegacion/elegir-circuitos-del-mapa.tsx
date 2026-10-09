@@ -8,13 +8,14 @@ import { Boton } from "@/components/ui/boton";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Opciones } from "@/components/ui/opciones";
 import { RenglonConCasilla } from "@/components/navegacion/renglon-con-casilla";
-import { hexDeLaRuta } from "@/lib/rutas/colores";
 import { etiquetaDeSector, type RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
-import { rutasDelSector, sectorEnElLugar } from "@/lib/navegacion/mapa-libre";
-import type { RutaResumen, Sector, Zona } from "@/types/database";
+import { circuitosDelSector, sectorEnElLugar } from "@/lib/navegacion/mapa-libre";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
+import type { Sector, Zona } from "@/types/database";
 
 /**
- * Qué rutas se ven en los mapas del cerro: navegar una ruta y el mapa libre.
+ * Qué otros Circuitos se ven al navegar uno (decisión 049: lo mismo que se
+ * podía hacer con las rutas).
  *
  * **La lista es la de un sector.** Arriba dice cuál y de qué zona; el ícono de
  * mapa abre un mapa chico de la zona con sus sectores, y tocando uno la lista
@@ -30,24 +31,24 @@ type Props = {
   alCerrar: () => void;
   zonas: Zona[];
   sectores: Sector[];
-  rutas: RutaResumen[];
+  circuitos: CircuitoSinDibujo[];
   /** El sector cuya lista se muestra. `null` mientras no hay ninguno elegido. */
   sectorId: number | null;
   alElegirSector: (sectorId: number) => void;
   prendidas: Set<number>;
   alCambiar: (prendidas: Set<number>) => void;
-  /** La ruta que se está navegando: siempre prendida, no se apaga. */
+  /** El Circuito que se está navegando: siempre prendido, no se apaga. */
   fija?: number | null;
   posicion: { lat: number; lon: number } | null;
   fondosDisponibles: TipoDeFondo[];
 };
 
-export function ElegirRutasDelMapa({ abierto, alCerrar, ...resto }: Props) {
+export function ElegirCircuitosDelMapa({ abierto, alCerrar, ...resto }: Props) {
   return (
     <Emergente
       abierto={abierto}
       alCerrar={alCerrar}
-      titulo="Rutas en el mapa"
+      titulo="Circuitos en el mapa"
       acciones={
         <BotonDeEmergente variante="principal" onClick={alCerrar}>
           Listo
@@ -63,7 +64,7 @@ export function ElegirRutasDelMapa({ abierto, alCerrar, ...resto }: Props) {
 function Contenido({
   zonas,
   sectores,
-  rutas,
+  circuitos,
   sectorId,
   alElegirSector,
   prendidas,
@@ -97,7 +98,7 @@ function Contenido({
       ]
     : [];
 
-  const lista = useMemo(() => (sector ? rutasDelSector(rutas, sector) : []), [rutas, sector]);
+  const lista = useMemo(() => (sector ? circuitosDelSector(circuitos, sector) : []), [circuitos, sector]);
 
   const alternar = (id: number) => {
     if (id === fija) return;
@@ -109,10 +110,10 @@ function Contenido({
 
   const todasDelSector = (prender: boolean) => {
     const nuevas = new Set(prendidas);
-    for (const ruta of lista) {
-      if (ruta.id === fija) continue;
-      if (prender) nuevas.add(ruta.id);
-      else nuevas.delete(ruta.id);
+    for (const circuito of lista) {
+      if (circuito.id === fija) continue;
+      if (prender) nuevas.add(circuito.id);
+      else nuevas.delete(circuito.id);
     }
     alCambiar(nuevas);
   };
@@ -178,7 +179,7 @@ function Contenido({
             <p className="text-sm leading-6 text-texto-suave">
               {sectoresDeLaZona.length === 0
                 ? "Esta zona no tiene sectores guardados."
-                : "Tocá un sector para ver sus rutas. El punto azul sos vos."}
+                : "Tocá un sector para ver sus Circuitos. El punto azul sos vos."}
             </p>
           </div>
         )
@@ -187,37 +188,29 @@ function Contenido({
       {sector ? (
         lista.length === 0 ? (
           <p className="text-base leading-6 text-texto-suave">
-            Este sector no tiene rutas guardadas en el celular.
+            Este sector no tiene Circuitos guardados en el celular.
           </p>
         ) : (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <Boton variante="secundario" onClick={() => todasDelSector(true)}>
-                Todas
+                Todos
               </Boton>
               <Boton variante="secundario" onClick={() => todasDelSector(false)}>
-                Ninguna
+                Ninguno
               </Boton>
             </div>
 
             <ul className="overflow-hidden rounded-xl border border-borde-fuerte bg-fondo">
-              {lista.map((ruta) => (
+              {lista.map((circuito) => (
                 <RenglonConCasilla
-                  key={ruta.id}
-                  prendido={ruta.id === fija || prendidas.has(ruta.id)}
-                  alTocar={() => alternar(ruta.id)}
-                  muestra={
-                    <span
-                      aria-hidden
-                      className="h-1.5 w-6 shrink-0 rounded-full"
-                      // El color de cada ruta es un dato de la ruta, no del tema.
-                      style={{ backgroundColor: hexDeLaRuta(ruta.color) }}
-                    />
-                  }
+                  key={circuito.id}
+                  prendido={circuito.id === fija || prendidas.has(circuito.id)}
+                  alTocar={() => alternar(circuito.id)}
                 >
-                  {ruta.nombre}
-                  {ruta.id === fija ? (
-                    <span className="text-texto-suave"> · la que navegás</span>
+                  {circuito.nombre}
+                  {circuito.id === fija ? (
+                    <span className="text-texto-suave"> · el que navegás</span>
                   ) : null}
                 </RenglonConCasilla>
               ))}

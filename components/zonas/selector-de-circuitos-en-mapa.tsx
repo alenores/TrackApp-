@@ -4,26 +4,29 @@ import { useState } from "react";
 import { Emergente } from "@/components/ui/emergente";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
-import type { RutaResumen } from "@/types/database";
+import type { CircuitoSinDibujo } from "@/lib/offline/circuitos";
+import { textoDeDistancia } from "@/lib/alturas/grafico";
+
+/**
+ * Prender Circuitos sobre el mapa de una zona, para ver por dónde pasan
+ * (decisión 049: antes eran las rutas).
+ */
 
 type SelectorProps = {
-  rutasCruzadas: RutaResumen[];
+  circuitos: CircuitoSinDibujo[];
   idsEncendidos: number[];
-  toggleRuta: (id: number) => void;
+  alternar: (id: number) => void;
 };
 
-export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta }: SelectorProps) {
+export function SelectorDeCircuitosEnMapa({ circuitos, idsEncendidos, alternar }: SelectorProps) {
   const [abierto, setAbierto] = useState(false);
-
-
-
   const cantidad = idsEncendidos.length;
 
   return (
     <>
       <button
         type="button"
-        aria-label="Rutas en esta área"
+        aria-label="Circuitos en esta zona"
         onPointerDown={() => vibrarAlTocar()}
         onClick={() => setAbierto(true)}
         className={[
@@ -58,31 +61,31 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
       <Emergente
         abierto={abierto}
         alCerrar={() => setAbierto(false)}
-        titulo="Rutas en esta área"
-        descripcion="Elegí cuáles querés ver dibujadas sobre el mapa para ubicarte."
+        titulo="Circuitos en el mapa"
+        descripcion="Elegí cuáles querés ver dibujados sobre el mapa para ubicarte."
       >
         <div className="space-y-1">
-          {rutasCruzadas.length === 0 ? (
-            <p className="px-1 py-3 text-sm text-texto-suave">
-              No hay otras rutas cruzando esta zona.
+          {circuitos.length === 0 ? (
+            <p className="px-1 py-3 text-base text-texto-suave">
+              Ningún Circuito guardado en el celular pasa por esta zona.
             </p>
           ) : (
-            rutasCruzadas.map((ruta) => {
-              const encendida = idsEncendidos.includes(ruta.id);
+            circuitos.map((circuito) => {
+              const encendida = idsEncendidos.includes(circuito.id);
 
             return (
               <label
-                key={ruta.id}
+                key={circuito.id}
                 className="flex items-center justify-between gap-3 px-1 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col">
-                    <span className="text-base text-texto">{ruta.nombre}</span>
-                    {ruta.largoKm && (
-                      <span className="text-sm text-texto-suave">
-                        {ruta.largoKm} km
+                    <span className="text-base text-texto">{circuito.nombre}</span>
+                    {circuito.totales ? (
+                      <span className="text-base text-texto-suave">
+                        {textoDeDistancia(circuito.totales.largoM)}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
                 
@@ -90,7 +93,7 @@ export function SelectorDeRutasEnMapa({ rutasCruzadas, idsEncendidos, toggleRuta
                   type="checkbox"
                   className="h-6 w-6 rounded border-borde text-acento focus:ring-acento"
                   checked={encendida}
-                  onChange={() => toggleRuta(ruta.id)}
+                  onChange={() => alternar(circuito.id)}
                 />
               </label>
             );

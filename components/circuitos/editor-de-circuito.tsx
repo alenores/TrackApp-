@@ -7,12 +7,13 @@ import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
+import { CamposDeDatosDelCircuito } from "@/components/circuitos/campos-de-datos-del-circuito";
 import { dibujarCircuito, toqueLibre, toqueSobreCamino,
   type ToqueDelCircuito } from "@/lib/circuitos/dibujo";
 import { caminosParaArmarCircuito, partesDelCircuitoEnElMapa } from "@/lib/circuitos/en-el-mapa";
 import { resumirCircuito } from "@/lib/circuitos/resumen";
 import { puntosVigentesParaEditar } from "@/lib/circuitos/edicion";
-import type { CircuitoGuardado } from "@/lib/circuitos/datos";
+import { SIN_DATOS, type CircuitoGuardado, type DatosDelCircuito } from "@/lib/circuitos/datos";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
@@ -33,6 +34,7 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
   const [nombre, setNombre] = useState(original?.nombre ?? "");
   const [actividad, setActividad] = useState<ActividadRuta>(original?.actividad ?? "mountain_bike");
   const [visibles, setVisibles] = useState<ActividadRuta[]>([original?.actividad ?? "mountain_bike"]);
+  const [datos, setDatos] = useState<DatosDelCircuito>(original?.datos ?? SIN_DATOS);
   const puntosIniciales = original && edicion
     ? puntosVigentesParaEditar(original, edicion.partes, edicion.caminos) : null;
   const requiereRedibujar = !!original && !!edicion && (edicion.finalSeparado
@@ -108,10 +110,10 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
     setOcupado(true);
     setAviso(null);
     try {
-      const pedido = { nombre, actividad, puntos };
+      const pedido = { nombre, actividad, puntos, datos };
       const guardado = original
         ? soloDatos
-          ? await cambiarDatosDelCircuito(original.id, original.actualizadoEn, nombre, actividad)
+          ? await cambiarDatosDelCircuito(original.id, original.actualizadoEn, nombre, actividad, datos)
           : await cambiarCircuito(original.id, original.actualizadoEn, pedido)
         : await crearCircuitoNuevo(pedido);
       if (guardado.ok) {
@@ -139,7 +141,7 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
     </div>
     <p className="text-base text-texto-suave">Tocá el mapa para marcar los puntos del Circuito. Si dos puntos quedan sobre un mismo Camino, la línea sigue ese Camino.</p>
     {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
-    {soloDatos ? <Tarjeta franja="ambar"><p className="text-base text-texto">El dibujo actualizado tiene un final separado o usa un Camino retirado. Podés cambiar el nombre y la actividad sin alterar la línea. Para cambiar el dibujo, tocá «Dibujar de nuevo».</p></Tarjeta> : null}
+    {soloDatos ? <Tarjeta franja="ambar"><p className="text-base text-texto">El dibujo actualizado tiene un final separado o usa un Camino retirado. Podés cambiar el nombre, la actividad y los datos sin alterar la línea. Para cambiar el dibujo, tocá «Dibujar de nuevo».</p></Tarjeta> : null}
     <Tarjeta className="space-y-3">
       <label className="block text-base font-semibold text-texto">Nombre
         <input value={nombre} maxLength={120} onChange={(evento) => setNombre(evento.target.value)}
@@ -159,6 +161,8 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
                 : [...actuales, opcion])}>{mostrarActividad(opcion).etiqueta}</Boton>)}</div>
       </div>
     </Tarjeta>
+    <CamposDeDatosDelCircuito datos={datos} deshabilitado={ocupado}
+      alCambiar={(cambio) => setDatos((anteriores) => ({ ...anteriores, ...cambio }))} />
     {cargando ? <Tarjeta><p role="status" className="text-base text-texto">Cargando el mapa…</p></Tarjeta> :
       <CargadorDeMapa enVivo principal encuadre={encuadre} encuadrarSoloAlAbrir
         caminos={caminosVisibles} circuito={circuitoVisible.ok ? circuitoVisible.datos : null}
