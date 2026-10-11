@@ -28,7 +28,15 @@ export async function GET(pedido: Request) {
     const respuesta = await fetch(`https://tile.googleapis.com/tile/v1/viewport?${consulta}`, {
       cache: "no-store", signal: AbortSignal.timeout(15_000),
     });
-    if (!respuesta.ok) return respuestaDeGoogle(`Google no entregó los créditos de la imagen (${respuesta.status}). Cambiá al mapa Satelital.`, 502);
+    if (!respuesta.ok) {
+      const datosDeError = await respuesta.json().catch(() => null) as { error?: { message?: string } } | null;
+      const motivo = (datosDeError?.error?.message || "Google no dio detalles")
+        .replace(/(key|session)=[^&\s]+/gi, "$1=[oculto]")
+        .replace(/AIza[\w-]+/g, "[clave oculta]")
+        .slice(0, 300);
+      console.error("Google rechazó los créditos del mapa", { estado: respuesta.status, area: numeros, motivo });
+      return respuestaDeGoogle(`Google no entregó los créditos de la imagen (${respuesta.status}). Cambiá al mapa Satelital.`, 502);
+    }
     const datos = await respuesta.json() as { copyright?: string };
     if (!datos.copyright) return respuestaDeGoogle("Google no informó los créditos obligatorios de la imagen. Cambiá al mapa Satelital.", 502);
     return NextResponse.json({ derechos: datos.copyright }, { headers: { "Cache-Control": SIN_GUARDAR_GOOGLE } });
