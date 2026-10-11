@@ -5,8 +5,11 @@
 **Detectado:** 2026-10-09. El 2026-10-11 se creó el proyecto Google Cloud de
 TrackApp, se activó la prueba gratuita y Map Tiles API, y se guardó la clave
 como secreto de producción en Vercel. La clave está restringida a Map Tiles API
-y la nueva publicación quedó lista. Falta comprobar la imagen real dentro de
-una sesión iniciada y en ambos modos visuales.
+y la nueva publicación quedó lista. La prueba en producción encontró que el
+pedido de créditos enviaba `sesion` donde Google exige `session`; se corrigió
+con una prueba automática. La imagen real, el logo y los créditos se comprobaron
+en Mapas y en el detalle de un Circuito, en modo sol y noche. El editor conservó
+los mapas propios. Falta la prueba de navegación en modo avión en un celular.
 
 Google muestra una cuota predeterminada de 100.000 solicitudes de imágenes 2D
 por día y la marca como **no ajustable** en su consola. No se pudo fijar el

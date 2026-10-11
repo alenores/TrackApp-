@@ -28,10 +28,13 @@ El 2026-10-11 se creó un proyecto Google Cloud exclusivo para TrackApp y se
 activaron la prueba gratuita y Map Tiles API. Google creó una clave, que quedó
 limitada a esa API y guardada como secreto de producción en Vercel. Se
 reconstruyó y publicó la misma versión de la app con la nueva configuración.
-Falta probar la imagen real en la app con una sesión iniciada, tanto en modo
-sol como noche. Google muestra una cuota diaria de 100.000 imágenes 2D y no
-permite ajustarla desde la consola. La prueba gratuita no cobra
-automáticamente, pero el consumo efectivo todavía no se midió.
+La primera prueba real descubrió un nombre de parámetro equivocado en el pedido
+de créditos. Se corrigió y quedó cubierto por una prueba automática. Después
+se comprobó la imagen real con el logo y los créditos en Mapas y en el detalle
+de un Circuito, en modo sol y noche; el editor conservó solo los mapas propios.
+Google muestra una cuota diaria de 100.000 imágenes 2D y no permite ajustarla
+desde la consola. La prueba gratuita no cobra automáticamente, pero el consumo
+efectivo todavía no se midió.
 
 La interpretación contractual del uso de Google en una app que también tiene
 otro mapa sigue sin confirmación de Google. La separación de consulta y edición
@@ -57,5 +60,5 @@ evita usar su imagen para crear datos, pero no resuelve por sí sola esa duda.
 
 ### Pendiente de verificación
 
-- Prueba visual con imágenes reales en producción y consumo efectivo.
+- Consumo efectivo y navegación en modo avión en un celular.
 - Interpretación contractual de Google sobre los dos proveedores en la misma app.

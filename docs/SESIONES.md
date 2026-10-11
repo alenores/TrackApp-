@@ -21,6 +21,13 @@ Google. Las consultas mostraban el satelital propio.
 - La página de cuotas mostró 100.000 solicitudes de imágenes 2D por día y marcó
   ese límite como no ajustable. La prueba gratuita indica que no cobra
   automáticamente.
+- La primera prueba real mostró que Google rechazaba los créditos con 400. El
+  registro reveló que la app enviaba `sesion` donde Google exige `session`.
+  Se corrigió y se añadió una prueba automática; pasaron TypeScript, lint sin
+  errores y 813 pruebas.
+- En producción se comprobó la imagen real, el logo y los créditos en Mapas y
+  en el detalle de un Circuito, en modo sol y noche. El editor conservó los
+  mapas propios; navegación libre no ofreció Google.
 
 ### Decisiones tomadas
 
@@ -38,9 +45,8 @@ contractual de Google sobre los dos proveedores en la misma app.
 
 ### Pendientes para la próxima
 
-Probar la imagen real con una sesión iniciada en modo sol y noche, y probar las
-dos navegaciones en modo avión en un celular. Revisar el consumo antes de
-activar un plan de pago por uso.
+Probar las dos navegaciones en modo avión en un celular. Revisar el consumo
+antes de activar un plan de pago por uso.
 
 ---
 
