@@ -22,7 +22,7 @@ export async function GET(pedido: Request) {
       numeros.zoom < 0 || numeros.zoom > 22) {
     return respuestaDeGoogle("El área visible del mapa de Google no es válida.", 400);
   }
-  const consulta = new URLSearchParams({ sesion, key: clave });
+  const consulta = new URLSearchParams({ session: sesion, key: clave });
   for (const nombre of limites) consulta.set(nombre, String(numeros[nombre]));
   try {
     const respuesta = await fetch(`https://tile.googleapis.com/tile/v1/viewport?${consulta}`, {
@@ -35,7 +35,7 @@ export async function GET(pedido: Request) {
         .replace(/AIza[\w-]+/g, "[clave oculta]")
         .slice(0, 300);
       console.error("Google rechazó los créditos del mapa", { estado: respuesta.status, area: numeros, motivo });
-      return respuestaDeGoogle(`Google no entregó los créditos de la imagen (${respuesta.status}). Cambiá al mapa Satelital.`, 502);
+      return respuestaDeGoogle(`Google rechazó los créditos de la imagen (${respuesta.status}): ${motivo}. Cambiá al mapa Satelital.`, 502);
     }
     const datos = await respuesta.json() as { copyright?: string };
     if (!datos.copyright) return respuestaDeGoogle("Google no informó los créditos obligatorios de la imagen. Cambiá al mapa Satelital.", 502);

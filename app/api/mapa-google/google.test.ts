@@ -10,6 +10,7 @@ vi.mock("@/lib/supabase/servidor", () => ({
 import { sesionValida } from "@/lib/mapas/google-servidor";
 import { POST as abrirSesion } from "@/app/api/mapa-google/sesion/route";
 import { GET as traerTesela } from "@/app/api/mapa-google/tesela/[z]/[x]/[y]/route";
+import { GET as traerAtribucion } from "@/app/api/mapa-google/atribucion/route";
 
 const PARAMETROS = { params: Promise.resolve({ z: "12", x: "1300", y: "2420" }) };
 const SESION = "sesion_de_google_para_la_prueba";
@@ -63,6 +64,22 @@ describe("el puente del mapa Google", () => {
     expect(respuesta.headers.get("cache-control")).toContain("no-store");
     expect(pedir).toHaveBeenCalledOnce();
     expect(pedir.mock.calls[0][1].cache).toBe("no-store");
+  });
+
+  it("pide los créditos con el nombre de sesión que exige Google", async () => {
+    autenticacion.claims = true;
+    const pedir = vi.fn().mockResolvedValue(new Response(JSON.stringify({ copyright: "© Google" }), {
+      headers: { "content-type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", pedir);
+    const respuesta = await traerAtribucion(new Request(
+      `https://track.app/api/mapa-google/atribucion?sesion=${SESION}&north=-29&south=-35&east=-60&west=-67&zoom=6`,
+    ));
+    expect(respuesta.status).toBe(200);
+    expect(await respuesta.json()).toEqual({ derechos: "© Google" });
+    const direccionDeGoogle = new URL(pedir.mock.calls[0][0]);
+    expect(direccionDeGoogle.searchParams.get("session")).toBe(SESION);
+    expect(direccionDeGoogle.searchParams.has("sesion")).toBe(false);
   });
 
   it("acepta solo el formato esperado de una sesión", () => {
