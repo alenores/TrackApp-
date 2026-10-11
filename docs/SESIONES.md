@@ -4,6 +4,46 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-11 — Activación de Google para TrackApp
+
+### Estado al inicio
+
+La integración estaba publicada, pero sin proyecto, facturación ni clave de
+Google. Las consultas mostraban el satelital propio.
+
+### Lo que se hizo
+
+- Se creó un proyecto Google Cloud independiente de Vías de Escalada Córdoba.
+- Ale completó personalmente la verificación de pago de la prueba gratuita.
+- Se habilitó Map Tiles API. Google creó una clave y se limitó su uso a esa API.
+- La clave quedó como secreto de producción en Vercel. Se reconstruyó la versión
+  publicada y el despliegue terminó listo.
+- La página de cuotas mostró 100.000 solicitudes de imágenes 2D por día y marcó
+  ese límite como no ajustable. La prueba gratuita indica que no cobra
+  automáticamente.
+
+### Decisiones tomadas
+
+Se mantuvo el proyecto de Google separado para TrackApp. No se cambió el
+proveedor offline ni el diseño aprobado.
+
+### Documentos actualizados
+
+Riesgos, decisión 050 y este registro.
+
+### Deuda o inconsistencias detectadas
+
+No se pudo fijar el cupo diario previsto. Sigue pendiente la respuesta
+contractual de Google sobre los dos proveedores en la misma app.
+
+### Pendientes para la próxima
+
+Probar la imagen real con una sesión iniciada en modo sol y noche, y probar las
+dos navegaciones en modo avión en un celular. Revisar el consumo antes de
+activar un plan de pago por uso.
+
+---
+
 ## Sesión 2026-10-09 — Google satelital solo en consultas
 
 ### Estado al inicio

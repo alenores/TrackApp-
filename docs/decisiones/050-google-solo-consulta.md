@@ -22,13 +22,16 @@ el satelital propio cuando no. En el mapa de Google aparecen su logotipo
 oficial sin modificar, el crédito que devuelve Google para el área visible y
 una etiqueta que distingue la imagen de Google de los datos de TrackApp.
 
-## Activación pendiente
+## Activación
 
-El despliegue revisado no tiene proyecto ni clave de Google configurados.
-Ale indicó que necesita los pasos para crearlos. Hasta entonces la consulta
-usa el satelital propio sin mostrar un error de configuración a los usuarios.
-Una falla de Google luego de activarlo sí lleva un aviso. No se pudo hacer la
-prueba visual con imágenes reales de Google ni confirmar costos efectivos.
+El 2026-10-11 se creó un proyecto Google Cloud exclusivo para TrackApp y se
+activaron la prueba gratuita y Map Tiles API. Google creó una clave, que quedó
+limitada a esa API y guardada como secreto de producción en Vercel. Se
+reconstruyó y publicó la misma versión de la app con la nueva configuración.
+Falta probar la imagen real en la app con una sesión iniciada, tanto en modo
+sol como noche. Google muestra una cuota diaria de 100.000 imágenes 2D y no
+permite ajustarla desde la consola. La prueba gratuita no cobra
+automáticamente, pero el consumo efectivo todavía no se midió.
 
 La interpretación contractual del uso de Google en una app que también tiene
 otro mapa sigue sin confirmación de Google. La separación de consulta y edición
@@ -54,5 +57,5 @@ evita usar su imagen para crear datos, pero no resuelve por sí sola esa duda.
 
 ### Pendiente de verificación
 
-- Prueba con clave, facturación e imágenes reales en producción.
+- Prueba visual con imágenes reales en producción y consumo efectivo.
 - Interpretación contractual de Google sobre los dos proveedores en la misma app.

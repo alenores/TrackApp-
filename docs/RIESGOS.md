@@ -2,11 +2,17 @@
 
 ## 🟡 Google en consultas: activación, costo y condiciones
 
-**Detectado:** 2026-10-09. La integración de Map Tiles API está preparada, pero
-falta crear el proyecto facturable, habilitar la API y cargar una clave de
-servidor. Sin eso se ve el satelital propio. Antes de activar conviene
-fijar un cupo diario en Google Cloud. Todavía no hubo prueba visual con imágenes
-reales.
+**Detectado:** 2026-10-09. El 2026-10-11 se creó el proyecto Google Cloud de
+TrackApp, se activó la prueba gratuita y Map Tiles API, y se guardó la clave
+como secreto de producción en Vercel. La clave está restringida a Map Tiles API
+y la nueva publicación quedó lista. Falta comprobar la imagen real dentro de
+una sesión iniciada y en ambos modos visuales.
+
+Google muestra una cuota predeterminada de 100.000 solicitudes de imágenes 2D
+por día y la marca como **no ajustable** en su consola. No se pudo fijar el
+cupo diario previsto. La prueba gratuita indica que no cobra automáticamente;
+antes de pasar a pago por uso hay que revisar el consumo y acordar otro límite
+de gasto. Una alerta de presupuesto avisa, pero no corta el servicio.
 
 El código pide créditos para el área visible y excluye las imágenes del motor
 offline. Sigue sin confirmación de Google la interpretación contractual de usar
