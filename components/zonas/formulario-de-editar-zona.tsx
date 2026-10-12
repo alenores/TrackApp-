@@ -6,6 +6,7 @@ import { borrarZona, editarZona } from "@/app/actions/territorio";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Boton } from "@/components/ui/boton";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Campo } from "@/components/ui/campo";
@@ -148,6 +149,9 @@ export function FormularioDeEditarZona({
           etiqueta="Volver a la zona"
         />
         <h1 className="text-xl font-semibold text-texto">Editar la zona</h1>
+        <MenuDeAcciones className="ml-auto" etiqueta="Opciones de la zona"
+          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: borrando || guardando,
+            alElegir: () => void alBorrar() }]} />
       </div>
 
       <Tarjeta className="space-y-5">
@@ -197,14 +201,6 @@ export function FormularioDeEditarZona({
           {guardando ? "Guardando…" : "Guardar los cambios"}
         </Boton>
 
-        <Boton
-          anchoCompleto
-          variante="destructivo"
-          disabled={borrando}
-          onClick={() => void alBorrar()}
-        >
-          {borrando ? "Borrando…" : "Borrar esta zona"}
-        </Boton>
       </div>
     </div>
   );

@@ -1,17 +1,12 @@
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { CartelDeInstalar } from "@/components/armazon/cartel-de-instalar";
-import { PantallaDeCircuitos } from "@/components/circuitos/pantalla-de-circuitos";
-import { traerMiPerfil } from "@/lib/perfiles/datos";
+import { InicioDeSalidas } from "@/components/salidas/inicio-de-salidas";
 
-/** El inicio: la lista de Circuitos, desde que se retiró Rutas (decisión 049). */
-export default async function HomePage() {
-  const perfil = await traerMiPerfil();
-
-  return (
-    <>
-      <MarcaDeAppLista />
-      <CartelDeInstalar />
-      <PantallaDeCircuitos categoria={perfil?.categoria ?? "normal"} miPerfilId={perfil?.id ?? null} />
-    </>
-  );
+/** La entrada queda guardada para abrir también sin señal. */
+export default function HomePage() {
+  return <>
+    <MarcaDeAppLista />
+    <CartelDeInstalar />
+    <InicioDeSalidas />
+  </>;
 }

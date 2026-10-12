@@ -5,6 +5,7 @@ import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { MarcaDeApertura } from "@/components/ui/tarjeta-que-abre";
 import {
   CORDOBA_COMPLETA,
   zonasEnElMapaGeneral,
@@ -92,22 +93,22 @@ export function MapaGeneralDeZonas({ zonas, anotaciones, caminos: caminosSinLine
             alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
           />
         ) : zonaElegida ? (
-          <div data-ficha-zona>
-              <Tarjeta className="space-y-3 shadow-[var(--sombra-alta)]">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="line-clamp-2 min-w-0 text-lg font-bold text-texto">{zonaElegida.nombre}</h2>
-                  <Boton variante="fantasma" aria-label="Cerrar la ficha de la zona" onClick={cerrarFicha}>
-                    Cerrar
-                  </Boton>
-                </div>
+          <div data-ficha-zona className="relative">
+            <Enlace href={`/zonas/${zonaElegida.id}`} className="block rounded-2xl"
+              aria-label={`Abrir ${zonaElegida.nombre}`}>
+              <Tarjeta interactiva className="relative space-y-3 pb-9 pr-16 shadow-[var(--sombra-alta)]">
+                <h2 className="line-clamp-2 min-w-0 text-lg font-bold text-texto">{zonaElegida.nombre}</h2>
                 <p className="text-base font-medium text-texto">
                   {sectoresPorZona[zonaElegida.id] ?? 0} {sectoresPorZona[zonaElegida.id] === 1 ? "sector" : "sectores"}
                 </p>
                 {zonaElegida.descripcion ? (
                   <p className="line-clamp-1 text-base leading-6 text-texto-suave sm:line-clamp-3">{zonaElegida.descripcion}</p>
                 ) : null}
-                <Enlace href={`/zonas/${zonaElegida.id}`} variante="principal">Ver zona</Enlace>
+                <MarcaDeApertura />
               </Tarjeta>
+            </Enlace>
+            <Boton variante="fantasma" className="absolute right-2 top-2" aria-label="Cerrar la ficha de la zona"
+              onClick={cerrarFicha}>Cerrar</Boton>
           </div>
         ) : null}
       />

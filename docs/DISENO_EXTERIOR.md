@@ -23,6 +23,16 @@ TrackApp no se usa sentado en un escritorio. Se usa:
 Cada regla sale de esas condiciones. Si una regla no se puede justificar contra
 una de ellas, sobra.
 
+### Menú y acciones (decisión 051)
+
+Salidas abre al entrar con conexión. El menú mantiene el mismo orden en celular
+y computadora: Salidas, Circuitos, Navegación libre, Mapas y Perfiles. Volver,
+agregar y navegar usan cada uno un ícono compartido; editar y eliminar aparecen
+al abrir los tres puntos. Las tarjetas que llevan a un detalle se abren tocando
+cualquier parte y muestran «Abrir» discretamente abajo a la derecha. Sin señal,
+la entrada informa que Salidas requiere conexión y ofrece Circuitos y
+Navegación libre.
+
 ### Nombres de los mapas
 
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
@@ -34,7 +44,8 @@ solo nombre, además de los puntos marcados. En Mapa y Puntos, el mapa inicial
 usa el doble de alto habitual para aprovechar la pantalla. No dibuja
 las divisiones ni los nombres de los sectores: con varias zonas juntas taparían
 el territorio. Al hacer clic o tocar una zona aparece una ficha breve con
-el acceso «Ver zona»; los sectores se ven en esa ficha detallada. Los nombres y
+acceso al detalle tocando cualquier parte de la ficha; los sectores se ven en
+ese detalle. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
 no se muestran y los íconos que se pisan se ocultan. Ver
 `decisiones/029-mapa-general-de-cordoba.md`. En cualquier mapa, tocar un punto

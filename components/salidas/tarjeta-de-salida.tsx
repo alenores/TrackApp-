@@ -2,6 +2,7 @@
 
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { MarcaDeApertura } from "@/components/ui/tarjeta-que-abre";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import {
   BotonDeOpcionesDeSalida,
@@ -29,7 +30,7 @@ export function TarjetaDeSalida({ salida, puedeEditar }: Props) {
   return (
     <div className="relative">
       <Enlace href={`/salidas/${salida.id}`} className="block rounded-2xl" aria-label={`Ver «${salida.titulo}»`}>
-        <Tarjeta interactiva className="space-y-3 overflow-hidden">
+        <Tarjeta interactiva className="relative space-y-3 overflow-hidden pb-9">
           <PortadaDeSalida salida={salida} margenDeTarjeta />
           <div className="flex items-center justify-between gap-3">
             <ParticipantesDeSalida salida={salida} />
@@ -37,6 +38,7 @@ export function TarjetaDeSalida({ salida, puedeEditar }: Props) {
               <InsigniasDeActividad actividades={salida.actividades} />
             </div>
           </div>
+          <MarcaDeApertura />
         </Tarjeta>
       </Enlace>
 

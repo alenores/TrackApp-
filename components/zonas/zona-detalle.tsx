@@ -103,7 +103,7 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
           <BotonVolver
             destinoSiNoHayVuelta="/zonas"
             etiqueta="Volver a las zonas"
-            className={zona.fotoUrl ? "[&>span]:bg-black/40 [&>span]:text-white [&>span]:border-white/30" : ""}
+            className={zona.fotoUrl ? "bg-sobre-foto-degrade/70 text-sobre-foto-texto" : ""}
           />
           <h1 className={`min-w-0 flex-1 truncate text-2xl font-bold uppercase ${zona.fotoUrl ? "text-white drop-shadow-md" : "text-texto"}`}>
             {zona.nombre}

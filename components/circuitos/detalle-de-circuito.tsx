@@ -9,7 +9,10 @@ import { elEnCurso, empezarUnRegistro } from "@/lib/salidas/registro";
 import { leerCircuitoCompleto, retirarCircuito } from "@/app/actions/circuitos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
-import { Boton } from "@/components/ui/boton";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { BotonVolver } from "@/components/ui/boton-volver";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
+import { TRAZOS_DE_NAVEGACION } from "@/components/armazon/destinos-del-menu";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
 import { DatosDeCircuito } from "@/components/circuitos/datos-de-circuito";
@@ -163,8 +166,17 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
 
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center gap-2">
-      <Boton variante="secundario" onClick={alVolver}>Volver</Boton>
+      <BotonVolver alVolver={alVolver} />
       <h1 className="text-2xl font-bold text-texto">{ficha?.nombre ?? "Circuito"}</h1>
+      {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ?
+        <MenuDeAcciones className="ml-auto" etiqueta={`Opciones de ${completo.circuito.nombre}`}
+          acciones={[
+            { etiqueta: "Editar", deshabilitada: !actualizado?.ok,
+              alElegir: () => { if (actualizado?.ok) alEditar(completo.circuito,
+                actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); } },
+            { etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
+              alElegir: () => void retirar() },
+          ]} /> : null}
     </div>
     {cargando && (haySenal || fichaGuardada) ? <Tarjeta><p role="status" className="text-base text-texto">Abriendo el Circuito…</p></Tarjeta> : null}
     {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
@@ -188,14 +200,9 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
             desnivelPositivoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelPositivoM : null}
             desnivelNegativoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelNegativoM : null} />
           {cobertura ? <BloqueDeCobertura cobertura={cobertura} este="este Circuito" /> : null}
-          {preparadoAlDia ? <Boton onClick={navegar}>Navegar Circuito</Boton>
+          {preparadoAlDia ? <BotonRedondo etiqueta="Navegar Circuito" variante="principal"
+            className="hidden lg:flex" onClick={navegar}>{TRAZOS_DE_NAVEGACION}</BotonRedondo>
             : <Tarjeta franja="ambar"><p className="text-base text-texto">Este Circuito aún no quedó preparado en el celular. Abrí la app con señal en casa para descargarlo antes de salir.</p></Tarjeta>}
-          {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ? <div className="flex flex-wrap gap-2">
-            <Boton variante="secundario" disabled={!actualizado?.ok}
-              onClick={() => { if (actualizado?.ok) alEditar(completo.circuito,
-                actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); }}>Editar Circuito</Boton>
-            <Boton variante="destructivo" disabled={ocupado} onClick={() => void retirar()}>Retirar Circuito</Boton>
-          </div> : null}
         </div>
       </div>
     </> : null}
@@ -203,9 +210,7 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
       {/* En el celular, flotante abajo a la derecha, al alcance del pulgar, como en la ruta. */}
       <div aria-hidden className="h-12 lg:hidden" />
       <BotonFlotante etiqueta="Navegar este Circuito" alTocar={navegar} soloCelular>
-        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-        <circle cx="12" cy="12" r="6.5" />
-        <circle cx="12" cy="12" r="2.5" />
+        {TRAZOS_DE_NAVEGACION}
       </BotonFlotante>
     </> : null}
     <PreguntaDeRegistrar

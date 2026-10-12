@@ -47,7 +47,7 @@ describe("mapa general", () => {
       });
       expect(contenedor.textContent).toContain("Zona de prueba");
       expect(contenedor.textContent).toContain("4 sectores");
-      expect(contenedor.querySelector('a[href="/zonas/1"]')?.textContent).toBe("Ver zona");
+      expect(contenedor.querySelector('a[href="/zonas/1"]')?.textContent).toContain("Abrir");
     } finally {
       act(() => raiz.unmount());
     }

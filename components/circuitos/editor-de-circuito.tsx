@@ -5,6 +5,7 @@ import { leerCaminos } from "@/app/actions/caminos";
 import { cambiarCircuito, cambiarDatosDelCircuito, crearCircuitoNuevo } from "@/app/actions/circuitos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
 import { CamposDeDatosDelCircuito } from "@/components/circuitos/campos-de-datos-del-circuito";
@@ -128,7 +129,7 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2">
-        <Boton variante="secundario" onClick={alVolver}>Volver</Boton>
+        <BotonVolver alVolver={alVolver} />
         <h1 className="text-2xl font-bold text-texto">{original ? "Editar Circuito" : "Nuevo Circuito"}</h1>
       </div>
       <div className="flex flex-wrap gap-2">

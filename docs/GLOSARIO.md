@@ -262,7 +262,8 @@ Si terminaba en la punta de un Camino y esa punta se corrige, conserva su
 lugar anterior. Ver decisión 048.
 Lleva técnica, esfuerzo, qué llevar, complicaciones y comentario cargados a
 mano; su largo, su desnivel y su **gráfico de alturas** se calculan solos con
-la línea vigente. La lista de Circuitos es el inicio de la app. Al navegarlo
+la línea vigente. La lista de Circuitos se abre desde el menú; Salidas es el
+inicio de la app (decisión 051). Al navegarlo
 se puede registrar la Salida, anotar, prender otros Circuitos y ver las
 alturas con «Estás acá». Ver decisión 049.
 

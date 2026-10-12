@@ -13,7 +13,7 @@ import {
   FranjaDeRegistro,
   PreguntaDeRegistrar,
 } from "@/components/navegacion/registro-de-salida";
-import { Boton } from "@/components/ui/boton";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Emergente } from "@/components/ui/emergente";
@@ -124,7 +124,7 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
   if (cargando && ficha) return <Tarjeta><p role="status" className="text-lg text-texto">Abriendo el Circuito guardado…</p></Tarjeta>;
   if (!ficha || !preparado) return <Tarjeta franja="rojo" className="space-y-3">
     <p role="alert" className="text-lg text-texto">Este Circuito no quedó completo en el celular. Abrí la app con señal en casa para descargarlo antes de salir.</p>
-    <Boton variante="secundario" onClick={() => requestExit()}>Volver</Boton>
+    <BotonVolver alVolver={() => requestExit()} />
     <ModalDeSalida open={open} onCancel={cancelExit} onConfirm={confirmExit} />
   </Tarjeta>;
 

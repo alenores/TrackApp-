@@ -1,9 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FlechaRedonda } from "@/components/ui/flecha-redonda";
-import { vibrarAlTocar } from "@/lib/vibracion";
-import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
 
 /**
  * **El botón de volver vuelve, no va.**
@@ -18,9 +16,12 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 type BotonVolverProps = {
   /** Adónde ir cuando no hay pantalla anterior. */
-  destinoSiNoHayVuelta: string;
+  destinoSiNoHayVuelta?: string;
+  /** Para vistas que vuelven dentro de la misma pantalla. */
+  alVolver?: () => void;
   etiqueta?: string;
   className?: string;
+  disabled?: boolean;
 };
 
 function hayPantallaAnterior(): boolean {
@@ -35,33 +36,28 @@ function hayPantallaAnterior(): boolean {
 
 export function BotonVolver({
   destinoSiNoHayVuelta,
+  alVolver,
   etiqueta = "Volver",
   className = "",
+  disabled = false,
 }: BotonVolverProps) {
   const router = useRouter();
 
   return (
-    <button
-      type="button"
-      aria-label={etiqueta}
-      onPointerDown={() => vibrarAlTocar()}
+    <BotonRedondo
+      etiqueta={etiqueta}
+      className={className}
+      disabled={disabled}
       onClick={() => {
+        if (alVolver) { alVolver(); return; }
         if (hayPantallaAnterior()) {
           router.back();
           return;
         }
-        router.push(destinoSiNoHayVuelta);
+        if (destinoSiNoHayVuelta) router.push(destinoSiNoHayVuelta);
       }}
-      className={[
-        CLASE_DE_RESPUESTA_AL_TOQUE,
-        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
     >
-      <FlechaRedonda direction="left" />
-    </button>
+      <path d="M19 12H5m7-7-7 7 7 7" />
+    </BotonRedondo>
   );
 }

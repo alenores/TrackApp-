@@ -6,6 +6,7 @@ import { borrarSector, editarSector } from "@/app/actions/territorio";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { CamposDeTerritorio } from "@/components/zonas/campos-de-territorio";
 import { BotonVolver } from "@/components/ui/boton-volver";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -159,6 +160,9 @@ export function FormularioDeEditarSector({
           etiqueta="Volver a la zona"
         />
         <h1 className="text-xl font-semibold text-texto">Editar el sector</h1>
+        <MenuDeAcciones className="ml-auto" etiqueta="Opciones del sector"
+          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: borrando || guardando,
+            alElegir: () => void alBorrar() }]} />
       </div>
 
       <CamposDeTerritorio
@@ -187,16 +191,6 @@ export function FormularioDeEditarSector({
               {guardando ? "Guardando…" : "Guardar los cambios"}
             </Boton>
 
-            <div className="pb-2">
-              <Boton
-                anchoCompleto
-                variante="destructivo"
-                disabled={borrando}
-                onClick={() => void alBorrar()}
-              >
-                {borrando ? "Borrando…" : "Borrar este sector"}
-              </Boton>
-            </div>
           </>
         }
       />

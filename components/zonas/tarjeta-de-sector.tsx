@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { borrarSector } from "@/app/actions/territorio";
 import { MapaDelSector } from "@/components/mapa/mapa-del-sector";
+import { borrarSector } from "@/app/actions/territorio";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { useDialogos } from "@/components/ui/dialogos";
-import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import type { Sector } from "@/types/database";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
@@ -32,7 +32,7 @@ export function TarjetaDeSector({
   soyAdministrador,
 }: SectorCardProps) {
   const router = useRouter();
-  const { avisar } = useDialogos();
+  const { confirmar, avisar } = useDialogos();
   
   const [editandoNombre, setEditandoNombre] = useState(false);
   const [nuevoSufijo, setNuevoSufijo] = useState("");
@@ -64,6 +64,22 @@ export function TarjetaDeSector({
       router.refresh();
     } else {
       await avisar({ titulo: "No se pudo cambiar el nombre", mensaje: res.error });
+    }
+  };
+
+  const eliminar = async () => {
+    const seguro = await confirmar({ titulo: `¿Borrar «${sector.nombre}»?`,
+      mensaje: "Se borrarán también sus anotaciones. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar", destructivo: true });
+    if (!seguro) return;
+    try {
+      const resultado = await borrarSector(sector.id);
+      if (!resultado.ok) { await avisar({ titulo: "No se pudo borrar", mensaje: resultado.error }); return; }
+      await ponerAlDiaDespuesDeGuardar();
+      router.refresh();
+    } catch (error) {
+      await avisar({ titulo: "No se pudo borrar",
+        mensaje: `${error instanceof Error ? error.message : String(error)}. Probá de nuevo con señal.` });
     }
   };
 
@@ -114,18 +130,6 @@ export function TarjetaDeSector({
               <h3 className="truncate text-base font-semibold text-texto">
                 {sector.nombre}
               </h3>
-              {soyAdministrador ? (
-                <button
-                  type="button"
-                  onClick={iniciarEdicion}
-                  className="rounded p-1 text-texto-suave hover:bg-superficie hover:text-texto shrink-0"
-                  aria-label="Editar nombre"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                  </svg>
-                </button>
-              ) : null}
             </div>
           )}
 
@@ -145,6 +149,13 @@ export function TarjetaDeSector({
           />
         </div>
       </Tarjeta>
+      {soyAdministrador ? <MenuDeAcciones className="absolute right-3 top-16 z-10"
+        etiqueta={`Opciones de ${sector.nombre}`}
+        acciones={[
+          { etiqueta: "Editar nombre", alElegir: iniciarEdicion },
+          { etiqueta: "Editar", alElegir: () => router.push(`/zonas/${sector.zonaId}/sectores/${sector.id}/editar`) },
+          { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminar() },
+        ]} /> : null}
     </div>
   );
 }

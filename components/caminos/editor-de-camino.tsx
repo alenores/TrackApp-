@@ -7,6 +7,8 @@ import {
 } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
+import { BotonVolver } from "@/components/ui/boton-volver";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
@@ -160,8 +162,11 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Boton variante="secundario" onClick={alVolver}>Volver</Boton>
+        <BotonVolver alVolver={alVolver} />
         <h2 className="text-xl font-bold text-texto">{camino?.nombre ?? "Camino"}</h2>
+        {camino ? <MenuDeAcciones className="ml-auto" etiqueta={`Opciones de ${camino.nombre}`}
+          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
+            alElegir: () => setConfirmarRetiro(true) }]} /> : null}
       </div>
       {cargando ? <p role="status" className="text-base text-texto">Abriendo el Camino…</p> : null}
       {aviso ? <Tarjeta franja={aviso.startsWith("Se ") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
@@ -228,7 +233,6 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                 ) : <Boton variante="secundario" onClick={() => { setCorrigiendo(true); setModoCorreccion("mover"); setBorradorLinea(null); }}>Corregir puntos de la línea</Boton>}
                 {vistaPrevia && !vistaPrevia.ok ? <p role="alert" className="text-base text-ambar-texto">{vistaPrevia.error}</p> : null}
               </Tarjeta>
-              <Boton variante="destructivo" disabled={ocupado} onClick={() => setConfirmarRetiro(true)}>Retirar este Camino</Boton>
             </div>
           ) : (
             <div role="tabpanel" className="space-y-4">

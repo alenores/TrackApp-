@@ -2,10 +2,10 @@
 
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Enlace } from "@/components/ui/enlace";
+import { BotonAgregar } from "@/components/ui/boton-agregar";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useHaySenal } from "@/hooks/use-hay-senal";
-import { vibrarAlTocar } from "@/lib/vibracion";
 import { NIVEL_DE_LOS_BOTONES_FLOTANTES } from "@/lib/capas";
 
 /**
@@ -16,7 +16,7 @@ import { NIVEL_DE_LOS_BOTONES_FLOTANTES } from "@/lib/capas";
  */
 
 const CLASE_FLOTANTE =
-  "fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4 flex h-10 w-10 items-center justify-center rounded-full border border-acento-borde bg-acento text-acento-texto shadow-[var(--sombra-alta)]";
+  "fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4";
 
 /**
  * El «+» que lleva a cargar algo nuevo. Cargar escribe en la base: sin señal
@@ -30,15 +30,12 @@ export function BotonFlotanteDeAgregar({ href, etiqueta }: { href: string; etiqu
   if (!yaEstaVivo || !haySenal) return null;
 
   return createPortal(
-    <Enlace
+    <BotonAgregar
       href={href}
-      aria-label={etiqueta}
-      title={etiqueta}
-      className={`${CLASE_FLOTANTE} text-2xl font-light leading-none`}
+      etiqueta={etiqueta}
+      className={CLASE_FLOTANTE}
       style={{ zIndex: NIVEL_DE_LOS_BOTONES_FLOTANTES }}
-    >
-      +
-    </Enlace>,
+    />,
     document.body,
   );
 }
@@ -66,28 +63,15 @@ export function BotonFlotante({
   if (!yaEstaVivo) return null;
 
   return createPortal(
-    <button
-      type="button"
-      aria-label={etiqueta}
-      title={etiqueta}
-      onPointerDown={() => vibrarAlTocar()}
+    <BotonRedondo
+      etiqueta={etiqueta}
+      variante="principal"
       onClick={alTocar}
-      className={`${CLASE_FLOTANTE} ${soloCelular ? "lg:hidden" : ""} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde`}
+      className={`${CLASE_FLOTANTE} ${soloCelular ? "lg:hidden" : ""}`}
       style={{ zIndex: NIVEL_DE_LOS_BOTONES_FLOTANTES }}
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {children}
-      </svg>
-    </button>,
+      {children}
+    </BotonRedondo>,
     document.body,
   );
 }

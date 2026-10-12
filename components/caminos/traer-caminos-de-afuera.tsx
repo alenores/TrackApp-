@@ -5,6 +5,7 @@ import type { FeatureCollection, LineString } from "geojson";
 import { crearCaminoNuevo } from "@/app/actions/caminos";
 import { crearAnotacionesEnTanda, type DatosDeAnotacion } from "@/app/actions/territorio";
 import { Boton } from "@/components/ui/boton";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { leerArchivoDeCaminos, FORMATOS_DE_CAMINOS, type LecturaDeCaminos } from "@/lib/caminos/archivo";
@@ -174,7 +175,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Boton variante="secundario" onClick={alVolver} disabled={guardando}>Volver</Boton>
+        <BotonVolver alVolver={alVolver} disabled={guardando} />
         <h2 className="text-xl font-bold text-texto">Traer de afuera</h2>
       </div>
       <p className="text-base text-texto-suave">Elegí un archivo de Google Earth o GPS. Vas a decidir qué es cada línea y cada punto. El archivo original no se guarda.</p>

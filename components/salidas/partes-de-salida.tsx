@@ -1,7 +1,10 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
-import { Enlace } from "@/components/ui/enlace";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
+import { useDialogos } from "@/components/ui/dialogos";
+import { borrarSalida } from "@/app/actions/salidas";
+import { useRouter } from "next/navigation";
 import { mostrarDesnivel, mostrarEsfuerzo, mostrarLargo } from "@/lib/rutas/actividades";
 import { PROPORCION_DE_LA_PORTADA_DE_SALIDA } from "@/lib/fotos/preparar";
 import { dibujarLinea } from "@/lib/salidas/linea";
@@ -248,12 +251,7 @@ export function NumerosDeSalida({ salida }: { salida: Salida }) {
   );
 }
 
-/**
- * Los tres puntitos: llevan a editar la salida. Borrar está adentro de la
- * edición, nunca a un toque desde la lista.
- *
- * `sobreFoto` lo dibuja claro sobre fondo oscuro, para ir encima de la portada.
- */
+/** Acciones de una Salida, siempre detrás de los tres puntos. */
 export function BotonDeOpcionesDeSalida({
   salidaId,
   sobreFoto,
@@ -261,24 +259,26 @@ export function BotonDeOpcionesDeSalida({
   salidaId: number;
   sobreFoto: boolean;
 }) {
-  return (
-    <Enlace
-      href={`/salidas/${salidaId}/editar`}
-      aria-label="Editar la salida"
-      title="Editar la salida"
-      className={[
-        "flex h-10 w-10 items-center justify-center rounded-full",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        sobreFoto
-          ? "bg-sobre-foto-degrade/60 text-sobre-foto-texto"
-          : "border border-borde bg-superficie text-texto-suave hover:bg-superficie-alta hover:text-texto",
-      ].join(" ")}
-    >
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-        <circle cx="5" cy="12" r="1.8" />
-        <circle cx="12" cy="12" r="1.8" />
-        <circle cx="19" cy="12" r="1.8" />
-      </svg>
-    </Enlace>
-  );
+  const router = useRouter();
+  const { confirmar, avisar } = useDialogos();
+  const eliminar = async () => {
+    const seguro = await confirmar({ titulo: "¿Borrar esta salida?",
+      mensaje: "Dejará de verse en la app. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar la salida", destructivo: true });
+    if (!seguro) return;
+    try {
+      const resultado = await borrarSalida(salidaId);
+      if (!resultado.ok) { await avisar({ titulo: "No se borró la salida", mensaje: resultado.error }); return; }
+      router.replace("/salidas");
+      router.refresh();
+    } catch (error) {
+      await avisar({ titulo: "No se borró la salida",
+        mensaje: `${error instanceof Error ? error.message : String(error)}. Probá de nuevo con señal.` });
+    }
+  };
+  return <MenuDeAcciones etiqueta="Opciones de la salida" sobreFoto={sobreFoto}
+    acciones={[
+      { etiqueta: "Editar", alElegir: () => router.push(`/salidas/${salidaId}/editar`) },
+      { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminar() },
+    ]} />;
 }

@@ -13,6 +13,7 @@ import {
 } from "@/components/navegacion/registro-de-salida";
 import { useRegistroDeSalida } from "@/hooks/use-registro-de-salida";
 import { Boton } from "@/components/ui/boton";
+import { BotonVolver } from "@/components/ui/boton-volver";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
@@ -103,9 +104,7 @@ export function PantallaDeMapaLibre() {
           Abrí la app una vez con conexión y los Caminos, las anotaciones y los
           mapas que bajes quedan guardados para usarlos sin señal.
         </p>
-        <Boton variante="secundario" anchoCompleto onClick={() => requestExit()}>
-          Volver al inicio
-        </Boton>
+        <BotonVolver alVolver={() => requestExit()} etiqueta="Volver al inicio" />
       </Tarjeta>
     );
   }

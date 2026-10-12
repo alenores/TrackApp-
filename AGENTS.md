@@ -148,7 +148,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   debe mostrar todos los Caminos, puntos y trazos. Esta ampliación fue decidida
   por Ale el 2026-10-05. Nunca divisiones ni
   etiquetas de sectores. Al hacer
-  clic o tocar una zona aparece su ficha breve con «Ver zona»; los sectores
+  clic o tocar una zona aparece su ficha breve, que se abre tocándola completa; los sectores
   quedan en el detalle de esa zona. Nombres e íconos aparecen gradualmente al
   acercarse y no se amontonan con poco zoom. Ver `docs/decisiones/029`.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
@@ -299,7 +299,9 @@ que es la única memoria que el navegador no puede borrar.
 - **El inicio avisa dos cosas distintas y no las mezcla:** los mapas que tenías
   y ya no están —eso es una pérdida, va con franja ámbar y arriba de todo— y los
   Circuitos que nunca tuvieron mapa, que son una tarea y van en tarjeta común.
-  El inicio es la lista de Circuitos (decisión 049).
+  El inicio abre Salidas con conexión. Sin señal muestra un aviso y accesos a
+  Circuitos y navegación libre. La lista de Circuitos conserva los avisos de
+  mapas perdidos y de Circuitos sin mapa (decisión 051).
 - **Sacar un mapa a propósito funciona sin señal; avisarle a la base, no.** El
   sacado queda anotado como pendiente en el celular y no se cuenta como perdido
   hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
@@ -441,6 +443,13 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
 
 ## Reutilización
 
+- **El menú va en el mismo orden en celular y PC:** Salidas, Circuitos,
+  Navegación libre, Mapas y Perfiles. Salidas es el inicio con conexión.
+- **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
+  agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
+  Editar y eliminar se muestran al abrir los tres puntos, nunca sueltos.
+- **La tarjeta que abre un detalle se toca entera.** «Abrir» va discreto abajo
+  a la derecha; no lleva un segundo botón «Ver».
 - **No se inventan componentes nuevos si ya hay uno que sirve.** Si hace falta uno
   nuevo, se agrega al conjunto compartido, no suelto en una pantalla.
 - **No se escriben colores, tamaños ni espaciados a mano.** Salen de las variables

@@ -2,7 +2,7 @@
 
 import { TarjetaDeZona } from "@/components/zonas/tarjeta-de-zona";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { Enlace } from "@/components/ui/enlace";
+import { BotonAgregar } from "@/components/ui/boton-agregar";
 import type { Zona } from "@/types/database";
 
 /**
@@ -32,17 +32,7 @@ export function ListaDeZonas({
         <h2 className="text-xl font-bold uppercase text-texto">Zonas</h2>
 
         {soyAdministrador ? (
-          <div className="flex items-center gap-2">
-            <Enlace
-              href="/zonas/dibujar"
-              aria-label="Nueva zona"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-borde bg-superficie text-texto transition-colors hover:bg-superficie-alta"
-            >
-              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </Enlace>
-            </div>
+          <BotonAgregar href="/zonas/dibujar" etiqueta="Nueva zona" />
         ) : null}
       </div>
 

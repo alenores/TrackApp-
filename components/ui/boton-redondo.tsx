@@ -22,6 +22,17 @@ const CLASES_POR_VARIANTE: Record<Variante, string> = {
   secundario: "border-borde-fuerte bg-superficie text-texto hover:bg-superficie-alta",
 };
 
+export function clasesDeBotonRedondo(variante: Variante = "secundario", className = ""): string {
+  return [
+    CLASE_DE_RESPUESTA_AL_TOQUE,
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-[var(--sombra-alta)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    CLASES_POR_VARIANTE[variante],
+    className,
+  ].filter(Boolean).join(" ");
+}
+
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   etiqueta: string;
   variante?: Variante;
@@ -51,16 +62,7 @@ export function BotonRedondo({
       aria-label={etiqueta}
       title={etiqueta}
       onPointerDown={alTocar}
-      className={[
-        CLASE_DE_RESPUESTA_AL_TOQUE,
-        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-[var(--sombra-alta)]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        CLASES_POR_VARIANTE[variante],
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={clasesDeBotonRedondo(variante, className)}
       {...props}
     >
       <svg

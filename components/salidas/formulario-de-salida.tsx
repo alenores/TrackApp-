@@ -6,6 +6,7 @@ import { borrarSalida } from "@/app/actions/salidas";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
 import { BotonVolver } from "@/components/ui/boton-volver";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { Campo } from "@/components/ui/campo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
@@ -48,8 +49,7 @@ import {
  * escriben: igual que en rutas, un número tipeado a mano se equivoca. Sin
  * archivo, se pueden escribir.
  *
- * Borrar la salida está acá, al editar, y pide confirmación. Nunca está a un
- * toque desde la lista.
+ * Borrar la salida aparece detrás de los tres puntos y pide confirmación.
  *
  * Si la señal se va mientras se completa, lo escrito queda en pantalla y los
  * botones de guardar y borrar se traban hasta que vuelva.
@@ -268,6 +268,9 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
         <h1 className="text-xl font-semibold text-texto">
           {esBorrador ? "Completar la salida" : editando ? "Editar la salida" : "Cargar una salida"}
         </h1>
+        {editando ? <MenuDeAcciones className="ml-auto" etiqueta="Opciones de la salida"
+          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado || !haySenal,
+            alElegir: () => void alBorrar() }]} /> : null}
       </div>
 
       <Tarjeta className="space-y-4">
@@ -507,16 +510,6 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
                 : "Guardar la salida"}
           </Boton>
         )}
-        {editando ? (
-          <Boton
-            anchoCompleto
-            variante="destructivo"
-            disabled={ocupado || !haySenal}
-            onClick={() => void alBorrar()}
-          >
-            {borrando ? "Borrando…" : "Borrar la salida"}
-          </Boton>
-        ) : null}
       </div>
     </div>
   );

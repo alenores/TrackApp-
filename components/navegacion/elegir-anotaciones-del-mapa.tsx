@@ -1,7 +1,7 @@
 "use client";
 
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
-import { Boton } from "@/components/ui/boton";
+import { BotonAgregar } from "@/components/ui/boton-agregar";
 import { CLASE_DE_TITULO_DE_SECCION } from "@/components/ui/opciones";
 import { RenglonConCasilla } from "@/components/navegacion/renglon-con-casilla";
 import type { FiltroDeAnotaciones } from "@/lib/anotaciones/filtro";
@@ -48,7 +48,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
       }
     >
       <div className="space-y-4">
-        {puedeAgregar ? <Boton anchoCompleto onClick={alAgregar}>Agregar una anotación</Boton> : null}
+        {puedeAgregar ? <BotonAgregar etiqueta="Agregar una anotación" alTocar={alAgregar} /> : null}
 
         <section className="space-y-2">
           <h3 className={CLASE_DE_TITULO_DE_SECCION}>Cuáles se ven en el mapa</h3>

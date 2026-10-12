@@ -4,6 +4,48 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-12 — Menú y acciones consistentes
+
+### Estado al inicio
+
+Salidas, Circuitos, Mapas y perfiles mostraban entradas y acciones con formas
+distintas. Circuitos era la pantalla de entrada, y varios detalles exigían
+tocar un botón «Ver» dentro de una tarjeta.
+
+### Lo que se hizo
+
+- Se puso Salidas al principio y se compartió el orden e ícono del menú en
+  celular y computadora.
+- La entrada local abre Salidas con conexión y, sin señal, deja accesos a
+  Circuitos y Navegación libre.
+- Se compartieron botones redondos de volver y agregar, el menú de tres puntos
+  y la indicación discreta de apertura de tarjetas. Se aplicaron a las
+  pantallas de Salidas, Circuitos, Mapas, Caminos, anotaciones y perfil.
+- Los botones para navegar un Circuito usan el ícono de Navegación libre.
+- Las eliminaciones conservan su confirmación y sus controles de permisos.
+- Se agregaron pruebas del orden del menú, de la entrada sin señal y de las
+  acciones ocultas hasta abrir los tres puntos.
+
+### Decisiones tomadas
+
+Salidas es el inicio cuando hay conexión. La entrada sigue disponible sin
+señal y muestra accesos directos a las navegaciones. Decisión 051.
+
+### Documentos actualizados
+
+Reglas de agentes, arquitectura, diseño exterior, glosario, decisión 051 y
+este registro.
+
+### Deuda o inconsistencias detectadas
+
+Queda por comprobar la interfaz con sesión iniciada en modo sol y noche, y
+probar las dos navegaciones en un celular real con modo avión. Los avisos de
+mapas perdidos siguen en Circuitos mientras Salidas encabeza el menú.
+
+### Pendientes para la próxima
+
+Revisión visual con la cuenta del dueño y prueba real en el celular.
+
 ## Sesión 2026-10-11 — Activación de Google para TrackApp
 
 ### Estado al inicio

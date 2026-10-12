@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { PUNTOS_MINIMOS_DE_UN_TRAZO, type useAnotaciones } from "@/hooks/use-anotaciones";
@@ -47,6 +48,9 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
     <Tarjeta className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-texto">{titulo}</h2>
+        {seleccionado ? <MenuDeAcciones className="ml-auto" etiqueta={`Opciones del ${nombre}`}
+          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: anotar.guardando || !anotar.haySenal,
+            alElegir: () => void alBorrar() }]} /> : null}
         <Boton variante="secundario" disabled={anotar.guardando} onClick={anotar.cerrar}>
           Cerrar
         </Boton>
@@ -149,11 +153,6 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
           <Boton type="submit" anchoCompleto disabled={!anotar.puedeGuardar || anotar.guardando}>
             {anotar.guardando ? "Guardando…" : `Guardar el ${nombre}`}
           </Boton>
-          {seleccionado ? (
-            <Boton variante="destructivo" anchoCompleto onClick={() => void alBorrar()}>
-              {`Borrar el ${nombre}`}
-            </Boton>
-          ) : null}
         </fieldset>
       </form>
     </Tarjeta>

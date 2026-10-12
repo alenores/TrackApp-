@@ -7,8 +7,8 @@ import {
 } from "react";
 import { editarPerfil } from "@/app/actions/perfil";
 import { Boton } from "@/components/ui/boton";
-import { CLASE_DEL_CIRCULO } from "@/components/ui/flecha-redonda";
-import { CruzRedonda } from "@/components/ui/cruz-redonda";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { Campo } from "@/components/ui/campo";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
@@ -17,8 +17,6 @@ import { PortadaDePerfil } from "@/components/perfil/portada-de-perfil";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
-import { vibrarAlTocar } from "@/lib/vibracion";
-import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 type PerfilFormProps = {
   initialNombre: string;
@@ -38,51 +36,6 @@ const OPCIONES_DE_ACTIVIDAD: Opcion<ActividadRuta>[] = ACTIVIDADES_RUTA.map((tip
 const PROFILE_FIELD_CLASS =
   "border-borde bg-superficie text-texto placeholder:text-texto-suave/50";
 
-
-function PencilIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
-      <path
-        d="M4 20h4l10.5-10.5a1.4 1.4 0 0 0 0-2L16.5 5.5a1.4 1.4 0 0 0-2 0L4 16v4Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m13.5 6.5 4 4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CircleIconButton({
-  ariaLabel,
-  onClick,
-  children,
-}: {
-  ariaLabel: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  const handlePointerDown = () => {
-    vibrarAlTocar();
-  };
-
-  return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      onClick={onClick}
-      onPointerDown={handlePointerDown}
-      className={[CLASE_DE_RESPUESTA_AL_TOQUE, "mt-0.5 shrink-0"].join(" ")}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function FormularioDePerfil({
   initialNombre,
@@ -184,17 +137,13 @@ export function FormularioDePerfil({
         avatarUrl={avatarUrl}
         nombre={viewNombre}
         actividades={actividades}
-        accion={
-          <CircleIconButton
-            ariaLabel={editing ? "Cerrar edición" : "Editar perfil"}
-            onClick={editing ? cancelEditing : startEditing}
-          >
-            <span className={CLASE_DEL_CIRCULO}>
-              {editing ? <CruzRedonda /> : <PencilIcon />}
-            </span>
-          </CircleIconButton>
-        }
       />
+      <div className="absolute right-3 top-3 z-20">
+        {editing ? <BotonRedondo etiqueta="Cerrar edición" onClick={cancelEditing}>
+          <path d="M6 6l12 12M18 6 6 18" />
+        </BotonRedondo> : <MenuDeAcciones etiqueta="Opciones del perfil"
+          acciones={[{ etiqueta: "Editar", alElegir: startEditing }]} />}
+      </div>
 
       {/* Formulario de edición */}
       <div className="px-4 sm:px-5">

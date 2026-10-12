@@ -8,10 +8,12 @@
 > las correcciones de sus Caminos se aplican en orden usando la historia de
 > geometrías de la base. La puesta al día prepara la línea y el resumen antes
 > de salir; navegar no pide datos a internet. **Rutas se retiró el
-> 2026-10-08** (decisión 049): el inicio es la lista de Circuitos y la
+> 2026-10-08** (decisión 049): Circuitos tiene su propia lista y la
 > navegación del Circuito registra la Salida, anota y prende otros Circuitos.
 > Caminos y partes propias de Circuitos guardan alturas medidas con el relieve
 > al guardar; largo y desnivel del Circuito se calculan con lo vigente.
+> Desde 2026-10-12, la entrada abre Salidas con conexión; sin señal conserva
+> una pantalla local con acceso a Circuitos y navegación libre (decisión 051).
 >
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores
 > solo organizan la cobertura y descarga de mapas. Los Caminos y Circuitos no
