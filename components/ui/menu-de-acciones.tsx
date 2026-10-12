@@ -34,21 +34,23 @@ export function MenuDeAcciones({ etiqueta = "Opciones", acciones, className = ""
     return () => document.removeEventListener("pointerdown", alTocarAfuera);
   }, [abierto, cerrar]);
 
-  return <div ref={contenedor} className={`relative inline-flex ${className}`} onClick={(evento) => evento.stopPropagation()}>
-    <BotonRedondo etiqueta={etiqueta} aria-expanded={abierto} aria-controls={id}
-      className={sobreFoto ? "border-borde-fuerte bg-sobre-foto-degrade/80 text-sobre-foto-texto" : ""}
-      onClick={() => setAbierto((valor) => !valor)}>
-      <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none" />
-    </BotonRedondo>
-    {abierto ? <div id={id} role="menu" aria-label={etiqueta}
-      className="absolute right-0 top-11 z-20 min-w-36 space-y-1 rounded-xl border border-borde bg-superficie p-1 shadow-[var(--sombra-alta)]">
-      {acciones.map((accion) => <Boton key={accion.etiqueta} role="menuitem" anchoCompleto
-        variante={accion.destructiva ? "destructivo" : "fantasma"} disabled={accion.deshabilitada}
-        className="justify-start" onClick={() => { cerrar(); accion.alElegir(); }}>
-        {accion.etiqueta}
-      </Boton>)}
-    </div> : null}
+  return <div ref={contenedor} className={`inline-flex ${className}`} onClick={(evento) => evento.stopPropagation()}>
+    <div className="relative">
+      <BotonRedondo etiqueta={etiqueta} aria-expanded={abierto} aria-controls={id}
+        className={sobreFoto ? "border-borde-fuerte bg-sobre-foto-degrade/80 text-sobre-foto-texto" : ""}
+        onClick={() => setAbierto((valor) => !valor)}>
+        <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none" />
+      </BotonRedondo>
+      {abierto ? <div id={id} role="menu" aria-label={etiqueta}
+        className="absolute right-0 top-11 z-20 min-w-36 space-y-1 rounded-xl border border-borde bg-superficie p-1 shadow-[var(--sombra-alta)]">
+        {acciones.map((accion) => <Boton key={accion.etiqueta} role="menuitem" anchoCompleto
+          variante={accion.destructiva ? "destructivo" : "fantasma"} disabled={accion.deshabilitada}
+          className="justify-start" onClick={() => { cerrar(); accion.alElegir(); }}>
+          {accion.etiqueta}
+        </Boton>)}
+      </div> : null}
+    </div>
   </div>;
 }

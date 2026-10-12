@@ -29,4 +29,21 @@ describe("menú de acciones", () => {
       await act(async () => raiz.unmount());
     }
   });
+
+  it("respeta la esquina que pide la tarjeta", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(
+        <MenuDeAcciones className="absolute right-3 top-3 z-10" acciones={[{ etiqueta: "Editar", alElegir: () => {} }]} />,
+      ));
+      const colocado = contenedor.firstElementChild as HTMLElement;
+      expect(colocado.className).toContain("absolute");
+      expect(colocado.className).toContain("right-3");
+      expect(colocado.className).toContain("top-3");
+      expect(colocado.className.split(/\s+/)).not.toContain("relative");
+    } finally {
+      await act(async () => raiz.unmount());
+    }
+  });
 });
