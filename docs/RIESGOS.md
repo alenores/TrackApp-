@@ -22,6 +22,13 @@ offline. Sigue sin confirmación de Google la interpretación contractual de usa
 su mapa de consulta dentro de una app que también tiene otro proveedor en otras
 pantallas. Ver decisión 050.
 
+El 2026-10-12 se reprodujo en producción que, al acercar mucho el mapa, Google
+dejaba de informar créditos y la app cambiaba de inmediato al satelital propio
+con un cartel grande. Se preparó un límite dinámico según el detalle que Google
+informa para cada área, con retroceso al último nivel acreditado si el usuario
+ya lo superó. La prueba automática cubre el cálculo y la recuperación. Falta
+comprobar el cambio publicado en el celular, en zonas con distintos límites.
+
 ---
 
 > Última revisión: 2026-09-21 (la versión nueva rompía la pantalla abierta)

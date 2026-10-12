@@ -1974,3 +1974,41 @@ La lógica actual de Caminos mueve automáticamente su límite final a la punta 
 ### Pendientes para la próxima
 
 Guardar la ubicación elegida para el final del Circuito e integrarla con la corrección de Caminos al implementar Circuitos.
+
+## Sesión 2026-10-12 — Detalle de Google al acercar el mapa
+
+### Estado al inicio
+
+En producción, la consulta satelital cambiaba al fondo propio y mostraba un
+cartel amarillo al acercarse mucho. Se reprodujo en el mapa general. El código
+trataba la falta de créditos a ese nivel como una falla definitiva de Google.
+
+### Lo que se hizo
+
+- Se agregó un registro del nivel y de los límites de detalle que Google envía
+  cuando omite los créditos.
+- Se hizo que el mapa use el detalle máximo informado para el centro visible y
+  frene el acercamiento allí. Si el pedido ya superó ese límite, busca el último
+  nivel con imagen y créditos y mantiene Google.
+- Se demora la reacción a una imagen fallida para permitir ese retroceso.
+- Se agregaron pruebas del cálculo del límite, del retroceso y de la respuesta
+  del servidor.
+
+### Decisiones tomadas
+
+Ale eligió detenerse en el último detalle real disponible, sin agrandar una
+imagen borrosa. Ver decisión 050.
+
+### Documentos actualizados
+
+Decisión 050, riesgos y este registro.
+
+### Deuda o inconsistencias detectadas
+
+La disponibilidad exacta de imagen cambia según el lugar y la respuesta de
+Google. La prueba local no dispone de la clave de producción.
+
+### Pendientes para la próxima
+
+Comprobar el comportamiento publicado en el celular con acercamientos repetidos
+y con un cambio de lugar que tenga otro límite de detalle.

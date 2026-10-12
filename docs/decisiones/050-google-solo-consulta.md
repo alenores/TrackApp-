@@ -22,6 +22,14 @@ el satelital propio cuando no. En el mapa de Google aparecen su logotipo
 oficial sin modificar, el crédito que devuelve Google para el área visible y
 una etiqueta que distingue la imagen de Google de los datos de TrackApp.
 
+El 2026-10-12 Ale eligió detener el acercamiento en el último nivel con imagen
+real disponible para el lugar, sin agrandar una imagen borrosa. La consulta de
+créditos de Google también informa los límites de detalle por área. El mapa usa
+ese dato para frenar el acercamiento. Si ya llegó demasiado lejos y Google deja
+de informar créditos, retrocede hasta un nivel con imagen y créditos válidos;
+eso no obliga a cambiar al satelital propio. Una falla real de Google conserva
+el aviso y el fondo alternativo.
+
 ## Activación
 
 El 2026-10-11 se creó un proyecto Google Cloud exclusivo para TrackApp y se
@@ -45,6 +53,7 @@ evita usar su imagen para crear datos, pero no resuelve por sí sola esa duda.
 - [API oficial de imágenes satelitales](https://developers.google.com/maps/documentation/tile/satellite)
 - [Sesiones temporales](https://developers.google.com/maps/documentation/tile/session_tokens)
 - [Créditos por área visible y política de guardado](https://developers.google.com/maps/documentation/tile/policies)
+- [Detalle máximo por área visible](https://developers.google.com/maps/documentation/tile/2d-tiles-overview)
 - [Condiciones de Google Maps Platform](https://cloud.google.com/maps-platform/terms)
 
 ## Auditoría de fuentes
@@ -61,4 +70,5 @@ evita usar su imagen para crear datos, pero no resuelve por sí sola esa duda.
 ### Pendiente de verificación
 
 - Consumo efectivo y navegación en modo avión en un celular.
+- Comprobación en producción del límite de acercamiento por zona.
 - Interpretación contractual de Google sobre los dos proveedores en la misma app.

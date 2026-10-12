@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
 import {
   claveDeGoogle, comprobarAccesoAGoogle, motivoDeGoogle, respuestaDeGoogle,
   sesionValida, SIN_GUARDAR_GOOGLE, sinClaveDeGoogle,
@@ -37,9 +38,20 @@ export async function GET(pedido: Request) {
       console.error("Google rechazó los créditos del mapa", { estado: respuesta.status, area: numeros, motivo });
       return respuestaDeGoogle(`Google rechazó los créditos de la imagen (${respuesta.status}): ${motivo}. Cambiá al mapa Satelital.`, 502);
     }
-    const datos = await respuesta.json() as { copyright?: string };
-    if (!datos.copyright) return respuestaDeGoogle("Google no informó los créditos obligatorios de la imagen. Cambiá al mapa Satelital.", 502);
-    return NextResponse.json({ derechos: datos.copyright }, { headers: { "Cache-Control": SIN_GUARDAR_GOOGLE } });
+    const datos = await respuesta.json() as { copyright?: string; maxZoomRects?: AreaConDetalleDeGoogle[] };
+    if (!datos.copyright) {
+      console.error("Google respondió sin créditos para la imagen", {
+        zoom: numeros.zoom,
+        campos: Object.keys(datos),
+        nivelesDisponibles: Array.isArray(datos.maxZoomRects)
+          ? datos.maxZoomRects.map((rectangulo) => rectangulo.maxZoom).filter(Number.isFinite).slice(0, 100)
+          : [],
+      });
+    }
+    return NextResponse.json({
+      derechos: datos.copyright || null,
+      areasConDetalle: Array.isArray(datos.maxZoomRects) ? datos.maxZoomRects : [],
+    }, { headers: { "Cache-Control": SIN_GUARDAR_GOOGLE } });
   } catch (error) {
     return respuestaDeGoogle(`No se pudieron traer los créditos de Google: ${motivoDeGoogle(error)}. Cambiá al mapa Satelital.`, 502);
   }
