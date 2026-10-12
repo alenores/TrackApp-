@@ -255,9 +255,11 @@ export function NumerosDeSalida({ salida }: { salida: Salida }) {
 export function BotonDeOpcionesDeSalida({
   salidaId,
   sobreFoto,
+  soloLosPuntos = false,
 }: {
   salidaId: number;
   sobreFoto: boolean;
+  soloLosPuntos?: boolean;
 }) {
   const router = useRouter();
   const { confirmar, avisar } = useDialogos();
@@ -276,7 +278,7 @@ export function BotonDeOpcionesDeSalida({
         mensaje: `${error instanceof Error ? error.message : String(error)}. Probá de nuevo con señal.` });
     }
   };
-  return <MenuDeAcciones etiqueta="Opciones de la salida" sobreFoto={sobreFoto}
+  return <MenuDeAcciones etiqueta="Opciones de la salida" sobreFoto={sobreFoto} soloLosPuntos={soloLosPuntos}
     acciones={[
       { etiqueta: "Editar", alElegir: () => router.push(`/salidas/${salidaId}/editar`) },
       { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminar() },

@@ -15,20 +15,22 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
  * de pantalla y lo que aparece al dejar el mouse encima.
  */
 
-type Variante = "principal" | "secundario";
+type Variante = "principal" | "secundario" | "soloPuntos";
 
-const CLASES_POR_VARIANTE: Record<Variante, string> = {
+const CLASES_POR_VARIANTE: Record<Exclude<Variante, "soloPuntos">, string> = {
   principal: "border-acento-borde bg-acento text-acento-texto hover:bg-acento-hover",
   secundario: "border-borde-fuerte bg-superficie text-texto hover:bg-superficie-alta",
 };
 
 export function clasesDeBotonRedondo(variante: Variante = "secundario", className = ""): string {
+  const soloPuntos = variante === "soloPuntos";
   return [
     CLASE_DE_RESPUESTA_AL_TOQUE,
-    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-[var(--sombra-alta)]",
+    "flex h-10 w-10 shrink-0 items-center justify-center",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
     "disabled:cursor-not-allowed disabled:opacity-50",
-    CLASES_POR_VARIANTE[variante],
+    soloPuntos ? "bg-transparent" : "rounded-full border shadow-[var(--sombra-alta)]",
+    soloPuntos ? "" : CLASES_POR_VARIANTE[variante],
     className,
   ].filter(Boolean).join(" ");
 }

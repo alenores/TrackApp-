@@ -46,4 +46,23 @@ describe("menú de acciones", () => {
       await act(async () => raiz.unmount());
     }
   });
+
+  it("en la tarjeta muestra tres puntos verticales y ningún círculo", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(
+        <MenuDeAcciones soloLosPuntos acciones={[{ etiqueta: "Editar", alElegir: () => {} }]} />,
+      ));
+      const boton = contenedor.querySelector("button") as HTMLButtonElement;
+      expect(boton.className).not.toContain("rounded-full");
+      expect(boton.className).not.toContain("border");
+      const puntos = [...contenedor.querySelectorAll("circle")];
+      expect(puntos).toHaveLength(3);
+      expect(new Set(puntos.map((punto) => punto.getAttribute("cx"))).size).toBe(1);
+      expect(new Set(puntos.map((punto) => punto.getAttribute("cy"))).size).toBe(3);
+    } finally {
+      await act(async () => raiz.unmount());
+    }
+  });
 });
