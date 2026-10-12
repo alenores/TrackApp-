@@ -70,5 +70,6 @@ evita usar su imagen para crear datos, pero no resuelve por sí sola esa duda.
 ### Pendiente de verificación
 
 - Consumo efectivo y navegación en modo avión en un celular.
-- Comprobación en producción del límite de acercamiento por zona.
+- Prueba del límite de acercamiento en un celular físico; en producción se
+  comprobó en navegador de escritorio y con ancho de celular.
 - Interpretación contractual de Google sobre los dos proveedores en la misma app.
