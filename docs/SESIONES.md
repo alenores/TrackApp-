@@ -1993,6 +1993,9 @@ trataba la falta de créditos a ese nivel como una falla definitiva de Google.
 - Se demora la reacción a una imagen fallida para permitir ese retroceso.
 - Se agregaron pruebas del cálculo del límite, del retroceso y de la respuesta
   del servidor.
+- Se publicó en producción y se repitió el acercamiento hasta el tope en el
+  mapa general, también con el navegador en ancho de celular. Google permaneció
+  visible con sus créditos y sin el cartel amarillo.
 
 ### Decisiones tomadas
 
@@ -2006,9 +2009,10 @@ Decisión 050, riesgos y este registro.
 ### Deuda o inconsistencias detectadas
 
 La disponibilidad exacta de imagen cambia según el lugar y la respuesta de
-Google. La prueba local no dispone de la clave de producción.
+Google. En la zona probada, la imagen del último nivel es suave; la app no puede
+crear detalle que Google no entregue.
 
 ### Pendientes para la próxima
 
-Comprobar el comportamiento publicado en el celular con acercamientos repetidos
-y con un cambio de lugar que tenga otro límite de detalle.
+Comprobarlo en un celular físico y en otro lugar que tenga un límite de detalle
+distinto.

@@ -26,8 +26,11 @@ El 2026-10-12 se reprodujo en producción que, al acercar mucho el mapa, Google
 dejaba de informar créditos y la app cambiaba de inmediato al satelital propio
 con un cartel grande. Se preparó un límite dinámico según el detalle que Google
 informa para cada área, con retroceso al último nivel acreditado si el usuario
-ya lo superó. La prueba automática cubre el cálculo y la recuperación. Falta
-comprobar el cambio publicado en el celular, en zonas con distintos límites.
+ya lo superó. La prueba automática cubre el cálculo y la recuperación. En
+producción se repitió el acercamiento hasta el tope: Google permaneció visible,
+sin cartel, también con la pantalla en ancho de celular. La última imagen de
+esa zona es suave por la resolución que entrega Google. Falta probarlo en un
+celular físico y en zonas con distintos límites.
 
 ---
 
