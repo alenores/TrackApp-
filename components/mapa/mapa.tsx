@@ -26,6 +26,7 @@ import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
+import { detalleConCreditosDeGoogle } from "@/lib/mapas/google-acercamiento";
 import {
   ALTURAS,
   CAPAS_DE_RELIEVE,
@@ -613,7 +614,7 @@ export function Mapa({
       const ancho = limites.getEast() - limites.getWest();
       const consulta = new URLSearchParams({
         sesion: sesionGoogleActiva,
-        zoom: String(Math.max(0, Math.min(22, Math.round(mapa.getZoom())))),
+        zoom: String(Math.max(0, Math.min(22, Math.floor(mapa.getZoom())))),
         north: String(Math.min(89.999, limites.getNorth())),
         south: String(Math.max(-89.999, limites.getSouth())),
         west: String(ancho >= 360 ? -179.999 : normalizar(limites.getWest())),
@@ -621,8 +622,12 @@ export function Mapa({
       });
       void (async () => {
         try {
-          const derechos = await traerCreditosDeGoogle(consulta);
-          if (activo && actual === pedido) setCreditosGoogle(derechos);
+          const detalle = await detalleConCreditosDeGoogle(
+            consulta, mapa.getCenter(), traerCreditosDeGoogle, () => activo && actual === pedido,
+          );
+          if (!detalle) return;
+          setCreditosGoogle(detalle.derechos);
+          if (mapa.getMaxZoom() !== detalle.maximo) mapa.setMaxZoom(detalle.maximo);
         } catch (error) {
           if (activo && actual === pedido) {
             setTipoDeFondo("satelital");
@@ -633,12 +638,17 @@ export function Mapa({
     };
     mapa.on("moveend", actualizar);
     cuandoEsteListo(actualizar);
-    return () => { activo = false; mapa.off("moveend", actualizar); };
+    return () => {
+      activo = false;
+      mapa.off("moveend", actualizar);
+      mapa.setMaxZoom(22);
+    };
   }, [sesionGoogleActiva, tipoDeFondo]);
 
   // Armado del mapa. Una sola vez.
   useEffect(() => {
     if (!contenedorRef.current || mapaRef.current) return;
+    let esperaDeImagenGoogle: ReturnType<typeof setTimeout> | null = null;
 
     // Antes que nada, las dos cosas sin las cuales el mapa no dibuja nada:
     // decirle dónde está la parte de su motor que procesa los datos, y
@@ -999,8 +1009,18 @@ export function Mapa({
       const motivo = evento?.error?.message;
       if (motivo) {
         if (tipoDeFondoRef.current === "google") {
-          setTipoDeFondo("satelital");
-          setFalloGoogle(`Google no entregó la imagen: ${motivo}. Usá el mapa Satelital.`);
+          // Una tesela demasiado cercana puede fallar antes de que llegue el
+          // nivel máximo del área. Esperamos a que el mapa vuelva a ese nivel.
+          if (!esperaDeImagenGoogle) {
+            const nivelFallido = mapa.getZoom();
+            esperaDeImagenGoogle = setTimeout(() => {
+              esperaDeImagenGoogle = null;
+              if (tipoDeFondoRef.current === "google" && mapa.getZoom() >= nivelFallido - 0.01) {
+                setTipoDeFondo("satelital");
+                setFalloGoogle(`Google no entregó la imagen: ${motivo}. Usá el mapa Satelital.`);
+              }
+            }, 5_000);
+          }
         } else setAvisoDelFondo(motivo);
       }
     });
@@ -1008,6 +1028,7 @@ export function Mapa({
     mapaRef.current = mapa;
 
     return () => {
+      if (esperaDeImagenGoogle) clearTimeout(esperaDeImagenGoogle);
       listoRef.current = false;
       esperandoRef.current = [];
       mapa.remove();

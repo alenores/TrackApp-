@@ -68,7 +68,10 @@ describe("el puente del mapa Google", () => {
 
   it("pide los créditos con el nombre de sesión que exige Google", async () => {
     autenticacion.claims = true;
-    const pedir = vi.fn().mockResolvedValue(new Response(JSON.stringify({ copyright: "© Google" }), {
+    const pedir = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      copyright: "© Google",
+      maxZoomRects: [{ maxZoom: 18, north: -29, south: -35, east: -60, west: -67 }],
+    }), {
       headers: { "content-type": "application/json" },
     }));
     vi.stubGlobal("fetch", pedir);
@@ -76,10 +79,28 @@ describe("el puente del mapa Google", () => {
       `https://track.app/api/mapa-google/atribucion?sesion=${SESION}&north=-29&south=-35&east=-60&west=-67&zoom=6`,
     ));
     expect(respuesta.status).toBe(200);
-    expect(await respuesta.json()).toEqual({ derechos: "© Google" });
+    expect(await respuesta.json()).toEqual({
+      derechos: "© Google",
+      areasConDetalle: [{ maxZoom: 18, north: -29, south: -35, east: -60, west: -67 }],
+    });
     const direccionDeGoogle = new URL(pedir.mock.calls[0][0]);
     expect(direccionDeGoogle.searchParams.get("session")).toBe(SESION);
     expect(direccionDeGoogle.searchParams.has("sesion")).toBe(false);
+  });
+
+  it("informa la ausencia de créditos para que el mapa busque un nivel anterior", async () => {
+    autenticacion.claims = true;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      maxZoomRects: [{ maxZoom: 17, north: -29, south: -35, east: -60, west: -67 }],
+    }))));
+    const respuesta = await traerAtribucion(new Request(
+      `https://track.app/api/mapa-google/atribucion?sesion=${SESION}&north=-29&south=-35&east=-60&west=-67&zoom=18`,
+    ));
+    expect(respuesta.status).toBe(200);
+    expect(await respuesta.json()).toEqual({
+      derechos: null,
+      areasConDetalle: [{ maxZoom: 17, north: -29, south: -35, east: -60, west: -67 }],
+    });
   });
 
   it("acepta solo el formato esperado de una sesión", () => {
