@@ -105,6 +105,10 @@ function ponerElFondo(
       if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
     }
 
+    // La sesión agrega esta fuente después de armar el mapa. Mientras tanto
+    // no hay fondo que dibujar: intentar agregar la capa genera un error falso.
+    if (tipo === "google" && !mapa.getSource(FUENTE_GOOGLE)) return null;
+
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
     for (const capa of capasDelFondo(modo, tipo, conCurvas)) mapa.addLayer(capa, debajoDe);
@@ -1959,14 +1963,10 @@ export function Mapa({
         Satelital (solo los que hay: sin ninguno bajado no aparece) con el
         círculo de las curvas al lado, y debajo el cartel de que falta mapa.
       */}
-      {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
+      {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
-            {consultaGoogle ? (
-              <span className="pointer-events-auto flex h-7 items-center rounded-full border border-borde-fuerte bg-superficie px-3 text-xs font-semibold text-texto shadow-[var(--sombra-alta)]">
-                {tipoDeFondo === "google" ? "Imagen: Google · datos: TrackApp" : "Consulta · Satelital"}
-              </span>
-            ) : opcionesDeFondo.length > 0 ? (
+            {!consultaGoogle && opcionesDeFondo.length > 0 ? (
               <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
                 {(
                   [
@@ -2049,13 +2049,13 @@ export function Mapa({
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
       {tipoDeFondo === "google" ? (
-        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-3 text-xs leading-4 text-texto-suave">
-          <span className="rounded bg-superficie px-3 pb-2 pt-3">
+        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-1 text-credito-google text-texto-suave">
+          <span className="rounded bg-superficie px-1 py-0.5">
             {/* Los dos archivos son los logotipos oficiales, sin modificaciones. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-4 w-auto" />
+            <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-3 w-auto" />
           </span>
-          <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
+          <span className="rounded bg-superficie px-1 py-0.5 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
         </div>
       ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
