@@ -19,7 +19,14 @@ describe("detalle disponible en Google", () => {
     const area = { maxZoom: 18, north: 10, south: -10, west: 170, east: -170 };
     expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 179 })).toBe(18);
     expect(maximoDetalleDeGoogle([area], { lat: 0, lng: -179 })).toBe(18);
-    expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 0 })).toBeNull();
+    expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 0 })).toBe(18);
+  });
+
+  it("conserva el mayor nivel informado si los rectángulos no cubren exactamente el centro", () => {
+    expect(maximoDetalleDeGoogle([
+      { maxZoom: 19, north: -30, south: -31, east: -64, west: -65 },
+      { maxZoom: 20, north: -31, south: -32, east: -65, west: -66 },
+    ], { lat: -32.1, lng: -64.5 })).toBe(20);
   });
 
   it("ignora niveles inválidos y no inventa un límite cuando falta la información", () => {

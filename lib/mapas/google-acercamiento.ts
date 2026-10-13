@@ -12,15 +12,16 @@ export type RespuestaDeDetalleDeGoogle = {
   areasConDetalle: AreaConDetalleDeGoogle[];
 };
 
-/** El mayor detalle informado para el centro visible, sin ampliar una imagen vieja. */
+/** El mayor detalle del centro; si no hay coincidencia, el mayor de la vista. */
 export function maximoDetalleDeGoogle(
   areas: AreaConDetalleDeGoogle[],
   posicion: { lat: number; lng: number },
 ): number | null {
   const longitud = ((posicion.lng + 180) % 360 + 360) % 360 - 180;
-  const niveles = areas
+  const validas = areas.filter((area) =>
+    Number.isInteger(area.maxZoom) && area.maxZoom >= 0 && area.maxZoom <= 22);
+  const niveles = validas
     .filter((area) =>
-      Number.isInteger(area.maxZoom) && area.maxZoom >= 0 && area.maxZoom <= 22 &&
       Number.isFinite(area.north) && Number.isFinite(area.south) &&
       Number.isFinite(area.east) && Number.isFinite(area.west) &&
       posicion.lat >= area.south && posicion.lat <= area.north &&
@@ -29,7 +30,8 @@ export function maximoDetalleDeGoogle(
         : longitud >= area.west || longitud <= area.east),
     )
     .map((area) => area.maxZoom);
-  return niveles.length ? Math.max(...niveles) : null;
+  if (niveles.length) return Math.max(...niveles);
+  return validas.length ? Math.max(...validas.map((area) => area.maxZoom)) : null;
 }
 
 /** Conserva el límite conocido si la respuesta nueva no informa otro. */
