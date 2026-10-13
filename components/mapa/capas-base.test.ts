@@ -60,18 +60,13 @@ function pilasDeLetras(): Set<string> {
 }
 
 describe("la receta del fondo", () => {
-  it("Google solo aparece en consulta con conexión y sesión; navegar conserva únicamente lo descargado", () => {
+  it("la consulta conserva Google aunque falte señal o sesión; navegar conserva solo lo descargado", () => {
     const datos = {
       enVivo: true,
       consultaGoogle: true,
-      haySenal: true,
-      sesionGoogle: true,
-      falloGoogle: false,
       fondosDescargados: ["dibujo", "satelital", "google"] as Array<"dibujo" | "satelital" | "google">,
     };
     expect(opcionesDelMapa(datos)).toEqual(["google"]);
-    expect(opcionesDelMapa({ ...datos, haySenal: false })).toEqual(["satelital"]);
-    expect(opcionesDelMapa({ ...datos, falloGoogle: true })).toEqual(["satelital"]);
     expect(opcionesDelMapa({ ...datos, enVivo: false })).toEqual(["dibujo", "satelital"]);
     expect(opcionesDelMapa({ ...datos, consultaGoogle: false })).toEqual(["dibujo", "satelital"]);
   });

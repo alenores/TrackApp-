@@ -468,7 +468,7 @@ export function Mapa({
    */
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno: el que eligió el usuario. */
-  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && fondoInicial === "dibujo" ? "google" : fondoInicial);
+  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && enVivo ? "google" : fondoInicial);
   const [sesionGoogle, setSesionGoogle] = useState<string | null>(null);
   const [googleNoConfigurado, setGoogleNoConfigurado] = useState(false);
   const [creditosGoogle, setCreditosGoogle] = useState<string | null>(null);
@@ -477,9 +477,16 @@ export function Mapa({
   const [falloGoogle, setFalloGoogle] = useState<string | null>(null);
   const sesionGoogleActiva = consultaGoogle && enVivo && haySenal ? sesionGoogle : null;
   const opcionesDeFondo = opcionesDelMapa({
-    enVivo, consultaGoogle, haySenal, sesionGoogle: Boolean(sesionGoogleActiva),
-    falloGoogle: Boolean(falloGoogle), fondosDescargados: fondosDisponibles ?? [],
+    enVivo, consultaGoogle, fondosDescargados: fondosDisponibles ?? [],
   });
+  const falloVisibleDeGoogle = consultaGoogle && enVivo
+    ? !haySenal
+      ? "Sin conexión no se puede mostrar Google. Volvé a abrir esta consulta cuando tengas señal."
+      : googleNoConfigurado
+        ? "Google no está configurado en la app. Revisá su configuración para mostrar este mapa."
+        : (falloGoogle ?? avisoDeImagenGoogle)
+    : null;
+  const preparandoGoogle = consultaGoogle && enVivo && haySenal && !sesionGoogle && !falloVisibleDeGoogle;
   /**
    * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
    * simple no hay botón: se ven siempre.
@@ -488,7 +495,7 @@ export function Mapa({
   /** El que se ve: el elegido si está bajado; si no, el que haya. */
   const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
     ? tipoElegido
-    : (consultaGoogle && tipoElegido === "google" && enVivo ? "satelital" : (opcionesDeFondo[0] ?? "dibujo"));
+    : (opcionesDeFondo[0] ?? "dibujo");
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -578,7 +585,8 @@ export function Mapa({
       } catch (error) {
         if (activo) {
           setSesionGoogle(null);
-          setFalloGoogle(error instanceof Error ? error.message : "Google no respondió. Usá el mapa Satelital.");
+          const motivo = error instanceof Error ? error.message : String(error);
+          setFalloGoogle(`No se pudo abrir Google: ${motivo}. Volvé a abrir esta pantalla para reintentar.`);
         }
       }
     })();
@@ -1028,7 +1036,8 @@ export function Mapa({
             esperaDeImagenGoogle = setTimeout(() => {
               esperaDeImagenGoogle = null;
               if (tipoDeFondoRef.current === "google" && mapa.getZoom() >= nivelFallido - 0.01) {
-                setAvisoDeImagenGoogle("Google no entregó la imagen de este nivel. Alejate un poco para verla.");
+                const motivoVisible = motivo.replace(/sesion=[^&\s)]+/g, "sesion=[oculta]");
+                setAvisoDeImagenGoogle(`Google no pudo mostrar este nivel: ${motivoVisible}. Alejate un poco o volvé a intentarlo.`);
               }
             }, 5_000);
           }
@@ -1919,9 +1928,13 @@ export function Mapa({
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           Armando el mapa…
         </p>
-      ) : falloGoogle ? (
+      ) : falloVisibleDeGoogle ? (
         <p role="alert" className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
-          {falloGoogle}
+          {falloVisibleDeGoogle}
+        </p>
+      ) : preparandoGoogle ? (
+        <p role="status" className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto">
+          Preparando el mapa de Google…
         </p>
       ) : avisoDelFondo ? (
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
@@ -2043,17 +2056,10 @@ export function Mapa({
             <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-4 w-auto" />
           </span>
           <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
-          {avisoDeImagenGoogle ? <span className="rounded bg-superficie px-1 text-texto">{avisoDeImagenGoogle}</span> : null}
         </div>
       ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
           {QUIEN_HIZO_LA_FOTO}
-        </p>
-      ) : null}
-
-      {consultaGoogle && haySenal && !sesionGoogle && !falloGoogle && !googleNoConfigurado ? (
-        <p role="status" className="pointer-events-none absolute bottom-6 left-2 rounded bg-superficie px-2 py-1 text-sm text-texto">
-          Preparando imagen de Google…
         </p>
       ) : null}
 
