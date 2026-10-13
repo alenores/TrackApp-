@@ -5,10 +5,10 @@ import type { Paquete } from "@/lib/offline/paquete";
 /**
  * Las pruebas del calentado de pantallas.
  *
- * **De esto depende que una zona exista en el cerro.** El motor offline guarda
- * las pantallas a medida que se visitan, y nadie entra a las catorce zonas
- * antes de salir. Si el calentado se saltea una, esa zona no existe sin señal y
- * el usuario se entera arriba.
+ * **De esto depende que un Circuito se pueda navegar en el cerro.** El motor
+ * offline guarda las pantallas a medida que se visitan, y nadie entra a cada
+ * navegación antes de salir. Si el calentado se saltea una, esa navegación no
+ * existe sin señal y el usuario se entera arriba.
  */
 
 const VACIO: Paquete = {
@@ -34,12 +34,12 @@ function direcciones(p: Paquete): string[] {
 
 describe("qué pantallas se dejan listas", () => {
   it("las de entrada y el mapa libre van siempre, aunque no haya nada cargado", () => {
-    expect(direcciones(VACIO)).toEqual(["/", "/zonas", "/circuitos", "/mapa-libre"]);
+    expect(direcciones(VACIO)).toEqual(["/", "/circuitos", "/mapa-libre"]);
   });
 
-  it("cada zona del paquete tiene la suya", () => {
-    expect(direcciones(paquete([3, 7]))).toContain("/zonas/3");
-    expect(direcciones(paquete([3, 7]))).toContain("/zonas/7");
+  it("Mapas es solo con conexión: ni sus pantallas ni las zonas quedan guardadas (decisión 052)", () => {
+    const cuales = direcciones(paquete([3, 7]));
+    expect(cuales.some((cada) => cada.startsWith("/zonas") || cada.startsWith("/mapas"))).toBe(false);
   });
 
   it("ya no deja listas pantallas de Rutas, que se retiró", () => {
@@ -72,13 +72,13 @@ describe("qué pantallas se dejan listas", () => {
     expect(cuales.some((cual) => /nueva|editar|perfil/.test(cual))).toBe(false);
   });
 
-  it("la navegación del Circuito va al depósito del cerro; las zonas, al de entrada", () => {
+  it("la navegación del Circuito va al depósito del cerro; la lista de Circuitos, al de entrada", () => {
     const pantallas = pantallasParaCalentar({ ...paquete([3]), circuitos: [{ id: 12, nombre: "Vuelta", actividad: "trekking" as const, actualizadoEn: "2026-10-08", rectangulo: null }] });
     const deposito = (direccion: string) =>
       pantallas.find((cada) => cada.direccion === direccion)?.deposito;
 
     expect(deposito("/circuitos/12/navegar")).toBe(deposito("/mapa-libre"));
-    expect(deposito("/zonas/3")).toBe(deposito("/zonas"));
-    expect(deposito("/zonas/3")).not.toBe(deposito("/circuitos/12/navegar"));
+    expect(deposito("/circuitos")).toBe(deposito("/"));
+    expect(deposito("/circuitos")).not.toBe(deposito("/circuitos/12/navegar"));
   });
 });

@@ -26,7 +26,7 @@ import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
-import { detalleConCreditosDeGoogle } from "@/lib/mapas/google-acercamiento";
+import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
 import {
   ALTURAS,
   CAPAS_DE_RELIEVE,
@@ -104,6 +104,10 @@ function ponerElFondo(
     for (const vieja of todasLasCapasDelFondo(modo)) {
       if (mapa.getLayer(vieja.id)) mapa.removeLayer(vieja.id);
     }
+
+    // La sesión agrega esta fuente después de armar el mapa. Mientras tanto
+    // no hay fondo que dibujar: intentar agregar la capa genera un error falso.
+    if (tipo === "google" && !mapa.getSource(FUENTE_GOOGLE)) return null;
 
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
@@ -198,6 +202,12 @@ type MapaProps = {
   principal?: boolean;
   /** Usa el doble de alto habitual en las vistas generales de territorio. */
   alturaExtendida?: boolean;
+  /**
+   * `true` para ocupar todo el lugar que le deja quien lo usa, como en la
+   * lista y mapa de Consultas y Marcas. Sigue teniendo sus botones y el ver
+   * en grande.
+   */
+  llenarElLugar?: boolean;
   /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
   controlesAdicionales?: ReactNode;
   /** Función para cerrar cuando está en pantalla completa externa (ej. navegación). */
@@ -354,6 +364,7 @@ export function Mapa({
   pantallaCompleta = false,
   principal = false,
   alturaExtendida = false,
+  llenarElLugar = false,
   controlesAdicionales = null,
   alCerrarPantallaCompleta,
   forzarCentradoEn,
@@ -468,16 +479,25 @@ export function Mapa({
    */
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno: el que eligió el usuario. */
-  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && fondoInicial === "dibujo" ? "google" : fondoInicial);
+  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && enVivo ? "google" : fondoInicial);
   const [sesionGoogle, setSesionGoogle] = useState<string | null>(null);
   const [googleNoConfigurado, setGoogleNoConfigurado] = useState(false);
   const [creditosGoogle, setCreditosGoogle] = useState<string | null>(null);
+  const [avisoDeCreditosGoogle, setAvisoDeCreditosGoogle] = useState<string | null>(null);
+  const [avisoDeImagenGoogle, setAvisoDeImagenGoogle] = useState<string | null>(null);
   const [falloGoogle, setFalloGoogle] = useState<string | null>(null);
   const sesionGoogleActiva = consultaGoogle && enVivo && haySenal ? sesionGoogle : null;
   const opcionesDeFondo = opcionesDelMapa({
-    enVivo, consultaGoogle, haySenal, sesionGoogle: Boolean(sesionGoogleActiva),
-    falloGoogle: Boolean(falloGoogle), fondosDescargados: fondosDisponibles ?? [],
+    enVivo, consultaGoogle, fondosDescargados: fondosDisponibles ?? [],
   });
+  const falloVisibleDeGoogle = consultaGoogle && enVivo
+    ? !haySenal
+      ? "Sin conexión no se puede mostrar Google. Volvé a abrir esta consulta cuando tengas señal."
+      : googleNoConfigurado
+        ? "Google no está configurado en la app. Revisá su configuración para mostrar este mapa."
+        : (falloGoogle ?? avisoDeImagenGoogle)
+    : null;
+  const preparandoGoogle = consultaGoogle && enVivo && haySenal && !sesionGoogle && !falloVisibleDeGoogle;
   /**
    * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
    * simple no hay botón: se ven siempre.
@@ -486,7 +506,7 @@ export function Mapa({
   /** El que se ve: el elegido si está bajado; si no, el que haya. */
   const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
     ? tipoElegido
-    : (consultaGoogle && tipoElegido === "google" && enVivo ? "satelital" : (opcionesDeFondo[0] ?? "dibujo"));
+    : (opcionesDeFondo[0] ?? "dibujo");
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -576,7 +596,8 @@ export function Mapa({
       } catch (error) {
         if (activo) {
           setSesionGoogle(null);
-          setFalloGoogle(error instanceof Error ? error.message : "Google no respondió. Usá el mapa Satelital.");
+          const motivo = error instanceof Error ? error.message : String(error);
+          setFalloGoogle(`No se pudo abrir Google: ${motivo}. Volvé a abrir esta pantalla para reintentar.`);
         }
       }
     })();
@@ -601,14 +622,20 @@ export function Mapa({
   }, [sesionGoogleActiva]);
 
   useEffect(() => {
-    if (!sesionGoogleActiva || tipoDeFondo !== "google") return;
     const mapa = mapaRef.current;
     if (!mapa) return;
+    if (!sesionGoogleActiva || tipoDeFondo !== "google") {
+      mapa.setMaxZoom(22);
+      return;
+    }
     let activo = true;
     let pedido = 0;
     const actualizar = () => {
       if (!listoRef.current) return;
       const actual = ++pedido;
+      setCreditosGoogle(null);
+      setAvisoDeCreditosGoogle(null);
+      setAvisoDeImagenGoogle(null);
       const limites = mapa.getBounds();
       const normalizar = (valor: number) => ((valor + 180) % 360 + 360) % 360 - 180;
       const ancho = limites.getEast() - limites.getWest();
@@ -624,14 +651,19 @@ export function Mapa({
         try {
           const detalle = await detalleConCreditosDeGoogle(
             consulta, mapa.getCenter(), traerCreditosDeGoogle, () => activo && actual === pedido,
+            (maximo) => {
+              // El límite llega con la primera respuesta, aunque los créditos
+              // requieran más pedidos. Nunca alejar por una respuesta tardía.
+              mapa.setMaxZoom(limiteDeGoogleSinRetroceso(mapa.getMaxZoom(), mapa.getZoom(), maximo));
+            },
           );
           if (!detalle) return;
-          setCreditosGoogle(detalle.derechos);
-          if (mapa.getMaxZoom() !== detalle.maximo) mapa.setMaxZoom(detalle.maximo);
+          if (detalle.derechos) setCreditosGoogle(detalle.derechos);
+          else setAvisoDeCreditosGoogle("Google no informó los créditos de esta vista. Mové el mapa para reintentar.");
         } catch (error) {
           if (activo && actual === pedido) {
-            setTipoDeFondo("satelital");
-            setFalloGoogle(error instanceof Error ? error.message : "Google no informó los créditos de la imagen. Usá el mapa Satelital.");
+            const motivo = error instanceof Error ? error.message : String(error);
+            setAvisoDeCreditosGoogle(`Google no pudo informar los créditos: ${motivo}. Mové el mapa para reintentar.`);
           }
         }
       })();
@@ -641,7 +673,6 @@ export function Mapa({
     return () => {
       activo = false;
       mapa.off("moveend", actualizar);
-      mapa.setMaxZoom(22);
     };
   }, [sesionGoogleActiva, tipoDeFondo]);
 
@@ -1016,8 +1047,8 @@ export function Mapa({
             esperaDeImagenGoogle = setTimeout(() => {
               esperaDeImagenGoogle = null;
               if (tipoDeFondoRef.current === "google" && mapa.getZoom() >= nivelFallido - 0.01) {
-                setTipoDeFondo("satelital");
-                setFalloGoogle(`Google no entregó la imagen: ${motivo}. Usá el mapa Satelital.`);
+                const motivoVisible = motivo.replace(/sesion=[^&\s)]+/g, "sesion=[oculta]");
+                setAvisoDeImagenGoogle(`Google no pudo mostrar este nivel: ${motivoVisible}. Alejate un poco o volvé a intentarlo.`);
               }
             }, 5_000);
           }
@@ -1876,6 +1907,8 @@ export function Mapa({
           ? "fixed inset-0 h-dvh w-screen"
           : pantallaCompleta
             ? "relative h-full w-full"
+            : llenarElLugar
+              ? "relative h-full min-h-0 w-full rounded-xl border border-borde"
             : principal
               ? alturaExtendida
                 ? "relative h-144 w-full rounded-xl border border-borde sm:h-192 lg:h-[calc(100vh-13rem)]"
@@ -1908,9 +1941,13 @@ export function Mapa({
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
           Armando el mapa…
         </p>
-      ) : falloGoogle ? (
+      ) : falloVisibleDeGoogle ? (
         <p role="alert" className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
-          {falloGoogle}
+          {falloVisibleDeGoogle}
+        </p>
+      ) : preparandoGoogle ? (
+        <p role="status" className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto">
+          Preparando el mapa de Google…
         </p>
       ) : avisoDelFondo ? (
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
@@ -1935,14 +1972,10 @@ export function Mapa({
         Satelital (solo los que hay: sin ninguno bajado no aparece) con el
         círculo de las curvas al lado, y debajo el cartel de que falta mapa.
       */}
-      {opcionesDeFondo.length > 0 || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
+      {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
-            {consultaGoogle ? (
-              <span className="pointer-events-auto flex h-7 items-center rounded-full border border-borde-fuerte bg-superficie px-3 text-xs font-semibold text-texto shadow-[var(--sombra-alta)]">
-                {tipoDeFondo === "google" ? "Imagen: Google · datos: TrackApp" : "Consulta · Satelital"}
-              </span>
-            ) : opcionesDeFondo.length > 0 ? (
+            {!consultaGoogle && opcionesDeFondo.length > 0 ? (
               <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
                 {(
                   [
@@ -2025,23 +2058,17 @@ export function Mapa({
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
       {tipoDeFondo === "google" ? (
-        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-3 text-xs leading-4 text-texto-suave">
-          <span className="rounded bg-superficie px-3 pb-2 pt-3">
+        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-1 text-credito-google text-texto-suave">
+          <span className="rounded bg-superficie px-1 py-0.5">
             {/* Los dos archivos son los logotipos oficiales, sin modificaciones. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-4 w-auto" />
+            <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-3 w-auto" />
           </span>
-          <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? "Cargando créditos de Google…"}</span>
+          <span className="rounded bg-superficie px-1 py-0.5 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
         </div>
       ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
           {QUIEN_HIZO_LA_FOTO}
-        </p>
-      ) : null}
-
-      {consultaGoogle && haySenal && !sesionGoogle && !falloGoogle && !googleNoConfigurado ? (
-        <p role="status" className="pointer-events-none absolute bottom-6 left-2 rounded bg-superficie px-2 py-1 text-sm text-texto">
-          Preparando imagen de Google…
         </p>
       ) : null}
 

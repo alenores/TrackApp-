@@ -45,7 +45,7 @@ export function fotosDeLasAnotaciones(anotaciones: Anotacion[]): string[] {
 
 function motivoDe(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
-  return "No se pudieron traer algunas fotos de las anotaciones.";
+  return "No se pudieron traer algunas fotos de las marcas.";
 }
 
 async function traerUna(direccion: string, senal: AbortSignal): Promise<FotoGuardada> {
@@ -53,13 +53,13 @@ async function traerUna(direccion: string, senal: AbortSignal): Promise<FotoGuar
 
   if (!respuesta.ok) {
     throw new Error(
-      `La foto de una anotación no se pudo bajar (respondió ${respuesta.status}).`,
+      `La foto de una marca no se pudo bajar (respondió ${respuesta.status}).`,
     );
   }
 
   const bytes = new Uint8Array(await respuesta.arrayBuffer());
   if (bytes.byteLength === 0) {
-    throw new Error("La foto de una anotación llegó vacía.");
+    throw new Error("La foto de una marca llegó vacía.");
   }
 
   return { direccion, bytes };
@@ -150,7 +150,7 @@ export async function bajarLasFotosDeLasAnotaciones({
       faltaron > 0
         ? primerFallo
           ? motivoDe(primerFallo)
-          : "Quedaron fotos de anotaciones sin bajar."
+          : "Quedaron fotos de marcas sin bajar."
         : null,
     direcciones: [...quedaron],
   };

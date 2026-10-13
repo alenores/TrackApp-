@@ -18,7 +18,7 @@ import { SIN_DATOS, type CircuitoGuardado, type DatosDelCircuito } from "@/lib/c
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
-import { mostrarActividad } from "@/lib/rutas/actividades";
+import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
 
@@ -132,15 +132,7 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
         <BotonVolver alVolver={alVolver} />
         <h1 className="text-2xl font-bold text-texto">{original ? "Editar Circuito" : "Nuevo Circuito"}</h1>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {original ? <Boton variante="secundario" disabled={ocupado}
-          onClick={() => { setRedibujando(true); setPuntos([]); setAviso(null); }}>Dibujar de nuevo</Boton> : null}
-        <Boton variante="secundario" disabled={ocupado || soloDatos || puntos.length === 0}
-          onClick={() => setPuntos((anteriores) => anteriores.slice(0, -1))}>Deshacer último punto</Boton>
-        <Boton disabled={ocupado || cargando} onClick={() => void guardar()}>Guardar Circuito</Boton>
-      </div>
     </div>
-    <p className="text-base text-texto-suave">Tocá el mapa para marcar los puntos del Circuito. Si dos puntos quedan sobre un mismo Camino, la línea sigue ese Camino.</p>
     {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
     {soloDatos ? <Tarjeta franja="ambar"><p className="text-base text-texto">El dibujo actualizado tiene un final separado o usa un Camino retirado. Podés cambiar el nombre, la actividad y los datos sin alterar la línea. Para cambiar el dibujo, tocá «Dibujar de nuevo».</p></Tarjeta> : null}
     <Tarjeta className="space-y-3">
@@ -148,29 +140,32 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
         <input value={nombre} maxLength={120} onChange={(evento) => setNombre(evento.target.value)}
           className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-base text-texto" />
       </label>
-      <div><p className="mb-2 text-base font-semibold text-texto">Actividad del Circuito</p>
-        <div className="flex flex-wrap gap-2">{ACTIVIDADES_RUTA.map((opcion) =>
-          <Boton key={opcion} variante={actividad === opcion ? "principal" : "secundario"}
-            aria-pressed={actividad === opcion} onClick={() => { setActividad(opcion); setVisibles((actuales) =>
-              actuales.includes(opcion) ? actuales : [...actuales, opcion]); }}>{mostrarActividad(opcion).etiqueta}</Boton>)}</div>
-      </div>
-      <div><p className="mb-2 text-base font-semibold text-texto">Mostrar Caminos de estas actividades</p>
-        <div className="flex flex-wrap gap-2">{ACTIVIDADES_RUTA.map((opcion) =>
-          <Boton key={opcion} variante={visibles.includes(opcion) ? "principal" : "secundario"}
-            aria-pressed={visibles.includes(opcion)} onClick={() => setVisibles((actuales) =>
-              actuales.includes(opcion) ? (actuales.length > 1 ? actuales.filter((cada) => cada !== opcion) : actuales)
-                : [...actuales, opcion])}>{mostrarActividad(opcion).etiqueta}</Boton>)}</div>
-      </div>
+      <ElegirActividades etiqueta="Actividad del Circuito" elegidas={[actividad]}
+        alTocar={(opcion) => { setActividad(opcion); setVisibles((actuales) =>
+          actuales.includes(opcion) ? actuales : [...actuales, opcion]); }} />
+      <ElegirActividades modo="varias" etiqueta="Mostrar Caminos de estas actividades" elegidas={visibles}
+        alTocar={(opcion) => setVisibles((actuales) =>
+          actuales.includes(opcion) ? (actuales.length > 1 ? actuales.filter((cada) => cada !== opcion) : actuales)
+            : [...actuales, opcion])} />
     </Tarjeta>
     <CamposDeDatosDelCircuito datos={datos} deshabilitado={ocupado}
       alCambiar={(cambio) => setDatos((anteriores) => ({ ...anteriores, ...cambio }))} />
+    {/* Lo que se hace sobre el mapa va junto al mapa: la ayuda arriba y los botones abajo. */}
+    {!soloDatos ? <p className="text-base text-texto-suave">Tocá el mapa para marcar los puntos del Circuito. Si dos puntos quedan sobre un mismo Camino, la línea sigue ese Camino.</p> : null}
     {cargando ? <Tarjeta><p role="status" className="text-base text-texto">Cargando el mapa…</p></Tarjeta> :
       <CargadorDeMapa enVivo principal encuadre={encuadre} encuadrarSoloAlAbrir
         caminos={caminosVisibles} circuito={circuitoVisible.ok ? circuitoVisible.datos : null}
         finalConservadoDelCircuito={soloDatos && edicion?.finalSeparado ? original?.puntos.at(-1)?.coordenada ?? null : null}
         verticesDeCamino={soloDatos ? [] : puntos.map((punto) => [punto.coordenada[0], punto.coordenada[1]])}
         mostrarActividadesDeCaminoAlPasar alMarcarPuntoDelCircuito={marcar} />}
-    {!soloDatos ? <p className="text-base text-texto">{puntos.length} {puntos.length === 1 ? "punto marcado" : "puntos marcados"}.</p> : null}
+    <div className="flex flex-wrap items-center gap-2">
+      {!soloDatos ? <p className="mr-auto text-base text-texto">{puntos.length} {puntos.length === 1 ? "punto marcado" : "puntos marcados"}.</p> : <span className="mr-auto" />}
+      {original ? <Boton variante="secundario" disabled={ocupado}
+        onClick={() => { setRedibujando(true); setPuntos([]); setAviso(null); }}>Dibujar de nuevo</Boton> : null}
+      <Boton variante="secundario" disabled={ocupado || soloDatos || puntos.length === 0}
+        onClick={() => setPuntos((anteriores) => anteriores.slice(0, -1))}>Deshacer último punto</Boton>
+      <Boton disabled={ocupado || cargando} onClick={() => void guardar()}>Guardar Circuito</Boton>
+    </div>
     {!soloDatos && dibujo.ok === false && puntos.length > 1 ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
     {resumen ? <ResumenDeCircuito resultado={resumen} /> : null}
   </div>;

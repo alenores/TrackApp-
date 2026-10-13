@@ -14,11 +14,14 @@ import { actualizarCircuito } from "@/lib/circuitos/actualizar";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useLoQueFalta } from "@/hooks/use-lo-que-falta";
-import { AvisoDeMapasQueFaltan } from "@/components/rutas/aviso-de-mapas-que-faltan";
+import { AvisoCompactoDeMapas } from "@/components/rutas/aviso-compacto-de-mapas";
+import { IndicadorDeMapaBajado } from "@/components/rutas/indicador-de-mapa-bajado";
+import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
+import { mapaDelCircuito } from "@/lib/mapas/lo-que-falta";
 import type { CircuitoGuardado } from "@/lib/circuitos/datos";
 import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
-import { mostrarActividad } from "@/lib/rutas/actividades";
 import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
 import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
 import type { CategoriaUsuario } from "@/types/database";
@@ -39,6 +42,7 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
   const haySenal = useHaySenal();
   // Lo que le falta a este celular se dice acá, en casa y con señal.
   const loQueFalta = useLoQueFalta(paquete);
+  const sectoresConMapa = useSectoresConMapaBajado();
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
@@ -118,7 +122,7 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
       <h1 className="text-2xl font-bold text-texto">Circuitos</h1>
       {categoria !== "normal" && haySenal ? <BotonAgregar etiqueta="Agregar Circuito" alTocar={() => setVista({ tipo: "nuevo" })} /> : null}
     </div>
-    <AvisoDeMapasQueFaltan perdidos={loQueFalta.perdidos} circuitos={loQueFalta.circuitos} aviso={loQueFalta.aviso} />
+    <AvisoCompactoDeMapas perdidos={loQueFalta.perdidos} circuitos={loQueFalta.circuitos} aviso={loQueFalta.aviso} />
     {estado === "abriendo" ? <Tarjeta><p role="status" className="text-base text-texto">Cargando Circuitos…</p></Tarjeta> : null}
     {estado === "sin_datos" ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este celular todavía no tiene los Circuitos guardados. Abrí la app con señal en casa para descargarlos.</p></Tarjeta> : null}
     {aviso && haySenal ? <Tarjeta franja="ambar" className="space-y-2"><p role="alert" className="text-base text-texto">{aviso}</p>
@@ -137,7 +141,7 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
         return <div key={circuito.id} className="relative"><TarjetaQueAbre etiqueta={`Abrir ${circuito.nombre}`}
           alAbrir={() => setVista({ tipo: "detalle", id: circuito.id })} className="space-y-2">
         <h2 className={`text-lg font-semibold text-texto ${puedeCambiar ? "pr-12" : ""}`}>{circuito.nombre}</h2>
-        <p className="text-base text-texto-suave">{mostrarActividad(circuito.actividad).etiqueta}</p>
+        <InsigniaDeActividad tipo={circuito.actividad} tamano="mediano" />
         {totales ? <p className="text-base text-texto">
           {textoDeDistancia(totales.largoM)}
           {totales.desnivelPositivoM !== null && totales.desnivelNegativoM !== null
@@ -148,6 +152,7 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
           {datos.tecnica !== null ? <IndicadorTecnica tecnica={datos.tecnica} /> : null}
           {datos.nivelEsfuerzo !== null ? <VelocimetroEsfuerzo esfuerzo={datos.nivelEsfuerzo} /> : null}
         </div> : null}
+        {guardada ? <IndicadorDeMapaBajado {...mapaDelCircuito(guardada, paquete?.sectores ?? [], sectoresConMapa)} /> : null}
       </TarjetaQueAbre>
         {puedeCambiar ?
           <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10" etiqueta={`Opciones de ${circuito.nombre}`}

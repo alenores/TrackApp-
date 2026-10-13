@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
+import { useArrastreHaciaAbajo } from "@/hooks/use-arrastre-hacia-abajo";
 import { Boton } from "@/components/ui/boton";
 import { NIVEL_DE_LAS_EMERGENTES } from "@/lib/capas";
 
@@ -39,6 +40,12 @@ type PropiedadesDeEmergente = {
   acciones?: ReactNode;
   /** `true` cuando el contenido necesita más ancho, como una ficha con foto. */
   ancho?: "normal" | "amplio";
+  /**
+   * `true` para la hoja que sube desde abajo en el celular: lleva manija y se
+   * baja con el dedo, con los mismos gestos que Vías de Escalada. También
+   * cierra con la cruz, tocando afuera y con el botón físico de atrás.
+   */
+  hoja?: boolean;
 };
 
 export function Emergente({
@@ -49,8 +56,10 @@ export function Emergente({
   children,
   acciones,
   ancho = "normal",
+  hoja = false,
 }: PropiedadesDeEmergente) {
   const yaEstaVivo = useYaEnElNavegador();
+  const { desplazamiento, arrastrando, manija, cuerpoRef } = useArrastreHaciaAbajo({ activo: abierto && hoja, alIrse: alCerrar });
 
   useCerrarConAtras(abierto, alCerrar);
 
@@ -70,7 +79,7 @@ export function Emergente({
 
   return createPortal(
     <div
-      className="fixed inset-0 flex items-end justify-center bg-velo p-4 sm:items-center"
+      className={`fixed inset-0 flex items-end justify-center bg-velo sm:items-center ${hoja ? "sm:p-4" : "p-4"}`}
       style={{ zIndex: NIVEL_DE_LAS_EMERGENTES }}
       onClick={alCerrar}
       role="presentation"
@@ -80,12 +89,23 @@ export function Emergente({
         aria-modal="true"
         aria-label={titulo}
         onClick={(evento) => evento.stopPropagation()}
+        style={hoja && desplazamiento > 0 ? { transform: `translateY(${desplazamiento}px)` } : undefined}
         className={[
-          "flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-2xl border border-borde bg-superficie shadow-xl",
+          // La hoja va en capas: la cabecera en superficie y el cuerpo en el
+          // fondo, así las opciones de adentro se despegan como tarjetas.
+          `flex max-h-[85dvh] w-full flex-col overflow-hidden border border-borde shadow-xl ${hoja ? "bg-fondo" : "bg-superficie"}`,
+          hoja ? "rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0" : "rounded-2xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
+          hoja && !arrastrando ? "transition-transform duration-200 ease-out" : "",
         ].join(" ")}
       >
-        <div className="flex items-start gap-3 border-b border-borde px-4 py-4">
+        {hoja ? (
+          <div className="flex touch-none justify-center bg-superficie pt-2.5 sm:hidden" aria-hidden {...manija}>
+            <span className="h-1 w-9 rounded-full bg-borde-fuerte" />
+          </div>
+        ) : null}
+        <div className={`flex items-start gap-3 border-b border-borde px-4 ${hoja ? "touch-none bg-superficie pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
+          {...(hoja ? manija : {})}>
           <div className="min-w-0 flex-1">
             <h2 className="text-base font-bold text-texto">{titulo}</h2>
             {descripcion ? (
@@ -104,7 +124,7 @@ export function Emergente({
         </div>
 
         {children ? (
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          <div ref={hoja ? cuerpoRef : undefined} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
             {children}
           </div>
         ) : null}

@@ -69,7 +69,7 @@ export function TarjetaDeSector({
 
   const eliminar = async () => {
     const seguro = await confirmar({ titulo: `¿Borrar «${sector.nombre}»?`,
-      mensaje: "Se borrarán también sus anotaciones. Si te arrepentís, se puede recuperar.",
+      mensaje: "Las marcas que caen adentro se quedan en el mapa. Si te arrepentís, se puede recuperar.",
       textoDeAceptar: "Borrar", destructivo: true });
     if (!seguro) return;
     try {
@@ -85,17 +85,6 @@ export function TarjetaDeSector({
 
   return (
     <div className="relative">
-      <button
-        type="button"
-        onClick={() => router.push(`/zonas/${sector.zonaId}/sectores/${sector.id}/anotaciones`)}
-        aria-label="Ver anotaciones"
-        className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-verde-icono text-white shadow-md transition-transform hover:scale-105 active:scale-95"
-      >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
-
       <Tarjeta tono="alta" className="space-y-2 overflow-hidden relative">
         <div className="pr-12">
           {editandoNombre ? (
@@ -149,7 +138,7 @@ export function TarjetaDeSector({
           />
         </div>
       </Tarjeta>
-      {soyAdministrador ? <MenuDeAcciones className="absolute right-3 top-16 z-10"
+      {soyAdministrador ? <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10"
         etiqueta={`Opciones de ${sector.nombre}`}
         acciones={[
           { etiqueta: "Editar nombre", alElegir: iniciarEdicion },

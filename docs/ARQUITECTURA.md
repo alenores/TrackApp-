@@ -18,6 +18,13 @@
 > **Decisión de producto adicional, aún sin implementar:** zonas y sectores
 > solo organizan la cobertura y descarga de mapas. Los Caminos y Circuitos no
 > pertenecen a ellos ni se dividen por cruzarlos. Ver decisión 035.
+>
+> Desde 2026-10-13, **Mapas es solo con conexión** (decisión 052): sus cuatro
+> entradas (Consultas, Marcas, Zonas y Descargas) no se guardan ni se calientan
+> en el celular, y el motor offline las manda siempre a internet. Lo que se
+> dibuja sobre el mapa se llama **marca**; la tabla sigue siendo `anotaciones`.
+> Tranqueras y alambrados se traen de OpenStreetMap desde el servidor al crear
+> una zona (`traerTranquerasYAlambradosDeLaZona`, `lib/osm/overpass.ts`).
 
 ## Stack
 

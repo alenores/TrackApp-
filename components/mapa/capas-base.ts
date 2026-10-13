@@ -30,20 +30,17 @@ import type { Modo } from "@/lib/modo";
 
 export type TipoDeFondo = "dibujo" | "satelital" | "google";
 
-/** La navegación solo puede ofrecer fondos descargados; Google requiere consulta y señal. */
+/** La consulta conserva el fondo elegido aunque Google todavía no responda. */
 export function opcionesDelMapa({
-  enVivo, consultaGoogle, haySenal, sesionGoogle, falloGoogle, fondosDescargados,
+  enVivo, consultaGoogle, fondosDescargados,
 }: {
   enVivo: boolean;
   consultaGoogle: boolean;
-  haySenal: boolean;
-  sesionGoogle: boolean;
-  falloGoogle: boolean;
   fondosDescargados: TipoDeFondo[];
 }): TipoDeFondo[] {
   if (!enVivo) return fondosDescargados.filter((fondo) => fondo !== "google");
   if (!consultaGoogle) return ["dibujo", "satelital"];
-  return haySenal && sesionGoogle && !falloGoogle ? ["google"] : ["satelital"];
+  return ["google"];
 }
 
 /** El nombre con el que el mapa conoce a la foto satelital. */

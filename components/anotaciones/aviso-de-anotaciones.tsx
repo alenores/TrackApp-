@@ -66,8 +66,8 @@ export function AvisoDeAnotaciones({ anotaciones }: Props) {
         <Tarjeta franja="ambar" className="space-y-3">
           <p className="text-base font-semibold text-texto">
             {pendientes.length === 1
-              ? "Tenés una anotación marcada sin señal que todavía no se subió"
-              : `Tenés ${pendientes.length} anotaciones marcadas sin señal que todavía no se subieron`}
+              ? "Tenés una marca hecha sin señal que todavía no se subió"
+              : `Tenés ${pendientes.length} marcas hechas sin señal que todavía no se subieron`}
           </p>
           <p className="text-sm leading-6 text-texto-suave">
             {pendientes.length === 1
@@ -104,8 +104,8 @@ export function AvisoDeAnotaciones({ anotaciones }: Props) {
         <Tarjeta franja="ambar" className="space-y-3">
           <p className="text-base font-semibold text-texto">
             {fotosQueFaltan === 1
-              ? "Falta una foto de anotación en este celular"
-              : `Faltan ${fotosQueFaltan} fotos de anotaciones en este celular`}
+              ? "Falta una foto de una marca en este celular"
+              : `Faltan ${fotosQueFaltan} fotos de marcas en este celular`}
           </p>
           <p className="text-sm leading-6 text-texto-suave">
             Sin señal no las vas a poder ver. Bajalas ahora, desde casa: son

@@ -2,7 +2,7 @@
 
 > App de navegación de Circuitos al aire libre. Se usa caminando, con sol fuerte,
 > sin señal y con la batería como recurso escaso.
-> Última revisión: 2026-09-21
+> Última revisión: 2026-10-13
 
 ---
 
@@ -115,7 +115,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Google satelital solo para consulta con señal.** Muestra los datos propios ya guardados; jamás se usa para dibujar, corregir, importar o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisión 050.
 
 - **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
-  clasifican ni delimitan Caminos, Circuitos, puntos o trazos. Un Camino no
+  clasifican ni delimitan marcas ni Circuitos. Un Camino no
   se parte ni se asigna por cruzar uno o muchos de ellos. Antes de salir, se
   usa la ubicación del Circuito o del área que se desea explorar para saber
   qué mapas descargar. Decisión de Ale del 2026-10-05; adaptación pendiente.
@@ -143,14 +143,23 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   esfuerzo, qué llevar, complicaciones y comentario del Circuito sí se cargan a
   mano. Decisión 049.
 
-- **El mapa general de «Mapas» debe dibujar perímetros y nombres de zonas,
-  más todos los Caminos, puntos y trazos marcados.** La navegación libre también
-  debe mostrar todos los Caminos, puntos y trazos. Esta ampliación fue decidida
-  por Ale el 2026-10-05. Nunca divisiones ni
-  etiquetas de sectores. Al hacer
-  clic o tocar una zona aparece su ficha breve, que se abre tocándola completa; los sectores
-  quedan en el detalle de esa zona. Nombres e íconos aparecen gradualmente al
-  acercarse y no se amontonan con poco zoom. Ver `docs/decisiones/029`.
+- **Todo lo que se dibuja encima del mapa es una marca**: Caminos, puntos,
+  trazos, tranqueras y alambrados (decisión 052). Mapas tiene cuatro entradas
+  en el menú, sin pestañas adentro: **Consultas, Marcas, Zonas y Descargas**.
+  Consultas, para todos, muestra perímetros y nombres de zonas más todas las
+  marcas, con filtros simples (actividad; Caminos, Zonas y Detalles). Marcas
+  es la lista con tildes y filtros; el «+» y los tres puntos solo para
+  Administrador y Premium. La navegación libre también muestra todas las
+  marcas. Nunca divisiones ni etiquetas de sectores en esos mapas. Al tocar
+  una zona aparece su ficha breve, que se abre tocándola completa. Nombres e
+  íconos aparecen gradualmente al acercarse. Ver `docs/decisiones/029` y `052`.
+- **Lista y mapa son dos momentos**: en la computadora van lado a lado; en el
+  celular la lista es un panel que sube desde abajo, con los gestos de Vías de
+  Escalada (bajar desde la lista solo si ya está arriba del todo), «Ver mapa» y
+  el botón físico de atrás. Sin deslizar de costado.
+- **Tranqueras y alambrados los trae OpenStreetMap solos al crear una zona** y
+  quedan fijos: no se corrigen, no se borran, no se vuelven a buscar. Zonas y
+  sectores no cargan marcas, y borrarlos no borra marcas.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
   comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
@@ -164,7 +173,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
   salir.** No hay botón para prenderlo. Abajo a la izquierda van salir,
-  anotaciones y «Circuitos en el mapa»; no hay carteles de desvío. Ver
+  Marcas y «Circuitos en el mapa»; no hay carteles de desvío. Ver
   `docs/decisiones/025` y `049`.
 - **La pantalla no se apaga mientras se está navegando.**
 
@@ -208,6 +217,10 @@ Maps, que también necesita internet.
   curso** de una salida mientras se navega se guarda en el celular y sube solo,
   como borrador, con señal y la navegación cerrada (decisión 032). Las
   pantallas de salidas no se guardan en el celular ni se calientan.
+- **Mapas es 100 % con internet** (decisión 052): sin señal desaparece del
+  menú y sus pantallas —también las zonas— no se guardan ni se calientan. Sin
+  señal solo se navega y se marca en el momento. Prohibido a los agentes
+  plantear usar Mapas o Descargas sin señal.
 
 ### El usuario descarga en su casa. Tema cerrado.
 
@@ -264,9 +277,9 @@ perfiles, que muestra datos de los demás y esos no se guardan en el celular.
 
 **El usuario no visita las pantallas una por una para que queden guardadas.**
 Apenas el paquete queda al día, con señal, la app recorre y deja listas todas
-las que van a hacer falta sin señal: el inicio, las listas, cada zona, el mapa
-libre y la navegación de cada Circuito. Sin eso, una zona que nunca se abrió con señal no
-existe en el cerro.
+las que van a hacer falta sin señal: el inicio, la lista de Circuitos, el mapa
+libre y la navegación de cada Circuito. Sin eso, un Circuito que nunca se abrió
+con señal no se puede navegar en el cerro.
 
 - De cada pantalla se guardan **dos cosas**: el documento y el pedido interno
   que hace la app al pasar de una pantalla a otra. Una sola de las dos deja la
@@ -296,15 +309,17 @@ vuelven solos al abrir con señal, así que la pantalla se ve perfecta y los map
 no están. Por eso qué mapas bajó cada usuario **se anota también en la base**,
 que es la única memoria que el navegador no puede borrar.
 
-- **El inicio avisa dos cosas distintas y no las mezcla:** los mapas que tenías
-  y ya no están —eso es una pérdida, va con franja ámbar y arriba de todo— y los
-  Circuitos que nunca tuvieron mapa, que son una tarea y van en tarjeta común.
-  El inicio abre Salidas con conexión. Sin señal muestra un aviso y accesos a
-  Circuitos y navegación libre. La lista de Circuitos conserva los avisos de
-  mapas perdidos y de Circuitos sin mapa (decisión 051).
-- **Sacar un mapa a propósito funciona sin señal; avisarle a la base, no.** El
-  sacado queda anotado como pendiente en el celular y no se cuenta como perdido
-  hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
+- **La lista de Circuitos avisa dos cosas distintas y no las mezcla:** los
+  mapas que tenías y ya no están —una pérdida— y los Circuitos que nunca
+  tuvieron mapa —una tarea—. Van en una **franja ámbar chica arriba de todo**
+  que dice cuántos hay y se toca para verlos enteros; nunca abiertos ocupando
+  la pantalla. Además **cada tarjeta de Circuito dice cuánto mapa tiene
+  bajado** (en sectores). Decisión 053. El inicio abre Salidas con conexión;
+  sin señal muestra un aviso y accesos a Circuitos y navegación libre (decisión
+  051).
+- **Sacar un mapa a propósito se hace en Descargas, con señal.** Si la base no
+  contesta, el sacado queda anotado como pendiente en el celular y no se cuenta
+  como perdido hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
   nuevo justo lo que él decidió tirar.
 - **El emparejado va del celular a la base y solo agrega.** Nunca se borra de la
   base un mapa porque no esté en el celular: eso es la pérdida que hay que
@@ -312,17 +327,17 @@ que es la única memoria que el navegador no puede borrar.
 
 Ver `docs/decisiones/021-la-base-recuerda-que-mapas-bajaste.md`.
 
-### Lo que se anota en el cerro
+### Lo que se marca en el cerro
 
-- **Anotar desde la navegación no sale a internet.** Lo marcado, cambiado o
+- **Marcar desde la navegación no sale a internet.** Lo marcado, cambiado o
   borrado queda en el celular y sube solo **con señal y la navegación
   cerrada**. Primero los datos, después la foto: si la foto falla, lo demás ya
   subió y la ficha dice que la foto no. Ver
   `docs/decisiones/023-anotar-desde-la-navegacion.md`.
-- **En el cerro solo se ve la foto chica.** Baja sola con las anotaciones; la
-  grande nunca baja y se mira con internet en zonas y sectores.
+- **En el cerro solo se ve la foto chica.** Baja sola con las marcas; la
+  grande nunca baja y se mira con internet en Mapas.
 - **Manda el punto del GPS**, caiga o no en un sector. Dónde se muestra una
-  anotación sale de dónde está, no de a qué sector se la anotó.
+  marca sale de dónde está, no de a qué sector se la anotó.
 
 ### El resto
 
@@ -445,6 +460,9 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
 
 - **El menú va en el mismo orden en celular y PC:** Salidas, Circuitos,
   Navegación libre, Mapas y Perfiles. Salidas es el inicio con conexión.
+- **Un módulo con varias pantallas las lleva como entradas del menú, no como
+  pestañas adentro**: en PC se despliegan en la barra lateral; en el celular,
+  tocar el módulo sube un panel para elegir (decisión 052).
 - **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
   agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
   Editar y eliminar se muestran al abrir los tres puntos, nunca sueltos.
@@ -557,6 +575,9 @@ rompe algo** — hasta que falla en el cerro.
   carpetas de piezas compartidas y en la tabla vieja de la base. **Prohibido «track», «trayecto» y
   «recorrido» como nombres alternativos de esos conceptos.** La única
   excepción es `TrackApp`, que es el nombre del producto.
+- **«Anotación» se retiró el 2026-10-13** (decisión 052): todo lo dibujado
+  sobre el mapa es una **marca**. Solo queda en el código y en la tabla vieja
+  `anotaciones` de la base.
 - **Cada concepto tiene una sola palabra en toda la app.** Sin sinónimos, sin
   variantes, sin «acá le decimos de otra forma porque queda mejor».
 - Las palabras del proyecto viven en `docs/GLOSARIO.md`. **Palabra nueva, entrada

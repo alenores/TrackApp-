@@ -101,7 +101,7 @@ export function PantallaDeMapaLibre() {
           Todavía no hay nada guardado en este celular.
         </p>
         <p className="text-base leading-6 text-texto-suave">
-          Abrí la app una vez con conexión y los Caminos, las anotaciones y los
+          Abrí la app una vez con conexión y las marcas y los
           mapas que bajes quedan guardados para usarlos sin señal.
         </p>
         <BotonVolver alVolver={() => requestExit()} etiqueta="Volver al inicio" />

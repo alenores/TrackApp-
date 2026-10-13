@@ -40,7 +40,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
     <Emergente
       abierto={abierto}
       alCerrar={alCerrar}
-      titulo="Anotaciones"
+      titulo="Marcas"
       acciones={
         <BotonDeEmergente variante="principal" onClick={alCerrar}>
           Listo
@@ -48,7 +48,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
       }
     >
       <div className="space-y-4">
-        {puedeAgregar ? <BotonAgregar etiqueta="Agregar una anotación" alTocar={alAgregar} /> : null}
+        {puedeAgregar ? <BotonAgregar etiqueta="Agregar una marca" alTocar={alAgregar} /> : null}
 
         <section className="space-y-2">
           <h3 className={CLASE_DE_TITULO_DE_SECCION}>Cuáles se ven en el mapa</h3>

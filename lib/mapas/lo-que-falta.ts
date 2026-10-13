@@ -96,6 +96,34 @@ export function rutasSinMapa(
   });
 }
 
+/**
+ * Los sectores que cruza un Circuito: los de su línea de verdad o, si el
+ * paquete es viejo y no los trae, los que toca su rectángulo.
+ */
+export function sectoresDelCircuito(circuito: CircuitoSinDibujo, sectores: Sector[]): Sector[] {
+  if (circuito.sectores) {
+    const porId = new Map(sectores.map((sector) => [sector.id, sector]));
+    return circuito.sectores.flatMap((id) => porId.get(id) ?? []);
+  }
+  return circuito.rectangulo
+    ? sectores.filter((sector) => seSuperponen(sector.rectangulo, circuito.rectangulo!))
+    : [];
+}
+
+/**
+ * Cuánto del mapa de un Circuito está en este celular, contado en sectores:
+ * cuántos de los que cruza ya tienen el mapa bajado. Es lo que muestra la
+ * tarjeta de cada Circuito, para saberlo en casa sin abrir ningún aviso.
+ */
+export function mapaDelCircuito(
+  circuito: CircuitoSinDibujo,
+  sectores: Sector[],
+  sectoresConMapa: Set<number>,
+): { bajados: number; total: number } {
+  const suyos = sectoresDelCircuito(circuito, sectores);
+  return { bajados: suyos.filter((sector) => sectoresConMapa.has(sector.id)).length, total: suyos.length };
+}
+
 export type CircuitoSinMapa = {
   circuito: CircuitoSinDibujo;
   /** Los sectores que cruza el Circuito y no tienen el mapa en el celular. */
@@ -114,14 +142,9 @@ export function circuitosSinMapa(
   perdidos: MapaPerdido[],
 ): CircuitoSinMapa[] {
   const yaAvisados = new Set(perdidos.map((cada) => cada.sector.id));
-  const porId = new Map(sectores.map((sector) => [sector.id, sector]));
 
   return circuitos.flatMap((circuito) => {
-    const suyos = circuito.sectores
-      ? circuito.sectores.flatMap((id) => porId.get(id) ?? [])
-      : circuito.rectangulo
-        ? sectores.filter((sector) => seSuperponen(sector.rectangulo, circuito.rectangulo!))
-        : [];
+    const suyos = sectoresDelCircuito(circuito, sectores);
     const faltan = suyos.filter((sector) => !sectoresConMapa.has(sector.id) && !yaAvisados.has(sector.id));
     return faltan.length === 0 ? [] : [{ circuito, sectores: faltan }];
   });

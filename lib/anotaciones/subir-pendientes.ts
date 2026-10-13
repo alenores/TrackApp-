@@ -86,7 +86,7 @@ async function subirLaFoto(
     .is("eliminado_en", null);
 
   if (error) return traducirErrorDeBase(error.message);
-  if (count === 0) return "La anotación ya no está en la base, así que la foto no tiene dónde ir.";
+  if (count === 0) return "La marca ya no está en la base, así que la foto no tiene dónde ir.";
 
   try {
     await guardarFotoBajada(subida.datos.fotoChicaUrl, fotos.chica);
@@ -141,7 +141,7 @@ async function crear(
       anotacionId = Number((existente as { id: number }).id);
     } else if (error || anotacionId === null) {
       return anotarElFallo(
-        traducirErrorDeBase(error?.message ?? "La base no devolvió la anotación."),
+        traducirErrorDeBase(error?.message ?? "La base no devolvió la marca."),
       );
     }
 
@@ -183,7 +183,7 @@ async function editar(
 
   if (error) return traducirErrorDeBase(error.message);
   if (count === 0) {
-    return "Esa anotación ya no está o la hizo otra persona: el cambio no se puede guardar.";
+    return "Esa marca ya no está o la hizo otra persona: el cambio no se puede guardar.";
   }
 
   if (pendiente.quitarLaFoto && !pendiente.fotos) {

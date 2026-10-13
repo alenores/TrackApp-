@@ -4,6 +4,65 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-13 — Marcas, y Mapas con sus entradas en el menú
+
+### Estado al inicio
+
+Mapas tenía cinco pestañas arriba (Zonas, Mapa, Caminos, Anotaciones y
+Descargas). Caminos y Anotaciones eran dos secciones para lo mismo, un Camino
+solo se creaba trayendo un archivo, y las tranqueras dependían de que alguien
+tocara un botón en cada sector.
+
+### Lo que se hizo
+
+- Charla de definición con Ale; todo quedó en la decisión 052.
+- Mapas pasó a tener cuatro entradas en el menú: Consultas, Marcas, Zonas y
+  Descargas. En PC se despliegan en la barra lateral; en el celular, tocar
+  Mapas sube un panel para elegir.
+- Pieza compartida de lista y mapa: lado a lado en PC, panel que sube desde
+  abajo en el celular con los gestos de Vías de Escalada. La emergente ganó
+  forma de hoja con los mismos gestos.
+- Consultas: mapa con todo y filtros simples. Marcas: lista agrupada con
+  tildes, filtros recordados, «+» para agregar a mano o traer de afuera, y
+  editar o eliminar en los tres puntos. Se puede dibujar un Camino a mano.
+- Tranqueras y alambrados se traen solos de OpenStreetMap al crear una zona,
+  sin repetir, y quedan fijos (en la app, en la navegación y en el servidor).
+- Se sacaron la pantalla de anotaciones del sector, su botón de OpenStreetMap
+  y las pestañas viejas. Borrar una zona o un sector ya no borra marcas.
+- Mapas es solo con conexión: sale del menú sin señal y no se guarda en el
+  celular.
+- «Anotación» se cambió por «marca» en todo lo que se ve en pantalla.
+- Pruebas nuevas: lista de marcas, tranqueras de OpenStreetMap, menú de Mapas,
+  Mapas sin señal y calentado sin zonas.
+
+### Decisiones tomadas
+
+Decisión 052. Ale salteó el boceto para este cambio: se revisa en la app.
+
+### Documentos actualizados
+
+Reglas de agentes, arquitectura, diseño exterior, glosario, decisión 052 y
+este registro.
+
+### Deuda o inconsistencias detectadas
+
+- La prohibición de cambiar tranqueras y alambrados está en la app y en el
+  servidor, pero todavía no como regla de la base.
+- Quedaron funciones viejas de importar a un sector, sin uso, en
+  `lib/anotaciones/importar.ts`.
+- Con dos emergentes una encima de otra, el botón físico de atrás cierra las
+  dos: es como funciona hoy el historial compartido.
+- Hoy una zona no se puede agrandar después de creada; si un día se puede,
+  hay que volver a pedir tranqueras y alambrados al agrandarla.
+
+### Pendientes para la próxima
+
+Probar los gestos del panel en un celular real, crear una zona de prueba para
+medir cuánto pesan sus tranqueras y alambrados, y revisar todo con la cuenta
+de Ale en modo sol y noche.
+
+---
+
 ## Sesión 2026-10-12 — Menú y acciones consistentes
 
 ### Estado al inicio

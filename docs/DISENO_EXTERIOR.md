@@ -36,12 +36,14 @@ Navegación libre.
 ### Nombres de los mapas
 
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
-la pantalla que muestra los mapas guardados en el celular. «Mapas» reúne las
-pestañas Zonas y Mapa; el administrador tiene además Puntos para consultar y
-gestionar todos los puntos marcados, con filtros por zona, sector e ícono. El
-mapa general abre encuadrando Córdoba y muestra cada zona con su perímetro y un
-solo nombre, además de los puntos marcados. En Mapa y Puntos, el mapa inicial
-usa el doble de alto habitual para aprovechar la pantalla. No dibuja
+la pantalla que muestra los mapas guardados en el celular. «Mapas» tiene cuatro
+entradas en el menú, sin pestañas adentro: Consultas, Marcas, Zonas y
+Descargas (decisión 052). Consultas y Marcas usan **lista y mapa**: lado a lado
+en la computadora; en el celular el mapa llena la pantalla y la lista es un
+panel que sube desde abajo, con los gestos de Vías de Escalada, una barrita con
+el resumen al bajarlo y el botón «Ver mapa». Consultas abre encuadrando Córdoba
+y muestra cada zona con su perímetro y un solo nombre, además de las marcas. No
+dibuja
 las divisiones ni los nombres de los sectores: con varias zonas juntas taparían
 el territorio. Al hacer clic o tocar una zona aparece una ficha breve con
 acceso al detalle tocando cualquier parte de la ficha; los sectores se ven en

@@ -1,31 +1,32 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { PantallaDeZonas } from "@/components/zonas/pantalla-de-zonas";
 import { traerMiPerfil } from "@/lib/perfiles/datos";
 
-export const metadata: Metadata = { title: "Mapas" };
+export const metadata: Metadata = { title: "Zonas" };
 
 /**
- * Todas las zonas y el mapa general de Córdoba.
+ * Las zonas de Córdoba con sus sectores. Es una de las cuatro entradas de
+ * Mapas, solo con conexión.
  *
- * Dibuja desde lo guardado en el celular, igual que la lista de rutas: la
- * pantalla tiene que aparecer sin señal.
+ * Las direcciones viejas de las pestañas siguen andando: llevan a su pantalla.
  */
 export default async function ZonasPage({
   searchParams,
 }: {
   searchParams: Promise<{ vista?: string | string[] }>;
 }) {
-  const miPerfil = await traerMiPerfil();
-  const parametros = await searchParams;
-  // «puntos» es el nombre viejo de la pestaña: los enlaces guardados siguen andando.
-  const pestañaInicial =
-    parametros.vista === "anotaciones" || parametros.vista === "puntos" ? "anotaciones" : "mapa";
+  const { vista } = await searchParams;
+  if (vista === "anotaciones" || vista === "puntos" || vista === "caminos") redirect("/mapas/marcas");
+  if (vista === "mapa") redirect("/mapas/consultas");
+  if (vista === "descargas") redirect("/mapas/descargas");
 
+  const miPerfil = await traerMiPerfil();
   return (
     <>
       <MarcaDeAppLista />
-      <PantallaDeZonas categoria={miPerfil?.categoria ?? "normal"} miPerfilId={miPerfil?.id ?? null} pestañaInicial={pestañaInicial} />
+      <PantallaDeZonas categoria={miPerfil?.categoria ?? "normal"} />
     </>
   );
 }

@@ -170,13 +170,13 @@ const withPWA = withPWAInit({
        * lo tanto no sirven sin señal. Se marcan a mano para que no caigan en la
        * última regla y el celular muestre un formulario viejo creyendo que anda.
        *
-       * Salidas también: es un módulo 100 % con internet y no se mezcla con lo
-       * que se guarda para el cerro.
+       * Salidas y Mapas también: son módulos 100 % con internet y no se
+       * mezclan con lo que se guarda para el cerro (decisión 052).
        */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
         (/\/(?:nueva|editar|anotaciones)\/?$/.test(url.pathname) ||
-          /^\/(?:perfil(?:es)?|salidas)(?:\/|$)/.test(url.pathname)),
+          /^\/(?:perfil(?:es)?|salidas|zonas|mapas)(?:\/|$)/.test(url.pathname)),
       handler: "NetworkOnly",
       options: {},
     },
@@ -224,8 +224,8 @@ const withPWA = withPWAInit({
     },
     {
       /**
-       * Pedido interno de las pantallas de entrada: inicio (los Circuitos),
-       * zonas y el detalle de una zona.
+       * Pedido interno de las pantallas de entrada: el inicio, la lista de
+       * Circuitos y el detalle de cada uno.
        *
        * **Lo guardado al instante, y la versión nueva por detrás.** Antes
        * esperaban hasta tres segundos a la red en cada toque, y las del cerro
@@ -245,7 +245,7 @@ const withPWA = withPWAInit({
       }) =>
         sameOrigin &&
         (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) &&
-        (url.pathname === "/" || /^\/(?:zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/circuitos(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA_INTERNO,
@@ -261,7 +261,7 @@ const withPWA = withPWAInit({
       /** El documento de las pantallas de entrada: igual que su pedido interno. */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin &&
-        (url.pathname === "/" || /^\/(?:zonas|circuitos)(?:\/\d+)?\/?$/.test(url.pathname)),
+        (url.pathname === "/" || /^\/circuitos(?:\/\d+)?\/?$/.test(url.pathname)),
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: PANTALLAS_DE_ENTRADA,

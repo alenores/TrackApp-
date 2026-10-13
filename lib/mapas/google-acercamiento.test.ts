@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { detalleConCreditosDeGoogle, maximoDetalleDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
+import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso, maximoDetalleDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
 
 const mundo: AreaConDetalleDeGoogle = { maxZoom: 15, north: 90, south: -90, east: 180, west: -180 };
 
@@ -19,7 +19,14 @@ describe("detalle disponible en Google", () => {
     const area = { maxZoom: 18, north: 10, south: -10, west: 170, east: -170 };
     expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 179 })).toBe(18);
     expect(maximoDetalleDeGoogle([area], { lat: 0, lng: -179 })).toBe(18);
-    expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 0 })).toBeNull();
+    expect(maximoDetalleDeGoogle([area], { lat: 0, lng: 0 })).toBe(18);
+  });
+
+  it("conserva el mayor nivel informado si los rectángulos no cubren exactamente el centro", () => {
+    expect(maximoDetalleDeGoogle([
+      { maxZoom: 19, north: -30, south: -31, east: -64, west: -65 },
+      { maxZoom: 20, north: -31, south: -32, east: -65, west: -66 },
+    ], { lat: -32.1, lng: -64.5 })).toBe(20);
   });
 
   it("ignora niveles inválidos y no inventa un límite cuando falta la información", () => {
@@ -27,7 +34,13 @@ describe("detalle disponible en Google", () => {
     expect(maximoDetalleDeGoogle([], { lat: -31, lng: -64 })).toBeNull();
   });
 
-  it("vuelve al último nivel con imagen y mantiene los créditos de Google", async () => {
+  it("conserva el último límite conocido cuando faltan datos y nunca aleja el mapa solo", () => {
+    expect(limiteDeGoogleSinRetroceso(20, 18, null)).toBe(20);
+    expect(limiteDeGoogleSinRetroceso(22, 19, 17)).toBe(19);
+    expect(limiteDeGoogleSinRetroceso(20, 19, 21)).toBe(21);
+  });
+
+  it("busca los créditos en otro nivel y conserva el límite de la vista original", async () => {
     const niveles: string[] = [];
     const traer = vi.fn(async (pedido: URLSearchParams) => {
       niveles.push(pedido.get("zoom") || "");
@@ -42,7 +55,7 @@ describe("detalle disponible en Google", () => {
     expect(niveles).toEqual(["19", "17"]);
   });
 
-  it("no reduce el detalle si Google informa más niveles disponibles", async () => {
+  it("no busca otros niveles si Google ya informó los créditos", async () => {
     const resultado = await detalleConCreditosDeGoogle(
       new URLSearchParams({ zoom: "12" }), { lat: -31, lng: -64 },
       async () => ({ derechos: "© Google", areasConDetalle: [{ ...mundo, maxZoom: 21 }] }),
@@ -50,10 +63,32 @@ describe("detalle disponible en Google", () => {
     expect(resultado).toEqual({ derechos: "© Google", maximo: 21 });
   });
 
-  it("avisa si ningún nivel trae los créditos obligatorios", async () => {
+  it("busca los créditos en otro nivel sin usar ese nivel para limitar el mapa", async () => {
+    const niveles: string[] = [];
+    const orden: string[] = [];
+    const resultado = await detalleConCreditosDeGoogle(
+      new URLSearchParams({ zoom: "11" }), { lat: -31, lng: -64 },
+      async (pedido) => {
+        const nivel = pedido.get("zoom") || "";
+        niveles.push(nivel);
+        orden.push(`pedido ${nivel}`);
+        return {
+          derechos: Number(nivel) <= 9 ? "© Google" : null,
+          areasConDetalle: [{ ...mundo, maxZoom: 20 }],
+        };
+      },
+      () => true,
+      (maximo) => orden.push(`máximo ${maximo}`),
+    );
+    expect(niveles).toEqual(["11", "10", "9"]);
+    expect(orden).toEqual(["pedido 11", "máximo 20", "pedido 10", "pedido 9"]);
+    expect(resultado).toEqual({ derechos: "© Google", maximo: 20 });
+  });
+
+  it("no convierte la ausencia de créditos en una falla del mapa", async () => {
     await expect(detalleConCreditosDeGoogle(
       new URLSearchParams({ zoom: "2" }), { lat: -31, lng: -64 },
       async () => ({ derechos: null, areasConDetalle: [] }),
-    )).rejects.toThrow("Google no informó los créditos");
+    )).resolves.toEqual({ derechos: null, maximo: null });
   });
 });

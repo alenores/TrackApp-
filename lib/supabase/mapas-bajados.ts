@@ -188,7 +188,7 @@ export async function olvidarQueTeniasElMapa(
       motivo:
         error instanceof Error && error.message
           ? error.message
-          : "No se pudo sacar la anotación de la base.",
+          : "No se pudo avisarle a la base que sacaste ese mapa.",
     };
   }
 }

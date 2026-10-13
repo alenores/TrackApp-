@@ -9,10 +9,11 @@ import type { Paquete } from "@/lib/offline/paquete";
 /**
  * Dejar listas todas las pantallas que van a hacer falta sin señal.
  *
- * **El usuario no tiene que ir a visitarlas una por una.** Sin esto, una zona
- * que nunca abriste con señal no existe en el cerro: el motor offline guarda
- * las pantallas a medida que se visitan, y nadie se acuerda de entrar a las
- * catorce zonas antes de salir. Es el mismo trabajo que hace Vías de Escalada
+ * **El usuario no tiene que ir a visitarlas una por una.** Sin esto, un
+ * Circuito que nunca abriste con señal no se puede navegar en el cerro: el
+ * motor offline guarda las pantallas a medida que se visitan, y nadie se
+ * acuerda de entrar a cada uno antes de salir. Mapas no se guarda: es solo
+ * con conexión (decisión 052). Es el mismo trabajo que hace Vías de Escalada
  * después de bajar su paquete.
  *
  * Se hace **con señal y en casa**, apenas el paquete queda al día.
@@ -38,7 +39,7 @@ export type PantallaParaCalentar = {
 };
 
 /** Las que no dependen de lo que el usuario tenga cargado. */
-const LAS_DE_SIEMPRE = ["/", "/zonas", "/circuitos"];
+const LAS_DE_SIEMPRE = ["/", "/circuitos"];
 
 /**
  * Qué pantallas hay que dejar listas, sacadas del paquete recién guardado.
@@ -63,7 +64,6 @@ export function pantallasParaCalentar(paquete: Paquete): PantallaParaCalentar[] 
   return [
     ...LAS_DE_SIEMPRE.map(deEntrada),
     delCerro("/mapa-libre"),
-    ...paquete.zonas.map((zona) => deEntrada(`/zonas/${zona.id}`)),
     ...paquete.circuitos.map((circuito) => delCerro(`/circuitos/${circuito.id}/navegar`)),
   ];
 }

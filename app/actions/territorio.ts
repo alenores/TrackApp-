@@ -11,9 +11,14 @@ import { traerMiPerfil } from "@/lib/perfiles/datos";
 import { puedeCambiarDelMapa, puedeSumarAlMapa } from "@/lib/mapas/permisos";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import {
+  COLUMNAS_RECTANGULO,
   escribirRectangulo,
+  leerRectangulo,
   rectanguloEsValido,
+  type ColumnasRectangulo,
 } from "@/lib/datos/rectangulo";
+import { barrerasNuevas, resumenDeBarreras } from "@/lib/marcas/osm";
+import { preguntarBarreras } from "@/lib/osm/overpass";
 import {
   exito,
   falla,
@@ -228,28 +233,14 @@ export async function borrarZona(zonaId: number): Promise<Resultado> {
   const supabase = await crearClienteEnElServidor();
   const ahora = new Date().toISOString();
 
-  // Los sectores de la zona se van con ella, y sus anotaciones con ellos.
-  const { data: sectores } = await supabase
+  // Los sectores de la zona se van con ella. Las marcas se quedan: zonas y
+  // sectores solo organizan las descargas de mapas (decisiones 035 y 052).
+  const { error: errorDeSectores } = await supabase
     .from("sectores")
-    .select("id")
+    .update({ eliminado_en: ahora })
     .eq("zona_id", zonaId)
     .is("eliminado_en", null);
-
-  const idsDeSectores = ((sectores ?? []) as { id: number }[]).map((s) => s.id);
-
-  if (idsDeSectores.length > 0) {
-    await supabase
-      .from("anotaciones")
-      .update({ eliminado_en: ahora })
-      .in("sector_id", idsDeSectores)
-      .is("eliminado_en", null);
-
-    await supabase
-      .from("sectores")
-      .update({ eliminado_en: ahora })
-      .eq("zona_id", zonaId)
-      .is("eliminado_en", null);
-  }
+  if (errorDeSectores) return falla(`No se pudieron borrar los sectores de la zona: ${traducirErrorDeBase(errorDeSectores.message)}`);
 
   const { error } = await supabase
     .from("zonas")
@@ -338,12 +329,8 @@ export async function borrarSector(sectorId: number): Promise<Resultado> {
   const supabase = await crearClienteEnElServidor();
   const ahora = new Date().toISOString();
 
-  await supabase
-    .from("anotaciones")
-    .update({ eliminado_en: ahora })
-    .eq("sector_id", sectorId)
-    .is("eliminado_en", null);
-
+  // Las marcas se quedan: zonas y sectores solo organizan las descargas de
+  // mapas (decisiones 035 y 052).
   const { error } = await supabase
     .from("sectores")
     .update({ eliminado_en: ahora })
@@ -363,7 +350,7 @@ export async function borrarSector(sectorId: number): Promise<Resultado> {
  * persona. Cada uno edita y borra lo suyo; el administrador, todo.
  */
 const NO_ES_TUYA =
-  "No se cambió nada: esa anotación ya no está o tu cuenta no puede cambiarla. Premium cambia lo suyo; el administrador puede cambiar todas.";
+  "No se cambió nada: esa marca ya no está o tu cuenta no puede cambiarla. Premium cambia lo suyo; el administrador puede cambiar todas.";
 
 async function motivoSiNoPuedeSumarAlMapa(): Promise<string | null> {
   const perfil = await traerMiPerfil();
@@ -383,17 +370,21 @@ async function motivoSiNoPuedeCambiarAnotacion(
   }
   const { data, error } = await supabase
     .from("anotaciones")
-    .select("perfil_id, eliminado_en")
+    .select("perfil_id, eliminado_en, origen")
     .eq("id", anotacionId)
     .maybeSingle();
-  if (error) return `No se pudo revisar quién marcó la anotación: ${traducirErrorDeBase(error.message)}`;
+  if (error) return `No se pudo revisar quién hizo esa marca: ${traducirErrorDeBase(error.message)}`;
   if (!data || (data as { eliminado_en: string | null }).eliminado_en !== null) {
-    return "Esa anotación ya no está en el mapa. Actualizá la pantalla y probá de nuevo.";
+    return "Esa marca ya no está en el mapa. Actualizá la pantalla y probá de nuevo.";
+  }
+  // Tranqueras y alambrados quedan como vinieron de OpenStreetMap (decisión 052).
+  if ((data as { origen: string }).origen === "openstreetmap") {
+    return "Las tranqueras y los alambrados quedan como vinieron de OpenStreetMap: no se cambian ni se borran.";
   }
   const autorId = String((data as { perfil_id: unknown }).perfil_id);
   return puedeCambiarDelMapa(perfil?.categoria ?? null, usuarioId, autorId)
     ? null
-    : "Esa anotación la marcó otra persona. Premium solo puede cambiar las suyas.";
+    : "Esa marca la hizo otra persona. Premium solo puede cambiar las suyas.";
 }
 
 export type DatosDeAnotacion = {
@@ -468,7 +459,7 @@ export async function crearAnotacion(
 
   if (error || !data) {
     return falla(
-      traducirErrorDeBase(error?.message ?? "No se pudo guardar la anotación."),
+      traducirErrorDeBase(error?.message ?? "No se pudo guardar la marca."),
     );
   }
 
@@ -477,7 +468,7 @@ export async function crearAnotacion(
   if (datos.foto) {
     if (!datos.fotoChica) {
       return falla(
-        "La anotación quedó guardada pero la foto no: faltó prepararle la copia chica. Volvé a elegir la foto.",
+        "La marca quedó guardada pero la foto no: faltó prepararle la copia chica. Volvé a elegir la foto.",
       );
     }
     const subida = await subirLasFotosDeLaAnotacion(
@@ -488,7 +479,7 @@ export async function crearAnotacion(
       datos.fotoChica,
     );
     if (!subida.ok) {
-      return falla(`La anotación quedó guardada pero la foto no. ${subida.error}`);
+      return falla(`La marca quedó guardada pero la foto no. ${subida.error}`);
     }
 
     const { error: errorDeFoto } = await supabase
@@ -498,7 +489,7 @@ export async function crearAnotacion(
 
     if (errorDeFoto) {
       return falla(
-        `La anotación quedó guardada pero la foto no: ${traducirErrorDeBase(errorDeFoto.message)}`,
+        `La marca quedó guardada pero la foto no: ${traducirErrorDeBase(errorDeFoto.message)}`,
       );
     }
   }
@@ -530,7 +521,7 @@ export async function crearAnotacionesEnTanda(
 
   for (const [indice, datos] of lista.entries()) {
     const problema = revisarAnotacion({ ...datos, sectorId });
-    if (problema) return falla(`La anotación ${indice + 1} no se puede guardar: ${problema}`);
+    if (problema) return falla(`La marca ${indice + 1} no se puede guardar: ${problema}`);
   }
 
   const supabase = await crearClienteEnElServidor();
@@ -552,7 +543,7 @@ export async function crearAnotacionesEnTanda(
 
   if (error || !data) {
     return falla(
-      traducirErrorDeBase(error?.message ?? "No se pudieron guardar las anotaciones."),
+      traducirErrorDeBase(error?.message ?? "No se pudieron guardar las marcas."),
     );
   }
 
@@ -635,4 +626,81 @@ export async function borrarAnotacion(anotacionId: number): Promise<Resultado> {
 
   revalidatePath("/zonas");
   return exito();
+}
+
+// ------------------------------------------------- tranqueras y alambrados
+
+/** De a cuántas se guardan: una zona grande puede traer cientos de alambrados. */
+const TANDA_DE_BARRERAS = 500;
+/** La base devuelve como máximo 1000 filas por pedido, sin avisar. */
+const TANDA_DE_LECTURA = 1000;
+
+/**
+ * Trae solas de OpenStreetMap las tranqueras y los alambrados de una zona y
+ * los guarda como marcas fijas (decisión 052). Se llama al crear o agrandar
+ * la zona. Nunca repite lo que ya está, así que se puede reintentar.
+ */
+export async function traerTranquerasYAlambradosDeLaZona(zonaId: number): Promise<Resultado<{ resumen: string }>> {
+  const usuario = await exigirSesion();
+  if (!usuario) return falla(SIN_SESION);
+  const sinPermiso = await motivoSiNoPuedeSumarAlMapa();
+  if (sinPermiso) return falla(sinPermiso);
+
+  const supabase = await crearClienteEnElServidor();
+  const { data: zona, error: errorDeZona } = await supabase
+    .from("zonas")
+    .select(COLUMNAS_RECTANGULO)
+    .eq("id", zonaId)
+    .is("eliminado_en", null)
+    .maybeSingle();
+  if (errorDeZona) return falla(`No se pudo leer la zona: ${traducirErrorDeBase(errorDeZona.message)}`);
+  if (!zona) return falla("Esa zona ya no está. Actualizá la pantalla.");
+
+  const pregunta = await preguntarBarreras(leerRectangulo(zona as ColumnasRectangulo));
+  if (!pregunta.ok) return falla(`No se trajeron las tranqueras ni los alambrados: ${pregunta.motivo}.`);
+
+  // Lo de OpenStreetMap que ya está guardado, por tandas ordenadas por número.
+  const yaEstan: Array<Point | LineString> = [];
+  for (let desde = 0; ; desde += TANDA_DE_LECTURA) {
+    const { data, error } = await supabase
+      .from("anotaciones")
+      .select("id, geometria")
+      .eq("origen", "openstreetmap")
+      .is("eliminado_en", null)
+      .order("id")
+      .range(desde, desde + TANDA_DE_LECTURA - 1);
+    if (error) return falla(`No se pudo revisar lo que ya estaba: ${traducirErrorDeBase(error.message)}`);
+    const filas = (data ?? []) as Array<{ geometria: Point | LineString }>;
+    yaEstan.push(...filas.map((fila) => fila.geometria));
+    if (filas.length < TANDA_DE_LECTURA) break;
+  }
+
+  const barreras = barrerasNuevas(pregunta.respuesta, yaEstan);
+  let guardadas = 0;
+  for (let desde = 0; desde < barreras.nuevas.length; desde += TANDA_DE_BARRERAS) {
+    const tanda = barreras.nuevas.slice(desde, desde + TANDA_DE_BARRERAS);
+    const { data, error } = await supabase
+      .from("anotaciones")
+      .insert(tanda.map((barrera) => ({
+        sector_id: null,
+        perfil_id: usuario.id,
+        origen: "openstreetmap",
+        tipo: barrera.tipo,
+        icono: barrera.icono,
+        color: barrera.color,
+        comentario: barrera.comentario,
+        geometria: barrera.geometria,
+      })))
+      .select("id");
+    if (error) {
+      return falla(`${guardadas > 0 ? `Se guardaron ${guardadas} de ${barreras.nuevas.length}. ` : ""}No se pudo guardar el resto: ${traducirErrorDeBase(error.message)}. Reintentá: lo ya guardado no se repite.`);
+    }
+    guardadas += data?.length ?? 0;
+  }
+  if (guardadas !== barreras.nuevas.length) {
+    return falla(`Se guardaron ${guardadas} de ${barreras.nuevas.length} tranqueras y alambrados. Reintentá: lo ya guardado no se repite.`);
+  }
+
+  revalidatePath("/mapas/marcas");
+  return exito({ resumen: resumenDeBarreras(barreras) });
 }

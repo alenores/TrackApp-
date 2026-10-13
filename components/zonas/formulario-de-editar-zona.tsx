@@ -120,7 +120,7 @@ export function FormularioDeEditarZona({
       titulo: `¿Borrar «${zona.nombre}»?`,
       mensaje:
         sectoresDeLaZona.length > 0
-          ? `Se van a borrar también sus ${sectoresDeLaZona.length} sectores y las anotaciones que tengan adentro. Si te arrepentís, se puede recuperar.`
+          ? `Se van a borrar también sus ${sectoresDeLaZona.length} sectores. Las marcas que caen adentro se quedan en el mapa. Si te arrepentís, se puede recuperar.`
           : "La zona deja de verse en la app. Si te arrepentís, se puede recuperar.",
       textoDeAceptar: "Borrar",
       destructivo: true,

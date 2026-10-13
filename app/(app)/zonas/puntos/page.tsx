@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** La dirección vieja de la pestaña, que ahora se llama Anotaciones. */
+/** La dirección vieja de la pestaña de puntos: ahora todo eso está en Marcas. */
 export default async function PuntosPage() {
-  redirect("/zonas?vista=anotaciones");
+  redirect("/mapas/marcas");
 }

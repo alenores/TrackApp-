@@ -5,12 +5,41 @@ export const TRAZOS_DE_NAVEGACION = <>
   <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" />
 </>;
 
+export type SubdestinoDelMenu = {
+  href: string;
+  etiqueta: string;
+  /** Una línea que dice qué hay adentro, para el panel del celular. */
+  queHay: string;
+  icono: ReactNode;
+};
+
 type DestinoDelMenu = {
   href: string;
   etiqueta: string;
   necesitaSenal?: boolean;
   icono: ReactNode;
+  /**
+   * Las entradas de adentro, cuando el destino tiene varias pantallas. En la
+   * computadora se despliegan en la barra lateral; en el celular, al tocarlo
+   * sube un panel para elegir. Adentro de cada una no quedan botones de
+   * pestañas: la elección ya quedó atrás.
+   */
+  subdestinos?: SubdestinoDelMenu[];
+  /** Otras direcciones que también cuentan como estar en este destino. */
+  tambienEn?: string[];
 };
+
+/** Las cuatro entradas de Mapas, en el orden que decidió Ale el 2026-10-13. */
+export const SUBDESTINOS_DE_MAPAS: SubdestinoDelMenu[] = [
+  { href: "/mapas/consultas", etiqueta: "Consultas", queHay: "El mapa con todo lo marcado y las zonas.",
+    icono: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></> },
+  { href: "/mapas/marcas", etiqueta: "Marcas", queHay: "Caminos, puntos, trazos, tranqueras y alambrados.",
+    icono: <><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></> },
+  { href: "/zonas", etiqueta: "Zonas", queHay: "Las zonas y sus sectores.",
+    icono: <><rect x="4" y="4" width="16" height="16" rx="1" strokeDasharray="3 2" /><path d="M4 12h16M12 4v16" /></> },
+  { href: "/mapas/descargas", etiqueta: "Descargas", queHay: "Los mapas que bajaste a este celular.",
+    icono: <><path d="M12 4v11m0 0-4-4m4 4 4-4" /><path d="M5 19h14" /></> },
+];
 
 /** El mismo orden y los mismos íconos en celular y computadora. */
 export const DESTINOS_DEL_MENU: DestinoDelMenu[] = [
@@ -19,14 +48,24 @@ export const DESTINOS_DEL_MENU: DestinoDelMenu[] = [
   { href: "/circuitos", etiqueta: "Circuitos",
     icono: <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" /> },
   { href: "/mapa-libre", etiqueta: "Navegación libre", icono: TRAZOS_DE_NAVEGACION },
-  { href: "/zonas", etiqueta: "Mapas",
+  { href: "/mapas/consultas", etiqueta: "Mapas", necesitaSenal: true,
+    subdestinos: SUBDESTINOS_DE_MAPAS, tambienEn: ["/mapas", "/zonas"],
     icono: <><path d="M9 3 2 7v14l7-4 6 4 7-4V3l-7 4-6-4Z" /><path d="M9 3v14M15 7v14" /></> },
   { href: "/perfiles", etiqueta: "Perfiles", necesitaSenal: true,
     icono: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></> },
 ];
 
+function estaEn(href: string, pathname: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function destinoActivo(href: string, pathname: string): boolean {
-  return href === "/salidas"
-    ? pathname === "/" || pathname.startsWith("/salidas")
-    : pathname === href || pathname.startsWith(`${href}/`);
+  if (href === "/salidas") return pathname === "/" || pathname.startsWith("/salidas");
+  const destino = DESTINOS_DEL_MENU.find((cada) => cada.href === href);
+  return estaEn(href, pathname) || (destino?.tambienEn ?? []).some((otra) => estaEn(otra, pathname));
+}
+
+/** La subentrada donde está el usuario, o `null`. */
+export function subdestinoActivo(subdestinos: SubdestinoDelMenu[], pathname: string): SubdestinoDelMenu | null {
+  return subdestinos.find((cada) => estaEn(cada.href, pathname)) ?? null;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { esFija } from "@/lib/marcas/clases";
 import { usePendientes } from "@/hooks/use-pendientes";
 import {
   aplicarPendientes,
@@ -78,11 +79,14 @@ export function useAnotacionesDelCerro(delPaquete: Anotacion[]): AnotacionesDelC
 
   const puedoCambiar = useCallback(
     (anotacion: AnotacionEnPantalla) =>
-      quienSoy.categoria === "administrador" ||
-      (quienSoy.categoria === "premium" && (
-        anotacion.codigoDeLaMarca !== null ||
-        (quienSoy.id !== null && anotacion.perfilId === quienSoy.id)
-      )),
+      // Tranqueras y alambrados quedan como vinieron de OpenStreetMap.
+      !esFija(anotacion) && (
+        quienSoy.categoria === "administrador" ||
+        (quienSoy.categoria === "premium" && (
+          anotacion.codigoDeLaMarca !== null ||
+          (quienSoy.id !== null && anotacion.perfilId === quienSoy.id)
+        ))
+      ),
     [quienSoy],
   );
 

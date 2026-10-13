@@ -56,7 +56,7 @@ export function FichaDeAnotacion({
     ? COMO_SE_LLAMA[anotacion.icono]
     : anotacion?.tipo === "trazo"
       ? "Trazo"
-      : "Anotación";
+      : "Marca";
 
   // Tiene foto grande pero no chica: se subió antes de que existiera la chica.
   const tieneSoloLaGrande = Boolean(anotacion?.fotoUrl) && !anotacion?.fotoChicaUrl;
@@ -118,7 +118,7 @@ export function FichaDeAnotacion({
             {anotacion.subida.clase === "sin_subir"
               ? "Todavía no se subió: está guardada en este celular y se sube sola cuando tengas señal."
               : anotacion.subida.clase === "foto_sin_subir"
-                ? "La anotación ya se subió, pero la foto todavía no. Se reintenta sola cuando tengas señal."
+                ? "La marca ya se subió, pero la foto todavía no. Se reintenta sola cuando tengas señal."
                 : "Este cambio todavía no se subió. Se sube solo cuando tengas señal."}
             {anotacion.subida.motivo ? ` Último intento: ${anotacion.subida.motivo}` : ""}
           </p>
@@ -160,14 +160,14 @@ export function FichaDeAnotacion({
             role="alert"
             className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto"
           >
-            Esta anotación tiene una foto, pero no está en el celular. Desde
+            Esta marca tiene una foto, pero no está en el celular. Desde
             casa, con señal, abrí el inicio y bajá las fotos que faltan.
           </p>
         ) : null}
 
         {tieneSoloLaGrande && !fotoRemotaNecesaria ? (
           <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-3 text-lg leading-7 text-ambar-texto">
-            Esta anotación tiene una foto que solo se ve con internet, en la
+            Esta marca tiene una foto que solo se ve con internet, en la
             pantalla del sector. Hay que volver a cargarla para que viaje al
             celular.
           </p>
@@ -183,7 +183,7 @@ export function FichaDeAnotacion({
           <p className="text-lg leading-7 text-texto">{anotacion.comentario}</p>
         ) : foto.paso === "no_tiene" && !tieneSoloLaGrande ? (
           <p className="text-lg leading-7 text-texto-suave">
-            Esta anotación no tiene ni foto ni comentario: marca nomás el lugar.
+            Esta marca no tiene ni foto ni comentario: marca nomás el lugar.
           </p>
         ) : null}
       </div>

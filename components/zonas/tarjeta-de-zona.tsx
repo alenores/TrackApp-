@@ -17,7 +17,7 @@ export function TarjetaDeZona({ zona, soyAdministrador, cantidadDeSectores }: {
   const { confirmar, avisar } = useDialogos();
   const eliminar = async () => {
     const seguro = await confirmar({ titulo: `¿Borrar «${zona.nombre}»?`,
-      mensaje: cantidadDeSectores ? `Se borrarán también sus ${cantidadDeSectores} sectores y sus anotaciones. Si te arrepentís, se puede recuperar.`
+      mensaje: cantidadDeSectores ? `Se borrarán también sus ${cantidadDeSectores} sectores. Las marcas que caen adentro se quedan en el mapa. Si te arrepentís, se puede recuperar.`
         : "La zona dejará de verse en la app. Si te arrepentís, se puede recuperar.",
       textoDeAceptar: "Borrar", destructivo: true });
     if (!seguro) return;
@@ -47,7 +47,7 @@ export function TarjetaDeZona({ zona, soyAdministrador, cantidadDeSectores }: {
         </p> : null}
       </div>
     </TarjetaQueAbre>
-    {soyAdministrador ? <MenuDeAcciones className="absolute right-3 top-3 z-10"
+    {soyAdministrador ? <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10"
       etiqueta={`Opciones de ${zona.nombre}`} sobreFoto={Boolean(zona.fotoUrl)}
       acciones={[
         { etiqueta: "Editar", alElegir: () => router.push(`/zonas/${zona.id}/editar`) },

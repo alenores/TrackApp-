@@ -13,8 +13,6 @@ import { unzipSync } from "fflate";
  * Nunca lanza: cuando algo no cierra devuelve qué pasó y qué hacer.
  */
 
-export const FORMATOS_DE_GOOGLE_EARTH = ".kml,.kmz";
-
 export type LecturaDeGoogleEarth =
   | { ok: true; figuras: FeatureCollection }
   | { ok: false; error: string };

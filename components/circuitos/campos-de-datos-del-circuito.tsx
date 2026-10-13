@@ -1,11 +1,11 @@
 "use client";
 
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
-import { Opciones, type Opcion } from "@/components/ui/opciones";
+import { Boton } from "@/components/ui/boton";
+import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { mostrarEsfuerzo } from "@/lib/rutas/actividades";
 import { LARGO_MAXIMO_DE_LOS_TEXTOS, type DatosDelCircuito } from "@/lib/circuitos/datos";
-import { NIVELES_ESFUERZO, type NivelEsfuerzo } from "@/types/database";
+import { NIVELES_ESFUERZO } from "@/types/database";
 
 /**
  * Lo que se carga a mano en un Circuito: técnica, esfuerzo, qué llevar,
@@ -13,8 +13,6 @@ import { NIVELES_ESFUERZO, type NivelEsfuerzo } from "@/types/database";
  * El largo y el desnivel no están acá: se calculan solos.
  */
 
-const OPCIONES_DE_TECNICA: Opcion<number>[] = Array.from({ length: 10 }, (_, i) => ({ valor: i + 1, etiqueta: String(i + 1) }));
-const OPCIONES_DE_ESFUERZO: Opcion<NivelEsfuerzo>[] = NIVELES_ESFUERZO.map((nivel) => ({ valor: nivel, etiqueta: mostrarEsfuerzo(nivel) }));
 
 export function CamposDeDatosDelCircuito({ datos, alCambiar, deshabilitado = false }: {
   datos: DatosDelCircuito;
@@ -27,20 +25,36 @@ export function CamposDeDatosDelCircuito({ datos, alCambiar, deshabilitado = fal
     <Tarjeta className="space-y-4">
       <h2 className="text-xl font-bold text-texto">Datos del Circuito</h2>
       <p className="text-base text-texto-suave">El largo y el desnivel se calculan solos al guardar, con la línea del Circuito y el relieve del terreno.</p>
-      <Opciones
-        etiqueta="Técnica — cuánto hay que saber, del 1 al 10"
-        opciones={OPCIONES_DE_TECNICA}
-        elegidas={datos.tecnica === null ? [] : [datos.tecnica]}
-        alElegir={(valor) => { if (!deshabilitado) cambiar({ tecnica: datos.tecnica === valor ? null : valor }); }}
-        columnas={5}
-      />
-      <Opciones
-        etiqueta="Esfuerzo — cuánto cansa"
-        opciones={OPCIONES_DE_ESFUERZO}
-        elegidas={datos.nivelEsfuerzo === null ? [] : [datos.nivelEsfuerzo]}
-        alElegir={(valor) => { if (!deshabilitado) cambiar({ nivelEsfuerzo: datos.nivelEsfuerzo === valor ? null : valor }); }}
-        columnas={4}
-      />
+      {/* Los mismos dibujos que la tarjeta del Circuito: lo que se elige acá es lo que se ve allá. */}
+      <div role="radiogroup" aria-label="Técnica" className="space-y-1.5">
+        <p className="text-sm font-medium text-texto-suave">Técnica — cuánto hay que saber, del 1 al 10</p>
+        <div className="grid grid-cols-5 gap-2">
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((valor) => {
+            const elegida = datos.tecnica === valor;
+            return (
+              <Boton key={valor} role="radio" aria-checked={elegida} variante={elegida ? "principal" : "secundario"} disabled={deshabilitado}
+                className="flex-col gap-1 py-1.5" onClick={() => cambiar({ tecnica: elegida ? null : valor })}>
+                <span className="text-base font-semibold">{valor}</span>
+                <IndicadorTecnica tecnica={valor} />
+              </Boton>
+            );
+          })}
+        </div>
+      </div>
+      <div role="radiogroup" aria-label="Esfuerzo" className="space-y-1.5">
+        <p className="text-sm font-medium text-texto-suave">Esfuerzo — cuánto cansa</p>
+        <div className="grid grid-cols-4 gap-2">
+          {NIVELES_ESFUERZO.map((nivel) => {
+            const elegido = datos.nivelEsfuerzo === nivel;
+            return (
+              <Boton key={nivel} role="radio" aria-checked={elegido} variante={elegido ? "principal" : "secundario"} disabled={deshabilitado}
+                className="py-1.5" onClick={() => cambiar({ nivelEsfuerzo: elegido ? null : nivel })}>
+                <VelocimetroEsfuerzo esfuerzo={nivel} />
+              </Boton>
+            );
+          })}
+        </div>
+      </div>
       <AreaDeTexto
         label="Qué llevar"
         id="que-llevar-del-circuito"

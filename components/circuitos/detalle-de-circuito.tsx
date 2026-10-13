@@ -1,5 +1,6 @@
 "use client";
 
+import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PreguntaDeRegistrar } from "@/components/navegacion/registro-de-salida";
@@ -35,7 +36,6 @@ import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { CorreccionDeCamino } from "@/lib/circuitos/actualizar";
 import { ACTIVIDADES_RUTA } from "@/types/database";
-import { mostrarActividad } from "@/lib/rutas/actividades";
 
 type Completo = { circuito: CircuitoGuardado; caminos: CaminoGuardado[]; correcciones: CorreccionDeCamino[] };
 
@@ -182,12 +182,12 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
     {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
     {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
     {ficha ? <>
-      <p className="text-base text-texto">{mostrarActividad(ficha.actividad).etiqueta}</p>
+      <InsigniaDeActividad tipo={ficha.actividad} tamano="mediano" />
       {actualizado && !actualizado.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{actualizado.error}</p></Tarjeta> : null}
       {dibujo && !dibujo.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
         <div className="space-y-4">
-          {dibujoMostrado ? <CargadorDeMapa enVivo={haySenal} consultaGoogle={haySenal} principal encuadre={encuadreMostrado}
+          {dibujoMostrado ? <CargadorDeMapa enVivo consultaGoogle principal encuadre={encuadreMostrado}
             caminos={caminosDelFondo} circuito={dibujoMostrado} puntoSenalado={puntoSenalado}
             finalConservadoDelCircuito={finalMostrado} fondosDisponibles={fondosDisponibles} /> : null}
           {alturasMostradas ? <AlturasDeCircuito alturas={alturasMostradas}

@@ -6,10 +6,10 @@
 
 Las dos navegaciones siguen usando solamente mapas descargados. Las pantallas
 para dibujar o corregir zonas, sectores, Caminos, Circuitos y anotaciones usan
-el mapa propio en vivo. Las vistas de consulta con conexión muestran la imagen
-satelital de Google debajo de los datos que TrackApp ya conoce. No se crean ni
-modifican coordenadas sobre esa imagen. Una falla de Google devuelve el fondo
-satelital propio con aviso; no esconde Caminos, Circuitos ni anotaciones.
+el mapa propio en vivo. También lo usan las vistas de zonas y sectores. El mapa
+general de Mapas, el detalle de Circuitos y el mapa de Salidas muestran Google
+debajo de los datos que TrackApp ya conoce. No se crean ni modifican coordenadas
+sobre Google. Si Google falla, se informa el motivo y no se muestra otro fondo.
 
 La clave de Map Tiles API vive en el servidor. Cada consulta abre una sesión
 temporal; imágenes y créditos del área visible pasan por un puente que exige
@@ -17,18 +17,17 @@ una cuenta iniciada. El motor offline tiene una regla `NetworkOnly` anterior a
 la que guarda imágenes, y el servidor responde `no-store`. Google no alimenta
 ninguna descarga ni navegación.
 
-La interfaz ofrece un solo fondo en la consulta: Google cuando está disponible,
-el satelital propio cuando no. En el mapa de Google aparecen su logotipo
-oficial sin modificar, el crédito que devuelve Google para el área visible y
-una etiqueta que distingue la imagen de Google de los datos de TrackApp.
+Las tres vistas de consulta ofrecen solo Google. Sus fallos se muestran de la
+misma manera mediante el mapa compartido. La consulta de créditos corre en
+paralelo: una demora o falla de esa consulta no tapa ni reemplaza el mapa. Los
+créditos se muestran cuando llegan. También aparecen el logotipo oficial de
+Google y una etiqueta que distingue su fondo de los datos de TrackApp.
 
 El 2026-10-12 Ale eligió detener el acercamiento en el último nivel con imagen
-real disponible para el lugar, sin agrandar una imagen borrosa. La consulta de
-créditos de Google también informa los límites de detalle por área. El mapa usa
-ese dato para frenar el acercamiento. Si ya llegó demasiado lejos y Google deja
-de informar créditos, retrocede hasta un nivel con imagen y créditos válidos;
-eso no obliga a cambiar al satelital propio. Una falla real de Google conserva
-el aviso y el fondo alternativo.
+real disponible para el lugar. La consulta de créditos también informa límites
+de detalle por área. Una respuesta tardía no debe alejar el mapa que la persona
+ya está mirando. El 2026-10-13 Ale quitó la sustitución automática del fondo:
+en las tres consultas se mantiene Google o se informa por qué no se ve.
 
 ## Activación
 

@@ -12,15 +12,16 @@ export type RespuestaDeDetalleDeGoogle = {
   areasConDetalle: AreaConDetalleDeGoogle[];
 };
 
-/** El mayor detalle informado para el centro visible, sin ampliar una imagen vieja. */
+/** El mayor detalle del centro; si no hay coincidencia, el mayor de la vista. */
 export function maximoDetalleDeGoogle(
   areas: AreaConDetalleDeGoogle[],
   posicion: { lat: number; lng: number },
 ): number | null {
   const longitud = ((posicion.lng + 180) % 360 + 360) % 360 - 180;
-  const niveles = areas
+  const validas = areas.filter((area) =>
+    Number.isInteger(area.maxZoom) && area.maxZoom >= 0 && area.maxZoom <= 22);
+  const niveles = validas
     .filter((area) =>
-      Number.isInteger(area.maxZoom) && area.maxZoom >= 0 && area.maxZoom <= 22 &&
       Number.isFinite(area.north) && Number.isFinite(area.south) &&
       Number.isFinite(area.east) && Number.isFinite(area.west) &&
       posicion.lat >= area.south && posicion.lat <= area.north &&
@@ -29,20 +30,35 @@ export function maximoDetalleDeGoogle(
         : longitud >= area.west || longitud <= area.east),
     )
     .map((area) => area.maxZoom);
-  return niveles.length ? Math.max(...niveles) : null;
+  if (niveles.length) return Math.max(...niveles);
+  return validas.length ? Math.max(...validas.map((area) => area.maxZoom)) : null;
 }
 
-/** Recupera un nivel con créditos cuando el pedido actual supera el detalle real. */
+/** Conserva el límite conocido si la respuesta nueva no informa otro. */
+export function limiteDeGoogleSinRetroceso(
+  limiteActual: number,
+  zoomActual: number,
+  maximoInformado: number | null,
+): number {
+  return maximoInformado === null ? limiteActual : Math.max(zoomActual, maximoInformado);
+}
+
+/** Busca los créditos sin confundir su ausencia con un límite de la imagen. */
 export async function detalleConCreditosDeGoogle(
   consulta: URLSearchParams,
   posicion: { lat: number; lng: number },
   traer: (consulta: URLSearchParams) => Promise<RespuestaDeDetalleDeGoogle>,
   sigueActivo: () => boolean = () => true,
-): Promise<{ derechos: string; maximo: number } | null> {
+  alInformarMaximo?: (maximo: number | null) => void,
+): Promise<{ derechos: string | null; maximo: number | null } | null> {
   const pedido = new URLSearchParams(consulta);
-  const nivelOriginal = Number(pedido.get("zoom"));
-  let nivel = nivelOriginal;
+  let nivel = Number(pedido.get("zoom"));
   let respuesta = await traer(pedido);
+  // El límite sale de la vista solicitada. Buscar créditos en otra vista no
+  // cambia el detalle real disponible en la que está mirando la persona.
+  const maximo = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
+  if (!sigueActivo()) return null;
+  alInformarMaximo?.(maximo);
   while (!respuesta.derechos && nivel > 0 && sigueActivo()) {
     const informado = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
     nivel = informado !== null && informado < nivel ? informado : nivel - 1;
@@ -50,11 +66,8 @@ export async function detalleConCreditosDeGoogle(
     respuesta = await traer(pedido);
   }
   if (!sigueActivo()) return null;
-  if (!respuesta.derechos) throw new Error("Google no informó los créditos de la imagen. Usá el mapa Satelital.");
-  const informado = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
-  const limiteTrasRecuperar = nivel < nivelOriginal ? nivel : 22;
   return {
     derechos: respuesta.derechos,
-    maximo: informado === null ? limiteTrasRecuperar : Math.min(informado, limiteTrasRecuperar),
+    maximo,
   };
 }

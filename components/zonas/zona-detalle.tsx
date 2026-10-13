@@ -126,7 +126,6 @@ export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
         </h2>
         <CargadorDeMapa
           enVivo
-          consultaGoogle
           principal
           otrosCircuitos={circuitosPrendidos}
           controlesAdicionales={

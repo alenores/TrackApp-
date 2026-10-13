@@ -1,4 +1,5 @@
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import type { Resultado } from "@/lib/datos/resultado";
 import type { ConsideracionDelCircuito, ResumenDelCircuito } from "@/lib/circuitos/resumen";
@@ -33,7 +34,10 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
   return (
     <Tarjeta className="space-y-3">
       <h2 className="text-xl font-bold text-texto">Resumen del Circuito</h2>
-      <p className="text-base text-texto">{kilometros(datos.metrosTotales)} · {mostrarActividad(datos.actividad).etiqueta}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-base text-texto">{kilometros(datos.metrosTotales)}</p>
+        <InsigniaDeActividad tipo={datos.actividad} tamano="mediano" />
+      </div>
       <p className="text-base text-texto">{porciento(datos.propia.porcentaje)} dibujado solo para este Circuito · {porciento(datos.sobreCaminos.porcentaje)} tomado de Caminos.</p>
       <p className="text-base text-texto">En los Caminos: por explorar {kilometros(datos.pasos.por_explorar.metros)} ({datos.tramosPorExplorar} {datos.tramosPorExplorar === 1 ? "tramo" : "tramos"}); transitables {kilometros(datos.pasos.transitable.metros)}; a pie con el equipo {kilometros(datos.pasos.a_pie.metros)} ({datos.tramosAPie} {datos.tramosAPie === 1 ? "tramo" : "tramos"}); sin paso {kilometros(datos.pasos.sin_paso.metros)} ({datos.tramosSinPaso} {datos.tramosSinPaso === 1 ? "tramo" : "tramos"}).</p>
       <p className="text-base text-texto">Dificultad sobre el Circuito total: verde {porciento(datos.complejidades.facil.porcentaje)}, amarillo {porciento(datos.complejidades.media.porcentaje)}, rojo {porciento(datos.complejidades.dificil.porcentaje)}.</p>

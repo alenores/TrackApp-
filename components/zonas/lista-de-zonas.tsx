@@ -2,7 +2,6 @@
 
 import { TarjetaDeZona } from "@/components/zonas/tarjeta-de-zona";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { BotonAgregar } from "@/components/ui/boton-agregar";
 import type { Zona } from "@/types/database";
 
 /**
@@ -28,14 +27,6 @@ export function ListaDeZonas({
 }: ZonaListProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold uppercase text-texto">Zonas</h2>
-
-        {soyAdministrador ? (
-          <BotonAgregar href="/zonas/dibujar" etiqueta="Nueva zona" />
-        ) : null}
-      </div>
-
       {avisoDeListaIncompleta ? (
         <Tarjeta franja="ambar">
           <p role="alert" className="text-sm leading-6 text-ambar-texto">

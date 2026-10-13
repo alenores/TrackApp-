@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   circuitosSinMapa,
+  mapaDelCircuito,
   comoLista,
   mapasPerdidos,
   rutasSinMapa,
@@ -224,5 +225,18 @@ describe("los Circuitos que nunca tuvieron mapa", () => {
   it("con un paquete viejo sin la lista de sectores, usa el rectángulo", () => {
     const sinMapa = circuitosSinMapa([circuito(1, undefined)], sectores, new Set(), []);
     expect(sinMapa[0].sectores.map((cada) => cada.id).sort()).toEqual([10, 11, 12]);
+  });
+});
+
+describe("cuánto mapa tiene bajado cada Circuito", () => {
+  const sectores = [sector(10, -64.95), sector(11, -64.8), sector(12, -64.7)];
+
+  it("cuenta los sectores de su línea que ya tienen el mapa en el celular", () => {
+    expect(mapaDelCircuito(circuito(1, [10, 11]), sectores, new Set([10]))).toEqual({ bajados: 1, total: 2 });
+    expect(mapaDelCircuito(circuito(1, [10, 11]), sectores, new Set([10, 11, 12]))).toEqual({ bajados: 2, total: 2 });
+  });
+
+  it("un Circuito que no cruza ningún sector dice que no hay nada para bajar", () => {
+    expect(mapaDelCircuito(circuito(1, []), sectores, new Set([10]))).toEqual({ bajados: 0, total: 0 });
   });
 });

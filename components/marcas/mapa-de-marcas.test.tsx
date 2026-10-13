@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { MapaGeneralDeZonas } from "@/components/zonas/mapa-general-de-zonas";
+import { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
 import type { Anotacion, Zona } from "@/types/database";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 
@@ -24,7 +24,7 @@ vi.mock("@/components/mapa/cargador-de-mapa", () => ({
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("mapa general", () => {
+describe("mapa de las marcas", () => {
   it("muestra solo perímetros de zona, todos los puntos y la ficha que abre su detalle", async () => {
     const zona = {
       id: 1,
@@ -37,7 +37,7 @@ describe("mapa general", () => {
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(
-        <MapaGeneralDeZonas zonas={[zona]} anotaciones={[punto]} sectoresPorZona={{ 1: 4 }} />,
+        <MapaDeMarcas zonas={[zona]} anotaciones={[punto]} actividad="trekking" sectoresPorZona={{ 1: 4 }} />,
       ));
       expect(contenedor.querySelector("[data-clases]")?.getAttribute("data-clases")).toBe("zona_general");
       expect(contenedor.querySelector("[data-puntos]")?.getAttribute("data-puntos")).toBe("1");
@@ -64,7 +64,7 @@ describe("mapa general", () => {
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(
-        <MapaGeneralDeZonas zonas={[zona]} anotaciones={[]} sectoresPorZona={{ 1: 4 }} />,
+        <MapaDeMarcas zonas={[zona]} anotaciones={[]} actividad="trekking" sectoresPorZona={{ 1: 4 }} />,
       ));
       await act(async () => ([...contenedor.querySelectorAll("button")].find((boton) => boton.textContent === "Señalar zona") as HTMLButtonElement).click());
       expect(contenedor.querySelector("[data-ficha-zona]")).not.toBeNull();

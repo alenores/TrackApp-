@@ -36,7 +36,7 @@ export async function GET(pedido: Request) {
         .replace(/AIza[\w-]+/g, "[clave oculta]")
         .slice(0, 300);
       console.error("Google rechazó los créditos del mapa", { estado: respuesta.status, area: numeros, motivo });
-      return respuestaDeGoogle(`Google rechazó los créditos de la imagen (${respuesta.status}): ${motivo}. Cambiá al mapa Satelital.`, 502);
+      return respuestaDeGoogle(`Google rechazó los créditos de la imagen (${respuesta.status}): ${motivo}. Mové el mapa para reintentar.`, 502);
     }
     const datos = await respuesta.json() as { copyright?: string; maxZoomRects?: AreaConDetalleDeGoogle[] };
     if (!datos.copyright) {
@@ -53,6 +53,6 @@ export async function GET(pedido: Request) {
       areasConDetalle: Array.isArray(datos.maxZoomRects) ? datos.maxZoomRects : [],
     }, { headers: { "Cache-Control": SIN_GUARDAR_GOOGLE } });
   } catch (error) {
-    return respuestaDeGoogle(`No se pudieron traer los créditos de Google: ${motivoDeGoogle(error)}. Cambiá al mapa Satelital.`, 502);
+    return respuestaDeGoogle(`No se pudieron traer los créditos de Google: ${motivoDeGoogle(error)}. Mové el mapa para reintentar.`, 502);
   }
 }

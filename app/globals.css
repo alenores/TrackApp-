@@ -210,6 +210,8 @@
 }
 
 @theme inline {
+  --text-credito-google: 0.6875rem;
+  --text-credito-google--line-height: 0.875rem;
   --color-fondo: var(--fondo);
   --color-superficie: var(--superficie);
   --color-superficie-alta: var(--superficie-alta);

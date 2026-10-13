@@ -114,7 +114,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     async (anotacion: AnotacionEnPantalla) => {
       if (!cerro.puedoCambiar(anotacion)) return;
       const seguro = await confirmar({
-        titulo: "¿Borrar esta anotación?",
+        titulo: "¿Borrar esta marca?",
         mensaje:
           anotacion.subida?.clase === "sin_subir"
             ? "Todavía no se había subido: se borra de este celular y nadie la va a ver."
@@ -144,7 +144,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
 
   // Agregar y elegir cuáles se ven van juntos, detrás de un solo círculo.
   const boton = (
-    <BotonRedondo etiqueta="Anotaciones" variante="principal" onClick={() => setEligiendoFiltro(true)}>
+    <BotonRedondo etiqueta="Marcas" variante="principal" onClick={() => setEligiendoFiltro(true)}>
       {ICONOS_DEL_CERRO.anotaciones}
     </BotonRedondo>
   );

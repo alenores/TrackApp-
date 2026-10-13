@@ -69,7 +69,8 @@ export function Armazon({
     pathname === "/" ||
     pathname === "/circuitos" ||
     pathname === "/zonas" ||
-    /^\/zonas\/(nueva|\d+(\/(editar|sectores\/(nueva|\d+\/(editar|anotaciones))))?)$/.test(
+    /^\/mapas\/(consultas|marcas)$/.test(pathname) ||
+    /^\/zonas\/(nueva|\d+(\/(editar|sectores\/(nueva|\d+\/editar)))?)$/.test(
       pathname,
     );
 
@@ -80,9 +81,9 @@ export function Armazon({
         sinSubir > 0 || salidasSinSubir > 0
           ? `Se borra de este celular todo lo bajado, y también ${[
               sinSubir === 1
-                ? "una anotación que marcaste sin señal y todavía no se subió"
+                ? "una marca que hiciste sin señal y todavía no se subió"
                 : sinSubir > 1
-                  ? `${sinSubir} anotaciones que marcaste sin señal y todavía no se subieron`
+                  ? `${sinSubir} marcas que hiciste sin señal y todavía no se subieron`
                   : null,
               salidasSinSubir === 1
                 ? "una salida registrada que todavía no se subió"

@@ -17,7 +17,6 @@ import {
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
-import { anotacionesDelLugar } from "@/lib/anotaciones/lugar";
 
 type EditarSectorFormProps = {
   zonaId: number;
@@ -45,9 +44,6 @@ export function FormularioDeEditarSector({
   const hermanos = (paquete?.sectores ?? []).filter(
     (cada) => cada.zonaId === zonaId && cada.id !== sectorId,
   );
-  const anotacionesDentro = sector
-    ? anotacionesDelLugar(paquete?.anotaciones ?? [], [sector])
-    : [];
 
   // Cuando aparece el sector guardado, se cargan los campos una sola vez.
   if (sector && semilla !== sector.id) {
@@ -129,10 +125,7 @@ export function FormularioDeEditarSector({
   const alBorrar = async () => {
     const seguro = await confirmar({
       titulo: `¿Borrar «${sector.nombre}»?`,
-      mensaje:
-        anotacionesDentro.length > 0
-          ? `Se van a borrar también sus ${anotacionesDentro.length} anotaciones. Si te arrepentís, se puede recuperar.`
-          : "El sector deja de verse en la app. Si te arrepentís, se puede recuperar.",
+      mensaje: "El sector deja de verse en la app. Las marcas que caen adentro se quedan en el mapa. Si te arrepentís, se puede recuperar.",
       textoDeAceptar: "Borrar",
       destructivo: true,
     });

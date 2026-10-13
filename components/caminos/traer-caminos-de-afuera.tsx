@@ -150,7 +150,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
         ];
         if (anotaciones.length > 0) {
           const resultado = await crearAnotacionesEnTanda(null, anotaciones, "google_earth");
-          if (!resultado.ok) nuevoError = `Los Caminos guardados siguen en el mapa, pero las anotaciones no se sumaron: ${resultado.error}`;
+          if (!resultado.ok) nuevoError = `Los Caminos guardados siguen en el mapa, pero los puntos y trazos no se sumaron: ${resultado.error}`;
         }
         if (!nuevoError) {
           anotacionesHechas = true;

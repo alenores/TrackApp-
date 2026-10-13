@@ -1,0 +1,91 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import { FormularioDeAnotacion } from "@/components/anotaciones/formulario-de-anotacion";
+import { BotonVolver } from "@/components/ui/boton-volver";
+import { Tarjeta } from "@/components/ui/tarjeta";
+import { useAnotaciones } from "@/hooks/use-anotaciones";
+import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
+
+/**
+ * Marcar un punto o dibujar un trazo, o cambiar uno que ya está, desde
+ * Marcas. Se dibuja **sobre el mapa propio**, nunca sobre Google (decisión
+ * 050).
+ *
+ * Al guardar, cerrar o borrar vuelve a la lista con lo que pasó.
+ */
+
+export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo" } | { clase: "existente"; id: number };
+
+export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (mensaje: string | null) => void }) {
+  const anotar = useAnotaciones({ clase: "cordoba" });
+  const empezo = useRef(false);
+  const huboFormulario = useRef(false);
+  const datosListos = anotar.estado !== "abriendo" && anotar.estado !== "sin_datos";
+
+  // Arranca una sola vez, apenas están los datos: marcando lo nuevo o con lo
+  // existente abierto en el formulario.
+  useEffect(() => {
+    if (empezo.current || !datosListos) return;
+    empezo.current = true;
+    if (que.clase === "existente" && !anotar.anotaciones.some((cada) => cada.id === que.id)) {
+      alVolver("Esa marca ya no está en el mapa: alguien la borró. La lista ya está al día.");
+      return;
+    }
+    if (que.clase === "existente") anotar.abrir(que.id);
+    else if (que.tipo === "punto") anotar.empezarUnPunto();
+    else anotar.empezarUnTrazo();
+  }, [datosListos, que, anotar, alVolver]);
+
+  // Guardado, borrado o cerrado: el formulario se fue y se vuelve a la lista.
+  useEffect(() => {
+    if (anotar.borrador !== null) {
+      huboFormulario.current = true;
+      return;
+    }
+    if (huboFormulario.current && !anotar.guardando) alVolver(anotar.mensaje);
+  }, [anotar.borrador, anotar.guardando, anotar.mensaje, alVolver]);
+
+  const borrador = anotar.borrador;
+  const queHacer = anotar.marcando
+    ? borrador?.tipo === "trazo"
+      ? "Tocá el mapa por donde va el trazo, de a un punto por vez."
+      : "Tocá el mapa donde está el lugar."
+    : null;
+  const titulo = que.clase === "existente"
+    ? borrador?.tipo === "trazo" ? "Editar el trazo" : "Editar el punto"
+    : que.tipo === "trazo" ? "Trazo nuevo" : "Punto nuevo";
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <BotonVolver alVolver={() => alVolver(null)} disabled={anotar.guardando} />
+        <h2 className="text-xl font-bold text-texto">{titulo}</h2>
+      </div>
+      {anotar.estado === "abriendo" ? (
+        <Tarjeta><p role="status" className="text-base text-texto-suave">Abriendo las marcas…</p></Tarjeta>
+      ) : anotar.estado === "sin_datos" ? (
+        <Tarjeta franja="ambar">
+          <p role="alert" className="text-base text-texto">{anotar.aviso ?? "No llegaron los datos de la app."} Recargá la pantalla para volver a intentar.</p>
+        </Tarjeta>
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-[1fr_minmax(20rem,26rem)]">
+          <div className="space-y-2">
+            <CargadorDeMapa
+              enVivo
+              principal
+              encuadre={anotar.enfoque ?? CORDOBA_COMPLETA}
+              anotaciones={anotar.enElMapa}
+              marcandoPunto={anotar.marcando}
+              alMarcarPunto={anotar.alTocarElMapa}
+              mostrarFichaAnotacion={false}
+            />
+            {queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
+          </div>
+          <FormularioDeAnotacion anotar={anotar} />
+        </div>
+      )}
+    </div>
+  );
+}

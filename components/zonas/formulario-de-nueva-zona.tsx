@@ -1,5 +1,6 @@
 "use client";
 
+import { BarrerasDeLaZona } from "@/components/zonas/barreras-de-la-zona";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Enlace } from "@/components/ui/enlace";
@@ -50,6 +51,8 @@ export function FormularioDeNuevaZona() {
   const [error, setError] = useState<string | null>(null);
   const [seleccion, setSeleccion] = useState<{ filas: number; columnas: number } | null>(null);
   const [previsualizacion, setPrevisualizacion] = useState<Rectangulo[]>([]);
+  /** La zona recién guardada, mientras se traen sus tranqueras y alambrados. */
+  const [guardadaId, setGuardadaId] = useState<number | null>(null);
 
   const armado = rectanguloDeLosCampos(campos);
 
@@ -85,8 +88,17 @@ export function FormularioDeNuevaZona() {
 
     // Lo que acabás de guardar tiene que aparecer ya, sin cerrar la app.
     void ponerAlDiaDespuesDeGuardar();
-    router.push(`/zonas/${resultado.datos.zonaId}`);
+    setGuardadaId(resultado.datos.zonaId);
   };
+
+  if (guardadaId !== null) {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-xl font-semibold text-texto">Nueva zona</h1>
+        <BarrerasDeLaZona zonaId={guardadaId} alSeguir={() => router.push(`/zonas/${guardadaId}`)} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

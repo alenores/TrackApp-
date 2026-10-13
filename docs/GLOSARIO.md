@@ -15,27 +15,35 @@
 
 **Mapa de Google**
 Imagen satelital que se mira con conexión en las fichas y mapas de consulta.
-Muestra Caminos, Circuitos, zonas, sectores y anotaciones que TrackApp ya tiene.
+Muestra Caminos, Circuitos, zonas, sectores y marcas que TrackApp ya tiene.
 No se usa para editar ni para navegar; no se descarga. Hasta activarlo se ve
 el satelital propio; si Google activado falla, la consulta lo explica.
 
 
 **Mapas**
-El módulo para explorar Córdoba. Tiene pestañas de zonas, mapa general,
-Caminos, Anotaciones y descargas. Administrador y Premium pueden sumar y editar
-el contenido propio del mapa; el Administrador también puede editar el ajeno.
+El módulo para explorar Córdoba, **solo con conexión**: sin señal desaparece
+del menú. Tiene cuatro entradas en el menú, sin pestañas adentro: Consultas,
+Marcas, Zonas y Descargas. Ver decisión 052.
 
-**Mapa general**
-La vista de Córdoba dentro de Mapas. Dibuja el perímetro y el nombre de cada
-zona, más todos los Caminos, puntos y trazos. Los sectores se ven al abrir una
-zona.
-Al hacer clic o tocar una zona muestra su ficha breve y el acceso «Ver zona».
-Al tocar una anotación muestra su nombre, comentario y foto disponible; en PC,
-el cursor cambia al pasar sobre un punto.
+**Consultas**
+La entrada de Mapas para todo público: el mapa con todas las marcas y las
+zonas, para mirar. Filtros simples: la actividad y prender o apagar Caminos,
+Zonas y Detalles. Al tocar una zona muestra su ficha breve; al tocar un punto,
+su nombre, comentario y foto. Reemplazó al «mapa general».
+
+**Detalles**
+En Consultas, el grupo que junta puntos, trazos, tranqueras y alambrados: todo
+lo marcado que no es un Camino.
+
+**Lista y mapa**
+Los dos momentos de mirar marcas: elegir qué ver y mirarlo. En la computadora
+van lado a lado; en el celular el mapa ocupa la pantalla y la lista es un
+panel que sube desde abajo y, bajado, queda como una **barrita** con el
+resumen.
 
 **Descargas**
-La pestaña de Mapas que muestra los mapas bajados en este celular, el espacio
-que ocupan y el botón para sacar cada uno. Anda sin señal.
+La entrada de Mapas que muestra los mapas bajados en este celular, el espacio
+que ocupan y el botón para sacar cada uno. Como todo Mapas, con conexión.
 
 **Imagen de mapa (tile)**
 El mapa se arma como un mosaico de imágenes cuadradas. Cada nivel de acercamiento
@@ -114,23 +122,28 @@ Lo mismo, con las imágenes de la cartografía descargadas.
 **Nivel de acercamiento (zoom)**
 Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sendero).
 
-**Anotación**
-Algo que se agrega encima del mapa para enriquecerlo. Puede ser un punto o un
-trazo, con comentario y foto. La hace el administrador desde la computadora o
-cualquier usuario desde la navegación. **Ninguna es privada**: todos ven todas,
-y cada uno elige cuáles mostrar. Ver `decisiones/023`.
+**Marca**
+Todo lo que se dibuja encima del mapa: Caminos, puntos, trazos, tranqueras y
+alambrados. **Ninguna es privada**: todos ven todas, y cada uno elige cuáles
+mirar. Reemplaza a «anotación», que se retiró el 2026-10-13 y solo queda en el
+código y en la tabla vieja de la base. Ver decisión 052.
 
-**Anotar**
-Marcar una anotación desde los mapas del cerro: el círculo de anotaciones y
-«Agregar una anotación». Queda en el celular y sube sola cuando hay señal.
+**Marcas (entrada de Mapas)**
+La lista de todas las marcas con tildes, grupos y filtros, y el mapa con lo
+tildado. Todos la consultan; Administrador y Premium además agregan y editan
+con el «+» y los tres puntos.
 
-**Anotación pendiente**
+**Marcar en el cerro**
+Agregar un punto o un trazo desde los mapas del cerro: el círculo «Marcas» y
+«Agregar una marca». Queda en el celular y sube sola cuando hay señal.
+
+**Marca pendiente**
 Lo que se marcó, cambió o borró sin señal y espera en el celular para subirse.
 Sube sola con señal y la navegación cerrada. Mientras espera se ve en tu mapa
 con un aviso, y el inicio dice cuántas quedan y por qué falló la última vez.
 
-**Casillas de anotaciones**
-Las tres opciones de qué anotaciones ver en los mapas del cerro: las tuyas, las
+**Casillas de marcas**
+Las tres opciones de qué marcas ver en los mapas del cerro: las tuyas, las
 del administrador y las de otros usuarios. Se combinan como quieras y se
 recuerdan en el celular.
 
@@ -150,29 +163,32 @@ Mientras esté pendiente no se cuenta como perdido: si se contara, la app le
 ofrecería recuperar justo lo que él decidió tirar.
 
 **Punto**
-Anotación de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
+Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera).
-Puede llevar comentario y foto. Se ubica tocando el mapa o pegando la coordenada
-de Google Earth. No necesita pertenecer a un sector: el administrador también lo
-carga desde **Mapas → Anotaciones**, y lo mismo vale para un trazo. Se abre
-tocándolo en el mapa o en la lista, y ahí se edita o se borra. Se descarga con
-las demás anotaciones, aunque no se haya bajado el mapa de un sector.
-Ver decisión 027.
+Puede llevar comentario y foto. Se ubica tocando el mapa propio o pegando la
+coordenada de Google Earth. No pertenece a ningún sector: se carga desde
+**Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las demás
+marcas, aunque no se haya bajado ningún mapa. Ver decisiones 027 y 052.
 
 **Trazo**
-Anotación de una línea dibujada a mano uniendo varios puntos, con color
+Marca de una línea dibujada a mano uniendo varios puntos, con color
 elegible. Sirve para marcar lo que el mapa no muestra: un río, una huella, un
 alambrado. Se dibuja de a toques, un punto por toque. No confundir con el
 **sendero**, que es el camino a pie que ya trae el fondo del mapa.
 
 **Traer de afuera**
-Sumar anotaciones a un sector desde otro lado, en vez de dibujarlas: desde un
-archivo de Google Earth, o las tranqueras y alambrados de OpenStreetMap. Con
-vista previa antes de guardar. Ver decisión 010.
+Sumar marcas desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX), en
+vez de dibujarlas. Cada línea se decide como Camino, trazo u omitir; cada
+punto se suma o no. Con vista previa antes de guardar. Ver decisión 052.
 
 **Tranquera**
-Ícono de punto para el portón de un alambrado: marca por dónde se pasa. Las
-trae OpenStreetMap, que las tiene; el mapa de fondo no.
+El portón de un alambrado: marca por dónde se pasa. La trae OpenStreetMap sola
+al crear una zona (el mapa de fondo no la tiene) y queda fija: no se corrige
+ni se borra. Un punto con ícono de tranquera marcado a mano es un punto.
+
+**Alambrado**
+Un alambrado traído de OpenStreetMap al crear una zona, entero aunque cruce el
+borde. Como la tranquera, queda fijo.
 
 **Cobertura**
 La relación entre una ruta y los sectores que la cruzan. Un tramo puede estar
@@ -235,7 +251,7 @@ En el mapa se ven todos los Caminos: los de la actividad elegida tienen
 prioridad visual y los de otras actividades siguen visibles y consultables.
 Si la línea quedó mal dibujada, un usuario autorizado puede corregir ese
 mismo Camino en la app, sin crear otro.
-No es una anotación de trazo ni una salida planificada. Ale confirmó el nombre
+No es un trazo ni una salida planificada. Ale confirmó el nombre
 «Caminos» el 2026-10-05.
 
 **Circuito** — *implementado en su propio módulo*
@@ -264,7 +280,7 @@ Lleva técnica, esfuerzo, qué llevar, complicaciones y comentario cargados a
 mano; su largo, su desnivel y su **gráfico de alturas** se calculan solos con
 la línea vigente. La lista de Circuitos se abre desde el menú; Salidas es el
 inicio de la app (decisión 051). Al navegarlo
-se puede registrar la Salida, anotar, prender otros Circuitos y ver las
+se puede registrar la Salida, marcar, prender otros Circuitos y ver las
 alturas con «Estás acá». Ver decisión 049.
 
 **Circuitos en el mapa**
@@ -302,12 +318,12 @@ Agrupación de sectores, con nombre, descripción y un rectángulo propio de dos
 puntos. **El rectángulo de la zona no se descarga nunca**: existe solo para
 medir qué parte de su territorio todavía no tiene sector encima. Su propósito
 de producto es organizar la cobertura y descarga de mapas; no clasifica ni
-delimita Caminos, Circuitos o anotaciones (decisión 035).
+delimita Caminos, Circuitos ni marcas (decisión 035).
 
 **Sector**
 Rectángulo alineado al norte dentro de una zona, definido por **dos puntos**: la
 esquina noroeste y la sudeste. Es la unidad que se descarga; no define a qué
-Camino, Circuito o anotación pertenece un lugar (decisión 035).
+Camino, Circuito o marca pertenece un lugar (decisión 035).
 
 **Cobertura**
 Cuánto de una ruta cae adentro de algún sector, y de esos sectores cuáles están
@@ -321,13 +337,13 @@ faltan crear antes de que hagan falta.
 
 **Paquete**
 Todo lo liviano que la app guarda en el celular para funcionar sin señal: las
-rutas con sus textos, las zonas, los sectores y las anotaciones. Se actualiza
+rutas con sus textos, las zonas, los sectores y las marcas. Se actualiza
 solo, sin preguntar nada. **Las líneas de los recorridos no van adentro**: pesan
 demasiado y viajan aparte.
 
 **Navegación libre**
 El mapa del cerro sin seguir una ruta: todos los mapas bajados, todas las
-anotaciones y las rutas que elijas (todas, ninguna o algunas), con tu punto de
+marcas y las rutas que elijas (todas, ninguna o algunas), con tu punto de
 GPS. Abre mostrando todas las zonas desde arriba y, cuando el GPS responde, va
 a donde estás. Tiene las mismas reglas que la navegación: nunca consulta
 internet.
@@ -373,17 +389,17 @@ entrega pedazos a un navegador. Ver `decisiones/017`.
 
 **Depósito**
 Donde el celular guarda lo pesado: las líneas de los recorridos, los pedazos de
-mapa, las fotos chicas de las anotaciones y las anotaciones pendientes. Es distinto del **paquete**, que es lo
+mapa, las fotos chicas de las marcas y las marcas pendientes. Es distinto del **paquete**, que es lo
 liviano y dibuja las pantallas al instante.
 
-**Foto de anotación**
-La foto del lugar que marca una anotación: para lo que el mapa no puede mostrar
+**Foto de una marca**
+La foto del lugar que marca un punto o un trazo: para lo que el mapa no puede mostrar
 —si el vado se cruza, cuál de los dos senderos es el bueno—. Tiene dos tamaños:
 la **foto grande** y la **foto chica**. Ver `decisiones/023`.
 
 **Foto grande**
-La foto de una anotación en tamaño completo, hasta 2 MB. Se ve con internet, en
-las pantallas de zonas y sectores. **Nunca baja al celular.**
+La foto de una marca en tamaño completo, hasta 2 MB. Se ve con internet, en
+Mapas. **Nunca baja al celular.**
 
 **Foto chica**
 La misma foto, achicada para la pantalla del celular: unos 120 KB como máximo.
