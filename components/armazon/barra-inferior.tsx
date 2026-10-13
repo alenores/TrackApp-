@@ -23,6 +23,8 @@ export function BarraInferior() {
   const haySenal = useHaySenal();
   const pathname = usePathname();
 
+  // Sin precarga automática: Salidas y Perfiles se piden solo si entrás, y el
+  // resto ya quedó listo al abrir (usePantallasListasAlAbrir).
   // Un destino con varias pantallas adentro, como Mapas, lleva a su pantalla
   // de tarjetas para elegir: así cada pantalla queda limpia, sin pestañas.
   return (
@@ -31,7 +33,7 @@ export function BarraInferior() {
       {DESTINOS_DEL_MENU.filter((item) => haySenal || !item.necesitaSenal).map((item) => {
         const activo = destinoActivo(item.href, pathname);
         const clase = `${CLASE_DEL_DESTINO} ${activo ? "font-semibold text-acento-borde" : "text-texto-suave hover:text-texto"}`;
-        return <Link key={item.href} href={item.href} className={clase}>
+        return <Link key={item.href} href={item.href} prefetch={false} className={clase}>
           <ContenidoDelDestino etiqueta={item.etiqueta} icono={item.icono} activo={activo} />
         </Link>;
       })}

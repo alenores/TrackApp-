@@ -24,15 +24,15 @@ import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
 import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
-import type { CategoriaUsuario } from "@/types/database";
+import { olvidarLoDeEstaApertura, unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 type Vista = { tipo: "lista" } | { tipo: "nuevo" } | { tipo: "detalle"; id: number }
   | { tipo: "editar"; circuito: CircuitoGuardado; partes: ParteDibujada[];
     finalSeparado: boolean; caminos: CaminoGuardado[] };
 
-export function PantallaDeCircuitos({ categoria, miPerfilId }: {
-  categoria: CategoriaUsuario; miPerfilId: string | null;
-}) {
+export function PantallaDeCircuitos() {
+  const { miCategoria: categoria, miPerfilId } = useQuienSoy();
   const [vista, setVista] = useState<Vista>({ tipo: "lista" });
   const [circuitos, setCircuitos] = useState<CircuitoGuardado[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -43,10 +43,12 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
   // Lo que le falta a este celular se dice acá, en casa y con señal.
   const loQueFalta = useLoQueFalta(paquete);
   const sectoresConMapa = useSectoresConMapaBajado();
+  // Después de guardar o retirar: se olvida lo pedido y se trae fresco.
   const cargar = useCallback(async () => {
     setCargando(true);
+    olvidarLoDeEstaApertura();
     try {
-      const resultado = await leerCircuitos();
+      const resultado = await unaVezPorApertura("circuitos", leerCircuitos);
       if (resultado.ok) { setCircuitos(resultado.datos); setAviso(null); }
       else setAviso(resultado.error);
     } catch (error) {
@@ -56,7 +58,8 @@ export function PantallaDeCircuitos({ categoria, miPerfilId }: {
   useEffect(() => {
     if (!haySenal) return;
     let vigente = true;
-    void leerCircuitos().then((resultado) => {
+    // Una vez por apertura: volver a entrar no le pregunta de nuevo a la base.
+    void unaVezPorApertura("circuitos", leerCircuitos).then((resultado) => {
       if (!vigente) return;
       if (resultado.ok) { setCircuitos(resultado.datos); setAviso(null); }
       else setAviso(resultado.error);

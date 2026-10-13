@@ -169,6 +169,7 @@ export function BloqueDeCobertura({
       {haySenal && hayHueco && zonaParaCrearSector !== null ? (
         <Link
           href={`/zonas/${zonaParaCrearSector}/sectores/nueva`}
+          prefetch={false}
           className="flex min-h-10 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-4 text-sm font-semibold text-texto transition-colors hover:bg-superficie"
         >
           Crear un sector que lo cubra
@@ -179,6 +180,7 @@ export function BloqueDeCobertura({
       {haySenal && hayHueco && zonaParaCrearSector === null ? (
         <Link
           href="/zonas/nueva"
+          prefetch={false}
           className="flex min-h-10 w-full items-center justify-center rounded-xl border border-borde-fuerte bg-superficie-alta px-4 text-sm font-semibold text-texto transition-colors hover:bg-superficie"
         >
           Crear una zona acá

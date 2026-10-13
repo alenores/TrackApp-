@@ -17,18 +17,18 @@ import {
   type CamposDelTerritorio,
 } from "@/lib/territorio/esquinas";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 type EditarSectorFormProps = {
   zonaId: number;
   sectorId: number;
-  miPerfilId: string | null;
 };
 
 export function FormularioDeEditarSector({
   zonaId,
   sectorId,
-  miPerfilId,
 }: EditarSectorFormProps) {
+  const { miPerfilId } = useQuienSoy();
   const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
   const { confirmar, avisar } = useDialogos();

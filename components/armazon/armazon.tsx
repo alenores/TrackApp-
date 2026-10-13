@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { borrarLoGuardadoEnElCelular } from "@/lib/offline/salir";
 import { crearClienteEnElNavegador } from "@/lib/supabase/navegador";
 import { SelloDeVersion } from "@/components/armazon/sello-de-version";
@@ -11,10 +11,12 @@ import { BarraInferior } from "@/components/armazon/barra-inferior";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
 import { Avatar } from "@/components/ui/avatar";
 import { ProveedorDeBarraDeProgreso } from "@/components/armazon/barra-de-progreso";
+import { ProveedorDeQuienSoy } from "@/components/armazon/quien-soy";
 import { MenuLateral } from "@/components/armazon/menu-lateral";
 import { BotonFlotanteDeAgregar } from "@/components/ui/boton-flotante-de-agregar";
 import { useDialogos } from "@/components/ui/dialogos";
 import { usePendientes } from "@/hooks/use-pendientes";
+import { usePantallasListasAlAbrir } from "@/hooks/use-pantallas-listas-al-abrir";
 import { useSubirPendientes } from "@/hooks/use-subir-pendientes";
 import { useSubirRegistros } from "@/hooks/use-subir-registros";
 import { useRegistros } from "@/hooks/use-registros";
@@ -51,10 +53,15 @@ export function Armazon({
   // Las salidas registradas navegando que todavía no subieron, en curso o no.
   const salidasSinSubir = useRegistros().length;
 
+  const quienSoy = useMemo(() => ({ miPerfilId, miCategoria }), [miPerfilId, miCategoria]);
+
   // Quién sos, guardado para la navegación, que no le pregunta a la base.
   useEffect(() => {
     anotarMiPerfil(miPerfilId, miCategoria);
   }, [miPerfilId, miCategoria]);
+
+  // Las pantallas de todos los días quedan listas al abrir: entrar no sale a internet.
+  usePantallasListasAlAbrir();
 
   // Lo marcado sin señal sube solo apenas hay señal y no estás navegando.
   useSubirPendientes(miPerfilId, miCategoria);
@@ -115,6 +122,7 @@ export function Armazon({
   };
 
   return (
+    <ProveedorDeQuienSoy quienSoy={quienSoy}>
     <ProveedorDeBarraDeProgreso>
       <div className="flex h-full min-h-0 bg-fondo">
         <aside className="hidden w-64 shrink-0 border-r border-borde bg-superficie/80 lg:block">
@@ -128,7 +136,7 @@ export function Armazon({
               <div className="absolute inset-0 bg-slate-950/40" />
 
               <div className="relative z-10 flex items-center justify-between gap-2">
-                <Link href="/" className="flex items-center gap-2.5 min-w-0">
+                <Link href="/" prefetch={false} className="flex items-center gap-2.5 min-w-0">
                   <img
                     src="/logo-identidad.png"
                     alt="TrackApp"
@@ -173,5 +181,6 @@ export function Armazon({
         ) : null}
       </div>
     </ProveedorDeBarraDeProgreso>
+    </ProveedorDeQuienSoy>
   );
 }

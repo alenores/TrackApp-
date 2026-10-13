@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { PantallaDeZonas } from "@/components/zonas/pantalla-de-zonas";
-import { traerMiPerfil } from "@/lib/perfiles/datos";
 
 export const metadata: Metadata = { title: "Zonas" };
 
@@ -22,11 +21,10 @@ export default async function ZonasPage({
   if (vista === "mapa") redirect("/mapas/consultas");
   if (vista === "descargas") redirect("/mapas/descargas");
 
-  const miPerfil = await traerMiPerfil();
   return (
     <>
       <MarcaDeAppLista />
-      <PantallaDeZonas categoria={miPerfil?.categoria ?? "normal"} />
+      <PantallaDeZonas />
     </>
   );
 }

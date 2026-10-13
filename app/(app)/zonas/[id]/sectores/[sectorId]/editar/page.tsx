@@ -1,4 +1,3 @@
-import { traerUsuario } from "@/lib/cuenta/sesion";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { FormularioDeEditarSector } from "@/components/zonas/formulario-de-editar-sector";
 
@@ -8,7 +7,6 @@ type Props = {
 
 export default async function PaginaDeEditarSector({ params }: Props) {
   const { id, sectorId } = await params;
-  const usuario = await traerUsuario();
 
   return (
     <>
@@ -16,7 +14,6 @@ export default async function PaginaDeEditarSector({ params }: Props) {
       <FormularioDeEditarSector
         zonaId={Number(id)}
         sectorId={Number(sectorId)}
-        miPerfilId={usuario?.id ?? null}
       />
     </>
   );

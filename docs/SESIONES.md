@@ -2106,3 +2106,24 @@ archivo GPS» queda como estaba, por decisión de Ale. Pendiente: «Ver el mapa 
 la zona» al navegar usa el ícono de Mapas; se le consultó a Ale. Documentos:
 AGENTS.md.
 
+## 2026-10-13 · Internet una vez por apertura
+
+La barrita de arriba se prendía sola al volver a una pantalla (arreglado, con
+prueba). Cambiar de pantalla ya no sale a internet: quién sos se averigua al
+abrir, las pantallas de todos los días quedan listas al abrir, Salidas y
+Perfiles se piden la primera vez que se entra, y lo que las pantallas le piden
+a la base va una vez por apertura (decisión 054). Medido en la versión de
+producción. De paso: Descargas reventaba al abrirse desde el cambio de Mapas de
+hoy; arreglado, con una prueba que impide que una página del servidor le pase
+funciones a una pieza del celular.
+
+### Arreglado en la misma sesión
+
+Probado sin señal con una instalación limpia: abrir o navegar un Circuito
+reventaba si nunca se había visto un mapa con señal. Las piezas de código solo
+se guardaban al usarlas. Ahora todo el código va en la precarga al instalar
+cada versión (salvo el convertidor de fotos del iPhone, de 3 MB, que se usa con
+señal), y `scripts/verificar-precarga.mjs` frena la compilación si falta una
+pieza. Vuelto a probar en instalación limpia sin ver ningún mapa: la lista, el
+detalle y la navegación abren sin señal. El aviso de «Registrar una salida»
+decía «banderita»; ahora dice «señalador», como el ícono.

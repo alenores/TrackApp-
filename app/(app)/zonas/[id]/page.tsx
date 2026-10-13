@@ -1,4 +1,3 @@
-import { traerUsuario } from "@/lib/cuenta/sesion";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
 import { ZonaDetalle } from "@/components/zonas/zona-detalle";
 
@@ -14,12 +13,11 @@ type Props = {
 
 export default async function PaginaDeZona({ params }: Props) {
   const { id } = await params;
-  const usuario = await traerUsuario();
 
   return (
     <>
       <MarcaDeAppLista />
-      <ZonaDetalle zonaId={Number(id)} miPerfilId={usuario?.id ?? null} />
+      <ZonaDetalle zonaId={Number(id)} />
     </>
   );
 }

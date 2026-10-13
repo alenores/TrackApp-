@@ -7,10 +7,11 @@ import { ListaDeZonas } from "@/components/zonas/lista-de-zonas";
 import { PantallaDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
 import { sectoresPorZona } from "@/lib/mapas/general";
-import type { CategoriaUsuario } from "@/types/database";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 /** La entrada Zonas de Mapas: la lista de zonas con cuántos sectores tiene cada una. */
-export function PantallaDeZonas({ categoria }: { categoria: CategoriaUsuario }) {
+export function PantallaDeZonas() {
+  const { miCategoria: categoria } = useQuienSoy();
   const puedeAdministrar = usePuedeAdministrar(categoria === "administrador");
   return (
     <PantallaDeMapas titulo="Zonas"

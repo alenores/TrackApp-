@@ -239,6 +239,15 @@ entendido.** No hace falta explicarlo, advertirlo ni justificarlo.
   mapa no está descargado, porque el usuario nunca se queda sin saber qué pasa.
   Decirlo, sí. Diseñar alrededor de eso, no.
 
+### Internet una vez por apertura
+
+**La app sale a internet al abrirse; después, cambiar de pantalla no sale.**
+Quién sos y tu tipo de usuario se averiguan al abrir y quedan guardados.
+Las pantallas de todos los días quedan listas al abrir; Salidas y Perfiles se
+piden la primera vez que se entra y después se reusan. Lo que una pantalla le
+pide a la base, una vez por apertura; al guardar algo, llega fresco. Ninguna
+página le pregunta al servidor quién sos. Ver `docs/decisiones/054`.
+
 ### Señal que sirve, no red enganchada
 
 **Pasó el 2026-09-27.** Con una rayita de cobertura el teléfono dice que hay red

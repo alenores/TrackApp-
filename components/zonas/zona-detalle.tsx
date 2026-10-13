@@ -13,6 +13,7 @@ import { useDibujosDeCircuitos } from "@/hooks/use-dibujos-de-circuitos";
 import { SelectorDeCircuitosEnMapa } from "@/components/zonas/selector-de-circuitos-en-mapa";
 import { circuitosDeLaZona as circuitosDeLaZonaEnElPaquete } from "@/lib/navegacion/mapa-libre";
 import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 /**
  * Una zona con sus sectores.
@@ -24,10 +25,10 @@ import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 
 type ZonaDetalleProps = {
   zonaId: number;
-  miPerfilId: string | null;
 };
 
-export function ZonaDetalle({ zonaId, miPerfilId }: ZonaDetalleProps) {
+export function ZonaDetalle({ zonaId }: ZonaDetalleProps) {
+  const { miPerfilId } = useQuienSoy();
   const { paquete, estado } = useDatosDeLaApp();
   const puedeAdministrar = usePuedeAdministrar(miPerfilId !== null);
 

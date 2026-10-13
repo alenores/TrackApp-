@@ -47,6 +47,7 @@ import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { Anotacion, CategoriaUsuario, Rectangulo, Zona } from "@/types/database";
 import { IconoDeClase } from "@/components/marcas/icono-de-clase";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 /**
  * **Marcas**: todo lo que se dibuja encima del mapa, en detalle (decisión 052).
@@ -69,7 +70,8 @@ type Vista =
 
 const LISTA: Vista = { clase: "lista" };
 
-export function PantallaDeMarcas({ categoria, miPerfilId }: { categoria: CategoriaUsuario; miPerfilId: string | null }) {
+export function PantallaDeMarcas() {
+  const { miCategoria: categoria, miPerfilId } = useQuienSoy();
   return (
     <PantallaDeMapas titulo="Marcas" ancha avisaIncompletoSola>
       {({ paquete, estado, aviso }) => <Marcas paquete={paquete} incompleto={estado === "incompleto" ? aviso : null}

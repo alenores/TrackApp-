@@ -9,6 +9,7 @@ import {
 } from "@/lib/offline/sincronizacion";
 import { ponerAlDiaLoBajado } from "@/lib/mapas/poner-al-dia-lo-bajado";
 import { ponerAlDiaLasFotosChicas } from "@/lib/anotaciones/descarga";
+import { olvidarLoDeEstaApertura } from "@/lib/datos/una-vez-por-apertura";
 
 /**
  * Cuándo se pone al día el paquete: **una vez por apertura, y después de
@@ -149,6 +150,8 @@ export function ponerAlDiaUnaVezPorApertura(): Promise<Resultado> {
  */
 export function ponerAlDiaDespuesDeGuardar(): Promise<Resultado> {
   hecha = null;
+  // Lo pedido una vez en esta apertura tampoco trae lo recién guardado.
+  olvidarLoDeEstaApertura();
   guardados += 1;
 
   const anterior = enCurso ?? Promise.resolve(null);

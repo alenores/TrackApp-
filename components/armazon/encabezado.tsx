@@ -18,6 +18,7 @@ export function Encabezado() {
       <div className="relative flex min-h-14 items-center justify-between gap-3 px-3 py-2 sm:px-4">
         <Link
           href="/"
+          prefetch={false}
           aria-label="TrackApp inicio"
           className="flex items-center gap-2.5 min-w-0"
         >

@@ -1,6 +1,7 @@
 "use client";
 
 import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PreguntaDeRegistrar } from "@/components/navegacion/registro-de-salida";
@@ -64,7 +65,8 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
   useEffect(() => {
     if (!haySenal) return;
     let vigente = true;
-    void leerCircuitoCompleto(id).then((resultado) => {
+    // Una vez por apertura: volver a abrirlo no le pregunta de nuevo a la base.
+    void unaVezPorApertura(`circuito-${id}`, () => leerCircuitoCompleto(id)).then((resultado) => {
       if (!vigente) return;
       if (resultado.ok) { setCompleto(resultado.datos); setAviso(null); }
       else setAviso(resultado.error);

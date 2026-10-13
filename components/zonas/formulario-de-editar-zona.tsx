@@ -16,16 +16,16 @@ import { useFoto } from "@/hooks/use-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 type EditarZonaFormProps = {
   zonaId: number;
-  miPerfilId: string | null;
 };
 
 export function FormularioDeEditarZona({
   zonaId,
-  miPerfilId,
 }: EditarZonaFormProps) {
+  const { miPerfilId } = useQuienSoy();
   const router = useRouter();
   const { paquete, estado } = useDatosDeLaApp();
   const { confirmar, avisar } = useDialogos();

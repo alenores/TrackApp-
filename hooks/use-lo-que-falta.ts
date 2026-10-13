@@ -10,6 +10,7 @@ import {
   type MapaPerdido,
 } from "@/lib/mapas/lo-que-falta";
 import { loSacasteVos } from "@/lib/offline/sacados-a-proposito";
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { claveDeMapa } from "@/lib/offline/mapas";
 import type { Paquete } from "@/lib/offline/paquete";
 import {
@@ -60,7 +61,12 @@ export function useLoQueFalta(paquete: Paquete | null): LoQueFalta {
     let vigente = true;
 
     void (async () => {
-      const resultado = await traerLosMapasQueTenias();
+      // Una vez por apertura: volver a entrar a Circuitos no le pregunta de
+      // nuevo a la base. Lo que bajás o sacás después se cuenta acá mismo.
+      const { resultado } = await unaVezPorApertura("mapas-que-tenias", async () => {
+        const resultado = await traerLosMapasQueTenias();
+        return { ok: resultado.clase === "lista", resultado };
+      });
       if (!vigente) return;
 
       setLaBase(

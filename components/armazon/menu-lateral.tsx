@@ -64,7 +64,7 @@ export function MenuLateral({
                 {desplegado ? (
                   <div className="ml-5 flex flex-col gap-1 border-l border-borde pl-3">
                     {item.subdestinos.map((sub) => (
-                      <Link key={sub.href} href={sub.href} onClick={onNavigate}
+                      <Link key={sub.href} href={sub.href} prefetch={false} onClick={onNavigate}
                         aria-current={adentro?.href === sub.href ? "page" : undefined}
                         className={[CLASE_DE_ENTRADA, adentro?.href === sub.href ? CLASE_ACTIVA : CLASE_INACTIVA].join(" ")}>
                         <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{sub.icono}</svg>
@@ -80,6 +80,7 @@ export function MenuLateral({
           return (
             <Link
               key={item.href}
+              prefetch={false}
               href={item.href}
               onClick={onNavigate}
               className={[CLASE_DE_ENTRADA, isActive ? CLASE_ACTIVA : CLASE_INACTIVA].join(" ")}
