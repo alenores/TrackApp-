@@ -92,8 +92,9 @@ export function Emergente({
         style={hoja && desplazamiento > 0 ? { transform: `translateY(${desplazamiento}px)` } : undefined}
         className={[
           // La hoja va en capas: la cabecera en superficie y el cuerpo en el
-          // fondo, así las opciones de adentro se despegan como tarjetas.
-          `flex max-h-[85dvh] w-full flex-col overflow-hidden border border-borde shadow-xl ${hoja ? "bg-fondo" : "bg-superficie"}`,
+          // color del panel, así las opciones de adentro se despegan como
+          // tarjetas y con sol se ve dónde empieza el panel.
+          `flex max-h-[85dvh] w-full flex-col overflow-hidden border shadow-xl ${hoja ? "panel-que-sube border-panel-borde bg-panel" : "border-borde bg-superficie"}`,
           hoja ? "rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0" : "rounded-2xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
           hoja && !arrastrando ? "transition-transform duration-200 ease-out" : "",

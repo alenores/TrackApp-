@@ -57,7 +57,9 @@ export function SelectorDeCircuitosEnMapa({ circuitos, idsEncendidos, alternar }
         )}
       </button>
 
+      {/* El panel que sube desde abajo, como en Mapas: con muchos Circuitos la lista se desplaza adentro. */}
       <Emergente
+        hoja
         abierto={abierto}
         alCerrar={() => setAbierto(false)}
         titulo="Circuitos en el mapa"

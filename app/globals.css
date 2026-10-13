@@ -122,6 +122,16 @@
   --sombra: 0 1px 2px rgb(0 0 0 / 0.4);
   --sombra-alta: 0 4px 12px rgb(0 0 0 / 0.45);
 
+  /*
+   * Los paneles que suben desde abajo. De noche se ven como siempre; con sol
+   * se pintan de gris, porque blanco sobre blanco no se sabía dónde empezaba
+   * el panel (Ale, 2026-10-13). Adentro, el texto suave se oscurece para no
+   * bajar de 7:1 sobre ese gris.
+   */
+  --panel: var(--fondo);
+  --panel-borde: var(--borde);
+  --panel-texto-suave: var(--texto-suave);
+
   color-scheme: dark;
 }
 
@@ -206,6 +216,10 @@
   --sombra: 0 1px 2px rgb(15 23 42 / 0.12);
   --sombra-alta: 0 4px 12px rgb(15 23 42 / 0.16);
 
+  --panel: #e2e8f0;
+  --panel-borde: #475569;
+  --panel-texto-suave: #334155;
+
   color-scheme: light;
 }
 
@@ -218,6 +232,8 @@
   --color-borde: var(--borde);
   --color-borde-fuerte: var(--borde-fuerte);
   --color-velo: var(--velo);
+  --color-panel: var(--panel);
+  --color-panel-borde: var(--panel-borde);
   --color-qr-fondo: var(--qr-fondo);
   --color-qr-modulo: var(--qr-modulo);
   --color-sobre-foto-texto: var(--sobre-foto-texto);
@@ -390,4 +406,9 @@ html.pwa-standalone-zoom-lock body {
   .tap-feedback:active:not(:disabled) {
     transform: none;
   }
+}
+
+/* Adentro de un panel que sube, el texto suave usa el tono del panel. */
+.panel-que-sube {
+  --texto-suave: var(--panel-texto-suave);
 }

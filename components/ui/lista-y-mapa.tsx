@@ -256,7 +256,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
             style={subida !== null
               ? { transform: `translateY(${subida}px)` }
               : desplazamiento > 0 ? { transform: `translateY(${desplazamiento}px)` } : undefined}
-            className={`absolute inset-x-0 bottom-0 z-10 flex max-h-[88%] flex-col ${panelCorto ? "" : "min-h-[60%]"} overflow-hidden rounded-2xl border border-borde bg-fondo shadow-[var(--sombra-alta)] ${arrastrando || siguiendoAlDedo ? "" : "transition-transform duration-200 ease-out"}`}>
+            className={`absolute inset-x-0 bottom-0 z-10 flex max-h-[88%] flex-col ${panelCorto ? "" : "min-h-[60%]"} overflow-hidden rounded-2xl border border-panel-borde bg-panel shadow-[var(--sombra-alta)] panel-que-sube ${arrastrando || siguiendoAlDedo ? "" : "transition-transform duration-200 ease-out"}`}>
             {/* La cabecera se toca entera para bajar, igual que la barrita se toca entera para subir. */}
             <div role="button" tabIndex={0} aria-label={`Bajar ${tituloDelPanel.toLowerCase()} y ver el mapa`}
               onClick={() => { if (!fueArrastre() && !recienAbierto()) bajar(); }}

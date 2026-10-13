@@ -39,7 +39,6 @@ import {
   SIN_FILTROS,
   type FiltrosDeMarcas,
   type GrupoArmado,
-  type GrupoDeLaLista,
   type MarcaDeLaLista,
 } from "@/lib/marcas/lista";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
@@ -47,6 +46,7 @@ import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { Anotacion, CategoriaUsuario, Rectangulo, Zona } from "@/types/database";
 import { IconoDeClase } from "@/components/marcas/icono-de-clase";
+import { OpcionDeHoja } from "@/components/ui/opcion-de-hoja";
 import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 /**
@@ -291,37 +291,24 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
         descripcion={eligiendo === "que" ? "Primero elegí qué es; después lo dibujás sobre el mapa." : undefined}>
         {eligiendo === "como" ? (
           <div className="space-y-2">
-            <OpcionDeAgregar titulo="A mano" detalle="Dibujás un Camino, un punto o un trazo sobre el mapa."
+            <OpcionDeHoja titulo="A mano" detalle="Dibujás un Camino, un punto o un trazo sobre el mapa."
               alTocar={() => setEligiendo("que")} />
-            <OpcionDeAgregar titulo="Traer de afuera" detalle="Desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX)."
+            <OpcionDeHoja titulo="Traer de afuera" detalle="Desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX)."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "traer" }); }} />
           </div>
         ) : eligiendo === "que" ? (
           <div className="space-y-2">
-            <OpcionDeAgregar grupo="camino" titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
+            <OpcionDeHoja icono={<IconoDeClase grupo="camino" />} titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino" }); }} />
-            <OpcionDeAgregar grupo="punto" titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
+            <OpcionDeHoja icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto" } }); }} />
-            <OpcionDeAgregar grupo="trazo" titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
+            <OpcionDeHoja icono={<IconoDeClase grupo="trazo" />} titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" } }); }} />
             <BotonDeEmergente onClick={() => setEligiendo("como")}>Volver</BotonDeEmergente>
           </div>
         ) : null}
       </Emergente>
     </div>
-  );
-}
-
-function OpcionDeAgregar({ grupo, titulo, detalle, alTocar }: { grupo?: GrupoDeLaLista; titulo: string; detalle: string; alTocar: () => void }) {
-  return (
-    <button type="button" onClick={alTocar}
-      className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-left shadow-[var(--sombra)] hover:border-acento-borde focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde">
-      {grupo ? <span className="shrink-0 text-texto-suave"><IconoDeClase grupo={grupo} /></span> : null}
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-base font-semibold text-texto">{titulo}</span>
-        <span className="text-sm leading-5 text-texto-suave">{detalle}</span>
-      </span>
-    </button>
   );
 }
 

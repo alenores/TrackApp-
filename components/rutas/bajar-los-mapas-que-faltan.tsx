@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Boton } from "@/components/ui/boton";
-import {
-  bajarElMapaDelSector,
-  mostrarPeso,
-  pesoAproximadoDelMapa,
-} from "@/lib/mapas/descarga";
-import { fuenteDelServidor } from "@/lib/mapas/fuente-del-servidor";
+import { mostrarPeso, pesoAproximadoDelMapa } from "@/lib/mapas/descarga";
+import { useBajarEnFila } from "@/hooks/use-bajar-en-fila";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import {
@@ -41,7 +36,7 @@ function TildeChico() {
 }
 
 /**
- * Bajar, desde la ruta, los mapas que le faltan.
+ * Bajar, desde el Circuito, los mapas que le faltan.
  *
  * **Para que no haya que ir a buscarlos a otra pantalla.** El usuario está
  * mirando la ruta que va a hacer y ahí mismo ve qué le falta y lo baja.
@@ -55,10 +50,6 @@ type PropiedadesDeBajarLosQueFaltan = {
   sectoresNecesarios: SectorNecesario[];
 };
 
-type Bajando = { sectorId: number; tipo: TipoDeMapa; resueltos: number; total: number };
-type Pendiente = { sector: Sector; tipo: TipoDeMapa };
-type Fallo = { nombre: string; motivo: string };
-
 export function BajarLosMapasQueFaltan({
   sectoresNecesarios,
 }: PropiedadesDeBajarLosQueFaltan) {
@@ -70,19 +61,8 @@ export function BajarLosMapasQueFaltan({
   /** Por cada tipo, los sectores de la ruta a los que les falta ese mapa. */
   const faltanDe = (tipo: TipoDeMapa) =>
     sectoresNecesarios.map((cada) => cada.sector).filter((sector) => !tiene(sector, tipo));
-  const [bajando, setBajando] = useState<Bajando | null>(null);
-  const [fallo, setFallo] = useState<Fallo | null>(null);
-  const canceladorRef = useRef<AbortController | null>(null);
-  const montadoRef = useRef(true);
+  const { bajando, fallo, bajarEstos } = useBajarEnFila();
   const haySenal = useHaySenal();
-
-  useEffect(() => {
-    montadoRef.current = true;
-    return () => {
-      montadoRef.current = false;
-      canceladorRef.current?.abort();
-    };
-  }, []);
 
   // Sin señal no hay nada que bajar: los botones se van. Lo que falta lo sigue
   // diciendo la lista, que es información y esa no se esconde nunca.
@@ -92,38 +72,6 @@ export function BajarLosMapasQueFaltan({
       (suma, sector) => suma + pesoAproximadoDelMapa(sector.rectangulo, undefined, tipo),
       0,
     );
-
-  const bajarEstos = async (pendientes: Pendiente[]) => {
-    canceladorRef.current?.abort();
-    const cancelador = new AbortController();
-    canceladorRef.current = cancelador;
-    setFallo(null);
-
-    for (const { sector, tipo } of pendientes) {
-      if (cancelador.signal.aborted) break;
-      setBajando({ sectorId: sector.id, tipo, resueltos: 0, total: 0 });
-
-      const resultado = await bajarElMapaDelSector({
-        sector,
-        tipo,
-        fuente: fuenteDelServidor(),
-        senal: cancelador.signal,
-        avisarAvance: ({ resueltos, total }) => {
-          if (montadoRef.current) setBajando({ sectorId: sector.id, tipo, resueltos, total });
-        },
-      });
-
-      if (!montadoRef.current) return;
-      if (resultado.estado === "cancelada") break;
-
-      if (resultado.estado === "incompleta") {
-        setFallo({ nombre: sector.nombre, motivo: resultado.motivo });
-        break;
-      }
-    }
-
-    if (montadoRef.current) setBajando(null);
-  };
 
   const enFila = bajando !== null;
 

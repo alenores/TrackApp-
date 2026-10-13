@@ -11,6 +11,7 @@ import { sectoresEnElMapa } from "@/lib/mapas/rectangulos";
 import { mostrarTamano } from "@/lib/territorio/tamano";
 import { useDibujosDeCircuitos } from "@/hooks/use-dibujos-de-circuitos";
 import { SelectorDeCircuitosEnMapa } from "@/components/zonas/selector-de-circuitos-en-mapa";
+import { SectoresYMapas } from "@/components/zonas/sectores-y-mapas";
 import { circuitosDeLaZona as circuitosDeLaZonaEnElPaquete } from "@/lib/navegacion/mapa-libre";
 import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 import { useQuienSoy } from "@/components/armazon/quien-soy";
@@ -145,19 +146,13 @@ export function ZonaDetalle({ zonaId }: ZonaDetalleProps) {
         />
         <p className="text-sm leading-6 text-texto-suave">
           {sectores.length === 0
-            ? "El recuadro es la zona. Todavía no tiene ningún sector encima."
-            : `El recuadro grande es la zona; los de adentro, sus ${sectores.length === 1 ? "sector" : `${sectores.length} sectores`}.`}
+            ? "Esta zona todavía no tiene sectores: no hay mapas para descargar."
+            : "Los sectores son los posibles mapas que podés descargar."}
         </p>
       </Tarjeta>
 
       <div className="space-y-4 pt-2">
-        <div className="flex items-center justify-between gap-3 px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-            {sectores.length === 0
-              ? "Sectores"
-              : `Sectores (${sectores.length})`}
-          </h2>
-        </div>
+        <SectoresYMapas sectores={sectores} />
 
         {sectores.length === 0 ? null : (
           <div className="space-y-3">

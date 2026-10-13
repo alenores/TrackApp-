@@ -2127,3 +2127,21 @@ señal), y `scripts/verificar-precarga.mjs` frena la compilación si falta una
 pieza. Vuelto a probar en instalación limpia sin ver ningún mapa: la lista, el
 detalle y la navegación abren sin señal. El aviso de «Registrar una salida»
 decía «banderita»; ahora dice «señalador», como el ícono.
+
+## 2026-10-13 · Tres puntos, zona con «Descargar todo» y paneles con sol
+
+- Los tres puntos son verticales y sin círculo en toda la app.
+- «Cargando créditos de Google…» ya no aparece cuando Google no se puede
+  mostrar (sin señal o con falla): el cartel de arriba ya dice qué pasó.
+- Sale el cartel de colores y líneas de la navegación libre y de la de
+  Circuito; queda el de abajo del gráfico de alturas.
+- Detalle de zona: el texto del mapa dice que los sectores son los mapas que
+  se pueden descargar; el título es «Sectores / Mapas (n)» y lleva «Descargar
+  todo»: simple, satelital o ambos, solo lo que falta, de a uno, con avance.
+  La fila de descarga es una sola pieza compartida con los Circuitos.
+- «Circuitos en el mapa» de la zona abre el panel que sube desde abajo.
+- Con sol, los paneles que suben son grises con borde marcado; de noche, igual
+  que antes. Adentro, el texto suave se oscurece para no bajar de 7:1.
+- El cambio del 23/9 (aro de la foto de perfil) ya estaba en producción con
+  otro arreglo posterior: no quedaba nada por aplicar.
+
