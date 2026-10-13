@@ -8,6 +8,7 @@ import { claveDeMapa, NOMBRE_DEL_TIPO, type TipoDeMapa } from "@/lib/offline/map
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
+import { PantallaDeMapas } from "@/components/mapas/pantalla-de-mapas";
 
 /**
  * La pestaña Descargas de Mapas: los mapas que hay en este celular, cuánto
@@ -125,4 +126,15 @@ export function PantallaDeDescargas() {
       </ul>
     </div>
   );
+}
+
+/**
+ * La pantalla entera de Descargas, con el marco común de Mapas.
+ *
+ * Va acá y no en la página porque el marco recibe una función, y una página
+ * del servidor no puede pasarle funciones a una pieza del celular: la pantalla
+ * reventaba al abrirse. Pasó el 2026-10-13.
+ */
+export function PantallaDeDescargasDeMapas() {
+  return <PantallaDeMapas titulo="Descargas">{() => <PantallaDeDescargas />}</PantallaDeMapas>;
 }

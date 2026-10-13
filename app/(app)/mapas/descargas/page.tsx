@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
-import { PantallaDeMapas } from "@/components/mapas/pantalla-de-mapas";
-import { PantallaDeDescargas } from "@/components/zonas/pantalla-de-descargas";
+import { PantallaDeDescargasDeMapas } from "@/components/zonas/pantalla-de-descargas";
 
 export const metadata: Metadata = { title: "Descargas" };
 
@@ -10,7 +9,7 @@ export default function DescargasPage() {
   return (
     <>
       <MarcaDeAppLista />
-      <PantallaDeMapas titulo="Descargas">{() => <PantallaDeDescargas />}</PantallaDeMapas>
+      <PantallaDeDescargasDeMapas />
     </>
   );
 }
