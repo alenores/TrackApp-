@@ -44,7 +44,7 @@ export function TarjetaDeSalida({ salida, puedeEditar }: Props) {
 
       {puedeEditar ? (
         <div className="absolute right-2.5 top-2.5">
-          <BotonDeOpcionesDeSalida salidaId={salida.id} sobreFoto soloLosPuntos />
+          <BotonDeOpcionesDeSalida salidaId={salida.id} sobreFoto />
         </div>
       ) : null}
     </div>

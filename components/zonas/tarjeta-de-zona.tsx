@@ -47,7 +47,7 @@ export function TarjetaDeZona({ zona, soyAdministrador, cantidadDeSectores }: {
         </p> : null}
       </div>
     </TarjetaQueAbre>
-    {soyAdministrador ? <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10"
+    {soyAdministrador ? <MenuDeAcciones className="absolute right-3 top-3 z-10"
       etiqueta={`Opciones de ${zona.nombre}`} sobreFoto={Boolean(zona.fotoUrl)}
       acciones={[
         { etiqueta: "Editar", alElegir: () => router.push(`/zonas/${zona.id}/editar`) },

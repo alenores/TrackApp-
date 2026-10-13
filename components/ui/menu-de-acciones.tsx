@@ -12,20 +12,20 @@ export type AccionDelMenu = {
   deshabilitada?: boolean;
 };
 
-/** Los mismos tres puntos y las mismas acciones en toda la app. */
+/**
+ * Los mismos tres puntos y las mismas acciones en toda la app: **verticales y
+ * sin círculo**, en todos lados. Decisión de Ale del 2026-10-13.
+ */
 export function MenuDeAcciones({
   etiqueta = "Opciones",
   acciones,
   className = "",
   sobreFoto = false,
-  soloLosPuntos = false,
 }: {
   etiqueta?: string;
   acciones: AccionDelMenu[];
   className?: string;
   sobreFoto?: boolean;
-  /** En las tarjetas de Circuitos y Salidas: puntos verticales, sin círculo. */
-  soloLosPuntos?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const contenedor = useRef<HTMLDivElement>(null);
@@ -45,20 +45,12 @@ export function MenuDeAcciones({
   return <div ref={contenedor} className={`inline-flex ${className}`} onClick={(evento) => evento.stopPropagation()}>
     <div className="relative">
       <BotonRedondo etiqueta={etiqueta} aria-expanded={abierto} aria-controls={id}
-        variante={soloLosPuntos ? "soloPuntos" : "secundario"}
-        className={soloLosPuntos
-          ? (sobreFoto ? "text-sobre-foto-texto" : "text-texto")
-          : (sobreFoto ? "border-borde-fuerte bg-sobre-foto-degrade/80 text-sobre-foto-texto" : "")}
+        variante="soloPuntos"
+        className={sobreFoto ? "text-sobre-foto-texto" : "text-texto"}
         onClick={() => setAbierto((valor) => !valor)}>
-        {soloLosPuntos ? <>
-          <circle cx="12" cy="5" r="1.8" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none" />
-        </> : <>
-          <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
-          <circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none" />
-        </>}
+        <circle cx="12" cy="5" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none" />
       </BotonRedondo>
       {abierto ? <div id={id} role="menu" aria-label={etiqueta}
         className="absolute right-0 top-11 z-20 min-w-36 space-y-1 rounded-xl border border-borde bg-superficie p-1 shadow-[var(--sombra-alta)]">

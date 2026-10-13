@@ -209,7 +209,7 @@ function Renglon({ marca, caminos, detalles, zonas, sectoresPorZona, destildadas
           <span className="block truncate text-sm text-texto-suave">{detalle}</span>
         </span>
       </button>
-      {acciones.length > 0 ? <MenuDeAcciones soloLosPuntos etiqueta={`Opciones de «${titulo}»`} acciones={acciones} /> : null}
+      {acciones.length > 0 ? <MenuDeAcciones etiqueta={`Opciones de «${titulo}»`} acciones={acciones} /> : null}
     </li>
   );
 }

@@ -158,7 +158,7 @@ export function PantallaDeCircuitos() {
         {guardada ? <IndicadorDeMapaBajado {...mapaDelCircuito(guardada, paquete?.sectores ?? [], sectoresConMapa)} /> : null}
       </TarjetaQueAbre>
         {puedeCambiar ?
-          <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10" etiqueta={`Opciones de ${circuito.nombre}`}
+          <MenuDeAcciones className="absolute right-3 top-3 z-10" etiqueta={`Opciones de ${circuito.nombre}`}
             acciones={[
               { etiqueta: "Editar", alElegir: () => void editar(circuitoEnVivo) },
               { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminar(circuitoEnVivo) },

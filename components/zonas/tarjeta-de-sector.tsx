@@ -138,7 +138,7 @@ export function TarjetaDeSector({
           />
         </div>
       </Tarjeta>
-      {soyAdministrador ? <MenuDeAcciones soloLosPuntos className="absolute right-3 top-3 z-10"
+      {soyAdministrador ? <MenuDeAcciones className="absolute right-3 top-3 z-10"
         etiqueta={`Opciones de ${sector.nombre}`}
         acciones={[
           { etiqueta: "Editar nombre", alElegir: iniciarEdicion },

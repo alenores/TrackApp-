@@ -47,12 +47,12 @@ describe("menú de acciones", () => {
     }
   });
 
-  it("en la tarjeta muestra tres puntos verticales y ningún círculo", async () => {
+  it("muestra siempre tres puntos verticales y ningún círculo (decisión de Ale del 2026-10-13)", async () => {
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(
-        <MenuDeAcciones soloLosPuntos acciones={[{ etiqueta: "Editar", alElegir: () => {} }]} />,
+        <MenuDeAcciones acciones={[{ etiqueta: "Editar", alElegir: () => {} }]} />,
       ));
       const boton = contenedor.querySelector("button") as HTMLButtonElement;
       expect(boton.className).not.toContain("rounded-full");
