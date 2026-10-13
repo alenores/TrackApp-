@@ -38,10 +38,16 @@ export async function detalleConCreditosDeGoogle(
   posicion: { lat: number; lng: number },
   traer: (consulta: URLSearchParams) => Promise<RespuestaDeDetalleDeGoogle>,
   sigueActivo: () => boolean = () => true,
-): Promise<{ derechos: string | null } | null> {
+  alInformarMaximo?: (maximo: number | null) => void,
+): Promise<{ derechos: string | null; maximo: number | null } | null> {
   const pedido = new URLSearchParams(consulta);
   let nivel = Number(pedido.get("zoom"));
   let respuesta = await traer(pedido);
+  // El límite sale de la vista solicitada. Buscar créditos en otra vista no
+  // cambia el detalle real disponible en la que está mirando la persona.
+  const maximo = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
+  if (!sigueActivo()) return null;
+  alInformarMaximo?.(maximo);
   while (!respuesta.derechos && nivel > 0 && sigueActivo()) {
     const informado = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
     nivel = informado !== null && informado < nivel ? informado : nivel - 1;
@@ -51,5 +57,6 @@ export async function detalleConCreditosDeGoogle(
   if (!sigueActivo()) return null;
   return {
     derechos: respuesta.derechos,
+    maximo,
   };
 }

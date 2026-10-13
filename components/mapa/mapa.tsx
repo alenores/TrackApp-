@@ -603,9 +603,12 @@ export function Mapa({
   }, [sesionGoogleActiva]);
 
   useEffect(() => {
-    if (!sesionGoogleActiva || tipoDeFondo !== "google") return;
     const mapa = mapaRef.current;
     if (!mapa) return;
+    if (!sesionGoogleActiva || tipoDeFondo !== "google") {
+      mapa.setMaxZoom(22);
+      return;
+    }
     let activo = true;
     let pedido = 0;
     const actualizar = () => {
@@ -629,6 +632,11 @@ export function Mapa({
         try {
           const detalle = await detalleConCreditosDeGoogle(
             consulta, mapa.getCenter(), traerCreditosDeGoogle, () => activo && actual === pedido,
+            (maximo) => {
+              // El límite llega con la primera respuesta, aunque los créditos
+              // requieran más pedidos. Nunca alejar por una respuesta tardía.
+              mapa.setMaxZoom(maximo === null ? 22 : Math.max(mapa.getZoom(), maximo));
+            },
           );
           if (!detalle) return;
           if (detalle.derechos) setCreditosGoogle(detalle.derechos);

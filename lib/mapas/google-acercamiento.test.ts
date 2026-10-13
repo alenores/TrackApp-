@@ -27,7 +27,7 @@ describe("detalle disponible en Google", () => {
     expect(maximoDetalleDeGoogle([], { lat: -31, lng: -64 })).toBeNull();
   });
 
-  it("vuelve al último nivel con imagen y mantiene los créditos de Google", async () => {
+  it("busca los créditos en otro nivel y conserva el límite de la vista original", async () => {
     const niveles: string[] = [];
     const traer = vi.fn(async (pedido: URLSearchParams) => {
       niveles.push(pedido.get("zoom") || "");
@@ -38,7 +38,7 @@ describe("detalle disponible en Google", () => {
     const resultado = await detalleConCreditosDeGoogle(
       new URLSearchParams({ zoom: "19" }), { lat: -31, lng: -64 }, traer,
     );
-    expect(resultado).toEqual({ derechos: "© Google" });
+    expect(resultado).toEqual({ derechos: "© Google", maximo: 17 });
     expect(niveles).toEqual(["19", "17"]);
   });
 
@@ -47,30 +47,35 @@ describe("detalle disponible en Google", () => {
       new URLSearchParams({ zoom: "12" }), { lat: -31, lng: -64 },
       async () => ({ derechos: "© Google", areasConDetalle: [{ ...mundo, maxZoom: 21 }] }),
     );
-    expect(resultado).toEqual({ derechos: "© Google" });
+    expect(resultado).toEqual({ derechos: "© Google", maximo: 21 });
   });
 
   it("busca los créditos en otro nivel sin usar ese nivel para limitar el mapa", async () => {
     const niveles: string[] = [];
+    const orden: string[] = [];
     const resultado = await detalleConCreditosDeGoogle(
       new URLSearchParams({ zoom: "11" }), { lat: -31, lng: -64 },
       async (pedido) => {
         const nivel = pedido.get("zoom") || "";
         niveles.push(nivel);
+        orden.push(`pedido ${nivel}`);
         return {
           derechos: Number(nivel) <= 9 ? "© Google" : null,
           areasConDetalle: [{ ...mundo, maxZoom: 20 }],
         };
       },
+      () => true,
+      (maximo) => orden.push(`máximo ${maximo}`),
     );
     expect(niveles).toEqual(["11", "10", "9"]);
-    expect(resultado).toEqual({ derechos: "© Google" });
+    expect(orden).toEqual(["pedido 11", "máximo 20", "pedido 10", "pedido 9"]);
+    expect(resultado).toEqual({ derechos: "© Google", maximo: 20 });
   });
 
   it("no convierte la ausencia de créditos en una falla del mapa", async () => {
     await expect(detalleConCreditosDeGoogle(
       new URLSearchParams({ zoom: "2" }), { lat: -31, lng: -64 },
       async () => ({ derechos: null, areasConDetalle: [] }),
-    )).resolves.toEqual({ derechos: null });
+    )).resolves.toEqual({ derechos: null, maximo: null });
   });
 });
