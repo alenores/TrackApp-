@@ -32,16 +32,15 @@ export function maximoDetalleDeGoogle(
   return niveles.length ? Math.max(...niveles) : null;
 }
 
-/** Recupera un nivel con créditos cuando el pedido actual supera el detalle real. */
+/** Busca los créditos sin confundir su ausencia con un límite de la imagen. */
 export async function detalleConCreditosDeGoogle(
   consulta: URLSearchParams,
   posicion: { lat: number; lng: number },
   traer: (consulta: URLSearchParams) => Promise<RespuestaDeDetalleDeGoogle>,
   sigueActivo: () => boolean = () => true,
-): Promise<{ derechos: string; maximo: number } | null> {
+): Promise<{ derechos: string | null } | null> {
   const pedido = new URLSearchParams(consulta);
-  const nivelOriginal = Number(pedido.get("zoom"));
-  let nivel = nivelOriginal;
+  let nivel = Number(pedido.get("zoom"));
   let respuesta = await traer(pedido);
   while (!respuesta.derechos && nivel > 0 && sigueActivo()) {
     const informado = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
@@ -50,11 +49,7 @@ export async function detalleConCreditosDeGoogle(
     respuesta = await traer(pedido);
   }
   if (!sigueActivo()) return null;
-  if (!respuesta.derechos) throw new Error("Google no informó los créditos de la imagen. Usá el mapa Satelital.");
-  const informado = maximoDetalleDeGoogle(respuesta.areasConDetalle, posicion);
-  const limiteTrasRecuperar = nivel < nivelOriginal ? nivel : 22;
   return {
     derechos: respuesta.derechos,
-    maximo: informado === null ? limiteTrasRecuperar : Math.min(informado, limiteTrasRecuperar),
   };
 }

@@ -472,6 +472,8 @@ export function Mapa({
   const [sesionGoogle, setSesionGoogle] = useState<string | null>(null);
   const [googleNoConfigurado, setGoogleNoConfigurado] = useState(false);
   const [creditosGoogle, setCreditosGoogle] = useState<string | null>(null);
+  const [avisoDeCreditosGoogle, setAvisoDeCreditosGoogle] = useState<string | null>(null);
+  const [avisoDeImagenGoogle, setAvisoDeImagenGoogle] = useState<string | null>(null);
   const [falloGoogle, setFalloGoogle] = useState<string | null>(null);
   const sesionGoogleActiva = consultaGoogle && enVivo && haySenal ? sesionGoogle : null;
   const opcionesDeFondo = opcionesDelMapa({
@@ -609,6 +611,9 @@ export function Mapa({
     const actualizar = () => {
       if (!listoRef.current) return;
       const actual = ++pedido;
+      setCreditosGoogle(null);
+      setAvisoDeCreditosGoogle(null);
+      setAvisoDeImagenGoogle(null);
       const limites = mapa.getBounds();
       const normalizar = (valor: number) => ((valor + 180) % 360 + 360) % 360 - 180;
       const ancho = limites.getEast() - limites.getWest();
@@ -626,12 +631,12 @@ export function Mapa({
             consulta, mapa.getCenter(), traerCreditosDeGoogle, () => activo && actual === pedido,
           );
           if (!detalle) return;
-          setCreditosGoogle(detalle.derechos);
-          if (mapa.getMaxZoom() !== detalle.maximo) mapa.setMaxZoom(detalle.maximo);
+          if (detalle.derechos) setCreditosGoogle(detalle.derechos);
+          else setAvisoDeCreditosGoogle("Google no informó los créditos de esta vista. Mové el mapa para reintentar.");
         } catch (error) {
           if (activo && actual === pedido) {
-            setTipoDeFondo("satelital");
-            setFalloGoogle(error instanceof Error ? error.message : "Google no informó los créditos de la imagen. Usá el mapa Satelital.");
+            const motivo = error instanceof Error ? error.message : String(error);
+            setAvisoDeCreditosGoogle(`Google no pudo informar los créditos: ${motivo}. Mové el mapa para reintentar.`);
           }
         }
       })();
@@ -641,7 +646,6 @@ export function Mapa({
     return () => {
       activo = false;
       mapa.off("moveend", actualizar);
-      mapa.setMaxZoom(22);
     };
   }, [sesionGoogleActiva, tipoDeFondo]);
 
@@ -1016,8 +1020,7 @@ export function Mapa({
             esperaDeImagenGoogle = setTimeout(() => {
               esperaDeImagenGoogle = null;
               if (tipoDeFondoRef.current === "google" && mapa.getZoom() >= nivelFallido - 0.01) {
-                setTipoDeFondo("satelital");
-                setFalloGoogle(`Google no entregó la imagen: ${motivo}. Usá el mapa Satelital.`);
+                setAvisoDeImagenGoogle("Google no entregó la imagen de este nivel. Alejate un poco para verla.");
               }
             }, 5_000);
           }
@@ -2031,7 +2034,8 @@ export function Mapa({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-4 w-auto" />
           </span>
-          <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? "Cargando créditos de Google…"}</span>
+          <span className="rounded bg-superficie px-1 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
+          {avisoDeImagenGoogle ? <span className="rounded bg-superficie px-1 text-texto">{avisoDeImagenGoogle}</span> : null}
         </div>
       ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
