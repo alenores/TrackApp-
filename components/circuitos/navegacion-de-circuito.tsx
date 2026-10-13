@@ -151,7 +151,6 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
         <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
       ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 pb-safe-4">
-          <ReferenciaDePartes navegando conPartesPropias />
           {gps.posicionVieja ? <p role="alert" className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo p-2 text-lg text-ambar-texto">
             Hace {gps.segundosSinNoticias} segundos que el GPS no da novedades. Tu punto puede estar desactualizado.
           </p> : null}

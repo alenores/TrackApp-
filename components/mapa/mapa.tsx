@@ -2057,8 +2057,12 @@ export function Mapa({
         </div>
       ) : null}
 
-      {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
-      {tipoDeFondo === "google" ? (
+      {/*
+        Quien hizo la foto. Su licencia obliga a decirlo. Si Google no se puede
+        mostrar (sin señal, o falló), no hay foto que acreditar: el cartel de
+        arriba ya dice qué pasó, y un «Cargando créditos» ahí diría algo falso.
+      */}
+      {tipoDeFondo === "google" && !falloVisibleDeGoogle ? (
         <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-nowrap items-end gap-1 text-credito-google text-texto-suave">
           <span className="shrink-0 rounded bg-superficie px-1 py-0.5">
             {/* Los dos archivos son los logotipos oficiales, sin modificaciones. */}

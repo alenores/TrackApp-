@@ -22,7 +22,6 @@ import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { useGps } from "@/hooks/use-gps";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { areaDeLasZonas } from "@/lib/navegacion/mapa-libre";
-import { ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
@@ -173,7 +172,6 @@ export function PantallaDeMapaLibre() {
               <Boton variante="fantasma" onClick={() => setElegirActividad(false)}>Cerrar</Boton>
             </div>
           ) : null}
-          <ReferenciaDePartes navegando />
           {posicionVieja ? (
             <div
               role="alert"
