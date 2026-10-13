@@ -2144,4 +2144,8 @@ decía «banderita»; ahora dice «señalador», como el ícono.
   que antes. Adentro, el texto suave se oscurece para no bajar de 7:1.
 - El cambio del 23/9 (aro de la foto de perfil) ya estaba en producción con
   otro arreglo posterior: no quedaba nada por aplicar.
+- Corrección de Ale: el panel que sube desde abajo es solo para ver cosas del
+  mapa. «Descargar todo», el «+» de Marcas y «Mapas de tus Circuitos» pasan a
+  la ventana al medio, que ahora va centrada también en el celular. Regla
+  escrita en AGENTS.md y en la pieza de las emergentes.
 

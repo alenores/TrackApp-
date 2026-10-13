@@ -44,6 +44,11 @@ type PropiedadesDeEmergente = {
    * `true` para la hoja que sube desde abajo en el celular: lleva manija y se
    * baja con el dedo, con los mismos gestos que Vías de Escalada. También
    * cierra con la cruz, tocando afuera y con el botón físico de atrás.
+   *
+   * **Solo para elegir qué se ve sobre un mapa mientras se lo mira.** Todo lo
+   * demás —elegir una opción para hacer algo, confirmar, avisar— va en la
+   * ventana al medio, sin `hoja`. Decisión de Ale del 2026-10-13: un panel que
+   * sube para descargar o para agregar confunde.
    */
   hoja?: boolean;
 };
@@ -79,7 +84,8 @@ export function Emergente({
 
   return createPortal(
     <div
-      className={`fixed inset-0 flex items-end justify-center bg-velo sm:items-center ${hoja ? "sm:p-4" : "p-4"}`}
+      // La ventana va al medio también en el celular; solo la hoja va abajo.
+      className={`fixed inset-0 flex justify-center bg-velo ${hoja ? "items-end sm:items-center sm:p-4" : "items-center p-4"}`}
       style={{ zIndex: NIVEL_DE_LAS_EMERGENTES }}
       onClick={alCerrar}
       role="presentation"

@@ -46,7 +46,7 @@ import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { Anotacion, CategoriaUsuario, Rectangulo, Zona } from "@/types/database";
 import { IconoDeClase } from "@/components/marcas/icono-de-clase";
-import { OpcionDeHoja } from "@/components/ui/opcion-de-hoja";
+import { OpcionDeEmergente } from "@/components/ui/opcion-de-emergente";
 import { useQuienSoy } from "@/components/armazon/quien-soy";
 
 /**
@@ -286,23 +286,23 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
         }
       />
 
-      <Emergente hoja abierto={eligiendo !== "nada"} alCerrar={() => setEligiendo("nada")}
+      <Emergente abierto={eligiendo !== "nada"} alCerrar={() => setEligiendo("nada")}
         titulo={eligiendo === "que" ? "¿Qué vas a dibujar?" : "Agregar una marca"}
         descripcion={eligiendo === "que" ? "Primero elegí qué es; después lo dibujás sobre el mapa." : undefined}>
         {eligiendo === "como" ? (
           <div className="space-y-2">
-            <OpcionDeHoja titulo="A mano" detalle="Dibujás un Camino, un punto o un trazo sobre el mapa."
+            <OpcionDeEmergente titulo="A mano" detalle="Dibujás un Camino, un punto o un trazo sobre el mapa."
               alTocar={() => setEligiendo("que")} />
-            <OpcionDeHoja titulo="Traer de afuera" detalle="Desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX)."
+            <OpcionDeEmergente titulo="Traer de afuera" detalle="Desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX)."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "traer" }); }} />
           </div>
         ) : eligiendo === "que" ? (
           <div className="space-y-2">
-            <OpcionDeHoja icono={<IconoDeClase grupo="camino" />} titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
+            <OpcionDeEmergente icono={<IconoDeClase grupo="camino" />} titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino" }); }} />
-            <OpcionDeHoja icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
+            <OpcionDeEmergente icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto" } }); }} />
-            <OpcionDeHoja icono={<IconoDeClase grupo="trazo" />} titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
+            <OpcionDeEmergente icono={<IconoDeClase grupo="trazo" />} titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" } }); }} />
             <BotonDeEmergente onClick={() => setEligiendo("como")}>Volver</BotonDeEmergente>
           </div>

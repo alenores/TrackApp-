@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { Boton } from "@/components/ui/boton";
-import { OpcionDeHoja } from "@/components/ui/opcion-de-hoja";
+import { OpcionDeEmergente } from "@/components/ui/opcion-de-emergente";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
@@ -90,13 +90,13 @@ export function SectoresYMapas({ sectores }: { sectores: Sector[] }) {
         </Tarjeta>
       ) : null}
 
-      <Emergente hoja abierto={eligiendo} alCerrar={() => setEligiendo(false)}
+      <Emergente abierto={eligiendo} alCerrar={() => setEligiendo(false)}
         titulo="Descargar todos los mapas" descripcion="Se bajan solo los que te faltan, de a uno."
         acciones={<BotonDeEmergente onClick={() => setEligiendo(false)}>Cancelar</BotonDeEmergente>}>
         <div className="space-y-2">
           {(["simple", "satelital", "ambos"] as const).map((eleccion) => {
             const pendientes = faltan(eleccion);
-            return <OpcionDeHoja key={eleccion} titulo={ETIQUETA[eleccion]} detalle={queFalta(pendientes)}
+            return <OpcionDeEmergente key={eleccion} titulo={ETIQUETA[eleccion]} detalle={queFalta(pendientes)}
               deshabilitada={pendientes.length === 0} alTocar={() => elegir(eleccion)} />;
           })}
         </div>

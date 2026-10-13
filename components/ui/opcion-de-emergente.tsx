@@ -3,10 +3,10 @@
 import type { ReactNode } from "react";
 
 /**
- * Una opción para elegir adentro de un panel que sube desde abajo: el renglón
- * entero se toca. Lo usan «Agregar una marca» y «Descargar todo» de una zona.
+ * Una opción para elegir adentro de una ventana emergente: el renglón entero
+ * se toca. Lo usan «Agregar una marca» y «Descargar todo» de una zona.
  */
-export function OpcionDeHoja({ icono, titulo, detalle, alTocar, deshabilitada = false }: {
+export function OpcionDeEmergente({ icono, titulo, detalle, alTocar, deshabilitada = false }: {
   icono?: ReactNode;
   titulo: string;
   detalle: string;

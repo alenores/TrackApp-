@@ -38,7 +38,7 @@ export function AvisoCompactoDeMapas({ perdidos, circuitos, aviso }: {
         <span className="min-w-0 flex-1 text-sm font-medium text-ambar-texto">{partes.join(" · ")}</span>
         <span className="text-sm font-semibold text-ambar-texto">Ver</span>
       </button>
-      <Emergente hoja ancho="amplio" abierto={abierto} alCerrar={() => setAbierto(false)} titulo="Mapas de tus Circuitos">
+      <Emergente ancho="amplio" abierto={abierto} alCerrar={() => setAbierto(false)} titulo="Mapas de tus Circuitos">
         <AvisoDeMapasQueFaltan perdidos={perdidos} circuitos={circuitos} aviso={aviso} />
       </Emergente>
     </>

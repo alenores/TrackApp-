@@ -457,6 +457,12 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
   - Excepciones a propósito: elegir un archivo y elegir una fecha van nativos.
 - **Una sola pieza dibuja todas las emergentes.** No escribir capas ni niveles de
   apilado a mano en cada pantalla.
+- **El panel que sube desde abajo es solo para el mapa.** Se usa únicamente
+  para elegir qué se ve sobre un mapa mientras se lo mira (la lista de Marcas
+  y Consultas, los Circuitos sobre el mapa de una zona). Elegir una opción para
+  hacer algo —descargar, agregar, confirmar, avisar— va en la ventana al medio.
+  Prohibido usarlo «porque hay opciones para elegir». Decisión de Ale,
+  2026-10-13.
 - **Toda emergente se cierra con el botón físico de atrás**, y ese atrás cierra la
   emergente, no sale de la app.
 - **Los botones de volver vuelven, no van.** Volver rearma una pantalla que ya
