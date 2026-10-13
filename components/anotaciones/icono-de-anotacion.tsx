@@ -19,7 +19,7 @@ const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
   cascada: "M7 3v3M7 9v3M7 15v3M12 3v3M12 9v3M12 15v3M17 3v3M17 9v3M17 15v3",
   puente: "M3 18 Q 12 4 21 18M3 18h18",
   cartel: "M5 4h14v8H5zM12 12v8",
-  cruce: "M6 6l12 12M18 6L6 18",
+  cruce: "M12 21v-8M12 13 5 4M12 13l7-9",
   tranquera: "M4 4v16M20 4v16M4 12h16M4 8l16 8",
 };
 

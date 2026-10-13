@@ -2,14 +2,14 @@
  * Lo que se prende y se apaga en Consultas. Tres opciones y nada más, a
  * propósito: Consultas es para mirar (decisión 052).
  *
- * **Detalles** junta puntos, trazos, tranqueras y alambrados.
+ * **Detalles** junta puntos y trazos.
  */
 export type CapaDeConsultas = "caminos" | "zonas" | "detalles";
 
 export const CAPAS_DE_CONSULTAS: { valor: CapaDeConsultas; etiqueta: string; queMuestra: string }[] = [
   { valor: "caminos", etiqueta: "Caminos", queMuestra: "Por dónde se puede pasar." },
   { valor: "zonas", etiqueta: "Zonas", queMuestra: "El borde y el nombre de cada zona." },
-  { valor: "detalles", etiqueta: "Detalles", queMuestra: "Puntos, trazos, tranqueras y alambrados." },
+  { valor: "detalles", etiqueta: "Detalles", queMuestra: "Puntos y trazos." },
 ];
 
 export const TODAS_LAS_CAPAS: CapaDeConsultas[] = CAPAS_DE_CONSULTAS.map((capa) => capa.valor);

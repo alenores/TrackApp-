@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ICONO_DE_CIRCUITOS, ICONO_DE_MARCAS } from "@/components/ui/iconos";
 
 export const TRAZOS_DE_NAVEGACION = <>
   <circle cx="12" cy="12" r="9" />
@@ -8,7 +9,7 @@ export const TRAZOS_DE_NAVEGACION = <>
 export type SubdestinoDelMenu = {
   href: string;
   etiqueta: string;
-  /** Una línea que dice qué hay adentro, para el panel del celular. */
+  /** Una línea que dice qué hay adentro, para las tarjetas del celular. */
   queHay: string;
   icono: ReactNode;
 };
@@ -20,9 +21,9 @@ type DestinoDelMenu = {
   icono: ReactNode;
   /**
    * Las entradas de adentro, cuando el destino tiene varias pantallas. En la
-   * computadora se despliegan en la barra lateral; en el celular, al tocarlo
-   * sube un panel para elegir. Adentro de cada una no quedan botones de
-   * pestañas: la elección ya quedó atrás.
+   * computadora se despliegan en la barra lateral; en el celular, tocarlo lleva
+   * a una pantalla con una tarjeta por entrada. Adentro de cada una no quedan
+   * botones de pestañas: la elección ya quedó atrás.
    */
   subdestinos?: SubdestinoDelMenu[];
   /** Otras direcciones que también cuentan como estar en este destino. */
@@ -33,8 +34,8 @@ type DestinoDelMenu = {
 export const SUBDESTINOS_DE_MAPAS: SubdestinoDelMenu[] = [
   { href: "/mapas/consultas", etiqueta: "Consultas", queHay: "El mapa con todo lo marcado y las zonas.",
     icono: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></> },
-  { href: "/mapas/marcas", etiqueta: "Marcas", queHay: "Caminos, puntos, trazos, tranqueras y alambrados.",
-    icono: <><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></> },
+  { href: "/mapas/marcas", etiqueta: "Marcas", queHay: "Caminos, puntos y trazos.",
+    icono: ICONO_DE_MARCAS },
   { href: "/zonas", etiqueta: "Zonas", queHay: "Las zonas y sus sectores.",
     icono: <><rect x="4" y="4" width="16" height="16" rx="1" strokeDasharray="3 2" /><path d="M4 12h16M12 4v16" /></> },
   { href: "/mapas/descargas", etiqueta: "Descargas", queHay: "Los mapas que bajaste a este celular.",
@@ -46,10 +47,10 @@ export const DESTINOS_DEL_MENU: DestinoDelMenu[] = [
   { href: "/salidas", etiqueta: "Salidas", necesitaSenal: true,
     icono: <path d="M6 21V4m0 0h10l-2 3.5 2 3.5H6" /> },
   { href: "/circuitos", etiqueta: "Circuitos",
-    icono: <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" /> },
+    icono: ICONO_DE_CIRCUITOS },
   { href: "/mapa-libre", etiqueta: "Navegación libre", icono: TRAZOS_DE_NAVEGACION },
-  { href: "/mapas/consultas", etiqueta: "Mapas", necesitaSenal: true,
-    subdestinos: SUBDESTINOS_DE_MAPAS, tambienEn: ["/mapas", "/zonas"],
+  { href: "/mapas", etiqueta: "Mapas", necesitaSenal: true,
+    subdestinos: SUBDESTINOS_DE_MAPAS, tambienEn: ["/zonas"],
     icono: <><path d="M9 3 2 7v14l7-4 6 4 7-4V3l-7 4-6-4Z" /><path d="M9 3v14M15 7v14" /></> },
   { href: "/perfiles", etiqueta: "Perfiles", necesitaSenal: true,
     icono: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></> },

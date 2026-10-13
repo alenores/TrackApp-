@@ -1,6 +1,15 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
+import { PantallaDeEntradasDeMapas } from "@/components/mapas/pantalla-de-entradas-de-mapas";
 
-/** Mapas abre en Consultas, que es lo que usa todo el mundo. */
+export const metadata: Metadata = { title: "Mapas" };
+
+/** Las cuatro entradas de Mapas como tarjetas, para el celular. Solo con conexión. */
 export default function MapasPage() {
-  redirect("/mapas/consultas");
+  return (
+    <>
+      <MarcaDeAppLista />
+      <PantallaDeEntradasDeMapas />
+    </>
+  );
 }

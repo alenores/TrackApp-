@@ -39,12 +39,14 @@ import {
   SIN_FILTROS,
   type FiltrosDeMarcas,
   type GrupoArmado,
+  type GrupoDeLaLista,
   type MarcaDeLaLista,
 } from "@/lib/marcas/lista";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { Anotacion, CategoriaUsuario, Rectangulo, Zona } from "@/types/database";
+import { IconoDeClase } from "@/components/marcas/icono-de-clase";
 
 /**
  * **Marcas**: todo lo que se dibuja encima del mapa, en detalle (decisión 052).
@@ -52,7 +54,7 @@ import type { Anotacion, CategoriaUsuario, Rectangulo, Zona } from "@/types/data
  * Todos la consultan: la lista con tildes y filtros, y el mapa con lo
  * tildado. Administrador y Premium además ven el «+» para agregar —a mano o
  * trayendo un archivo— y los tres puntos para editar o eliminar lo que les
- * toca. Tranqueras y alambrados no se editan: quedan como vinieron de
+ * toca. Lo que trajo de OpenStreetMap no se edita: queda como vino de
  * OpenStreetMap.
  *
  * Lo elegido —tildes y filtros— se recuerda en el celular.
@@ -230,7 +232,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
     <div className="space-y-3">
       <ListaYMapa
         tituloDelPanel="Marcas"
-        pantallaCompletaEnCelular="Marcas"
+        pantallaCompletaEnCelular="Marcas" destinoSiNoHayVuelta="/mapas"
         accionDelEncabezado={puedeAgregar ? <BotonAgregar etiqueta="Agregar una marca" alTocar={() => { setPanelArriba(false); setEligiendo("como"); }} /> : null}
         avisos={mensaje || (cargandoCaminos && caminosSinLinea.length > 0) || errorDeCaminos || incompleto ? <>
           {mensaje ? (
@@ -294,11 +296,11 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
           </div>
         ) : eligiendo === "que" ? (
           <div className="space-y-2">
-            <OpcionDeAgregar titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
+            <OpcionDeAgregar grupo="camino" titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino" }); }} />
-            <OpcionDeAgregar titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
+            <OpcionDeAgregar grupo="punto" titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto" } }); }} />
-            <OpcionDeAgregar titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
+            <OpcionDeAgregar grupo="trazo" titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" } }); }} />
             <BotonDeEmergente onClick={() => setEligiendo("como")}>Volver</BotonDeEmergente>
           </div>
@@ -308,12 +310,15 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
   );
 }
 
-function OpcionDeAgregar({ titulo, detalle, alTocar }: { titulo: string; detalle: string; alTocar: () => void }) {
+function OpcionDeAgregar({ grupo, titulo, detalle, alTocar }: { grupo?: GrupoDeLaLista; titulo: string; detalle: string; alTocar: () => void }) {
   return (
     <button type="button" onClick={alTocar}
-      className="flex min-h-14 w-full flex-col items-start rounded-xl border border-borde bg-superficie px-3 py-2 text-left shadow-[var(--sombra)] hover:border-acento-borde focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde">
-      <span className="text-base font-semibold text-texto">{titulo}</span>
-      <span className="text-sm leading-5 text-texto-suave">{detalle}</span>
+      className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-borde bg-superficie px-3 py-2 text-left shadow-[var(--sombra)] hover:border-acento-borde focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde">
+      {grupo ? <span className="shrink-0 text-texto-suave"><IconoDeClase grupo={grupo} /></span> : null}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-base font-semibold text-texto">{titulo}</span>
+        <span className="text-sm leading-5 text-texto-suave">{detalle}</span>
+      </span>
     </button>
   );
 }

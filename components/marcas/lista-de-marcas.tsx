@@ -20,7 +20,9 @@ import {
   type GrupoArmado,
   type GrupoDeLaLista,
   type MarcaDeLaLista,
+  type Origen,
 } from "@/lib/marcas/lista";
+import { IconoDeClase } from "@/components/marcas/icono-de-clase";
 import type { CaminoSinLinea } from "@/lib/caminos/datos";
 import type { Anotacion, Zona } from "@/types/database";
 
@@ -29,7 +31,7 @@ import type { Anotacion, Zona } from "@/types/database";
  *
  * Tildar decide qué se ve en el mapa. Tocar el renglón muestra esa marca en
  * el mapa. Editar y eliminar están en los tres puntos, y solo para quien
- * puede; tranqueras y alambrados no tienen, porque quedan como vinieron.
+ * puede; lo que trajo OpenStreetMap no tiene, porque queda como vino.
  */
 
 type Propiedades = {
@@ -60,7 +62,12 @@ const NOMBRE_DEL_GRUPO: Record<GrupoDeLaLista, string> = {
 };
 
 /** Al abrir Marcas todos los grupos arrancan plegados, pedido de Ale. */
-const PLEGADOS_AL_ABRIR: GrupoDeLaLista[] = ["camino", "punto", "trazo", "tranquera", "alambrado", "zona"];
+const PLEGADOS_AL_ABRIR: GrupoDeLaLista[] = ["camino", "punto", "trazo", "zona"];
+const OPCIONES_DE_ORIGEN: { valor: Origen; etiqueta: string }[] = [
+  { valor: "todos", etiqueta: "Todos" },
+  { valor: "propios", etiqueta: "Propios" },
+  { valor: "openstreetmap", etiqueta: "OpenStreetMap" },
+];
 const OPCIONES_DE_AUTORIA: { valor: Autoria; etiqueta: string }[] = [
   { valor: "todas", etiqueta: "De todos" },
   { valor: "mias", etiqueta: "Mías" },
@@ -87,6 +94,24 @@ export function ListaDeMarcas(propiedades: Propiedades) {
 
   /** Lo que va adentro de cada grupo, arriba de su lista. La actividad solo filtra Caminos. */
   const adentroDe = (grupo: GrupoDeLaLista): ReactNode => {
+    if (grupo === "punto" || grupo === "trazo") {
+      // Filtro discreto: texto chico, sin recuadros. Vale para puntos y trazos a la vez.
+      return (
+        <div role="radiogroup" aria-label="Origen de los puntos y trazos" className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-texto-suave">
+          <span>Origen</span>
+          {OPCIONES_DE_ORIGEN.map((opcion) => {
+            const elegida = filtros.origen === opcion.valor;
+            return (
+              <button key={opcion.valor} type="button" role="radio" aria-checked={elegida}
+                onClick={() => alCambiarFiltros({ ...filtros, origen: opcion.valor })}
+                className={`rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde ${elegida ? "font-semibold text-texto" : "underline underline-offset-2"}`}>
+                {opcion.etiqueta}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
     if (grupo !== "camino") return propiedades.adentroDelGrupo?.[grupo] ?? null;
     return (
       <div className="space-y-3">
@@ -140,6 +165,7 @@ export function ListaDeMarcas(propiedades: Propiedades) {
                   <button type="button" aria-expanded={!plegado}
                     onClick={() => setPlegados(plegado ? plegados.filter((cada) => cada !== grupo.grupo) : [...plegados, grupo.grupo])}
                     className="flex min-h-12 flex-1 items-center gap-2 text-left">
+                    <span className="text-texto-suave"><IconoDeClase grupo={grupo.grupo} /></span>
                     <span className="flex-1 text-base font-semibold text-texto">{NOMBRE_DEL_GRUPO[grupo.grupo]}</span>
                     <span className="text-sm tabular-nums text-texto-suave">{grupo.tildadas} de {grupo.marcas.length}</span>
                     <svg viewBox="0 0 24 24" fill="none" className={`h-4 w-4 text-texto-suave transition-transform ${plegado ? "" : "rotate-180"}`} aria-hidden
@@ -188,18 +214,13 @@ function Renglon({ marca, caminos, detalles, zonas, sectoresPorZona, destildadas
   );
 }
 
-const ICONO_DE_CAMINO = (
+const enCuadrito = (grupo: GrupoDeLaLista) => (
   <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-superficie-alta text-texto">
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 20c3-1 4-4 7-5s5 1 9-3" /><circle cx="4" cy="20" r="1.5" /><circle cx="20" cy="12" r="1.5" />
-    </svg>
+    <IconoDeClase grupo={grupo} />
   </span>
 );
-const ICONO_DE_ZONA = (
-  <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-superficie-alta text-texto">
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="3 2"><rect x="4" y="4" width="16" height="16" rx="1" /></svg>
-  </span>
-);
+const ICONO_DE_CAMINO = enCuadrito("camino");
+const ICONO_DE_ZONA = enCuadrito("zona");
 
 function queMostrar(
   marca: MarcaDeLaLista,

@@ -14,6 +14,8 @@ import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { usePreferencia } from "@/hooks/use-preferencia";
 import { sectoresPorZona } from "@/lib/mapas/general";
 import { CAPAS_DE_CONSULTAS, leerCapasDeConsultas, resumenDeCapas, TODAS_LAS_CAPAS, type CapaDeConsultas } from "@/lib/marcas/consultas";
+import { IconoDeClase } from "@/components/marcas/icono-de-clase";
+import type { GrupoDeLaLista } from "@/lib/marcas/lista";
 import type { Paquete } from "@/lib/offline/paquete";
 
 /**
@@ -22,12 +24,19 @@ import type { Paquete } from "@/lib/offline/paquete";
  *
  * Los filtros son pocos a propósito: la actividad (que decide qué
  * clasificación de los Caminos se destaca) y prender o apagar Caminos, Zonas y
- * Detalles. Detalles junta puntos, trazos, tranqueras y alambrados. Lo elegido
+ * Detalles. Detalles junta puntos y trazos. Lo elegido
  * se recuerda en el celular.
  *
  * El detalle fino —tildar marca por marca— está en Marcas, que es para quien
  * carga y necesita ver con lupa.
  */
+/** Detalles junta puntos y trazos: lleva los dos íconos. */
+const ICONOS_DE_LA_CAPA: Record<CapaDeConsultas, GrupoDeLaLista[]> = {
+  caminos: ["camino"],
+  zonas: ["zona"],
+  detalles: ["punto", "trazo"],
+};
+
 export function PantallaDeConsultas() {
   return (
     <PantallaDeMapas titulo="Consultas" ancha avisaIncompletoSola>
@@ -60,7 +69,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
           {incompleto ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Lo que ves puede estar incompleto: {incompleto}. Recargá para intentar de nuevo.</p></Tarjeta> : null}
         </> : null}
         tituloDelPanel="Qué mirar"
-        pantallaCompletaEnCelular="Consultas"
+        pantallaCompletaEnCelular="Consultas" destinoSiNoHayVuelta="/mapas"
         panelCorto
         resumen={resumenDeCapas(capas)}
         abierto={panelArriba}
@@ -70,6 +79,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
             <p className={CLASE_DE_TITULO_DE_SECCION}>Mostrar</p>
             {CAPAS_DE_CONSULTAS.map((capa) => (
               <RenglonDeCapa key={capa.valor} titulo={capa.etiqueta} queMuestra={capa.queMuestra}
+                icono={ICONOS_DE_LA_CAPA[capa.valor].map((grupo) => <IconoDeClase key={grupo} grupo={grupo} />)}
                 prendida={ver(capa.valor)} alAlternar={() => alternar(capa.valor)}>
                 {/* La actividad y la referencia solo explican los Caminos: van adentro de su renglón. */}
                 {capa.valor === "caminos" && ver("caminos") ? (

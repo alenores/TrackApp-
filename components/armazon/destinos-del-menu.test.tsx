@@ -16,9 +16,10 @@ describe("menú principal", () => {
     expect(SUBDESTINOS_DE_MAPAS.map((sub) => sub.etiqueta)).toEqual(["Consultas", "Marcas", "Zonas", "Descargas"]);
   });
 
-  it("Mapas queda marcado en sus cuatro pantallas y en el detalle de una zona", () => {
+  it("Mapas queda marcado en su pantalla de tarjetas, en sus cuatro pantallas y en el detalle de una zona", () => {
     const mapas = DESTINOS_DEL_MENU.find((item) => item.etiqueta === "Mapas")!;
-    for (const direccion of ["/mapas/consultas", "/mapas/marcas", "/zonas", "/zonas/3", "/mapas/descargas"]) {
+    expect(mapas.href).toBe("/mapas");
+    for (const direccion of ["/mapas", "/mapas/consultas", "/mapas/marcas", "/zonas", "/zonas/3", "/mapas/descargas"]) {
       expect(destinoActivo(mapas.href, direccion)).toBe(true);
     }
     expect(destinoActivo(mapas.href, "/circuitos")).toBe(false);

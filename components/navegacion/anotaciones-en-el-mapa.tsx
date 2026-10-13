@@ -145,7 +145,7 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   // Agregar y elegir cuáles se ven van juntos, detrás de un solo círculo.
   const boton = (
     <BotonRedondo etiqueta="Marcas" variante="principal" onClick={() => setEligiendoFiltro(true)}>
-      {ICONOS_DEL_CERRO.anotaciones}
+      {ICONOS_DEL_CERRO.marcas}
     </BotonRedondo>
   );
 

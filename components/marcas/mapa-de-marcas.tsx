@@ -15,7 +15,7 @@ import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
 type Propiedades = {
   /** Las zonas que se ven: perímetro y nombre. */
   zonas: Zona[];
-  /** Los puntos, trazos, tranqueras y alambrados que se ven. */
+  /** Los puntos y trazos que se ven. */
   anotaciones: Anotacion[];
   /** Los Caminos que se ven, ya con su línea. */
   caminos?: CaminoGuardado[];

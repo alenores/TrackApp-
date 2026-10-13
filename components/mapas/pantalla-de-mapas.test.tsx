@@ -8,6 +8,7 @@ const estado = vi.hoisted(() => ({ senal: true }));
 vi.mock("@/hooks/use-hay-senal", () => ({ useHaySenal: () => estado.senal }));
 vi.mock("@/hooks/use-datos-de-la-app", () => ({ useDatosDeLaApp: () => ({ paquete: { zonas: [], sectores: [] }, estado: "listo", aviso: null }) }));
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ back: () => {}, push: () => {} }) }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 async function dibujar() {
@@ -25,6 +26,8 @@ describe("pantallas de Mapas (decisión 052: solo con conexión)", () => {
     const { contenedor, raiz } = await dibujar();
     try {
       expect(contenedor.textContent).toContain("contenido de Marcas");
+      // La flecha que vuelve a la pantalla «Mapas», donde se eligió.
+      expect(contenedor.querySelector('[aria-label="Volver"]')).not.toBeNull();
     } finally { act(() => raiz.unmount()); }
   });
 

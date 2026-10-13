@@ -8,8 +8,8 @@ punto en la charla: se revisa directamente en la app.
 
 ### Marcas: una sola familia
 
-Todo lo que se dibuja encima del mapa se llama **marca**: Caminos, puntos,
-trazos, tranqueras y alambrados. **«Anotación» se retira** como palabra de la
+Todo lo que se dibuja encima del mapa se llama **marca**: Caminos, puntos
+y trazos. **«Anotación» se retira** como palabra de la
 app. En el código y en la tabla vieja de la base sigue el nombre `anotaciones`,
 igual que «ruta» quedó en carpetas y tablas viejas.
 
@@ -22,8 +22,11 @@ igual que «ruta» quedó en carpetas y tablas viejas.
   borran, no se vuelven a buscar solos, y si la zona se borra se quedan. Volver
   a pedirlos nunca los repite. Si OpenStreetMap no contesta, se dice al guardar
   la zona, con el motivo y para reintentar.
-- Un punto con ícono de tranquera marcado a mano es un **punto**, no una
-  tranquera: tranquera es solo lo que vino de OpenStreetMap.
+- **Actualización 2026-10-13:** tranqueras y alambrados dejan de ser clases
+  aparte. Una tranquera es un **punto** y un alambrado es un **trazo**; lo que
+  trajo OpenStreetMap se distingue por su origen (filtro discreto «Origen» en
+  Puntos y Trazos) y se dibuja distinto en el mapa. Íconos: Camino, línea
+  quebrada con círculos; Punto, pin; Trazo, senda discontinua; Zona, el suyo.
 - Caminos, puntos y trazos llegan al celular siempre, sin límite de zona: los
   carga gente de Córdoba para Córdoba. El límite de zona es solo para
   OpenStreetMap, que tiene datos de todo el mundo.
@@ -55,13 +58,18 @@ decisión que lo pidiera: era cómo se había construido.
 
 Mapas deja de tener pestañas adentro. Sus entradas van en el menú, en este
 orden: **Consultas, Marcas, Zonas y Descargas**. En la computadora se
-despliegan en la barra lateral; en el celular, tocar «Mapas» sube un panel
-para elegir. Cada pantalla queda limpia, con solo su nombre arriba.
+despliegan en la barra lateral; en el celular, tocar «Mapas» lleva a la
+pantalla **Mapas**, con la barra de abajo a la vista y una tarjeta por entrada
+(ícono, nombre y qué hay adentro). Cada pantalla queda limpia, con solo su
+nombre arriba y la flecha que vuelve a «Mapas»; el atrás del celular hace lo
+mismo. Consultas y Marcas siguen a pantalla completa, sin la barra de abajo.
+Decisión de Ale del 2026-10-13: el panel que subía desde la barra para elegir
+se retiró; el panel de lista de Consultas y Marcas no cambia.
 
 - **Consultas**, para todo público: el mapa con todo lo marcado y las zonas.
   Filtros simples: la actividad (decide qué clasificación de los Caminos se
   destaca) y prender o apagar **Caminos**, **Zonas** y **Detalles**. Detalles
-  junta puntos, trazos, tranqueras y alambrados. Reemplaza al mapa general.
+  junta puntos y trazos. Reemplaza al mapa general.
 - **Marcas**, para todos; Normal consulta sin «+» y sin editar. Lista agrupada
   por clase con tildes por marca y por grupo, las zonas como un grupo más,
   filtros por clase, actividad de los Caminos y autor. En el mapa queda lo

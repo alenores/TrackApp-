@@ -16,6 +16,7 @@ import { ACTIVIDADES } from "@/lib/rutas/actividades";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { ActividadRuta, IconoPunto } from "@/types/database";
+import { IconoDeClase } from "@/components/marcas/icono-de-clase";
 
 type DestinoDeLinea = "camino" | "trazo" | "omitir" | null;
 type DestinoDePunto = "sumar" | "omitir" | null;
@@ -209,7 +210,9 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
                   <Boton key={destino} variante={lineas[indice]?.destino === destino ? "principal" : "secundario"}
                     aria-pressed={lineas[indice]?.destino === destino} disabled={guardando || guardadas.has(indice)}
                     onClick={() => actualizarLinea(indice, { destino })}>
-                    {destino === "camino" ? "Camino" : destino === "trazo" ? "Trazo de referencia" : "Omitir"}
+                    {destino === "omitir" ? "Omitir" : <span className="inline-flex items-center gap-2">
+                      <IconoDeClase grupo={destino} />{destino === "camino" ? "Camino" : "Trazo de referencia"}
+                    </span>}
                   </Boton>
                 ))}
               </div>
@@ -240,7 +243,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
               </div>
             </Tarjeta>
           ) : null}
-          {datos.puntos.length > 0 ? <h3 className="text-lg font-bold text-texto">Puntos</h3> : null}
+          {datos.puntos.length > 0 ? <h3 className="flex items-center gap-2 text-lg font-bold text-texto"><IconoDeClase grupo="punto" />Puntos</h3> : null}
           {datos.puntos.map((punto, indice) => (
             <Tarjeta key={`punto-${punto.orden}`} className="space-y-2">
               <p className="text-base font-semibold text-texto">{punto.nombreSugerido}</p>

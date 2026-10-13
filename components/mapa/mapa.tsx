@@ -43,6 +43,7 @@ import type { Anotacion, Rectangulo } from "@/types/database";
 import { puntosSinPaso } from "@/lib/rutas/partes";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
+import { iconoDeUbicarme } from "@/components/ui/iconos";
 
 /** Toque o clic sobre el mapa: los dos traen dónde fue, en el mapa y en pantalla. */
 type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
@@ -2058,13 +2059,13 @@ export function Mapa({
 
       {/* Quien hizo la foto. Su licencia obliga a decirlo. */}
       {tipoDeFondo === "google" ? (
-        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-wrap items-end gap-1 text-credito-google text-texto-suave">
-          <span className="rounded bg-superficie px-1 py-0.5">
+        <div className="pointer-events-none absolute bottom-1 left-2 right-20 flex flex-nowrap items-end gap-1 text-credito-google text-texto-suave">
+          <span className="shrink-0 rounded bg-superficie px-1 py-0.5">
             {/* Los dos archivos son los logotipos oficiales, sin modificaciones. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={modo === "sol" ? "/google-maps-sol.png" : "/google-maps-noche.png"} alt="Google Maps" className="h-3 w-auto" />
           </span>
-          <span className="rounded bg-superficie px-1 py-0.5 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
+          <span className="min-w-0 truncate whitespace-nowrap rounded bg-superficie px-1 py-0.5 text-texto">{creditosGoogle ?? avisoDeCreditosGoogle ?? "Cargando créditos de Google…"}</span>
         </div>
       ) : opcionesDeFondo.includes("satelital") && tipoDeFondo === "satelital" ? (
         <p className="pointer-events-none absolute bottom-1 left-2 text-[11px] leading-4 text-texto-suave">
@@ -2126,17 +2127,7 @@ export function Mapa({
             etiqueta={gpsPrendido ? "Centrar" : "Ubicarme"}
             alTocar={alternarGps}
           >
-            {gpsPrendido ? (
-              <>
-                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-                <circle cx="12" cy="10" r="3" fill="currentColor" />
-              </>
-            ) : (
-              <>
-                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-                <circle cx="12" cy="10" r="3" />
-              </>
-            )}
+            {iconoDeUbicarme(gpsPrendido)}
           </BotonDelMapa>
           
           {!enGrande ? (

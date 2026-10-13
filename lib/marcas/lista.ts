@@ -23,7 +23,7 @@ import { claseDelDetalle, esFija, type ClaseDeMarca } from "@/lib/marcas/clases"
 export type GrupoDeLaLista = ClaseDeMarca | "zona";
 
 /** El orden de los grupos en la lista. */
-export const GRUPOS_EN_ORDEN: GrupoDeLaLista[] = ["camino", "punto", "trazo", "tranquera", "alambrado", "zona"];
+export const GRUPOS_EN_ORDEN: GrupoDeLaLista[] = ["camino", "punto", "trazo", "zona"];
 
 export type MarcaDeLaLista = {
   /** Única en toda la lista: `camino:3`, `detalle:15`, `zona:2`. */
@@ -33,11 +33,15 @@ export type MarcaDeLaLista = {
   autorId: string;
   /** Solo los Caminos: sus actividades. */
   actividades: ActividadRuta[] | null;
-  /** Tranqueras y alambrados: no se corrigen ni se borran. */
+  /** Lo que trajo OpenStreetMap: no se corrige ni se borra. */
   fija: boolean;
 };
 
 export type Autoria = "todas" | "mias" | "de_otros";
+
+/** De dónde salió un punto o un trazo: de la gente o de OpenStreetMap. */
+export type Origen = "todos" | "propios" | "openstreetmap";
+export const ORIGENES: Origen[] = ["todos", "propios", "openstreetmap"];
 
 export type FiltrosDeMarcas = {
   /** Las clases que se listan. Vacío no tiene sentido: vuelve a todas. */
@@ -45,11 +49,13 @@ export type FiltrosDeMarcas = {
   /** Solo los Caminos que tienen esta actividad. `null`: todos. */
   actividad: ActividadRuta | null;
   autoria: Autoria;
+  /** Solo puntos y trazos: los que dibujó la gente o los de OpenStreetMap. */
+  origen: Origen;
 };
 
-export const TODAS_LAS_CLASES: ClaseDeMarca[] = ["camino", "punto", "trazo", "tranquera", "alambrado"];
+export const TODAS_LAS_CLASES: ClaseDeMarca[] = ["camino", "punto", "trazo"];
 
-export const SIN_FILTROS: FiltrosDeMarcas = { clases: TODAS_LAS_CLASES, actividad: null, autoria: "todas" };
+export const SIN_FILTROS: FiltrosDeMarcas = { clases: TODAS_LAS_CLASES, actividad: null, autoria: "todas", origen: "todos" };
 
 /**
  * El filtro «De quién» está escondido por ahora, pedido de Ale (2026-10-13).
@@ -69,18 +75,20 @@ export function filtrosQueSeAplican(filtros: FiltrosDeMarcas): FiltrosDeMarcas {
     clases: TODAS_LAS_CLASES,
     actividad: filtros.actividad,
     autoria: FILTRO_DE_AUTOR_A_LA_VISTA ? filtros.autoria : "todas",
+    origen: filtros.origen,
   };
 }
 
 /** Lo guardado en el celular, si sirve. */
 export function leerFiltrosDeMarcas(guardado: unknown): FiltrosDeMarcas | null {
   if (!guardado || typeof guardado !== "object") return null;
-  const { clases, actividad, autoria } = guardado as Record<string, unknown>;
+  const { clases, actividad, autoria, origen } = guardado as Record<string, unknown>;
   const clasesLeidas = Array.isArray(clases) ? TODAS_LAS_CLASES.filter((clase) => clases.includes(clase)) : [];
   return {
     clases: clasesLeidas.length > 0 ? clasesLeidas : TODAS_LAS_CLASES,
     actividad: ACTIVIDADES_RUTA.find((cada) => cada === actividad) ?? null,
     autoria: autoria === "mias" || autoria === "de_otros" ? autoria : "todas",
+    origen: ORIGENES.find((cada) => cada === origen) ?? "todos",
   };
 }
 
@@ -121,6 +129,7 @@ export function pasaLosFiltros(marca: MarcaDeLaLista, filtros: FiltrosDeMarcas, 
   if (marca.grupo === "zona") return true;
   if (!filtros.clases.includes(marca.grupo)) return false;
   if (filtros.actividad && marca.grupo === "camino" && !marca.actividades?.includes(filtros.actividad)) return false;
+  if (marca.grupo !== "camino" && filtros.origen !== "todos" && marca.fija !== (filtros.origen === "openstreetmap")) return false;
   if (filtros.autoria === "mias") return miPerfilId !== null && marca.autorId === miPerfilId;
   if (filtros.autoria === "de_otros") return miPerfilId === null || marca.autorId !== miPerfilId;
   return true;

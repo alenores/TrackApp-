@@ -2075,3 +2075,34 @@ crear detalle que Google no entregue.
 
 Comprobarlo en un celular físico y en otro lugar que tenga un límite de detalle
 distinto.
+
+## 2026-10-13 · Íconos de marcas y origen
+
+Camino, Punto, Trazo y Zona tienen ícono propio (en un solo lugar). Tranqueras y
+alambrados dejan de ser clases: son puntos y trazos. Se suma el filtro discreto
+«Origen» (todos, propios, OpenStreetMap) en Puntos y Trazos. Documentos:
+AGENTS.md, glosario, decisión 052. Pendiente: probar la lista de Marcas en
+pantalla en modo sol y noche.
+
+## 2026-10-13 · Pantalla «Mapas» con tarjetas en el celular
+
+En el celular, tocar «Mapas» en la barra de abajo ya no sube un panel: lleva a
+la pantalla «Mapas», con la barra visible y las cuatro entradas como tarjetas
+(sin «Abrir»). Zonas y Descargas suman la flecha de volver, solo en el celular;
+Consultas y Marcas siguen a pantalla completa y su flecha vuelve a «Mapas». En
+la computadora no cambia nada. Documentos: AGENTS.md, decisión 052.
+Pendiente: mirarlo en pantalla, en modo sol y noche, con sesión iniciada.
+
+## 2026-10-13 · Un ícono, una sola identidad
+
+Regla nueva de Ale: cada módulo o función tiene un ícono único y el mismo en
+todos lados. Marcas usa el lápiz también al navegar; Circuitos usa el del menú
+también al navegar y en el detalle de zona; ubicarme y centrar pasan a una mira
+(se confundía con Punto); «Marcar acá» de la salida pasa a un señalador (usaba
+la bandera de Salidas); el punto «cruce» pasa a una bifurcación, también en el
+mapa (era la cruz de cerrar). Camino, Punto y Trazo suman su ícono en el «+» de
+Marcas, en Consultas (Detalles lleva los dos) y al traer de afuera. «Bajar el
+archivo GPS» queda como estaba, por decisión de Ale. Pendiente: «Ver el mapa de
+la zona» al navegar usa el ícono de Mapas; se le consultó a Ale. Documentos:
+AGENTS.md.
+

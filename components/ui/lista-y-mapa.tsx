@@ -56,6 +56,8 @@ type Propiedades = {
    * al botón de volver: siempre hay una salida visible.
    */
   pantallaCompletaEnCelular?: string;
+  /** Adónde lleva el volver de la pantalla completa si no hay pantalla anterior. */
+  destinoSiNoHayVuelta?: string;
   /** Avisos de la pantalla (cargando, algo falló): van arriba del mapa, siempre a la vista. */
   avisos?: ReactNode;
   /** Lo que va en el encabezado del panel, a la derecha del título: el «+» de agregar. */
@@ -65,23 +67,23 @@ type Propiedades = {
 /** Cuánto hay que deslizar hacia arriba el panel asomado para que suba. */
 const DESLIZAR_PARA_SUBIR = 24;
 
-export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, mapa, abierto, alCambiarAbierto, panelCorto = false, pie, pantallaCompletaEnCelular, avisos, accionDelEncabezado }: Propiedades) {
+export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, mapa, abierto, alCambiarAbierto, panelCorto = false, pie, pantallaCompletaEnCelular, destinoSiNoHayVuelta = "/", avisos, accionDelEncabezado }: Propiedades) {
   const ancha = usePantallaAncha();
   const router = useRouter();
   /**
    * Volver de la pantalla completa. Abrir y cerrar el panel deja pasos de más
    * en el historial con esta misma dirección: volver una vez puede caer en la
    * misma pantalla y parecer que el botón no hace nada. Si después de volver
-   * seguimos acá, se va al inicio. Mapas es solo con conexión: ir a una
+   * seguimos acá, se va al destino de respaldo. Mapas es solo con conexión: ir a una
    * dirección acá no deja nada en blanco.
    */
   const volverDeVerdad = useCallback(() => {
     const antes = window.location.pathname;
     router.back();
     window.setTimeout(() => {
-      if (window.location.pathname === antes) router.push("/");
+      if (window.location.pathname === antes) router.push(destinoSiNoHayVuelta);
     }, 600);
-  }, [router]);
+  }, [router, destinoSiNoHayVuelta]);
   // Quien lo usa puede pasar una función nueva en cada dibujo; el atrás del
   // celular necesita una que no cambie.
   const alCambiarRef = useRef(alCambiarAbierto);

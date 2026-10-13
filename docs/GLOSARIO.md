@@ -32,7 +32,7 @@ Zonas y Detalles. Al tocar una zona muestra su ficha breve; al tocar un punto,
 su nombre, comentario y foto. Reemplazó al «mapa general».
 
 **Detalles**
-En Consultas, el grupo que junta puntos, trazos, tranqueras y alambrados: todo
+En Consultas, el grupo que junta puntos y trazos: todo
 lo marcado que no es un Camino.
 
 **Lista y mapa**
@@ -123,8 +123,8 @@ Lo mismo, con las imágenes de la cartografía descargadas.
 Cuán de cerca se mira. En esta app va de 10 (una sierra entera) a 15 (un sendero).
 
 **Marca**
-Todo lo que se dibuja encima del mapa: Caminos, puntos, trazos, tranqueras y
-alambrados. **Ninguna es privada**: todos ven todas, y cada uno elige cuáles
+Todo lo que se dibuja encima del mapa: Caminos, puntos y trazos.
+**Ninguna es privada**: todos ven todas, y cada uno elige cuáles
 mirar. Reemplaza a «anotación», que se retiró el 2026-10-13 y solo queda en el
 código y en la tabla vieja de la base. Ver decisión 052.
 
@@ -182,13 +182,17 @@ vez de dibujarlas. Cada línea se decide como Camino, trazo u omitir; cada
 punto se suma o no. Con vista previa antes de guardar. Ver decisión 052.
 
 **Tranquera**
-El portón de un alambrado: marca por dónde se pasa. La trae OpenStreetMap sola
-al crear una zona (el mapa de fondo no la tiene) y queda fija: no se corrige
-ni se borra. Un punto con ícono de tranquera marcado a mano es un punto.
+El portón de un alambrado: marca por dónde se pasa. Es un **punto** con ícono
+de tranquera. Si la trajo OpenStreetMap sola al crear una zona, queda fija: no
+se corrige ni se borra.
 
 **Alambrado**
-Un alambrado traído de OpenStreetMap al crear una zona, entero aunque cruce el
-borde. Como la tranquera, queda fijo.
+Un **trazo** que hace de cerco. Si lo trajo OpenStreetMap al crear una zona,
+viene entero aunque cruce el borde y queda fijo, como la tranquera.
+
+**Origen** (de un punto o un trazo)
+De dónde salió: dibujado por la gente (propio) o traído de OpenStreetMap. Es un
+filtro discreto dentro de Puntos y Trazos en Marcas.
 
 **Cobertura**
 La relación entre una ruta y los sectores que la cruzan. Un tramo puede estar

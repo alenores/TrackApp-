@@ -143,8 +143,8 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   esfuerzo, qué llevar, complicaciones y comentario del Circuito sí se cargan a
   mano. Decisión 049.
 
-- **Todo lo que se dibuja encima del mapa es una marca**: Caminos, puntos,
-  trazos, tranqueras y alambrados (decisión 052). Mapas tiene cuatro entradas
+- **Todo lo que se dibuja encima del mapa es una marca**: Caminos, puntos
+  y trazos (decisión 052; las tranqueras son puntos y los alambrados, trazos). Mapas tiene cuatro entradas
   en el menú, sin pestañas adentro: **Consultas, Marcas, Zonas y Descargas**.
   Consultas, para todos, muestra perímetros y nombres de zonas más todas las
   marcas, con filtros simples (actividad; Caminos, Zonas y Detalles). Marcas
@@ -462,10 +462,15 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
   Navegación libre, Mapas y Perfiles. Salidas es el inicio con conexión.
 - **Un módulo con varias pantallas las lleva como entradas del menú, no como
   pestañas adentro**: en PC se despliegan en la barra lateral; en el celular,
-  tocar el módulo sube un panel para elegir (decisión 052).
+  tocar el módulo lleva a una pantalla con una tarjeta por entrada, y cada
+  entrada vuelve a esa pantalla (decisión 052).
 - **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
   agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
   Editar y eliminar se muestran al abrir los tres puntos, nunca sueltos.
+- **Un ícono, una sola identidad.** Cada módulo o función tiene su ícono, el
+  mismo en celular y PC y en todas las pantallas donde se nombra; ninguna otra
+  cosa puede usar ese dibujo. Si aparece uno repetido, no se deja pasar. Viven
+  en un solo lugar compartido. Decisión de Ale, 2026-10-13.
 - **La tarjeta que abre un detalle se toca entera.** «Abrir» va discreto abajo
   a la derecha; no lleva un segundo botón «Ver».
 - **No se inventan componentes nuevos si ya hay uno que sirve.** Si hace falta uno

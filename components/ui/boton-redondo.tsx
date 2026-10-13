@@ -3,10 +3,11 @@
 import type { ButtonHTMLAttributes, PointerEvent, ReactNode } from "react";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
+import { ICONO_DE_CIRCUITOS, ICONO_DE_MARCAS, iconoDeUbicarme } from "@/components/ui/iconos";
 
 /**
  * **El botón redondo con un ícono**, el de los mapas del cerro: salir,
- * anotaciones, rutas y centrar en tu posición.
+ * Marcas, Circuitos y centrar en tu posición.
  *
  * Mide lo mismo que el alto de un botón normal. Prohibido agrandarlo
  * (decisión 024): los botones grandes tapan el mapa.
@@ -86,23 +87,10 @@ export function BotonRedondo({
 /** Los íconos de los mapas del cerro, en un solo lugar. */
 export const ICONOS_DEL_CERRO = {
   salir: <path d="M6 6l12 12M18 6L6 18" />,
-  anotaciones: (
-    <path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
-  ),
+  marcas: ICONO_DE_MARCAS,
   /** Otros Circuitos en el mapa. */
-  circuitos: (
-    <>
-      <circle cx="6" cy="18" r="2.5" />
-      <circle cx="18" cy="6" r="2.5" />
-      <path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5" />
-    </>
-  ),
-  centrar: (
-    <>
-      <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-      <circle cx="12" cy="10" r="3" fill="currentColor" />
-    </>
-  ),
+  circuitos: ICONO_DE_CIRCUITOS,
+  centrar: iconoDeUbicarme(true),
   mapa: <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />,
   /** El gráfico de alturas: una línea que sube y baja sobre su base. */
   alturas: <path d="M3 20h18M3 16l5-7 4 4 3-5 6 8" />,

@@ -2,6 +2,7 @@
 
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { ICONO_DE_MARCAR_ACA } from "@/components/ui/iconos";
 
 /**
  * Lo que se ve del registro de una salida en los mapas del cerro: la franja
@@ -48,7 +49,7 @@ export function FranjaDeRegistro({
 export function BotonMarcarAca({ alTocar, deshabilitado }: { alTocar: () => void; deshabilitado: boolean }) {
   return (
     <BotonRedondo etiqueta="Marcar acá en la salida" onClick={alTocar} disabled={deshabilitado}>
-      <path d="M6 21V4m0 0h10l-2 3.5 2 3.5H6" />
+      {ICONO_DE_MARCAR_ACA}
     </BotonRedondo>
   );
 }

@@ -31,14 +31,13 @@ const lista = armarLaLista(
 );
 
 describe("clases de marcas", () => {
-  it("lo de OpenStreetMap es tranquera o alambrado, y queda fijo", () => {
-    expect(claseDelDetalle({ tipo: "punto", origen: "openstreetmap" })).toBe("tranquera");
-    expect(claseDelDetalle({ tipo: "trazo", origen: "openstreetmap" })).toBe("alambrado");
+  it("lo de OpenStreetMap es un punto o un trazo, y queda fijo", () => {
+    expect(claseDelDetalle({ tipo: "punto" })).toBe("punto");
+    expect(claseDelDetalle({ tipo: "trazo" })).toBe("trazo");
     expect(esFija({ origen: "openstreetmap" })).toBe(true);
   });
 
-  it("un punto con ícono de tranquera marcado a mano sigue siendo un punto, y se puede cambiar", () => {
-    expect(claseDelDetalle({ tipo: "punto", origen: "manual" })).toBe("punto");
+  it("lo marcado a mano o navegando se puede cambiar", () => {
     expect(esFija({ origen: "manual" })).toBe(false);
     expect(esFija({ origen: "navegacion" })).toBe(false);
   });
@@ -47,7 +46,7 @@ describe("clases de marcas", () => {
 describe("lista de Marcas", () => {
   it("agrupa en el orden decidido, con las zonas al final", () => {
     expect(agrupar(lista, new Set()).map((grupo) => grupo.grupo)).toEqual([
-      "camino", "punto", "trazo", "tranquera", "alambrado", "zona",
+      "camino", "punto", "trazo", "zona",
     ]);
   });
 
@@ -65,6 +64,13 @@ describe("lista de Marcas", () => {
     const enElMapa = lasDelMapa(lista, { ...SIN_FILTROS, actividad: "kayak" }, "ale", new Set());
     expect(enElMapa.filter((marca) => marca.grupo === "camino").map((marca) => marca.id)).toEqual([2]);
     expect(enElMapa.some((marca) => marca.grupo === "punto")).toBe(true);
+  });
+
+  it("el origen separa lo de OpenStreetMap de lo propio, y no toca Caminos ni zonas", () => {
+    const deOsm = lasDelMapa(lista, { ...SIN_FILTROS, origen: "openstreetmap" }, "ale", new Set());
+    expect(deOsm.map((marca) => marca.clave)).toEqual(["camino:1", "camino:2", "detalle:12", "detalle:13", "zona:5"]);
+    const propios = lasDelMapa(lista, { ...SIN_FILTROS, origen: "propios" }, "ale", new Set());
+    expect(propios.map((marca) => marca.clave)).toEqual(["camino:1", "camino:2", "detalle:10", "detalle:11", "zona:5"]);
   });
 
   it("separa lo mío de lo de otros, y las zonas no cuentan", () => {
@@ -89,9 +95,9 @@ describe("lista de Marcas", () => {
 
   it("lo guardado que no se entiende vuelve a lo de siempre", () => {
     expect(leerFiltrosDeMarcas("cualquier cosa")).toBeNull();
-    expect(leerFiltrosDeMarcas({ clases: [], actividad: "volar", autoria: "nadie" })).toEqual(SIN_FILTROS);
-    expect(leerFiltrosDeMarcas({ clases: ["punto"], actividad: "kayak", autoria: "mias" }))
-      .toEqual({ clases: ["punto"], actividad: "kayak", autoria: "mias" });
+    expect(leerFiltrosDeMarcas({ clases: [], actividad: "volar", autoria: "nadie", origen: "marte" })).toEqual(SIN_FILTROS);
+    expect(leerFiltrosDeMarcas({ clases: ["punto"], actividad: "kayak", autoria: "mias", origen: "propios" }))
+      .toEqual({ clases: ["punto"], actividad: "kayak", autoria: "mias", origen: "propios" });
   });
 
   it("el encuadre abarca todo, y a un punto solo le da terreno alrededor", () => {
@@ -107,7 +113,7 @@ describe("lista de Marcas", () => {
 describe("filtros que se aplican en Marcas", () => {
   it("las clases las deciden las casillas de cada grupo: un filtro de clases viejo guardado ya no esconde nada", async () => {
     const { filtrosQueSeAplican } = await import("@/lib/marcas/lista");
-    const viejo = { clases: ["punto" as const], actividad: "kayak" as const, autoria: "mias" as const };
+    const viejo = { clases: ["punto" as const], actividad: "kayak" as const, autoria: "mias" as const, origen: "todos" as const };
     expect(filtrosQueSeAplican(viejo)).toEqual({ ...SIN_FILTROS, actividad: "kayak" });
   });
 });
