@@ -431,7 +431,7 @@ se muestra en su tarjeta.
 
 **Registro de salida**
 Lo que se junta de una salida mientras se navega: los puntos por donde vas,
-anotados solos con la pantalla prendida, y los que marcás con la banderita
+anotados solos con la pantalla prendida, y los que marcás con el señalador
 **«Marcar acá»**. Se guarda en el celular sin señal y, al terminar, sube solo
 como borrador. Ver `decisiones/032`.
 

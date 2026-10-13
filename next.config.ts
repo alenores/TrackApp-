@@ -98,8 +98,19 @@ const withPWA = withPWAInit({
   dynamicStartUrl: false,
   /** Lo que se guarda se guarda al visitar, no al pasar el dedo por encima. */
   cacheOnFrontEndNav: false,
-  /** Sin código ni estilos en el paquete inicial: se usa la última versión visitada. */
-  buildExcludes: [/\.js$/, /\.css$/],
+  /**
+   * **Todo el código y los estilos van en la precarga**: se bajan al instalar
+   * cada versión, en casa y con señal. Antes se guardaban recién al usarlos, y
+   * en una instalación nueva el motor del mapa no estaba: abrir o navegar un
+   * Circuito sin haber visto nunca un mapa con señal reventaba en el cerro.
+   * Pasó el 2026-10-13, probado con una instalación limpia.
+   *
+   * Solo queda afuera lo que no es de `static/` (lo del servidor y los
+   * manifiestos). Lo que pase de 2 MB lo deja afuera la librería sola: hoy es
+   * solo el convertidor de fotos del iPhone, que se usa con señal.
+   * `scripts/verificar-precarga.mjs` frena la compilación si falta algo.
+   */
+  buildExcludes: [({ asset }: { asset: { name: string } }) => !asset.name.startsWith("static/")],
   fallbacks: {
     document: "/offline",
   },
@@ -372,6 +383,18 @@ const nextConfig: NextConfig = {
      * cambio en modo avión.
      */
     prefetchInlining: false,
+    /**
+     * **Cada pantalla se le pide al servidor una sola vez por apertura.**
+     * Después la app la reusa de memoria: volver a entrar no sale a internet.
+     * Lo nuevo llega al abrir la app de nuevo, o al instante cuando vos mismo
+     * guardás algo (los guardados avisan con `revalidatePath`). Un día alcanza
+     * para «mientras la app está abierta»: cerrarla y abrirla lo vacía.
+     * Decisión de Ale del 2026-10-13.
+     */
+    staleTimes: {
+      dynamic: 86_400,
+      static: 86_400,
+    },
   },
   env: {
     NEXT_PUBLIC_DEPLOY_SHA: gitShortSha(),

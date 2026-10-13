@@ -45,7 +45,7 @@ export function FranjaDeRegistro({
   );
 }
 
-/** La banderita: suma a mano un punto donde estás. */
+/** El señalador: suma a mano un punto donde estás. */
 export function BotonMarcarAca({ alTocar, deshabilitado }: { alTocar: () => void; deshabilitado: boolean }) {
   return (
     <BotonRedondo etiqueta="Marcar acá en la salida" onClick={alTocar} disabled={deshabilitado}>
@@ -97,7 +97,7 @@ export function PreguntaDeRegistrar({
     >
       <div className="space-y-2 text-base leading-6 text-texto">
         <p>
-          Mientras navegás se va anotando por dónde vas, sin señal. Con la banderita marcás un
+          Mientras navegás se va anotando por dónde vas, sin señal. Con el señalador marcás un
           punto a mano.
         </p>
         <p className="text-texto-suave">
