@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { detalleConCreditosDeGoogle, maximoDetalleDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
+import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso, maximoDetalleDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
 
 const mundo: AreaConDetalleDeGoogle = { maxZoom: 15, north: 90, south: -90, east: 180, west: -180 };
 
@@ -25,6 +25,12 @@ describe("detalle disponible en Google", () => {
   it("ignora niveles inválidos y no inventa un límite cuando falta la información", () => {
     expect(maximoDetalleDeGoogle([{ ...mundo, maxZoom: 23 }], { lat: -31, lng: -64 })).toBeNull();
     expect(maximoDetalleDeGoogle([], { lat: -31, lng: -64 })).toBeNull();
+  });
+
+  it("conserva el último límite conocido cuando faltan datos y nunca aleja el mapa solo", () => {
+    expect(limiteDeGoogleSinRetroceso(20, 18, null)).toBe(20);
+    expect(limiteDeGoogleSinRetroceso(22, 19, 17)).toBe(19);
+    expect(limiteDeGoogleSinRetroceso(20, 19, 21)).toBe(21);
   });
 
   it("busca los créditos en otro nivel y conserva el límite de la vista original", async () => {

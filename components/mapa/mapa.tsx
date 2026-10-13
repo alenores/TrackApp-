@@ -26,7 +26,7 @@ import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
-import { detalleConCreditosDeGoogle } from "@/lib/mapas/google-acercamiento";
+import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
 import {
   ALTURAS,
   CAPAS_DE_RELIEVE,
@@ -635,7 +635,7 @@ export function Mapa({
             (maximo) => {
               // El límite llega con la primera respuesta, aunque los créditos
               // requieran más pedidos. Nunca alejar por una respuesta tardía.
-              mapa.setMaxZoom(maximo === null ? 22 : Math.max(mapa.getZoom(), maximo));
+              mapa.setMaxZoom(limiteDeGoogleSinRetroceso(mapa.getMaxZoom(), mapa.getZoom(), maximo));
             },
           );
           if (!detalle) return;

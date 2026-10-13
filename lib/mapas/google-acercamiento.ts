@@ -32,6 +32,15 @@ export function maximoDetalleDeGoogle(
   return niveles.length ? Math.max(...niveles) : null;
 }
 
+/** Conserva el límite conocido si la respuesta nueva no informa otro. */
+export function limiteDeGoogleSinRetroceso(
+  limiteActual: number,
+  zoomActual: number,
+  maximoInformado: number | null,
+): number {
+  return maximoInformado === null ? limiteActual : Math.max(zoomActual, maximoInformado);
+}
+
 /** Busca los créditos sin confundir su ausencia con un límite de la imagen. */
 export async function detalleConCreditosDeGoogle(
   consulta: URLSearchParams,
