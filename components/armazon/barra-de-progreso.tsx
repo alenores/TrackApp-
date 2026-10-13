@@ -58,6 +58,16 @@ export function ProveedorDeBarraDeProgreso({ children }: { children: ReactNode }
   const [saliendoDe, setSaliendoDe] = useState<string | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
+  // Al llegar a otra pantalla la navegación terminó: se olvida de dónde salió.
+  // Si no, al volver a esa pantalla la barra se prendía sola y giraba hasta
+  // vencer el tope, sin que nada saliera a internet. Ale lo vio el 2026-10-13
+  // al volver de Zonas a Mapas.
+  const [pantallaAnterior, setPantallaAnterior] = useState(pathname);
+  if (pathname !== pantallaAnterior) {
+    setPantallaAnterior(pathname);
+    if (saliendoDe !== null && saliendoDe !== pathname) setSaliendoDe(null);
+  }
+
   const isNavigating = saliendoDe !== null && saliendoDe === pathname;
 
   const clearNavigationTimeout = useCallback(() => {
