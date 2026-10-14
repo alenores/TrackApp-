@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
@@ -30,6 +30,13 @@ import { NIVEL_DE_LAS_EMERGENTES } from "@/lib/capas";
  * aviso que nadie ve.
  */
 
+/**
+ * El lugar al costado del mapa, en la computadora, donde una ficha se abre sin
+ * taparlo. Lo da `ListaYMapa` en Mapas; sin él (celular, navegación, mapa en
+ * grande) la ficha va al medio, tapando todo.
+ */
+export const LugarAlCostado = createContext<HTMLElement | null>(null);
+
 type PropiedadesDeEmergente = {
   abierto: boolean;
   alCerrar: () => void;
@@ -52,11 +59,10 @@ type PropiedadesDeEmergente = {
    */
   hoja?: boolean;
   /**
-   * `true` para la ventana que elige qué se ve sobre un mapa sin ser hoja,
-   * como las de la navegación: lleva los colores de panel. La hoja ya los
-   * lleva sola. Todo panel se ve igual en toda la app (Ale, 2026-10-13).
+   * `true` para las fichas de lo que se toca en un mapa: en la computadora,
+   * dentro de Mapas, van al costado y no tapan el mapa. En el resto, al medio.
    */
-  deMapa?: boolean;
+  alCostado?: boolean;
 };
 
 export function Emergente({
@@ -68,16 +74,17 @@ export function Emergente({
   acciones,
   ancho = "normal",
   hoja = false,
-  deMapa = false,
+  alCostado = false,
 }: PropiedadesDeEmergente) {
-  const conColoresDePanel = hoja || deMapa;
+  const lugarAlCostado = useContext(LugarAlCostado);
+  const vaAlCostado = alCostado && lugarAlCostado !== null;
   const yaEstaVivo = useYaEnElNavegador();
   const { desplazamiento, arrastrando, manija, cuerpoRef } = useArrastreHaciaAbajo({ activo: abierto && hoja, alIrse: alCerrar });
 
   useCerrarConAtras(abierto, alCerrar);
 
   useEffect(() => {
-    if (!abierto) return;
+    if (!abierto || vaAlCostado) return;
 
     // Con una emergente abierta, el fondo no se mueve.
     const desbordeAnterior = document.body.style.overflow;
@@ -86,9 +93,35 @@ export function Emergente({
     return () => {
       document.body.style.overflow = desbordeAnterior;
     };
-  }, [abierto]);
+  }, [abierto, vaAlCostado]);
 
   if (!abierto || !yaEstaVivo) return null;
+
+  if (vaAlCostado && lugarAlCostado) {
+    return createPortal(
+      <div role="dialog" aria-label={titulo} className="flex min-h-0 flex-1 flex-col">
+        <div className="cabeza-de-panel flex shrink-0 items-start gap-3 border-b border-borde px-4 py-2">
+          <div className="min-w-0 flex-1 py-2">
+            <h2 className="text-base font-bold text-texto">{titulo}</h2>
+            {descripcion ? <p className="mt-1 text-sm text-texto-suave">{descripcion}</p> : null}
+          </div>
+          <button
+            type="button"
+            onClick={alCerrar}
+            aria-label="Cerrar"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
+          >
+            ×
+          </button>
+        </div>
+        {children ? (
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">{children}</div>
+        ) : null}
+        {acciones ? <div className="flex shrink-0 gap-3 border-t border-borde px-4 py-4">{acciones}</div> : null}
+      </div>,
+      lugarAlCostado,
+    );
+  }
 
   return createPortal(
     <div
@@ -105,10 +138,11 @@ export function Emergente({
         onClick={(evento) => evento.stopPropagation()}
         style={hoja && desplazamiento > 0 ? { transform: `translateY(${desplazamiento}px)` } : undefined}
         className={[
-          // El panel va en capas: la cabecera en el gris más oscuro y el
-          // cuerpo en el color del panel, así las opciones de adentro se
-          // despegan como tarjetas y con sol se ve dónde empieza el panel.
-          `flex max-h-[85dvh] w-full flex-col overflow-hidden border shadow-xl ${conColoresDePanel ? "panel-que-sube border-panel-borde bg-panel" : "border-borde bg-superficie"}`,
+          // Toda emergente va en capas, igual que el panel que sube: la
+          // cabecera en el gris más oscuro y el cuerpo en el color del panel,
+          // así las opciones de adentro se despegan como tarjetas y con sol se
+          // ve dónde empieza. Uniformidad total (Ale, 2026-10-13).
+          "panel-que-sube flex max-h-[85dvh] w-full flex-col overflow-hidden border border-panel-borde bg-panel shadow-xl",
           hoja ? "rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0" : "rounded-2xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
           hoja && !arrastrando ? "transition-transform duration-200 ease-out" : "",
@@ -119,7 +153,7 @@ export function Emergente({
             <span className="h-1 w-9 rounded-full bg-borde-fuerte" />
           </div>
         ) : null}
-        <div className={`flex items-start gap-3 border-b border-borde px-4 ${conColoresDePanel ? "cabeza-de-panel" : ""} ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
+        <div className={`flex items-start gap-3 border-b border-borde px-4 cabeza-de-panel ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
           {...(hoja ? manija : {})}>
           <div className="min-w-0 flex-1">
             <h2 className="text-base font-bold text-texto">{titulo}</h2>

@@ -18,15 +18,32 @@ describe("menú de acciones", () => {
         { etiqueta: "Editar", alElegir: editar },
         { etiqueta: "Eliminar", destructiva: true, alElegir: eliminar },
       ]} />));
-      expect(contenedor.querySelector('[role="menu"]')).toBeNull();
+      expect(document.querySelector('[role="menu"]')).toBeNull();
       await act(async () => (contenedor.querySelector('button[aria-label="Opciones"]') as HTMLButtonElement).click());
-      expect(contenedor.querySelectorAll('[role="menuitem"]')).toHaveLength(2);
-      await act(async () => (contenedor.querySelector('[role="menuitem"]') as HTMLButtonElement).click());
+      expect(document.querySelectorAll('[role="menuitem"]')).toHaveLength(2);
+      await act(async () => (document.querySelector('[role="menuitem"]') as HTMLButtonElement).click());
       expect(editar).toHaveBeenCalledOnce();
       expect(eliminar).not.toHaveBeenCalled();
-      expect(contenedor.querySelector('[role="menu"]')).toBeNull();
+      expect(document.querySelector('[role="menu"]')).toBeNull();
     } finally {
       await act(async () => raiz.unmount());
+    }
+  });
+
+  it("dibuja las acciones afuera de la tarjeta, así ningún borde las recorta", async () => {
+    const contenedor = document.createElement("div");
+    document.body.appendChild(contenedor);
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(<MenuDeAcciones acciones={[{ etiqueta: "Editar", alElegir: () => {} }]} />));
+      await act(async () => (contenedor.querySelector('button[aria-label="Opciones"]') as HTMLButtonElement).click());
+      const abierto = document.querySelector('[role="menu"]') as HTMLElement;
+      expect(abierto).not.toBeNull();
+      expect(contenedor.contains(abierto)).toBe(false);
+      expect(abierto.className).toContain("fixed");
+    } finally {
+      await act(async () => raiz.unmount());
+      contenedor.remove();
     }
   });
 

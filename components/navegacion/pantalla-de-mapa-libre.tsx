@@ -155,16 +155,14 @@ export function PantallaDeMapaLibre() {
         ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
           {caminoElegido && caminoTocado ? (
-            <div className="pointer-events-auto">
-              <FichaDeCamino
-                camino={caminoElegido}
-                indice={caminoTocado.indice}
-                actividad={actividadPrincipal}
-                alSenalarPunto={setPuntoSenalado}
-                enNavegacion
-                alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
-              />
-            </div>
+            <FichaDeCamino
+              camino={caminoElegido}
+              indice={caminoTocado.indice}
+              actividad={actividadPrincipal}
+              alSenalarPunto={setPuntoSenalado}
+              enNavegacion
+              alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
+            />
           ) : null}
           {elegirActividad ? (
             <div className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2">

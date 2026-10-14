@@ -48,7 +48,6 @@ export function ElegirCircuitosDelMapa({ abierto, alCerrar, ...resto }: Props) {
     <Emergente
       abierto={abierto}
       alCerrar={alCerrar}
-      deMapa
       titulo="Circuitos en el mapa"
       acciones={
         <BotonDeEmergente variante="principal" onClick={alCerrar}>

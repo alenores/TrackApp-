@@ -4,6 +4,33 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-13/14 — Fichas, carteles y editor de Camino
+
+### Lo que se hizo
+
+- Ficha de una marca: sin botones grandes; editar y eliminar en los tres
+  puntos, solo para quien puede. Ficha del Camino como cartel que tapa todo
+  (antes en el celular quedaba más alta que la pantalla y sin salida). En
+  Mapas, en la computadora, las fichas se abren al costado del mapa.
+- Todos los carteles con los colores del panel que sube. El de salir de la
+  navegación pasó a la pieza única de emergentes.
+- Los tres puntos se abren encima de todo: ninguna tarjeta los recorta.
+- Editor de Camino: pestañas Datos, Línea y Partes (pieza nueva de pestañas);
+  un solo «Guardar» por sección; actividades con insignias; Línea se edita al
+  entrar, con íconos propios; partir arriba de Partes; condición y
+  complejidad con su dibujo de línea y su color; sin paso no lleva
+  complejidad; fecha de comprobación de hoy si no tiene; avisos junto a su
+  botón; contador de caracteres chico.
+- Foto: recortar, cambiar y quitar en los tres puntos de la foto, una sola
+  forma de quitarla. Editar una marca: sin «Cerrar», encuadre del trazo,
+  nombre en el título, botones de dibujo con íconos, íconos en «Qué es».
+
+### Pendiente
+
+- Probar en un celular real la ficha del Camino en la navegación libre.
+
+---
+
 ## Sesión 2026-10-13 — Marcas, y Mapas con sus entradas en el menú
 
 ### Estado al inicio

@@ -12,35 +12,49 @@ import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
+import { ElegirActividades } from "@/components/rutas/elegir-actividades";
+import { Pestanas } from "@/components/ui/pestanas";
+import { ContadorDeCaracteres } from "@/components/ui/contador-de-caracteres";
+import { hoyEnCordoba } from "@/lib/salidas/reglas";
+import { Opciones } from "@/components/ui/opciones";
+import { TRAZO_DE_AGREGAR_PUNTO, TRAZO_DE_MOVER_PUNTOS, TRAZO_DE_QUITAR_PUNTO } from "@/components/ui/iconos";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
 import { corregirLinea, ubicarEnCamino, type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import { mostrarActividad } from "@/lib/rutas/actividades";
-import { nombreDeComplejidad, nombreDelPaso, ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
+import { MuestraDeComplejidad, MuestraDeLinea, nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { ActividadRuta } from "@/types/database";
 
-type Pestana = "datos" | "partes";
+type Pestana = "datos" | "linea" | "partes";
 
 export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => void }) {
   const [camino, setCamino] = useState<CaminoGuardado | null>(null);
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  // Los avisos van al lado del botón que los provocó, no arriba del mapa.
+  const [avisoDePartir, setAvisoDePartir] = useState(false);
   const [pestana, setPestana] = useState<Pestana>("datos");
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [actividades, setActividades] = useState<ActividadRuta[]>([]);
   const [actividad, setActividad] = useState<ActividadRuta | null>(null);
   const [indice, setIndice] = useState(0);
   const [observacion, setObservacion] = useState("");
   const [fecha, setFecha] = useState("");
+  // Lo elegido en la parte antes de tocar Guardar: nada se guarda solo.
+  // Se recuerda lo de cada actividad de la parte hasta tocar Guardar, que guarda todo junto.
+  const [borradorDeLaParte, setBorradorDeLaParte] = useState<{
+    parte: string;
+    porActividad: Partial<Record<ActividadRuta, { paso: CondicionDePaso; complejidad: ComplejidadDeParte | null }>>;
+  } | null>(null);
   const [actividadesPendientes, setActividadesPendientes] = useState<ActividadRuta[] | null>(null);
   const [confirmarRetiro, setConfirmarRetiro] = useState(false);
   const [primerCorte, setPrimerCorte] = useState<number | null>(null);
   const [partiendo, setPartiendo] = useState(false);
-  const [corrigiendo, setCorrigiendo] = useState(false);
   const [borradorLinea, setBorradorLinea] = useState<number[][] | null>(null);
   const [modoCorreccion, setModoCorreccion] = useState<"mover" | "agregar" | "quitar">("mover");
 
@@ -52,9 +66,10 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
         setCamino(resultado.datos);
         setNombre(resultado.datos.nombre);
         setDescripcion(resultado.datos.descripcion ?? "");
+        setActividades(resultado.datos.actividades);
         setActividad(resultado.datos.actividades[0] ?? null);
         setObservacion(resultado.datos.partes[0]?.observacion ?? "");
-        setFecha(resultado.datos.partes[0]?.comprobadoEl ?? "");
+        setFecha(resultado.datos.partes[0]?.comprobadoEl ?? hoyEnCordoba());
       } else setAviso(resultado.error);
       setCargando(false);
     }).catch((causa) => {
@@ -66,22 +81,38 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
   }, [id]);
 
   const parte = camino?.partes[indice] ?? null;
+  const claveDeLaParte = parte ? `${parte.desdeM}-${parte.hastaM}` : "";
+  const borradorVigente = borradorDeLaParte?.parte === claveDeLaParte ? borradorDeLaParte.porActividad : {};
+  const elegidoDeLaActividad = actividad ? borradorVigente[actividad] ?? parte?.porActividad[actividad] : undefined;
+  const pasoElegido: CondicionDePaso = elegidoDeLaActividad?.paso ?? "por_explorar";
+  const complejidadElegida: ComplejidadDeParte | null = elegidoDeLaActividad?.complejidad ?? null;
+  const elegirEnLaParte = (paso: CondicionDePaso, complejidad: ComplejidadDeParte | null) => {
+    if (!actividad) return;
+    setBorradorDeLaParte({
+      parte: claveDeLaParte,
+      // Sin paso no lleva complejidad.
+      porActividad: { ...borradorVigente, [actividad]: { paso, complejidad: paso === "sin_paso" ? null : complejidad } },
+    });
+  };
   const encuadre = useMemo(() => camino ? rectanguloQueAbarca(camino.coordenadas.map((punto) => [punto[0], punto[1]])) : null, [camino]);
   const vistaPrevia = useMemo(() => camino && borradorLinea ? corregirLinea(camino, borradorLinea) : null, [camino, borradorLinea]);
-  const caminoVisible = vistaPrevia?.ok ? vistaPrevia.datos : camino;
+  // La sección Línea ya es para editarla: entrar es empezar a corregir, sin botón de más.
+  const corrigiendo = pestana === "linea";
+  const caminoVisible = corrigiendo && vistaPrevia?.ok ? vistaPrevia.datos : camino;
   const dibujo = useMemo(() => caminoVisible && actividad ? dibujarCaminos([caminoVisible], actividad) : null, [caminoVisible, actividad]);
 
   const seleccionarParte = (nueva: number, de: CaminoGuardado | null = camino) => {
     if (!de?.partes[nueva]) return;
     setIndice(nueva);
     setObservacion(de.partes[nueva].observacion ?? "");
-    setFecha(de.partes[nueva].comprobadoEl ?? "");
+    setFecha(de.partes[nueva].comprobadoEl ?? hoyEnCordoba());
   };
 
-  const guardar = async (hacer: (actual: CaminoGuardado) => Promise<{ ok: true; datos: CaminoGuardado } | { ok: false; error: string }>, texto: string): Promise<boolean> => {
+  const guardar = async (hacer: (actual: CaminoGuardado) => Promise<{ ok: true; datos: CaminoGuardado } | { ok: false; error: string }>, texto: string, dePartir = false): Promise<boolean> => {
     if (!camino || ocupado) return false;
     setOcupado(true);
     setAviso(null);
+    setAvisoDePartir(dePartir);
     try {
       const resultado = await hacer(camino);
       if (!resultado.ok) { setAviso(resultado.error); return false; }
@@ -101,16 +132,32 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
     } finally { setOcupado(false); }
   };
 
-  const elegirActividades = (nuevas: ActividadRuta[]) => {
-    if (!camino || nuevas.length === 0) {
-      setAviso("El Camino tiene que tener al menos una actividad.");
+  // Tocar una actividad solo la prende o la apaga en pantalla: se guarda con
+  // el resto de los datos, con un solo botón. La última no se puede apagar.
+  const tocarActividad = (opcion: ActividadRuta) => {
+    if (!actividades.includes(opcion)) setActividades([...actividades, opcion]);
+    else if (actividades.length > 1) setActividades(actividades.filter((cada) => cada !== opcion));
+  };
+
+  const guardarDatosYActividades = (nuevas: ActividadRuta[]) => {
+    void guardar(async (actual) => {
+      const conDatos = await cambiarNombreDelCamino(actual.id, actual.actualizadoEn, { nombre, descripcion });
+      if (!conDatos.ok) return conDatos;
+      const mismas = nuevas.length === conDatos.datos.actividades.length
+        && nuevas.every((cada) => conDatos.datos.actividades.includes(cada));
+      if (mismas) return conDatos;
+      return cambiarActividadesDelCamino(conDatos.datos.id, conDatos.datos.actualizadoEn, nuevas);
+    }, "Se guardaron los datos del Camino.");
+  };
+
+  // Sacar una actividad borra su clasificación: antes de guardar, se confirma.
+  const guardarDatos = () => {
+    if (!camino) return;
+    if (camino.actividades.some((cada) => !actividades.includes(cada))) {
+      setActividadesPendientes(actividades);
       return;
     }
-    if (camino.actividades.some((cada) => !nuevas.includes(cada))) {
-      setActividadesPendientes(nuevas);
-      return;
-    }
-    void guardar((actual) => cambiarActividadesDelCamino(actual.id, actual.actualizadoEn, nuevas), "Se actualizaron las actividades.");
+    guardarDatosYActividades(actividades);
   };
 
   const tocarCamino = (lon: number, lat: number, propiedades: Record<string, unknown>) => {
@@ -124,12 +171,14 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
       seleccionarParte(indiceTocado);
       setPrimerCorte(lugar.distanciaM);
       setAviso("Ahora tocá el final del tramo que querés separar.");
+      setAvisoDePartir(true);
       return;
     }
     const desde = Math.min(primerCorte, lugar.distanciaM);
     const hasta = Math.max(primerCorte, lugar.distanciaM);
     if (desde < camino.partes[indice].desdeM || hasta > camino.partes[indice].hastaM) {
       setAviso("Los dos toques deben estar dentro de la misma parte. Volvé a elegir el inicio.");
+      setAvisoDePartir(true);
       setPrimerCorte(null);
       return;
     }
@@ -139,7 +188,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
     setPartiendo(false);
     void guardar((cada) => clasificarParteDelCamino(cada.id, cada.actualizadoEn,
       { desdeM: desde, hastaM: hasta, actividad, paso: actual.paso, complejidad: actual.complejidad }),
-    "Se separó el tramo y se conservó su clasificación.");
+    "Se separó el tramo y se conservó su clasificación.", true);
   };
 
   const agregarPunto = (lon: number, lat: number) => {
@@ -149,6 +198,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
     if (!resultado.ok) { setAviso(resultado.error); return; }
     setBorradorLinea(resultado.datos);
     setAviso("Se agregó un punto al borrador. Guardá la línea para conservar el cambio.");
+    setAvisoDePartir(false);
   };
 
   const quitarPunto = (indiceDelPunto: number) => {
@@ -158,7 +208,13 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
     if (!resultado.ok) { setAviso(resultado.error); return; }
     setBorradorLinea(resultado.datos);
     setAviso("Se quitó el punto del borrador. Guardá la línea para conservar el cambio.");
+    setAvisoDePartir(false);
   };
+
+  const cartelDeAviso = aviso
+    ? <Tarjeta franja={aviso.startsWith("Se ") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta>
+    : null;
+  const avisoAlPie = camino && !avisoDePartir ? cartelDeAviso : null;
 
   return (
     <div className="space-y-4">
@@ -167,7 +223,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
           acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
             alElegir: () => setConfirmarRetiro(true) }]} /> : null} />
       {cargando ? <p role="status" className="text-base text-texto">Abriendo el Camino…</p> : null}
-      {aviso ? <Tarjeta franja={aviso.startsWith("Se ") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
+      {aviso && !camino ? cartelDeAviso : null}
       {camino ? (
         <MapaConPanel
           mapa={
@@ -182,111 +238,110 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
           }
           panel={
             <div className="space-y-4">
-              <div role="tablist" aria-label="Editor del Camino" className="flex gap-2">
-                <Boton role="tab" aria-selected={pestana === "datos"} variante={pestana === "datos" ? "principal" : "secundario"} onClick={() => setPestana("datos")}>Datos y línea</Boton>
-                <Boton role="tab" aria-selected={pestana === "partes"} variante={pestana === "partes" ? "principal" : "secundario"} onClick={() => setPestana("partes")}>Partes</Boton>
-              </div>
+              <Pestanas etiqueta="Editor del Camino" elegida={pestana} alElegir={(nueva) => { setPestana(nueva); setAviso(null); }}
+                opciones={[{ valor: "datos", texto: "Datos" }, { valor: "linea", texto: "Línea" }, { valor: "partes", texto: "Partes" }]} />
               {pestana === "datos" ? (
                 <div role="tabpanel" className="space-y-4">
                   <Tarjeta className="space-y-3">
                     <label className="block text-base text-texto">Nombre
                       <input className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-texto" value={nombre} maxLength={120} onChange={(evento) => setNombre(evento.target.value)} />
+                      <ContadorDeCaracteres texto={nombre} maximo={120} />
                     </label>
-                    <p className="text-base text-texto-suave">{Array.from(nombre).length}/120 caracteres</p>
                     <label className="block text-base text-texto">Descripción
                       <textarea className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-texto" value={descripcion} maxLength={2000} onChange={(evento) => setDescripcion(evento.target.value)} />
+                      <ContadorDeCaracteres texto={descripcion} maximo={2000} />
                     </label>
-                    <p className="text-base text-texto-suave">{Array.from(descripcion).length}/2.000 caracteres</p>
-                    <Boton disabled={ocupado} onClick={() => void guardar((actual) => cambiarNombreDelCamino(actual.id, actual.actualizadoEn, { nombre, descripcion }), "Se guardaron los datos del Camino.")}>Guardar datos</Boton>
+                    <ElegirActividades etiqueta="Actividades" modo="varias" obligatorio
+                      elegidas={actividades} deshabilitado={ocupado} alTocar={tocarActividad} />
+                    <Boton disabled={ocupado} onClick={guardarDatos}>Guardar</Boton>
+                    {avisoAlPie}
                   </Tarjeta>
+                </div>
+              ) : pestana === "linea" ? (
+                <div role="tabpanel" className="space-y-4">
                   <Tarjeta className="space-y-3">
-                    <h3 className="text-lg font-semibold text-texto">Actividades</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(["trekking", "correr", "mountain_bike", "kayak", "canyoning"] as ActividadRuta[]).map((opcion) => (
-                        <Boton key={opcion} variante={camino.actividades.includes(opcion) ? "principal" : "secundario"}
-                          aria-pressed={camino.actividades.includes(opcion)} disabled={ocupado}
-                          onClick={() => elegirActividades(camino.actividades.includes(opcion)
-                            ? camino.actividades.filter((cada) => cada !== opcion) : [...camino.actividades, opcion])}>
-                          {mostrarActividad(opcion).etiqueta}
-                        </Boton>
-                      ))}
+                    <Opciones etiqueta="Editar la línea" columnas={3} iconoArriba
+                      elegidas={[modoCorreccion]} alElegir={setModoCorreccion}
+                      opciones={[
+                        { valor: "mover", etiqueta: "Mover puntos", trazo: TRAZO_DE_MOVER_PUNTOS },
+                        { valor: "agregar", etiqueta: "Agregar punto", trazo: TRAZO_DE_AGREGAR_PUNTO },
+                        { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
+                      ]} />
+                    <p className="text-base text-texto-suave">{modoCorreccion === "mover" ? "Arrastrá un punto hasta su lugar." : modoCorreccion === "agregar" ? "Tocá la línea entre dos puntos." : "Tocá el punto que querés quitar."}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Boton disabled={ocupado || !borradorLinea || vistaPrevia?.ok !== true} onClick={() => void (async () => {
+                        if (!borradorLinea) return;
+                        const guardado = await guardar((actual) => corregirLineaDelCamino(actual.id, actual.actualizadoEn, borradorLinea), "Se corrigió la línea del Camino.");
+                        if (guardado) setBorradorLinea(null);
+                      })()}>Guardar</Boton>
+                      <Boton variante="fantasma" disabled={ocupado || !borradorLinea} onClick={() => setBorradorLinea(null)}>Descartar</Boton>
                     </div>
-                  </Tarjeta>
-                  <Tarjeta className="space-y-3">
-                    <h3 className="text-lg font-semibold text-texto">Corregir la línea</h3>
-                    <p className="text-base text-texto-suave">Mové, agregá o quitá puntos sobre el mapa. La condición, la complejidad, la observación y la fecha de cada parte se conservan.</p>
-                    {corrigiendo ? (
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap gap-2">
-                          {(["mover", "agregar", "quitar"] as const).map((modo) => <Boton key={modo}
-                            variante={modoCorreccion === modo ? "principal" : "secundario"} aria-pressed={modoCorreccion === modo}
-                            onClick={() => setModoCorreccion(modo)}>{modo === "mover" ? "Mover puntos" : modo === "agregar" ? "Agregar punto" : "Quitar punto"}</Boton>)}
-                        </div>
-                        <p className="text-base text-texto-suave">{modoCorreccion === "mover" ? "Arrastrá un punto hasta su lugar correcto." : modoCorreccion === "agregar" ? "Tocá la línea entre dos puntos." : "Tocá el punto que querés quitar."}</p>
-                        <div className="flex flex-wrap gap-2">
-                        <Boton disabled={ocupado || !borradorLinea || vistaPrevia?.ok !== true} onClick={() => void (async () => {
-                          if (!borradorLinea) return;
-                          const guardado = await guardar((actual) => corregirLineaDelCamino(actual.id, actual.actualizadoEn, borradorLinea), "Se corrigió la línea del Camino.");
-                          if (guardado) { setCorrigiendo(false); setBorradorLinea(null); }
-                        })()}>Guardar línea corregida</Boton>
-                        <Boton variante="secundario" disabled={ocupado} onClick={() => { setCorrigiendo(false); setBorradorLinea(null); }}>Descartar cambios</Boton>
-                        </div>
-                      </div>
-                    ) : <Boton variante="secundario" onClick={() => { setCorrigiendo(true); setModoCorreccion("mover"); setBorradorLinea(null); }}>Corregir puntos de la línea</Boton>}
+                    {avisoAlPie}
                     {vistaPrevia && !vistaPrevia.ok ? <p role="alert" className="text-base text-ambar-texto">{vistaPrevia.error}</p> : null}
                   </Tarjeta>
                 </div>
               ) : (
                 <div role="tabpanel" className="space-y-4">
-                  <ReferenciaDePartes />
-                  <div className="flex flex-wrap gap-2" aria-label="Actividad a clasificar">
-                    {camino.actividades.map((opcion) => <Boton key={opcion} variante={actividad === opcion ? "principal" : "secundario"}
-                      aria-pressed={actividad === opcion} onClick={() => setActividad(opcion)}>{mostrarActividad(opcion).etiqueta}</Boton>)}
+                  {/* Partir vale para todas las actividades: va arriba de todo. */}
+                  <div className="flex flex-wrap gap-2">
+                    <Boton variante="secundario" disabled={ocupado} onClick={() => { setPartiendo(true); setPrimerCorte(null); setAviso("Tocá el inicio del tramo que querés separar."); setAvisoDePartir(true); }}>Partir una parte entre dos toques</Boton>
+                    {partiendo ? <Boton variante="fantasma" onClick={() => { setPartiendo(false); setPrimerCorte(null); setAviso(null); setAvisoDePartir(false); }}>Cancelar los toques</Boton> : null}
                   </div>
-                  <div className="flex flex-wrap gap-2" aria-label="Partes del Camino">
-                    {camino.partes.map((cada, i) => <Boton key={`${cada.desdeM}-${cada.hastaM}`} variante={indice === i ? "principal" : "secundario"}
-                      aria-pressed={indice === i} onClick={() => seleccionarParte(i)}>Parte {i + 1}</Boton>)}
-                  </div>
+                  {avisoDePartir ? cartelDeAviso : null}
+                  <Pestanas etiqueta="Partes del Camino" chica elegida={indice} alElegir={(i) => seleccionarParte(i)}
+                    opciones={camino.partes.map((_, i) => ({ valor: i, texto: `Parte ${i + 1}` }))} />
                   {parte && actividad ? (
                     <Tarjeta className="space-y-4">
                       <h3 className="text-lg font-bold text-texto">Parte {indice + 1} · {((parte.hastaM - parte.desdeM) / 1000).toFixed(2).replace(".", ",")} km</h3>
+                      <ElegirActividades etiqueta="Actividad a clasificar" opciones={camino.actividades}
+                        elegidas={[actividad]} alTocar={setActividad} />
                       <div className="space-y-2">
                         <p className="text-base font-semibold text-texto">Condición para {mostrarActividad(actividad).etiqueta}</p>
                         <div className="flex flex-wrap gap-2">
                           {(["por_explorar", "transitable", "a_pie", "sin_paso"] as CondicionDePaso[]).map((paso) => <Boton key={paso}
-                            variante={parte.porActividad[actividad]?.paso === paso ? "principal" : "secundario"}
-                            aria-pressed={parte.porActividad[actividad]?.paso === paso} disabled={ocupado}
-                            onClick={() => void guardar((actual) => clasificarParteDelCamino(actual.id, actual.actualizadoEn,
-                              { desdeM: parte.desdeM, hastaM: parte.hastaM, actividad, paso }), "Se guardó la condición de esta parte.")}>
-                            {nombreDelPaso(paso, [actividad])}</Boton>)}
+                            variante={pasoElegido === paso ? "principal" : "secundario"}
+                            aria-pressed={pasoElegido === paso} disabled={ocupado}
+                            onClick={() => elegirEnLaParte(paso, complejidadElegida)}>
+                            <span className="inline-flex items-center gap-2"><MuestraDeLinea paso={paso} />{nombreDelPaso(paso, [actividad])}</span></Boton>)}
                         </div>
                       </div>
-                      <div className="space-y-2">
+                      {pasoElegido !== "sin_paso" ? <div className="space-y-2">
                         <p className="text-base font-semibold text-texto">Complejidad de esta parte</p>
                         <div className="flex flex-wrap gap-2">
                           {([null, "facil", "media", "dificil"] as Array<ComplejidadDeParte | null>).map((complejidad) => <Boton key={complejidad ?? "ninguna"}
-                            variante={parte.porActividad[actividad]?.complejidad === complejidad ? "principal" : "secundario"}
-                            aria-pressed={parte.porActividad[actividad]?.complejidad === complejidad} disabled={ocupado}
-                            onClick={() => void guardar((actual) => clasificarParteDelCamino(actual.id, actual.actualizadoEn,
-                              { desdeM: parte.desdeM, hastaM: parte.hastaM, actividad, complejidad }), "Se guardó la complejidad de esta parte.")}>
-                            {nombreDeComplejidad(complejidad)}</Boton>)}
+                            variante={complejidadElegida === complejidad ? "principal" : "secundario"}
+                            aria-pressed={complejidadElegida === complejidad} disabled={ocupado}
+                            onClick={() => elegirEnLaParte(pasoElegido, complejidad)}>
+                            <span className="inline-flex items-center gap-2"><MuestraDeComplejidad complejidad={complejidad} />{nombreDeComplejidad(complejidad)}</span></Boton>)}
                         </div>
-                      </div>
+                      </div> : null}
                       <div className="space-y-2">
                         <label className="block text-base text-texto">Observación para todas las actividades
                           <textarea className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-texto" value={observacion} maxLength={1000}
                             onChange={(evento) => setObservacion(evento.target.value)} />
+                          <ContadorDeCaracteres texto={observacion} maximo={1000} />
                         </label>
-                        <p className="text-base text-texto-suave">{Array.from(observacion).length}/1.000 caracteres</p>
                         <label className="block text-base text-texto">Fecha de comprobación
                           <input className="mt-1 block rounded-xl border border-borde bg-superficie p-2 text-texto" type="date" value={fecha}
                             onChange={(evento) => setFecha(evento.target.value)} />
                         </label>
-                        <Boton disabled={ocupado} onClick={() => void guardar((actual) => cambiarDatosDeParteDelCamino(actual.id, actual.actualizadoEn,
-                          { desdeM: parte.desdeM, hastaM: parte.hastaM, observacion, comprobadoEl: fecha }), "Se guardaron la observación y la fecha.")}>Guardar datos de esta parte</Boton>
+                        <Boton disabled={ocupado} onClick={() => void (async () => {
+                          const elegidas = Object.entries(borradorVigente) as [ActividadRuta, { paso: CondicionDePaso; complejidad: ComplejidadDeParte | null }][];
+                          const guardado = await guardar(async (actual) => {
+                            let alDia = actual;
+                            for (const [cada, { paso, complejidad }] of elegidas) {
+                              const clasificada = await clasificarParteDelCamino(alDia.id, alDia.actualizadoEn,
+                                { desdeM: parte.desdeM, hastaM: parte.hastaM, actividad: cada, paso, complejidad });
+                              if (!clasificada.ok) return clasificada;
+                              alDia = clasificada.datos;
+                            }
+                            return cambiarDatosDeParteDelCamino(alDia.id, alDia.actualizadoEn,
+                              { desdeM: parte.desdeM, hastaM: parte.hastaM, observacion, comprobadoEl: fecha });
+                          }, "Se guardó esta parte.");
+                          if (guardado) setBorradorDeLaParte(null);
+                        })()}>Guardar</Boton>
+                        {avisoAlPie}
                       </div>
-                      <Boton variante="secundario" disabled={ocupado} onClick={() => { setPartiendo(true); setPrimerCorte(null); setAviso("Tocá el inicio del tramo que querés separar."); }}>Partir una parte entre dos toques</Boton>
-                      {partiendo ? <Boton variante="fantasma" onClick={() => { setPartiendo(false); setPrimerCorte(null); setAviso(null); }}>Cancelar los toques</Boton> : null}
                     </Tarjeta>
                   ) : null}
                 </div>
@@ -301,7 +356,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
           <BotonDeEmergente variante="destructivo" disabled={ocupado} onClick={() => {
             const nuevas = actividadesPendientes;
             setActividadesPendientes(null);
-            if (nuevas) void guardar((actual) => cambiarActividadesDelCamino(actual.id, actual.actualizadoEn, nuevas), "Se actualizaron las actividades.");
+            if (nuevas) guardarDatosYActividades(nuevas);
           }}>Sacar actividad</BotonDeEmergente></>} />
       <Emergente abierto={confirmarRetiro} alCerrar={() => setConfirmarRetiro(false)} titulo="¿Retirar este Camino?"
         descripcion="Dejará de verse en el mapa. Esta acción no se puede deshacer."

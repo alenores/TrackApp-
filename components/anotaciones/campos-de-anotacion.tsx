@@ -1,10 +1,10 @@
 "use client";
 
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
-import { Boton } from "@/components/ui/boton";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import { TRAZOS_DEL_ICONO } from "@/components/anotaciones/icono-de-anotacion";
 import {
   COLORES_DE_TRAZO,
   type ColorDeTrazo,
@@ -75,8 +75,12 @@ export function CamposDeAnotacion({
                 type="button"
                 onClick={() => alCambiarIcono(cual)}
                 aria-pressed={icono === cual}
-                className={claseDeOpcion(icono === cual)}
+                className={`inline-flex items-center gap-2 ${claseDeOpcion(icono === cual)}`}
               >
+                {/* El mismo dibujo que tiene en las listas de Marcas. */}
+                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden>
+                  <path d={TRAZOS_DEL_ICONO[cual]} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
                 {COMO_SE_LLAMA[cual]}
               </button>
             ))}
@@ -126,18 +130,8 @@ export function CamposDeAnotacion({
         etiqueta="Agregar una foto del lugar"
         deshabilitado={guardando}
         fotoActual={fotoActual}
+        alQuitarFotoActual={alQuitarFotoActual}
       />
-
-      {fotoActual && alQuitarFotoActual && foto.estado === "vacio" ? (
-        <Boton
-          variante="destructivo"
-          anchoCompleto
-          disabled={guardando}
-          onClick={alQuitarFotoActual}
-        >
-          Quitar la foto
-        </Boton>
-      ) : null}
     </div>
   );
 }

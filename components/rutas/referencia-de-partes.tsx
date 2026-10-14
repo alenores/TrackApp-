@@ -23,6 +23,31 @@ export function nombreDeComplejidad(complejidad: ComplejidadDeParte): string {
   return "Sin clasificar";
 }
 
+const COLOR_DE_COMPLEJIDAD: Record<string, string> = {
+  facil: "var(--parte-facil)",
+  media: "var(--parte-media)",
+  dificil: "var(--parte-dificil)",
+};
+
+/** El punto de color de una complejidad, el mismo que pinta la parte en el mapa. */
+export function MuestraDeComplejidad({ complejidad }: { complejidad: ComplejidadDeParte }) {
+  return (
+    <span aria-hidden className="h-3 w-3 shrink-0 rounded-full border border-borde-fuerte"
+      style={{ backgroundColor: complejidad ? COLOR_DE_COMPLEJIDAD[complejidad] : "var(--parte-sin-clasificar)" }} />
+  );
+}
+
+/** El dibujo de la línea de una condición de paso, como se ve en el mapa. */
+export function MuestraDeLinea({ paso }: { paso: PasoDeParte }) {
+  if (paso === "sin_paso") return <span aria-hidden className="w-6 shrink-0 text-center leading-none">×</span>;
+  const rayas = paso === "por_explorar" ? "4 3" : paso === "a_pie" ? "1 3" : undefined;
+  return (
+    <svg aria-hidden viewBox="0 0 24 4" className="h-1 w-6 shrink-0" fill="none">
+      <line x1="1" y1="2" x2="23" y2="2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={rayas} />
+    </svg>
+  );
+}
+
 const COLORES = [
   ["Fácil", "var(--parte-facil)"],
   ["Media", "var(--parte-media)"],

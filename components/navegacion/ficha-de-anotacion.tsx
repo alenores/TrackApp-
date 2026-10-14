@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
@@ -72,42 +73,38 @@ export function FichaDeAnotacion({
       alCerrar={alCerrar}
       titulo={titulo}
       ancho="amplio"
+      alCostado
       acciones={
-        <div className="w-full space-y-2">
-          {anotacion && fotoRemotaNecesaria && falloDeFotoRemota ? (
-            <BotonDeEmergente onClick={() => setFotoRemotaFallida(null)}>Volver a intentar</BotonDeEmergente>
-          ) : null}
-          {anotacion && alCambiar ? (
-            <div className="grid grid-cols-2 gap-2">
-              <BotonDeEmergente
-                variante="secundario"
-                onClick={() => alCambiar(anotacion)}
-              >
-                Cambiar
-              </BotonDeEmergente>
-              <BotonDeEmergente
-                variante="destructivo"
-                onClick={() => alBorrar?.(anotacion)}
-              >
-                Borrar
-              </BotonDeEmergente>
-            </div>
-          ) : null}
-          <BotonDeEmergente onClick={alCerrar}>
-            Cerrar
-          </BotonDeEmergente>
-        </div>
+        anotacion && fotoRemotaNecesaria && falloDeFotoRemota ? (
+          <BotonDeEmergente onClick={() => setFotoRemotaFallida(null)}>Volver a intentar</BotonDeEmergente>
+        ) : undefined
       }
     >
       <div className="space-y-3">
-        {anotacion && mostrarAutor ? (
-          <p className="text-base text-texto-suave">
-            {deQuien(anotacion, miPerfilId)}
-            {marcadaEl ? ` · marcada el ${marcadaEl}` : ""}
-            {anotacion.precisionGpsMetros !== null
-              ? ` · GPS ±${anotacion.precisionGpsMetros} m`
-              : ""}
-          </p>
+        {anotacion && (mostrarAutor || alCambiar) ? (
+          // Los tres puntos, discretos arriba a la derecha del cuerpo: solo
+          // para quien puede cambiar la marca.
+          <div className="flex items-start gap-2">
+            {mostrarAutor ? (
+              <p className="min-w-0 flex-1 text-base text-texto-suave">
+                {deQuien(anotacion, miPerfilId)}
+                {marcadaEl ? ` · marcada el ${marcadaEl}` : ""}
+                {anotacion.precisionGpsMetros !== null
+                  ? ` · GPS ±${anotacion.precisionGpsMetros} m`
+                  : ""}
+              </p>
+            ) : null}
+            {alCambiar ? (
+              <MenuDeAcciones
+                className="ml-auto shrink-0"
+                etiqueta={`Opciones de ${titulo}`}
+                acciones={[
+                  { etiqueta: "Editar", alElegir: () => alCambiar(anotacion) },
+                  { etiqueta: "Eliminar", destructiva: true, alElegir: () => alBorrar?.(anotacion) },
+                ]}
+              />
+            ) : null}
+          </div>
         ) : null}
 
         {anotacion?.subida ? (

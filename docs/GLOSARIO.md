@@ -204,6 +204,12 @@ esa parte del recorrido.
 
 ## Diseño
 
+**Pestaña**
+Nombre en una fila que cambia la sección que se ve abajo, sin hacer ninguna
+acción. La elegida lleva una raya verde abajo; las otras quedan apagadas. No
+es un botón. Se usa, por ejemplo, en el editor de un Camino (Datos, Línea,
+Partes) y para pasar de una parte a otra.
+
 **Modo sol**
 Fondo claro con texto oscuro. Es el modo legible con sol directo.
 

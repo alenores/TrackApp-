@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 import type { Position } from "geojson";
-import { Boton } from "@/components/ui/boton";
-import { Tarjeta } from "@/components/ui/tarjeta";
+import { Emergente } from "@/components/ui/emergente";
 import { GraficoDeAlturas, type TramoDelGrafico } from "@/components/ui/grafico-de-alturas";
 import { nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { mostrarActividad } from "@/lib/rutas/actividades";
@@ -44,11 +43,10 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
   const texto = enNavegacion ? "text-lg" : "text-base";
 
   return (
-    <Tarjeta className="space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="text-lg font-bold text-texto">{camino.nombre}</h2>
-        <Boton variante="fantasma" onClick={alCerrar} aria-label="Cerrar el detalle del Camino">Cerrar</Boton>
-      </div>
+    // Como toda ficha: en el celular tapa todo, con la cruz y deslizable por
+    // dentro; en la computadora, en Mapas, va al costado del mapa.
+    <Emergente abierto alCerrar={alCerrar} titulo={camino.nombre} ancho="amplio" alCostado>
+    <div className="space-y-3">
 
       <dl className={`flex flex-wrap gap-x-4 gap-y-1 ${texto} text-texto`}>
         <div><dt className="inline text-texto-suave">Largo </dt><dd className="inline font-semibold">{textoDeDistancia(camino.largoM)}</dd></div>
@@ -95,6 +93,7 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
       {parte.comprobadoEl ? (
         <p className={`${texto} text-texto-suave`}>Comprobado el {new Date(`${parte.comprobadoEl}T12:00:00`).toLocaleDateString("es-AR")}</p>
       ) : null}
-    </Tarjeta>
+    </div>
+    </Emergente>
   );
 }

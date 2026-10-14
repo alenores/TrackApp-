@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Feature, FeatureCollection, Point, Polygon } from "geojson";
 import * as maplibregl from "maplibre-gl";
 import {
@@ -42,6 +42,7 @@ import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import { puntosSinPaso } from "@/lib/rutas/partes";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
+import { LugarAlCostado } from "@/components/ui/emergente";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 import { iconoDeUbicarme } from "@/components/ui/iconos";
 
@@ -1866,6 +1867,7 @@ export function Mapa({
    * cruz y también con el botón físico de atrás, como toda pantalla que tapa.
    */
   const enGrande = aPantallaCompleta && !pantallaCompleta;
+  const lugarAlCostado = useContext(LugarAlCostado);
 
   useCerrarConAtras(enGrande, cerrarLoGrande);
 
@@ -1903,6 +1905,8 @@ export function Mapa({
   };
 
   return (
+    // En grande el costado queda tapado: las fichas van al medio.
+    <LugarAlCostado.Provider value={enGrande ? null : lugarAlCostado}>
     <div
       style={enGrande ? { zIndex: NIVEL_DEL_MAPA_EN_GRANDE } : undefined}
       className={[
@@ -2171,6 +2175,7 @@ export function Mapa({
         />
       ) : null}
     </div>
+    </LugarAlCostado.Provider>
   );
 }
 

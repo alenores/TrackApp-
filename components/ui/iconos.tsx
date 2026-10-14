@@ -36,6 +36,26 @@ export const ICONO_DE_SUBE = <path d="M7 17 17 7M9 7h8v8" />;
 /** Cuánto baja un Circuito: una flecha en diagonal hacia abajo. */
 export const ICONO_DE_BAJA = <path d="M7 7l10 10M17 9v8H9" />;
 
+/*
+ * Editar la línea de un Camino. Van como trazo suelto porque los dibuja
+ * `Opciones`. Mockup aprobado por Ale el 2026-10-14.
+ */
+
+/** Mover puntos de una línea: cuatro flechas en cruz. */
+export const TRAZO_DE_MOVER_PUNTOS = "M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3";
+
+/** Agregar un punto a una línea: la línea con un punto y un «+» chico. */
+export const TRAZO_DE_AGREGAR_PUNTO = "M3 17 9 11l4 4 8-8M9 13a2 2 0 1 0 4 0a2 2 0 1 0-4 0M18 15v6M15 18h6";
+
+/** Quitar un punto de una línea: la línea con un punto y un «−» chico. */
+export const TRAZO_DE_QUITAR_PUNTO = "M3 17 9 11l4 4 8-8M9 13a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 18h6";
+
+/** Deshacer el último punto: una flecha que vuelve. */
+export const TRAZO_DE_DESHACER = "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3";
+
+/** Volver a dibujar desde cero: una flecha en círculo. */
+export const TRAZO_DE_VOLVER_A_DIBUJAR = "M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4";
+
 /** Ayuda: un signo de pregunta en un círculo. Muestra lo que explica una pantalla. */
 export const ICONO_DE_AYUDA = <>
   <circle cx="12" cy="12" r="9" />

@@ -15,7 +15,6 @@ import { EditorDeCamino } from "@/components/caminos/editor-de-camino";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { ListaYMapa } from "@/components/ui/lista-y-mapa";
-import { ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import type { AccionDelMenu } from "@/components/ui/menu-de-acciones";
@@ -269,7 +268,6 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             alTildarGrupo={(grupo: GrupoArmado) => cambiarDestildadas(alternarGrupo(grupo, destildadasGuardadas))}
             alMostrar={mostrar}
             accionesDe={accionesDe}
-            adentroDelGrupo={{ camino: <ReferenciaDePartes /> }}
           />
         }
         mapa={

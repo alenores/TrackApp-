@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState, type PointerEvent as EventoDePuntero, type ReactNode, type TouchEvent as EventoDeToque } from "react";
 import { BotonVolver } from "@/components/ui/boton-volver";
+import { LugarAlCostado } from "@/components/ui/emergente";
 import { useArrastreHaciaAbajo } from "@/hooks/use-arrastre-hacia-abajo";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
@@ -69,6 +70,7 @@ const DESLIZAR_PARA_SUBIR = 24;
 
 export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, mapa, abierto, alCambiarAbierto, panelCorto = false, pie, pantallaCompletaEnCelular, destinoSiNoHayVuelta = "/", avisos, accionDelEncabezado }: Propiedades) {
   const ancha = usePantallaAncha();
+  const [lugarAlCostado, setLugarAlCostado] = useState<HTMLElement | null>(null);
   const router = useRouter();
   /**
    * Volver de la pantalla completa. Abrir y cerrar el panel deja pasos de más
@@ -191,10 +193,11 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
     return (
       // Ocupa el alto que le queda debajo del título y los avisos, sin
       // adivinarlo: la página no se desliza (`[data-pantalla-fija]`).
+      <LugarAlCostado.Provider value={lugarAlCostado}>
       <div data-pantalla-fija className="flex flex-col gap-3">
       {avisos ? <div className="shrink-0 space-y-2">{avisos}</div> : null}
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(20rem,26rem)_1fr] grid-rows-[minmax(0,1fr)] gap-4">
-        <section aria-label={tituloDelPanel} className="panel-que-sube flex min-h-0 flex-col overflow-hidden rounded-xl border border-panel-borde bg-panel">
+        <section aria-label={tituloDelPanel} className="panel-que-sube relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-panel-borde bg-panel">
           <div className="cabeza-de-panel flex shrink-0 items-center gap-3 border-b border-borde px-4 py-2">
             <h2 className="min-h-10 min-w-0 flex-1 content-center truncate text-base font-bold text-texto">{tituloDelPanel}</h2>
             {accionDelEncabezado}
@@ -202,10 +205,13 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
           {cabezaDelPanel ? <div className="shrink-0 border-b border-borde px-4 py-3">{cabezaDelPanel}</div> : null}
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3">{panel}</div>
           {pie ? <div className="shrink-0 border-t border-borde px-4 py-3">{pie}</div> : null}
+          {/* La ficha de lo que se toca en el mapa se abre acá: tapa la lista, no el mapa. */}
+          <div ref={setLugarAlCostado} className="absolute inset-0 z-10 flex flex-col bg-panel empty:hidden" />
         </section>
         <div className="min-h-0">{mapa}</div>
       </div>
       </div>
+      </LugarAlCostado.Provider>
     );
   }
 

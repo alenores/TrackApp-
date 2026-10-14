@@ -8,7 +8,7 @@ import type { Anotacion, IconoPunto } from "@/types/database";
  * arroyo se ve igual en todas las listas.
  */
 
-const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
+export const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
   refugio: "M3 12l9-8 9 8M5 10v10h14V10M9 20v-6h6v6",
   cumbre: "M8 14l4-8 4 8M4 20h16",
   pueblo: "M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h6M9 11h6M9 15h6",

@@ -127,8 +127,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   visibles y consultables**; los de otras actividades se muestran con menor
   protagonismo, sin desaparecer. Cada persona elige la actividad principal en
   el mapa y se recuerda su última elección. Observación y fecha de
-  comprobación son únicas por parte, compartidas entre actividades.
-  Decisiones 036 y 038.
+  comprobación son únicas por parte, compartidas entre actividades. Partir
+  una parte vale para todas las actividades. **Una parte «sin paso» no lleva
+  complejidad** (Ale, 2026-10-14). Decisiones 036 y 038.
 - **Un Camino mal dibujado se puede corregir como el mismo Camino**, por su
   autor o por el Administrador; no se exige volver a importarlo como otro.
   Corregir la línea conserva condición y complejidad de todas las partes que
@@ -482,6 +483,12 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
 - **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
   agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
   Editar y eliminar se muestran al abrir los tres puntos, nunca sueltos.
+- **Nada se guarda solo.** Tocar una opción cambia lo que se ve; se guarda
+  recién con el botón «Guardar», uno solo al pie de lo que se edita. Prohibido
+  el autoguardado (Ale, 2026-10-14).
+- **Lo que cambia la sección que se ve es una pestaña, no un botón**
+  (pieza compartida de pestañas). Los botones hacen cosas; las pestañas
+  muestran. Los avisos de guardar van junto a su botón, no arriba del mapa.
 - **Un ícono, una sola identidad.** Cada módulo o función tiene su ícono, el
   mismo en celular y PC y en todas las pantallas donde se nombra; ninguna otra
   cosa puede usar ese dibujo. Si aparece uno repetido, no se deja pasar. Viven

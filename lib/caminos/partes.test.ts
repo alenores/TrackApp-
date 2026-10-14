@@ -180,10 +180,21 @@ describe("clasificar por actividad", () => {
 
   it("cambiar solo la condición deja la complejidad, y al revés", () => {
     let camino = abrir(clasificarTramo(nuevo(), 0, 300, "trekking", { paso: "transitable", complejidad: "facil" }));
-    camino = abrir(clasificarTramo(camino, 0, 300, "trekking", { paso: "sin_paso" }));
-    expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "sin_paso", complejidad: "facil" });
+    camino = abrir(clasificarTramo(camino, 0, 300, "trekking", { paso: "a_pie" }));
+    expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "a_pie", complejidad: "facil" });
 
     camino = sano(abrir(clasificarTramo(camino, 0, 300, "trekking", { complejidad: null })));
+    expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "a_pie", complejidad: null });
+  });
+
+  it("una parte sin paso nunca tiene complejidad (Ale, 2026-10-14)", () => {
+    let camino = abrir(clasificarTramo(nuevo(), 0, 300, "trekking", { paso: "transitable", complejidad: "dificil" }));
+    camino = sano(abrir(clasificarTramo(camino, 0, 300, "trekking", { paso: "sin_paso" })));
+    expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "sin_paso", complejidad: null });
+
+    const conComplejidad = clasificarTramo(camino, 0, 300, "trekking", { paso: "sin_paso", complejidad: "media" });
+    expect(conComplejidad.ok).toBe(false);
+    camino = abrir(clasificarTramo(camino, 0, 300, "trekking", { complejidad: "media" }));
     expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "sin_paso", complejidad: null });
   });
 
@@ -223,7 +234,7 @@ describe("corregir la línea", () => {
     let camino: Camino = nuevo(["trekking", "mountain_bike"]);
     camino = abrir(clasificarTramo(camino, 0, 300, "trekking", { paso: "transitable", complejidad: "facil" }));
     camino = abrir(clasificarTramo(camino, 300, 600, "trekking", { paso: "a_pie", complejidad: "media" }));
-    camino = abrir(clasificarTramo(camino, 600, camino.largoM, "mountain_bike", { paso: "sin_paso", complejidad: "dificil" }));
+    camino = abrir(clasificarTramo(camino, 600, camino.largoM, "mountain_bike", { paso: "sin_paso" }));
     camino = abrir(actualizarDatosDeTramo(camino, 300, 600, {
       observacion: "Paso visto en el terreno",
       comprobadoEl: "2026-10-06",

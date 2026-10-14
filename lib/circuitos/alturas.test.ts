@@ -24,8 +24,8 @@ function camino(): CaminoGuardado {
   if (!creado.ok) throw new Error(creado.error);
   const cantidad = cantidadDeAlturas(LARGO, 25);
   const valores = Array.from({ length: cantidad }, (_, i) => 1000 + (100 * Math.min(i * 25, LARGO)) / LARGO);
-  // La segunda mitad es difícil y sin paso en mountain bike.
-  const clasificado = clasificarTramo(creado.datos, LARGO / 2, LARGO, "mountain_bike", { paso: "sin_paso", complejidad: "dificil" });
+  // La segunda mitad es difícil y a pie en mountain bike.
+  const clasificado = clasificarTramo(creado.datos, LARGO / 2, LARGO, "mountain_bike", { paso: "a_pie", complejidad: "dificil" });
   if (!clasificado.ok) throw new Error(clasificado.error);
   return {
     ...clasificado.datos, id: 3, perfilId: "autor", nombre: "Cuesta", descripcion: null,
@@ -72,7 +72,7 @@ describe("perfil de un Circuito", () => {
     const resultado = alturasDelCircuito(partes([sobreCamino(LARGO), sobreCamino(0)]), [camino()], [null]);
     if (!resultado.ok) throw new Error(resultado.error);
     // Al revés, lo primero que se recorre es la mitad difícil y sin paso.
-    expect(resultado.datos.tramos[0]).toMatchObject({ desdeM: 0, estilo: "dificil", paso: "sin_paso" });
+    expect(resultado.datos.tramos[0]).toMatchObject({ desdeM: 0, estilo: "dificil", paso: "a_pie" });
     expect(resultado.datos.tramos[0].hastaM).toBeCloseTo(LARGO / 2, 3);
     expect(resultado.datos.tramos[1]).toMatchObject({ estilo: "sin_clasificar", paso: "por_explorar" });
   });

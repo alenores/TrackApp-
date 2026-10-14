@@ -54,6 +54,23 @@ function enfoqueDe(lat: number, lon: number): Rectangulo {
   };
 }
 
+/**
+ * El trazo entero con terreno alrededor. Uno muy corto se abre con el mismo
+ * margen que un punto, para no quedar pegado al trazo.
+ */
+function enfoqueDelTrazo(puntos: [number, number][]): Rectangulo {
+  const lons = puntos.map(([lon]) => lon);
+  const lats = puntos.map(([, lat]) => lat);
+  const margenLon = Math.max((Math.max(...lons) - Math.min(...lons)) * 0.15, MARGEN_DEL_ENFOQUE);
+  const margenLat = Math.max((Math.max(...lats) - Math.min(...lats)) * 0.15, MARGEN_DEL_ENFOQUE);
+  return {
+    latNorte: Math.min(90, Math.max(...lats) + margenLat),
+    latSur: Math.max(-90, Math.min(...lats) - margenLat),
+    lonEste: Math.min(180, Math.max(...lons) + margenLon),
+    lonOeste: Math.max(-180, Math.min(...lons) - margenLon),
+  };
+}
+
 export function useAnotaciones(lugar: LugarDeAnotaciones) {
   const { paquete, estado, aviso } = useDatosDeLaApp();
   const haySenal = useHaySenal();
@@ -189,11 +206,9 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
       setCoordenadaEscrita(`${lat}, ${lon}`);
       setEnfoque(enfoqueDe(lat, lon));
     } else {
-      setBorrador({
-        tipo: "trazo",
-        color: claveDelColor(anotacion.color),
-        puntos: anotacion.geometria.coordinates.map(([lon, lat]) => [lon, lat] as [number, number]),
-      });
+      const puntos = anotacion.geometria.coordinates.map(([lon, lat]) => [lon, lat] as [number, number]);
+      setBorrador({ tipo: "trazo", color: claveDelColor(anotacion.color), puntos });
+      if (puntos.length > 0) setEnfoque(enfoqueDelTrazo(puntos));
     }
   }
 

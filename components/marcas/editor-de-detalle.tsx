@@ -8,6 +8,7 @@ import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useAnotaciones } from "@/hooks/use-anotaciones";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
+import { queEs } from "@/components/anotaciones/icono-de-anotacion";
 
 /**
  * Marcar un punto o dibujar un trazo, o cambiar uno que ya está, desde
@@ -54,8 +55,11 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
       ? "Tocá el mapa por donde va el trazo, de a un punto por vez."
       : "Tocá el mapa donde está el lugar."
     : null;
+  // Lo existente lleva su nombre, el mismo que en la lista de Marcas.
   const titulo = que.clase === "existente"
-    ? borrador?.tipo === "trazo" ? "Editar el trazo" : "Editar el punto"
+    ? anotar.seleccionado
+      ? anotar.seleccionado.comentario?.trim() || queEs(anotar.seleccionado)
+      : borrador?.tipo === "trazo" ? "Trazo" : "Punto"
     : que.tipo === "trazo" ? "Trazo nuevo" : "Punto nuevo";
 
   return (

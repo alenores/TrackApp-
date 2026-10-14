@@ -4,7 +4,7 @@ import { useRef, type ChangeEvent } from "react";
 import { FORMATO_DE_FOTO } from "@/lib/fotos/preparar";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
-import { Boton } from "@/components/ui/boton";
+import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { RecorteDeFoto } from "@/components/fotos/recorte-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
 
@@ -14,7 +14,9 @@ import type { FotoDeFormulario } from "@/hooks/use-foto";
  * Dibuja el estado del hook y nada más: vacía, abriendo, preparando, lista —con
  * la vista previa de lo que se va a subir y los botones de recortar, cambiar y
  * quitar— o con error, **con el motivo, acá mismo**. También abre la pantalla
- * de recorte cuando toca.
+ * de recorte cuando toca. Recortar, cambiar y quitar van en los tres puntos
+ * de la esquina de la foto: la foto es lo que importa, no tres botones
+ * iguales debajo (Ale, 2026-10-14).
  *
  *     const foto = useFoto("avatar", FORMAS_DE_RECORTE.avatar);
  *     <SelectorDeFoto foto={foto} />
@@ -84,7 +86,7 @@ export function SelectorDeFoto({
       />
 
       {queSeVe ? (
-        <div className="flex flex-col items-center gap-3">
+        <div className="relative flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={queSeVe}
@@ -97,36 +99,29 @@ export function SelectorDeFoto({
             ].join(" ")}
           />
 
-          <div className="flex w-full gap-2">
-            <Boton
-              variante="secundario"
-              className="flex-1 px-3 text-sm"
-              disabled={trabado || !foto.abierta}
-              onClick={foto.recortarDeNuevo}
-            >
-              Recortar
-            </Boton>
-            <Boton
-              variante="secundario"
-              className="flex-1 px-3 text-sm"
-              disabled={trabado}
-              onClick={() => entradaRef.current?.click()}
-            >
-              Cambiar
-            </Boton>
-            <Boton
-              variante="destructivo"
-              className="flex-1 px-3 text-sm"
-              disabled={trabado}
-              onClick={
-                foto.estado === "vacio" && fotoActual && alQuitarFotoActual
-                  ? alQuitarFotoActual
-                  : foto.quitar
-              }
-            >
-              Quitar
-            </Boton>
-          </div>
+          {vistaPreviaRedonda ? null : (
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-14 rounded-t-xl bg-gradient-to-b from-sobre-foto-degrade/55 to-transparent" />
+          )}
+          <MenuDeAcciones
+            className="absolute right-1 top-1"
+            sobreFoto={!vistaPreviaRedonda}
+            etiqueta="Opciones de la foto"
+            acciones={[
+              // Recortar solo se puede con la foto recién elegida: la vieja no se vuelve a leer.
+              ...(foto.abierta ? [{ etiqueta: "Recortar", deshabilitada: trabado, alElegir: foto.recortarDeNuevo }] : []),
+              { etiqueta: "Cambiar", deshabilitada: trabado, alElegir: () => entradaRef.current?.click() },
+              ...(foto.estado === "vacio" && !alQuitarFotoActual
+                ? []
+                : [{
+                  etiqueta: "Quitar",
+                  destructiva: true,
+                  deshabilitada: trabado,
+                  alElegir: foto.estado === "vacio" && fotoActual && alQuitarFotoActual
+                    ? alQuitarFotoActual
+                    : foto.quitar,
+                }]),
+            ]}
+          />
         </div>
       ) : (
         <button

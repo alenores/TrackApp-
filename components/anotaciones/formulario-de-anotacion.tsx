@@ -9,6 +9,19 @@ import { useDialogos } from "@/components/ui/dialogos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { PUNTOS_MINIMOS_DE_UN_TRAZO, type useAnotaciones } from "@/hooks/use-anotaciones";
 import { COLOR_DE_TRAZO_POR_DEFECTO } from "@/lib/anotaciones/colores-de-trazo";
+import { TRAZO_DE_AGREGAR_PUNTO, TRAZO_DE_DESHACER, TRAZO_DE_VOLVER_A_DIBUJAR } from "@/components/ui/iconos";
+
+/** El ícono arriba del nombre, como las opciones de editar la línea de un Camino. */
+function ConIcono({ trazo, texto }: { trazo: string; texto: string }) {
+  return (
+    <span className="flex flex-col items-center gap-1">
+      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" aria-hidden>
+        <path d={trazo} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <span className="text-sm">{texto}</span>
+    </span>
+  );
+}
 
 /**
  * El formulario de una anotación, igual en Mapas y en el sector: dónde está
@@ -51,9 +64,6 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
         {seleccionado ? <MenuDeAcciones className="ml-auto" etiqueta={`Opciones del ${nombre}`}
           acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: anotar.guardando || !anotar.haySenal,
             alElegir: () => void alBorrar() }]} /> : null}
-        <Boton variante="secundario" disabled={anotar.guardando} onClick={anotar.cerrar}>
-          Cerrar
-        </Boton>
       </div>
 
       <form onSubmit={alEnviar}>
@@ -99,25 +109,26 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
                     ? "1 punto: falta al menos uno más."
                     : `${borrador.puntos.length} puntos.`}
               </p>
-              <Boton
-                variante={anotar.marcando ? "principal" : "secundario"}
-                anchoCompleto
-                onClick={() => anotar.setMarcando(!anotar.marcando)}
-              >
-                {anotar.marcando ? "Listo, terminé de dibujar" : "Seguir dibujando"}
-              </Boton>
-              <div className="flex gap-2">
+              <div className={`grid gap-1.5 ${seleccionado ? "grid-cols-3" : "grid-cols-2"}`}>
+                <Boton
+                  variante={anotar.marcando ? "principal" : "secundario"}
+                  className="px-2"
+                  aria-pressed={anotar.marcando}
+                  onClick={() => anotar.setMarcando(!anotar.marcando)}
+                >
+                  <ConIcono trazo={TRAZO_DE_AGREGAR_PUNTO} texto={anotar.marcando ? "Dibujando" : "Agregar puntos"} />
+                </Boton>
                 <Boton
                   variante="secundario"
-                  anchoCompleto
+                  className="px-2"
                   disabled={borrador.puntos.length === 0}
                   onClick={anotar.deshacerElUltimoPunto}
                 >
-                  Deshacer el último
+                  <ConIcono trazo={TRAZO_DE_DESHACER} texto="Deshacer" />
                 </Boton>
                 {seleccionado ? (
-                  <Boton variante="secundario" anchoCompleto onClick={anotar.volverADibujar}>
-                    Volver a dibujar
+                  <Boton variante="secundario" className="px-2" onClick={anotar.volverADibujar}>
+                    <ConIcono trazo={TRAZO_DE_VOLVER_A_DIBUJAR} texto="Volver a dibujar" />
                   </Boton>
                 ) : null}
               </div>

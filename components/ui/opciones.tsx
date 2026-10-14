@@ -34,6 +34,8 @@ type OpcionesProps<T extends string | number> = {
    * título en mayúsculas de un bloque, cuando las opciones van sueltas.
    */
   titulo?: "campo" | "seccion";
+  /** `true` para el ícono arriba del nombre, cuando el nombre no entra al lado. */
+  iconoArriba?: boolean;
 };
 
 /** El título en mayúsculas de un bloque de un formulario o de un filtro. */
@@ -61,6 +63,7 @@ export function Opciones<T extends string | number>({
   columnas = 2,
   multiple = false,
   titulo = "campo",
+  iconoArriba = false,
 }: OpcionesProps<T>) {
   return (
     <fieldset className="border-0 p-0">
@@ -86,7 +89,7 @@ export function Opciones<T extends string | number>({
               onClick={() => alElegir(opcion.valor)}
               className={[
                 CLASE_DE_RESPUESTA_AL_TOQUE,
-                "flex min-h-10 items-center justify-center gap-1.5 rounded-xl border px-2 text-sm font-semibold transition-colors",
+                `flex min-h-10 items-center justify-center rounded-xl border px-2 text-sm font-semibold transition-colors ${iconoArriba ? "flex-col gap-1 py-2" : "gap-1.5"}`,
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
                 elegida
                   ? "border-acento-borde bg-acento text-acento-texto"

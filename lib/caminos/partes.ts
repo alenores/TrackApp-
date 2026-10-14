@@ -243,6 +243,10 @@ export function clasificarTramo<T extends Camino>(
     return falla("Esa complejidad no existe. Elegí fácil, media, difícil o sin clasificar.");
   }
 
+  if (cambio.paso === "sin_paso" && cambio.complejidad !== undefined && cambio.complejidad !== null) {
+    return falla("Una parte sin paso no lleva complejidad. Dejala sin clasificar.");
+  }
+
   const particion = partirInterno(camino, desdeM, hastaM);
   if (!particion.ok) return particion;
   const { partes, desdeM: desde, hastaM: hasta } = particion.datos;
@@ -252,14 +256,15 @@ export function clasificarTramo<T extends Camino>(
     partes: partes.map((parte) => {
       if (parte.desdeM < desde || parte.hastaM > hasta) return parte;
       const antes = parte.porActividad[actividad] ?? clasificacionInicial();
+      const paso = cambio.paso ?? antes.paso;
+      // Por donde no se pasa no hay complejidad que medir (Ale, 2026-10-14).
+      const complejidad = paso === "sin_paso" ? null
+        : cambio.complejidad === undefined ? antes.complejidad : cambio.complejidad;
       return {
         ...parte,
         porActividad: {
           ...copiarClasificaciones(parte.porActividad),
-          [actividad]: {
-            paso: cambio.paso ?? antes.paso,
-            complejidad: cambio.complejidad === undefined ? antes.complejidad : cambio.complejidad,
-          },
+          [actividad]: { paso, complejidad },
         },
       };
     }),
