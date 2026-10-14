@@ -51,6 +51,12 @@ type PropiedadesDeEmergente = {
    * sube para descargar o para agregar confunde.
    */
   hoja?: boolean;
+  /**
+   * `true` para la ventana que elige qué se ve sobre un mapa sin ser hoja,
+   * como las de la navegación: lleva los colores de panel. La hoja ya los
+   * lleva sola. Todo panel se ve igual en toda la app (Ale, 2026-10-13).
+   */
+  deMapa?: boolean;
 };
 
 export function Emergente({
@@ -62,7 +68,9 @@ export function Emergente({
   acciones,
   ancho = "normal",
   hoja = false,
+  deMapa = false,
 }: PropiedadesDeEmergente) {
+  const conColoresDePanel = hoja || deMapa;
   const yaEstaVivo = useYaEnElNavegador();
   const { desplazamiento, arrastrando, manija, cuerpoRef } = useArrastreHaciaAbajo({ activo: abierto && hoja, alIrse: alCerrar });
 
@@ -97,21 +105,21 @@ export function Emergente({
         onClick={(evento) => evento.stopPropagation()}
         style={hoja && desplazamiento > 0 ? { transform: `translateY(${desplazamiento}px)` } : undefined}
         className={[
-          // La hoja va en capas: la cabecera en superficie y el cuerpo en el
-          // color del panel, así las opciones de adentro se despegan como
-          // tarjetas y con sol se ve dónde empieza el panel.
-          `flex max-h-[85dvh] w-full flex-col overflow-hidden border shadow-xl ${hoja ? "panel-que-sube border-panel-borde bg-panel" : "border-borde bg-superficie"}`,
+          // El panel va en capas: la cabecera en el gris más oscuro y el
+          // cuerpo en el color del panel, así las opciones de adentro se
+          // despegan como tarjetas y con sol se ve dónde empieza el panel.
+          `flex max-h-[85dvh] w-full flex-col overflow-hidden border shadow-xl ${conColoresDePanel ? "panel-que-sube border-panel-borde bg-panel" : "border-borde bg-superficie"}`,
           hoja ? "rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0" : "rounded-2xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
           hoja && !arrastrando ? "transition-transform duration-200 ease-out" : "",
         ].join(" ")}
       >
         {hoja ? (
-          <div className="flex touch-none justify-center bg-superficie pt-2.5 sm:hidden" aria-hidden {...manija}>
+          <div className="cabeza-de-panel flex touch-none justify-center pt-2.5 sm:hidden" aria-hidden {...manija}>
             <span className="h-1 w-9 rounded-full bg-borde-fuerte" />
           </div>
         ) : null}
-        <div className={`flex items-start gap-3 border-b border-borde px-4 ${hoja ? "touch-none bg-superficie pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
+        <div className={`flex items-start gap-3 border-b border-borde px-4 ${conColoresDePanel ? "cabeza-de-panel" : ""} ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
           {...(hoja ? manija : {})}>
           <div className="min-w-0 flex-1">
             <h2 className="text-base font-bold text-texto">{titulo}</h2>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { mostrarActividad } from "@/lib/rutas/actividades";
@@ -26,6 +29,7 @@ function textoDeConsideracion(cada: ConsideracionDelCircuito): string {
 
 /** Siempre debajo del mapa del Circuito, a partir de las clasificaciones actuales. */
 export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenDelCircuito> }) {
+  const [abierto, setAbierto] = useState(false);
   if (!resultado.ok) {
     return <Tarjeta franja="ambar"><h2 className="text-xl font-bold text-texto">Resumen del Circuito</h2>
       <p role="alert" className="mt-2 text-base text-texto">{resultado.error}</p></Tarjeta>;
@@ -33,7 +37,14 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
   const { datos } = resultado;
   return (
     <Tarjeta className="space-y-3">
-      <h2 className="text-xl font-bold text-texto">Resumen del Circuito</h2>
+      {/* Se pliega tocando el título: es para leer una vez, no para tener siempre abierto. */}
+      <button type="button" aria-expanded={abierto} onClick={() => setAbierto((antes) => !antes)}
+        className="flex w-full items-center justify-between gap-2 text-left">
+        <h2 className="text-xl font-bold text-texto">Resumen del Circuito</h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          className={`h-5 w-5 shrink-0 text-texto-suave transition-transform ${abierto ? "rotate-180" : ""}`} aria-hidden><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      {abierto ? <>
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-base text-texto">{kilometros(datos.metrosTotales)}</p>
         <InsigniaDeActividad tipo={datos.actividad} tamano="mediano" />
@@ -54,6 +65,7 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
         </div>
       ) : <p className="text-base text-texto-suave">No hay consideraciones adicionales sobre los Caminos usados.</p>}
       <p className="text-base text-texto-suave">Los porcentajes toman como referencia el largo total del Circuito. Las partes propias no reciben dificultad ni marcas de paso de un Camino.</p>
+      </> : null}
     </Tarjeta>
   );
 }

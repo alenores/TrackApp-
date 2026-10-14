@@ -40,6 +40,7 @@ export function ElegirAnotacionesDelMapa({ abierto, alCerrar, filtro, alCambiar,
     <Emergente
       abierto={abierto}
       alCerrar={alCerrar}
+      deMapa
       titulo="Marcas"
       acciones={
         <BotonDeEmergente variante="principal" onClick={alCerrar}>

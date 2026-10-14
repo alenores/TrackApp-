@@ -1,6 +1,5 @@
 "use client";
 
-import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -184,9 +183,12 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
     {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
     {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
     {ficha ? <>
-      <InsigniaDeActividad tipo={ficha.actividad} tamano="mediano" />
       {actualizado && !actualizado.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{actualizado.error}</p></Tarjeta> : null}
       {dibujo && !dibujo.ok ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{dibujo.error}</p></Tarjeta> : null}
+      {/* Los datos van primero, con las mismas cifras que la tarjeta de la lista. */}
+      <DatosDeCircuito actividad={ficha.actividad} datos={datosDelCircuito} largoM={largoM}
+        desnivelPositivoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelPositivoM : null}
+        desnivelNegativoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelNegativoM : null} />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
         <div className="space-y-4">
           {dibujoMostrado ? <CargadorDeMapa enVivo consultaGoogle principal encuadre={encuadreMostrado}
@@ -198,9 +200,6 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
           {resumenMostrado ? <ResumenDeCircuito resultado={resumenMostrado} /> : null}
         </div>
         <div className="space-y-4">
-          <DatosDeCircuito datos={datosDelCircuito} largoM={largoM}
-            desnivelPositivoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelPositivoM : null}
-            desnivelNegativoM={alturasMostradas?.ok ? alturasMostradas.datos.desnivelNegativoM : null} />
           {cobertura ? <BloqueDeCobertura cobertura={cobertura} este="este Circuito" /> : null}
           {preparadoAlDia ? <BotonRedondo etiqueta="Navegar Circuito" variante="principal"
             className="hidden lg:flex" onClick={navegar}>{TRAZOS_DE_NAVEGACION}</BotonRedondo>

@@ -376,6 +376,20 @@ nunca se cargan a mano. En un Camino se miden desde donde empieza su dibujo; al
 revés se invierten. En un Circuito, en el sentido en que se dibujó.
 La única excepción es una **salida** sin archivo GPS, que es un relato y no se
 usa para navegar: ahí se pueden escribir.
+En las cifras de un Circuito (tarjeta de la lista y detalle) se titulan
+**«Sube»** y **«Baja»**, cada una con su flecha en diagonal, porque cuatro
+columnas en el celular dejan poco ancho.
+
+**Cifras del Circuito**
+Cómo se presenta un Circuito, igual en la tarjeta de la lista y en el detalle:
+la actividad, el largo grande al medio —el dato más importante— y abajo cuatro
+columnas del mismo peso: técnica, esfuerzo, sube y baja. Lo que falta va con
+una raya.
+
+**Ayuda**
+El ícono de signo de pregunta en un círculo. Muestra lo que explica una
+pantalla, como qué significa cada color y línea, en vez de tenerlo siempre a
+la vista.
 
 **Pedazo de mapa**
 La unidad mínima en que se guarda un mapa: un cuadradito del terreno, que

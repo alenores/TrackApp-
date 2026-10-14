@@ -16,14 +16,12 @@ import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useLoQueFalta } from "@/hooks/use-lo-que-falta";
 import { AvisoCompactoDeMapas } from "@/components/rutas/aviso-compacto-de-mapas";
 import { IndicadorDeMapaBajado } from "@/components/rutas/indicador-de-mapa-bajado";
-import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { CifrasDeCircuito } from "@/components/circuitos/cifras-de-circuito";
 import { useSectoresConMapaBajado } from "@/hooks/use-mapa-del-sector";
 import { mapaDelCircuito } from "@/lib/mapas/lo-que-falta";
 import type { CircuitoGuardado } from "@/lib/circuitos/datos";
 import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
-import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
-import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
 import { olvidarLoDeEstaApertura, unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useQuienSoy } from "@/components/armazon/quien-soy";
 
@@ -144,17 +142,9 @@ export function PantallaDeCircuitos() {
         return <div key={circuito.id} className="relative"><TarjetaQueAbre etiqueta={`Abrir ${circuito.nombre}`}
           alAbrir={() => setVista({ tipo: "detalle", id: circuito.id })} className="space-y-2">
         <h2 className={`text-lg font-semibold text-texto ${puedeCambiar ? "pr-12" : ""}`}>{circuito.nombre}</h2>
-        <InsigniaDeActividad tipo={circuito.actividad} tamano="mediano" />
-        {totales ? <p className="text-base text-texto">
-          {textoDeDistancia(totales.largoM)}
-          {totales.desnivelPositivoM !== null && totales.desnivelNegativoM !== null
-            ? ` · desnivel positivo ${textoDeAltura(totales.desnivelPositivoM)} · negativo ${textoDeAltura(totales.desnivelNegativoM)}`
-            : " · desnivel sin calcular"}
-        </p> : null}
-        {datos && (datos.tecnica !== null || datos.nivelEsfuerzo !== null) ? <div className="flex items-center gap-4">
-          {datos.tecnica !== null ? <IndicadorTecnica tecnica={datos.tecnica} /> : null}
-          {datos.nivelEsfuerzo !== null ? <VelocimetroEsfuerzo esfuerzo={datos.nivelEsfuerzo} /> : null}
-        </div> : null}
+        <CifrasDeCircuito actividad={circuito.actividad} largoM={totales?.largoM ?? null}
+          tecnica={datos?.tecnica ?? null} esfuerzo={datos?.nivelEsfuerzo ?? null}
+          desnivelPositivoM={totales?.desnivelPositivoM ?? null} desnivelNegativoM={totales?.desnivelNegativoM ?? null} />
         {guardada ? <IndicadorDeMapaBajado {...mapaDelCircuito(guardada, paquete?.sectores ?? [], sectoresConMapa)} /> : null}
       </TarjetaQueAbre>
         {puedeCambiar ?

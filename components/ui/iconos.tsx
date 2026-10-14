@@ -29,3 +29,15 @@ export function iconoDeUbicarme(prendido: boolean) {
 
 /** Marcar acá en la salida que se está registrando: un señalador. */
 export const ICONO_DE_MARCAR_ACA = <path d="M7 3h10v18l-5-4-5 4Z" />;
+
+/** Cuánto sube un Circuito: una flecha en diagonal hacia arriba. */
+export const ICONO_DE_SUBE = <path d="M7 17 17 7M9 7h8v8" />;
+
+/** Cuánto baja un Circuito: una flecha en diagonal hacia abajo. */
+export const ICONO_DE_BAJA = <path d="M7 7l10 10M17 9v8H9" />;
+
+/** Ayuda: un signo de pregunta en un círculo. Muestra lo que explica una pantalla. */
+export const ICONO_DE_AYUDA = <>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01" />
+</>;
