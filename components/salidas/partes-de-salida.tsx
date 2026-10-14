@@ -40,8 +40,8 @@ const VELO_DEL_CENTRO =
  * cambia con el modo. Sin foto, lo mismo va sobre un fondo oscuro fijo.
  *
  * `margenDeTarjeta` la pega a los bordes cuando va adentro de una tarjeta.
- * `conDatos={false}` deja solo la foto, el título y el día: en la ficha los
- * números y la línea van afuera.
+ * `conDatos={false}` deja la foto limpia: en la ficha el título va arriba, el
+ * día justo debajo y los números afuera, en la misma fila que acá.
  */
 export function PortadaDeSalida({
   salida,
@@ -97,10 +97,12 @@ export function PortadaDeSalida({
           <div aria-hidden className="absolute inset-0" style={{ background: VELO_DEL_CENTRO }} />
         </>
       ) : null}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-sobre-foto-degrade/55 to-transparent"
-      />
+      {conDatos ? (
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-sobre-foto-degrade/55 to-transparent"
+        />
+      ) : null}
 
       {dibujo ? (
         <svg
@@ -121,16 +123,13 @@ export function PortadaDeSalida({
         </svg>
       ) : null}
 
-      <div className="absolute left-3.5 right-16 top-2.5">
-        <h2 className="truncate text-base font-semibold leading-tight text-sobre-foto-texto drop-shadow">
-          {salida.titulo}
-        </h2>
-        {!conDatos ? (
-          <p className="text-xs font-medium text-sobre-foto-texto-suave drop-shadow">
-            {diaEnPalabras(salida.fecha)}
-          </p>
-        ) : null}
-      </div>
+      {conDatos ? (
+        <div className="absolute left-3.5 right-16 top-2.5">
+          <h2 className="truncate text-base font-semibold leading-tight text-sobre-foto-texto drop-shadow">
+            {salida.titulo}
+          </h2>
+        </div>
+      ) : null}
 
       {salida.estado === "borrador" ? (
         <p className="absolute bottom-2 right-3 rounded-full border border-ambar-borde bg-ambar-fondo px-2.5 py-0.5 text-xs font-semibold text-ambar-texto">
@@ -146,18 +145,7 @@ export function PortadaDeSalida({
       ) : null}
 
       {numeros.length > 0 ? (
-        <dl className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 text-center drop-shadow-md">
-          {numeros.map((numero) => (
-            <div key={numero.nombre}>
-              <dt className="text-xs font-medium uppercase leading-4 tracking-[0.08em] text-sobre-foto-texto-suave">
-                {numero.nombre}
-              </dt>
-              <dd className="text-lg font-semibold leading-6 tabular-nums text-sobre-foto-texto">
-                {numero.valor}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <FilaDeNumerosDeSalida numeros={numeros} sobreFoto className="absolute inset-x-0 top-[44%] flex -translate-y-1/2 justify-center gap-6 px-3 drop-shadow-md" />
       ) : null}
     </div>
   );
@@ -222,10 +210,50 @@ export function PersonasDeSalida({ salida }: { salida: Salida }) {
   );
 }
 
-/** Todos los números que haya, en dos columnas. Para la ficha. */
+/**
+ * La fila de números, igual en la tarjeta de la lista y en la ficha: el nombre
+ * chico arriba y el valor abajo, todos en la misma línea. En la lista va sobre
+ * la foto; en la ficha, sobre la tarjeta.
+ */
+function FilaDeNumerosDeSalida({
+  numeros,
+  sobreFoto,
+  className = "",
+}: {
+  numeros: { nombre: string; valor: string }[];
+  sobreFoto: boolean;
+  className?: string;
+}) {
+  return (
+    <dl className={["text-center", className].filter(Boolean).join(" ")}>
+      {numeros.map((numero) => (
+        <div key={numero.nombre} className="min-w-0">
+          <dt
+            className={[
+              "text-xs font-medium uppercase leading-4 tracking-[0.08em]",
+              sobreFoto ? "text-sobre-foto-texto-suave" : "text-texto-suave",
+            ].join(" ")}
+          >
+            {numero.nombre}
+          </dt>
+          <dd
+            className={[
+              "text-lg font-semibold leading-6 tabular-nums",
+              sobreFoto ? "text-sobre-foto-texto" : "text-texto",
+            ].join(" ")}
+          >
+            {numero.valor}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** En la ficha: el largo solo, centrado, y debajo subida, bajada y esfuerzo. */
 export function NumerosDeSalida({ salida }: { salida: Salida }) {
-  const numeros = [
-    salida.largoKm !== null ? { nombre: "Largo", valor: mostrarLargo(salida.largoKm) } : null,
+  const largo = salida.largoKm !== null ? mostrarLargo(salida.largoKm) : null;
+  const otros = [
     salida.desnivelPositivoM !== null
       ? { nombre: "Se subió", valor: mostrarDesnivel(salida.desnivelPositivoM, "positivo") }
       : null,
@@ -237,17 +265,17 @@ export function NumerosDeSalida({ salida }: { salida: Salida }) {
       : null,
   ].filter((numero) => numero !== null);
 
-  if (numeros.length === 0) return null;
+  if (largo === null && otros.length === 0) return null;
 
   return (
-    <dl className="grid min-w-0 flex-1 grid-cols-2 content-center gap-3 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
-      {numeros.map((numero) => (
-        <div key={numero.nombre}>
-          <dt className="text-xs text-texto-suave">{numero.nombre}</dt>
-          <dd className="mt-0.5 text-base font-semibold tabular-nums text-texto">{numero.valor}</dd>
-        </div>
-      ))}
-    </dl>
+    <div className="space-y-3">
+      {largo !== null ? (
+        <FilaDeNumerosDeSalida numeros={[{ nombre: "Largo", valor: largo }]} sobreFoto={false} className="flex justify-center" />
+      ) : null}
+      {otros.length > 0 ? (
+        <FilaDeNumerosDeSalida numeros={otros} sobreFoto={false} className="flex w-full justify-evenly" />
+      ) : null}
+    </div>
   );
 }
 

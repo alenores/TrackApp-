@@ -218,8 +218,14 @@ type MapaProps = {
   llenarElAltoEnLaComputadora?: boolean;
   /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
   controlesAdicionales?: ReactNode;
-  /** Función para cerrar cuando está en pantalla completa externa (ej. navegación). */
+  /** Cierra un mapa que ya ocupa toda la pantalla, como el de una salida. */
   alCerrarPantallaCompleta?: () => void;
+  /**
+   * La navegación libre y la de un Circuito no llevan la cruz arriba a la
+   * derecha: se toca sin querer y se cierra el mapa. Esas pantallas se salen
+   * con el botón de abajo a la izquierda.
+   */
+  sinCruzArriba?: boolean;
   /** Cambiar este número fuerza al mapa a centrarse en la posición actual. */
   forzarCentradoEn?: number;
   /** Fondo inicial al abrir el mapa, por defecto dibujo. */
@@ -376,6 +382,7 @@ export function Mapa({
   llenarElAltoEnLaComputadora = false,
   controlesAdicionales = null,
   alCerrarPantallaCompleta,
+  sinCruzArriba = false,
   forzarCentradoEn,
   fondoInicial = "dibujo",
   alCambiarFondo,
@@ -1867,6 +1874,8 @@ export function Mapa({
    * cruz y también con el botón físico de atrás, como toda pantalla que tapa.
    */
   const enGrande = aPantallaCompleta && !pantallaCompleta;
+  const mostrarCruz =
+    !sinCruzArriba && (enGrande || Boolean(pantallaCompleta && alCerrarPantallaCompleta));
   const lugarAlCostado = useContext(LugarAlCostado);
 
   useCerrarConAtras(enGrande, cerrarLoGrande);
@@ -2085,8 +2094,9 @@ export function Mapa({
         Controles del margen superior derecho cuando el mapa está en pantalla completa o expandido.
       */}
       {pantallaCompleta || enGrande ? (
-        <div className="absolute right-3 top-3 flex items-center gap-2">
-          {enGrande || (pantallaCompleta && alCerrarPantallaCompleta) ? (
+        <div className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] flex items-center gap-2">
+          <BotonDeModo />
+          {mostrarCruz ? (
             <button
               type="button"
               aria-label="Cerrar el mapa grande"
@@ -2120,7 +2130,6 @@ export function Mapa({
               </svg>
             </button>
           ) : null}
-          <BotonDeModo />
         </div>
       ) : null}
 

@@ -24,11 +24,13 @@ export function Campo({
   ayuda,
   obligatorio = false,
   id,
+  type,
   className = "",
   ...props
 }: PropiedadesDeCampo) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, "-");
   const ayudaId = `${inputId}-ayuda`;
+  const esFecha = type === "date";
 
   return (
     <div className="space-y-2">
@@ -41,10 +43,12 @@ export function Campo({
       </label>
       <input
         id={inputId}
+        type={type}
         aria-invalid={error ? true : undefined}
         aria-describedby={error || ayuda ? ayudaId : undefined}
         className={[
-          "min-h-14 w-full rounded-xl border bg-fondo px-4 py-3 text-base text-texto",
+          "min-h-14 rounded-xl border bg-fondo px-4 py-3 text-base text-texto",
+          esFecha ? "w-44 max-w-full" : "w-full",
           "placeholder:text-texto-suave/50 focus:outline-none focus:ring-2 focus:ring-acento-borde",
           error ? "border-rojo-borde" : "border-borde-fuerte focus:border-acento-borde",
           className,

@@ -253,7 +253,9 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                     </label>
                     <ElegirActividades etiqueta="Actividades" modo="varias" obligatorio
                       elegidas={actividades} deshabilitado={ocupado} alTocar={tocarActividad} />
-                    <Boton disabled={ocupado} onClick={guardarDatos}>Guardar</Boton>
+                    <div className="flex justify-end border-t border-borde pt-3">
+                      <Boton disabled={ocupado} onClick={guardarDatos}>Guardar</Boton>
+                    </div>
                     {avisoAlPie}
                   </Tarjeta>
                 </div>
@@ -268,13 +270,13 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                         { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
                       ]} />
                     <p className="text-base text-texto-suave">{modoCorreccion === "mover" ? "Arrastrá un punto hasta su lugar." : modoCorreccion === "agregar" ? "Tocá la línea entre dos puntos." : "Tocá el punto que querés quitar."}</p>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex justify-end gap-2 border-t border-borde pt-3">
+                      <Boton variante="fantasma" disabled={ocupado || !borradorLinea} onClick={() => setBorradorLinea(null)}>Descartar</Boton>
                       <Boton disabled={ocupado || !borradorLinea || vistaPrevia?.ok !== true} onClick={() => void (async () => {
                         if (!borradorLinea) return;
                         const guardado = await guardar((actual) => corregirLineaDelCamino(actual.id, actual.actualizadoEn, borradorLinea), "Se corrigió la línea del Camino.");
                         if (guardado) setBorradorLinea(null);
                       })()}>Guardar</Boton>
-                      <Boton variante="fantasma" disabled={ocupado || !borradorLinea} onClick={() => setBorradorLinea(null)}>Descartar</Boton>
                     </div>
                     {avisoAlPie}
                     {vistaPrevia && !vistaPrevia.ok ? <p role="alert" className="text-base text-ambar-texto">{vistaPrevia.error}</p> : null}
@@ -322,9 +324,10 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                           <ContadorDeCaracteres texto={observacion} maximo={1000} />
                         </label>
                         <label className="block text-base text-texto">Fecha de comprobación
-                          <input className="mt-1 block rounded-xl border border-borde bg-superficie p-2 text-texto" type="date" value={fecha}
+                          <input className="mt-1 block w-44 max-w-full rounded-xl border border-borde bg-superficie p-2 text-texto" type="date" value={fecha}
                             onChange={(evento) => setFecha(evento.target.value)} />
                         </label>
+                        <div className="flex justify-end border-t border-borde pt-3">
                         <Boton disabled={ocupado} onClick={() => void (async () => {
                           const elegidas = Object.entries(borradorVigente) as [ActividadRuta, { paso: CondicionDePaso; complejidad: ComplejidadDeParte | null }][];
                           const guardado = await guardar(async (actual) => {
@@ -340,6 +343,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                           }, "Se guardó esta parte.");
                           if (guardado) setBorradorDeLaParte(null);
                         })()}>Guardar</Boton>
+                        </div>
                         {avisoAlPie}
                       </div>
                     </Tarjeta>

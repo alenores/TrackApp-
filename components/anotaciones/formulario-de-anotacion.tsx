@@ -4,7 +4,6 @@ import type { FormEvent } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
-import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { PUNTOS_MINIMOS_DE_UN_TRAZO, type useAnotaciones } from "@/hooks/use-anotaciones";
@@ -25,8 +24,8 @@ function ConIcono({ trazo, texto }: { trazo: string; texto: string }) {
 
 /**
  * El formulario de una anotación, igual en Mapas y en el sector: dónde está
- * (o por dónde va), qué es, qué hay que saber y la foto. Borrar está acá
- * adentro y pide confirmación: nunca a un toque desde la lista.
+ * (o por dónde va), qué es, qué hay que saber y la foto. Eliminar queda
+ * abajo de Guardar y pide confirmación: nunca a un toque desde la lista.
  */
 
 type Anotar = ReturnType<typeof useAnotaciones>;
@@ -59,12 +58,7 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
 
   return (
     <Tarjeta className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-texto">{titulo}</h2>
-        {seleccionado ? <MenuDeAcciones className="ml-auto" etiqueta={`Opciones del ${nombre}`}
-          acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: anotar.guardando || !anotar.haySenal,
-            alElegir: () => void alBorrar() }]} /> : null}
-      </div>
+      <h2 className="text-lg font-semibold text-texto">{titulo}</h2>
 
       <form onSubmit={alEnviar}>
         <fieldset disabled={anotar.guardando || !anotar.haySenal} className="min-w-0 space-y-4">
@@ -164,6 +158,12 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
           <Boton type="submit" anchoCompleto disabled={!anotar.puedeGuardar || anotar.guardando}>
             {anotar.guardando ? "Guardando…" : `Guardar el ${nombre}`}
           </Boton>
+
+          {seleccionado && anotar.haySenal ? (
+            <Boton variante="destructivo" anchoCompleto disabled={anotar.guardando} onClick={() => void alBorrar()}>
+              Eliminar
+            </Boton>
+          ) : null}
         </fieldset>
       </form>
     </Tarjeta>

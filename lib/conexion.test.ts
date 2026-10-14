@@ -7,6 +7,7 @@ import {
   haySenalDebil,
   olvidarLaConexionParaProbar,
   probarConexion,
+  reprobarAlSalirDeLaNavegacion,
 } from "@/lib/conexion";
 
 /**
@@ -97,6 +98,20 @@ describe("detector de señal", () => {
     expect(await probarConexion(true)).toBe(false);
     expect(await esperarConexion()).toBe(false);
     expect(pedir).not.toHaveBeenCalled();
+  });
+
+  it("con la navegación abierta no repregunta; al salir, sí", async () => {
+    window.history.replaceState(null, "", "/mapa-libre");
+    const enElMapa = servidorQue("responde");
+    expect(await reprobarAlSalirDeLaNavegacion()).toBe(false);
+    expect(enElMapa).not.toHaveBeenCalled();
+    expect(hayConexion()).toBe(false);
+
+    window.history.replaceState(null, "", "/");
+    const enCasa = servidorQue("responde");
+    expect(await reprobarAlSalirDeLaNavegacion()).toBe(true);
+    expect(enCasa).toHaveBeenCalled();
+    expect(hayConexion()).toBe(true);
   });
 
   it("con la navegación abierta no pregunta a internet, nunca", async () => {

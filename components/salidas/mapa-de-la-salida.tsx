@@ -23,18 +23,37 @@ import type { Salida } from "@/types/database";
  */
 
 /** El cuadradito con la línea dibujada. Tocándolo se abre el mapa. */
-export function MiniaturaDeLaLinea({ salida, alTocar }: { salida: Salida; alTocar: () => void }) {
+export function MiniaturaDeLaLinea({
+  salida,
+  alTocar,
+  alBajar,
+  bajando = false,
+}: {
+  salida: Salida;
+  alTocar: () => void;
+  /** Si está, el ícono de bajar queda adentro, abajo a la izquierda, y no abre el mapa. */
+  alBajar?: () => void;
+  bajando?: boolean;
+}) {
   const dibujo = salida.linea
     ? dibujarLinea(salida.linea, { x: 10, y: 10, ancho: 76, alto: 76 })
     : null;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={alTocar}
+      onKeyDown={(evento) => {
+        if (evento.target !== evento.currentTarget) return;
+        if (evento.key === "Enter" || evento.key === " ") {
+          evento.preventDefault();
+          alTocar();
+        }
+      }}
       aria-label="Ver el recorrido en el mapa"
       title="Ver el recorrido en el mapa"
-      className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-borde-fuerte bg-sobre-foto-fondo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
+      className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-borde-fuerte bg-sobre-foto-fondo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
     >
       {dibujo ? (
         <svg viewBox="0 0 96 96" aria-hidden className="absolute inset-0 h-full w-full">
@@ -54,10 +73,36 @@ export function MiniaturaDeLaLinea({ salida, alTocar }: { salida: Salida; alToca
           Ver en el mapa
         </span>
       )}
+      {alBajar ? (
+        <button
+          type="button"
+          aria-label="Bajar el archivo GPS"
+          title="Bajar el archivo GPS"
+          disabled={bajando}
+          onClick={(evento) => {
+            evento.stopPropagation();
+            alBajar();
+          }}
+          className="absolute bottom-1 left-1 flex h-6 w-6 items-center justify-center rounded-full text-sobre-foto-texto-suave hover:text-sobre-foto-texto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde disabled:opacity-50"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" />
+          </svg>
+        </button>
+      ) : null}
       <svg
         viewBox="0 0 24 24"
         aria-hidden
-        className="absolute bottom-1.5 right-1.5 h-4 w-4 text-sobre-foto-texto-suave"
+        className="pointer-events-none absolute bottom-1.5 right-1.5 h-4 w-4 text-sobre-foto-texto-suave"
         fill="none"
         stroke="currentColor"
         strokeWidth={2}
@@ -65,7 +110,7 @@ export function MiniaturaDeLaLinea({ salida, alTocar }: { salida: Salida; alToca
       >
         <path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" />
       </svg>
-    </button>
+    </div>
   );
 }
 

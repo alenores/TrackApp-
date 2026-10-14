@@ -168,8 +168,11 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un
   sector. Al agrandarse y al cerrarse se vuelve a encuadrar lo que hay que
-  mirar, no lo que se estaba mirando. **Única excepción:** el mapa de la zona
-  adentro de «Circuitos en el mapa», que va sin botones propios (decisión 025).
+  mirar, no lo que se estaba mirando. La cruz para cerrarlo queda en el margen
+  de arriba a la derecha. La navegación libre y la de un Circuito no la llevan
+  ahí: se salen con el botón de abajo a la izquierda (Ale, 2026-10-14).
+  **Única excepción al botón de agrandar:** el mapa de la zona adentro de
+  «Circuitos en el mapa», que va sin botones propios (decisión 025).
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
@@ -261,7 +264,8 @@ quedaba esperando minutos. Ver `docs/decisiones/026-senal-que-sirve.md`.
 - **Señal débil = sin señal**, exactamente el modo de siempre. No se inventa un
   tercer modo.
 - **El detector no prueba con la navegación abierta.** Probar es salir a
-  internet.
+  internet. Al cerrar el mapa, vuelve a preguntar, para no dejar Salidas como
+  si siguieras en el cerro.
 - Todo pedido a la base tiene tope de 15 s (`lib/supabase/navegador.ts`), salvo
   las subidas de fotos.
 - `/api/senal` va **siempre a internet** en el motor offline, con regla propia y
@@ -482,7 +486,9 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
   entrada vuelve a esa pantalla (decisión 052).
 - **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
   agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
-  Editar y eliminar se muestran al abrir los tres puntos, nunca sueltos.
+  En las listas, editar y eliminar van en los tres puntos. En el detalle de una
+  Salida y de un Circuito, y al editar un punto o un trazo, Eliminar va abajo
+  de todo; en el detalle, Editar queda arriba de Eliminar (Ale, 2026-10-14).
 - **Nada se guarda solo.** Tocar una opción cambia lo que se ve; se guarda
   recién con el botón «Guardar», uno solo al pie de lo que se edita. Prohibido
   el autoguardado (Ale, 2026-10-14).

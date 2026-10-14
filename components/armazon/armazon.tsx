@@ -17,6 +17,7 @@ import { BotonFlotanteDeAgregar } from "@/components/ui/boton-flotante-de-agrega
 import { useDialogos } from "@/components/ui/dialogos";
 import { usePendientes } from "@/hooks/use-pendientes";
 import { usePantallasListasAlAbrir } from "@/hooks/use-pantallas-listas-al-abrir";
+import { useReprobarAlSalirDeLaNavegacion } from "@/hooks/use-reprobar-al-salir-de-navegar";
 import { useSubirPendientes } from "@/hooks/use-subir-pendientes";
 import { useSubirRegistros } from "@/hooks/use-subir-registros";
 import { useRegistros } from "@/hooks/use-registros";
@@ -62,6 +63,9 @@ export function Armazon({
 
   // Las pantallas de todos los días quedan listas al abrir: entrar no sale a internet.
   usePantallasListasAlAbrir();
+  // Al cerrar el mapa, se vuelve a preguntar si hay señal. Si no, Salidas
+  // queda como si no hubiera internet aunque el teléfono esté conectado.
+  useReprobarAlSalirDeLaNavegacion();
 
   // Lo marcado sin señal sube solo apenas hay señal y no estás navegando.
   useSubirPendientes(miPerfilId, miCategoria);

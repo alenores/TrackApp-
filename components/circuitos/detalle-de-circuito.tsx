@@ -10,9 +10,9 @@ import { elEnCurso, empezarUnRegistro } from "@/lib/salidas/registro";
 import { leerCircuitoCompleto, retirarCircuito } from "@/app/actions/circuitos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
+import { Boton } from "@/components/ui/boton";
 import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { TRAZOS_DE_NAVEGACION } from "@/components/armazon/destinos-del-menu";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { ResumenDeCircuito } from "@/components/circuitos/resumen-de-circuito";
@@ -165,19 +165,17 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
     } finally { setOcupado(false); }
   };
 
+  const puedeCambiar = haySenal && completo !== null
+    && (esAdministrador || completo.circuito.perfilId === miPerfilId);
+  const abrirEdicion = () => {
+    if (!completo || !actualizado?.ok) return;
+    alEditar(completo.circuito, actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos);
+  };
+
   return <div className="space-y-4">
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2">
       <BotonVolver alVolver={alVolver} />
-      <h1 className="text-2xl font-bold text-texto">{ficha?.nombre ?? "Circuito"}</h1>
-      {haySenal && completo && (esAdministrador || completo.circuito.perfilId === miPerfilId) ?
-        <MenuDeAcciones className="ml-auto" etiqueta={`Opciones de ${completo.circuito.nombre}`}
-          acciones={[
-            { etiqueta: "Editar", deshabilitada: !actualizado?.ok,
-              alElegir: () => { if (actualizado?.ok) alEditar(completo.circuito,
-                actualizado.datos.partes, !!actualizado.datos.finalSeparado, completo.caminos); } },
-            { etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
-              alElegir: () => void retirar() },
-          ]} /> : null}
+      <h1 className="min-w-0 flex-1 text-2xl font-bold leading-tight text-texto">{ficha?.nombre ?? "Circuito"}</h1>
     </div>
     {cargando && (haySenal || fichaGuardada) ? <Tarjeta><p role="status" className="text-base text-texto">Abriendo el Circuito…</p></Tarjeta> : null}
     {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
@@ -207,6 +205,12 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
         </div>
       </div>
     </> : null}
+    {puedeCambiar ? (
+      <div className="space-y-3">
+        <Boton anchoCompleto disabled={ocupado || !actualizado?.ok} onClick={abrirEdicion}>Editar</Boton>
+        <Boton variante="destructivo" anchoCompleto disabled={ocupado} onClick={() => void retirar()}>Eliminar</Boton>
+      </div>
+    ) : null}
     {ficha && preparadoAlDia ? <>
       {/* En el celular, flotante abajo a la derecha, al alcance del pulgar, como en la ruta. */}
       <div aria-hidden className="h-12 lg:hidden" />

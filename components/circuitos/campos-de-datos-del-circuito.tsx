@@ -2,7 +2,7 @@
 
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
-import { IndicadorTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
+import { CirculoDeTecnica, VelocimetroEsfuerzo } from "@/components/rutas/indicadores-de-exigencia";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { LARGO_MAXIMO_DE_LOS_TEXTOS, type DatosDelCircuito } from "@/lib/circuitos/datos";
 import { NIVELES_ESFUERZO } from "@/types/database";
@@ -25,24 +25,33 @@ export function CamposDeDatosDelCircuito({ datos, alCambiar, deshabilitado = fal
     <Tarjeta className="space-y-4">
       <h2 className="text-xl font-bold text-texto">Datos del Circuito</h2>
       <p className="text-base text-texto-suave">El largo y el desnivel se calculan solos al guardar, con la línea del Circuito y el relieve del terreno.</p>
-      {/* Los mismos dibujos que la tarjeta del Circuito: lo que se elige acá es lo que se ve allá. */}
+      {/* Diez circulitos: el que se toca se llena, y también todos los de la izquierda. */}
       <div role="radiogroup" aria-label="Técnica" className="space-y-1.5">
-        <p className="text-sm font-medium text-texto-suave">Técnica — cuánto hay que saber, del 1 al 10</p>
-        <div className="grid grid-cols-5 gap-2">
-          {Array.from({ length: 10 }, (_, i) => i + 1).map((valor) => {
+        <p className="text-sm font-medium text-texto-suave">Técnica</p>
+        <div className="flex gap-1">
+          {Array.from({ length: 10 }, (_, indice) => {
+            const valor = indice + 1;
             const elegida = datos.tecnica === valor;
+            const lleno = datos.tecnica !== null && valor <= datos.tecnica;
             return (
-              <Boton key={valor} role="radio" aria-checked={elegida} variante={elegida ? "principal" : "secundario"} disabled={deshabilitado}
-                className="flex-col gap-1 py-1.5" onClick={() => cambiar({ tecnica: elegida ? null : valor })}>
-                <span className="text-base font-semibold">{valor}</span>
-                <IndicadorTecnica tecnica={valor} />
-              </Boton>
+              <button
+                key={valor}
+                type="button"
+                role="radio"
+                aria-checked={elegida}
+                aria-label={`${valor} de 10`}
+                disabled={deshabilitado}
+                onClick={() => cambiar({ tecnica: elegida ? null : valor })}
+                className="flex h-8 min-w-0 flex-1 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde disabled:opacity-50"
+              >
+                <CirculoDeTecnica lleno={lleno} className="h-5 w-5" />
+              </button>
             );
           })}
         </div>
       </div>
       <div role="radiogroup" aria-label="Esfuerzo" className="space-y-1.5">
-        <p className="text-sm font-medium text-texto-suave">Esfuerzo — cuánto cansa</p>
+        <p className="text-sm font-medium text-texto-suave">Esfuerzo</p>
         <div className="grid grid-cols-4 gap-2">
           {NIVELES_ESFUERZO.map((nivel) => {
             const elegido = datos.nivelEsfuerzo === nivel;

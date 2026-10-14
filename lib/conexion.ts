@@ -32,7 +32,8 @@
  * - No cambia el modo sin señal ni lo que se muestra en él.
  * - **No prueba nunca con la navegación abierta.** La prueba es un pedido a
  *   internet, y navegar no consulta internet por ningún motivo. Al salir de la
- *   navegación, volver a la app o recuperar la red dispara la prueba de nuevo.
+ *   navegación (`reprobarAlSalirDeLaNavegacion`), al volver a la app o al
+ *   recuperar la red, se dispara la prueba de nuevo.
  * - No frena una descarga que pidió el usuario (bajar un mapa): esos pedidos
  *   fallan solos si no hay señal.
  */
@@ -178,6 +179,19 @@ export function probarConexion(forzar = false): Promise<boolean> {
     pruebaEnCurso = null;
   });
   return pruebaEnCurso;
+}
+
+/**
+ * Al cerrar el mapa, vuelve a preguntar si hay señal.
+ *
+ * Durante la navegación la prueba no corre. Si en ese rato el teléfono avisó
+ * que la red se fue —aunque haya sido un instante— la app se queda creyendo
+ * que no hay señal, y al volver a casa muestra Salidas como si estuvieras en
+ * el cerro. Esta pregunta corre recién cuando el mapa ya se cerró.
+ */
+export function reprobarAlSalirDeLaNavegacion(): Promise<boolean> {
+  if (typeof window === "undefined" || navegando()) return Promise.resolve(hayConexion());
+  return probarConexion(true);
 }
 
 /**

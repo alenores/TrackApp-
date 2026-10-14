@@ -127,6 +127,7 @@ export function PantallaDeMapaLibre() {
             encuadre={encuadre}
             encuadrarSoloAlAbrir
             pantallaCompleta
+            sinCruzArriba
             fondoInicial={fondosDisponibles[0] ?? "dibujo"}
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}

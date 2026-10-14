@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { borrarSalida } from "@/app/actions/salidas";
+import { Boton } from "@/components/ui/boton";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente } from "@/components/ui/emergente";
 import { Enlace } from "@/components/ui/enlace";
+import { diaEnPalabras } from "@/lib/fechas";
 import { bajarElArchivo } from "@/lib/salidas/archivo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { MapaDeLaSalida, MiniaturaDeLaLinea } from "@/components/salidas/mapa-de-la-salida";
 import {
-  BotonDeOpcionesDeSalida,
   NumerosDeSalida,
   PersonasDeSalida,
   PortadaDeSalida,
@@ -20,10 +22,12 @@ import { useHaySenal } from "@/hooks/use-hay-senal";
 import type { Salida } from "@/types/database";
 
 /**
- * La ficha de una salida: todo lo que tiene. La portada va limpia —solo el
- * título y el día— y los números van afuera, al lado de la miniatura del
- * recorrido, que tocándola abre el mapa. Después, la descripción completa,
- * todas las fotos —tocando una se ve en grande— y el archivo GPS para bajar.
+ * La ficha de una salida: todo lo que tiene. El título va arriba, con volver
+ * a la izquierda, como en el resto de las pantallas. La portada queda limpia
+ * y el día va justo debajo. Los números van en la misma fila que la tarjeta
+ * de la lista; abajo, la miniatura del recorrido —sin agrandarla— y, a un
+ * costado, el archivo GPS para bajar, chico y sin jerarquía. Editar y eliminar
+ * van al final, solo para quien la cargó y con señal.
  */
 
 type Props = {
@@ -32,12 +36,41 @@ type Props = {
 };
 
 export function FichaDeSalida({ salida, miPerfilId }: Props) {
+  const router = useRouter();
   const haySenal = useHaySenal();
   const [fotoAbierta, setFotoAbierta] = useState<string | null>(null);
   const [mapaAbierto, setMapaAbierto] = useState(false);
   const [bajando, setBajando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
   const { confirmar, avisar } = useDialogos();
   const puedeEditar = haySenal && salida.perfil.id === miPerfilId;
+
+  const alEliminar = async () => {
+    const seguro = await confirmar({
+      titulo: "¿Borrar esta salida?",
+      mensaje: "Dejará de verse en la app. Si te arrepentís, se puede recuperar.",
+      textoDeAceptar: "Borrar la salida",
+      destructivo: true,
+    });
+    if (!seguro) return;
+    setEliminando(true);
+    try {
+      const resultado = await borrarSalida(salida.id);
+      if (!resultado.ok) {
+        setEliminando(false);
+        await avisar({ titulo: "No se borró la salida", mensaje: resultado.error });
+        return;
+      }
+      router.replace("/salidas");
+      router.refresh();
+    } catch (error) {
+      setEliminando(false);
+      await avisar({
+        titulo: "No se borró la salida",
+        mensaje: `${error instanceof Error ? error.message : String(error)}. Probá de nuevo con señal.`,
+      });
+    }
+  };
 
   // Antes de bajar se dice qué es: un ícono solo no alcanza para saberlo.
   const alBajarElArchivo = async (direccion: string) => {
@@ -60,36 +93,30 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
     salida.desnivelNegativoM !== null ||
     salida.nivelEsfuerzo !== null;
 
+  const puedeBajar = salida.archivoUrl !== null && haySenal;
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
         <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver a las salidas" />
-        <div className="flex items-center gap-2">
-          {salida.archivoUrl && haySenal ? (
-            <BotonRedondo
-              etiqueta="Bajar el archivo GPS"
-              disabled={bajando}
-              onClick={() => void alBajarElArchivo(salida.archivoUrl as string)}
-            >
-              <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" />
-            </BotonRedondo>
-          ) : null}
-          {puedeEditar ? <BotonDeOpcionesDeSalida salidaId={salida.id} sobreFoto={false} /> : null}
-        </div>
+        <h1 className="min-w-0 flex-1 text-2xl font-bold leading-tight text-texto">{salida.titulo}</h1>
       </div>
 
-      {salida.fotos.length > 0 ? (
-        <button
-          type="button"
-          onClick={() => setFotoAbierta(salida.fotos[0])}
-          aria-label="Ver la portada en grande"
-          className="block w-full cursor-zoom-in text-left"
-        >
+      <div className="space-y-2">
+        {salida.fotos.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setFotoAbierta(salida.fotos[0])}
+            aria-label="Ver la portada en grande"
+            className="block w-full cursor-zoom-in text-left"
+          >
+            <PortadaDeSalida salida={salida} conDatos={false} />
+          </button>
+        ) : (
           <PortadaDeSalida salida={salida} conDatos={false} />
-        </button>
-      ) : (
-        <PortadaDeSalida salida={salida} conDatos={false} />
-      )}
+        )}
+        <p className="text-base text-texto-suave">{diaEnPalabras(salida.fecha)}</p>
+      </div>
 
       {salida.estado === "borrador" && puedeEditar ? (
         <Tarjeta franja="ambar" className="space-y-3">
@@ -106,12 +133,15 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
       <Tarjeta className="space-y-4">
         <PersonasDeSalida salida={salida} />
         <InsigniasDeActividad actividades={salida.actividades} tamano="mediano" />
-        {tieneRecorrido || tieneNumeros ? (
-          <div className="flex items-stretch gap-3">
-            {tieneRecorrido ? (
-              <MiniaturaDeLaLinea salida={salida} alTocar={() => setMapaAbierto(true)} />
-            ) : null}
-            <NumerosDeSalida salida={salida} />
+        {tieneNumeros ? <NumerosDeSalida salida={salida} /> : null}
+        {tieneRecorrido ? (
+          <div className="flex justify-center">
+            <MiniaturaDeLaLinea
+              salida={salida}
+              alTocar={() => setMapaAbierto(true)}
+              alBajar={puedeBajar ? () => void alBajarElArchivo(salida.archivoUrl as string) : undefined}
+              bajando={bajando}
+            />
           </div>
         ) : null}
         {salida.descripcion ? (
@@ -133,6 +163,17 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
               <img src={foto} alt="" loading="lazy" className="aspect-square w-full object-cover" />
             </button>
           ))}
+        </div>
+      ) : null}
+
+      {puedeEditar ? (
+        <div className="space-y-3 pb-2">
+          <Enlace href={`/salidas/${salida.id}/editar`} variante="principal" className="w-full">
+            Editar
+          </Enlace>
+          <Boton variante="destructivo" anchoCompleto disabled={eliminando} onClick={() => void alEliminar()}>
+            Eliminar
+          </Boton>
         </div>
       ) : null}
 

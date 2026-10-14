@@ -4,6 +4,45 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-14 — Pantallas de casa y señal al volver del mapa
+
+### Lo que se hizo
+
+- Detalle de una Salida: el nombre queda arriba, con volver a la izquierda, y
+  la fecha justo debajo de la foto. Los números van en dos filas (el largo
+  arriba, el resto repartido) y la miniatura del mapa, centrada, con la
+  descarga adentro, abajo a la izquierda. Editar y Eliminar quedaron abajo.
+- Cargar y editar una Salida se ven igual. Si los números salen del archivo,
+  se muestran y no se pueden escribir. Las actividades usan las mismas
+  insignias del resto de la app. Cualquier fecha ocupa solo el ancho de una
+  fecha.
+- Detalle de un Circuito: mismo título y, abajo, Editar y Eliminar. Técnica,
+  al cargar y al editar, son diez círculos: se toca uno y se rellenan los de
+  la izquierda.
+- En el editor de un Camino, Datos, Línea y Partes separan Guardar con una
+  línea y lo dejan a la derecha.
+- Al ampliar un mapa, la cruz queda arriba a la derecha. En la navegación
+  libre y en la de un Circuito no está.
+- Al editar un punto o un trazo, Eliminar queda debajo de Guardar.
+- Al cerrar el mapa del cerro se vuelve a preguntar si hay señal, para que
+  Salidas no quede como si siguieras sin internet.
+
+### Decisiones tomadas
+
+Ale confirmó estos arreglos para producción el 2026-10-14. Las listas siguen
+con los tres puntos.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Pendiente
+
+Probar en el celular que, al salir de la navegación con señal, Salidas vuelve
+a abrirse.
+
+---
+
 ## Sesión 2026-10-13/14 — Fichas, carteles y editor de Camino
 
 ### Lo que se hizo

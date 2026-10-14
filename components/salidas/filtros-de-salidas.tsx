@@ -111,7 +111,7 @@ function Contenido({ alCerrar, filtros, perfiles, alAplicar }: Omit<Props, "abie
           />
         ) : null}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-wrap gap-3">
           <Campo
             label="Desde"
             id="filtro-desde"
