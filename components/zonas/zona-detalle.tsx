@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { usePuedeAdministrar } from "@/hooks/use-puede-administrar";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { TarjetaDeSector } from "@/components/zonas/tarjeta-de-sector";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -122,51 +123,58 @@ export function ZonaDetalle({ zonaId }: ZonaDetalleProps) {
         </div>
       </div>
 
-      <Tarjeta className="space-y-2">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-          Dónde queda
-        </h2>
-        <CargadorDeMapa
-          enVivo
-          principal
-          otrosCircuitos={circuitosPrendidos}
-          controlesAdicionales={
-            <SelectorDeCircuitosEnMapa
-              circuitos={circuitosDeLaZona}
-              idsEncendidos={idsEncendidos}
-              alternar={alternarCircuito}
-            />
-          }
-          anotaciones={anotacionesDelMapa}
-          encuadre={zona.rectangulo}
-          rectangulos={[
-            { rectangulo: zona.rectangulo, clase: "zona" },
-            ...sectoresEnElMapa(sectores),
-          ]}
-        />
-        <p className="text-sm leading-6 text-texto-suave">
-          {sectores.length === 0
-            ? "Esta zona todavía no tiene sectores: no hay mapas para descargar."
-            : "Los sectores son los posibles mapas que podés descargar."}
-        </p>
-      </Tarjeta>
-
-      <div className="space-y-4 pt-2">
-        <SectoresYMapas sectores={sectores} />
-
-        {sectores.length === 0 ? null : (
-          <div className="space-y-3">
-            {sectores.map((sector) => (
-              <TarjetaDeSector
-                key={sector.id}
-                sector={sector}
-                todosLosSectores={todosLosSectores}
-                soyAdministrador={puedeAdministrar && miPerfilId === sector.perfilId}
+      <MapaConPanel
+        arribaDelMapa={
+          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+            Dónde queda
+          </h2>
+        }
+        mapa={
+          <CargadorDeMapa
+            enVivo
+            llenarElAltoEnLaComputadora
+            otrosCircuitos={circuitosPrendidos}
+            controlesAdicionales={
+              <SelectorDeCircuitosEnMapa
+                circuitos={circuitosDeLaZona}
+                idsEncendidos={idsEncendidos}
+                alternar={alternarCircuito}
               />
-            ))}
+            }
+            anotaciones={anotacionesDelMapa}
+            encuadre={zona.rectangulo}
+            rectangulos={[
+              { rectangulo: zona.rectangulo, clase: "zona" },
+              ...sectoresEnElMapa(sectores),
+            ]}
+          />
+        }
+        debajoDelMapa={
+          <p className="text-sm leading-6 text-texto-suave">
+            {sectores.length === 0
+              ? "Esta zona todavía no tiene sectores: no hay mapas para descargar."
+              : "Los sectores son los posibles mapas que podés descargar."}
+          </p>
+        }
+        panel={
+          <div className="space-y-4">
+            <SectoresYMapas sectores={sectores} />
+
+            {sectores.length === 0 ? null : (
+              <div className="space-y-3">
+                {sectores.map((sector) => (
+                  <TarjetaDeSector
+                    key={sector.id}
+                    sector={sector}
+                    todosLosSectores={todosLosSectores}
+                    soyAdministrador={puedeAdministrar && miPerfilId === sector.perfilId}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        }
+      />
     </div>
   );
 }
