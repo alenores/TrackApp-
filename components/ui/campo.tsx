@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes } from "react";
+import { MarcaDeObligatorio } from "@/components/ui/marca-de-obligatorio";
 
 /**
  * Un campo de texto.
@@ -13,12 +14,15 @@ type PropiedadesDeCampo = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
   /** Una línea de ayuda debajo del campo. */
   ayuda?: string;
+  /** `true` para el asterisco rojo de dato obligatorio. */
+  obligatorio?: boolean;
 };
 
 export function Campo({
   label,
   error,
   ayuda,
+  obligatorio = false,
   id,
   className = "",
   ...props
@@ -33,6 +37,7 @@ export function Campo({
         className="block text-sm font-medium text-texto-suave"
       >
         {label}
+        {obligatorio ? <MarcaDeObligatorio /> : null}
       </label>
       <input
         id={inputId}

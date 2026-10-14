@@ -5,14 +5,14 @@ import type { FeatureCollection, LineString } from "geojson";
 import { crearCaminoNuevo } from "@/app/actions/caminos";
 import { crearAnotacionesEnTanda, type DatosDeAnotacion } from "@/app/actions/territorio";
 import { Boton } from "@/components/ui/boton";
-import { BotonVolver } from "@/components/ui/boton-volver";
+import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { leerArchivoDeCaminos, FORMATOS_DE_CAMINOS, type LecturaDeCaminos } from "@/lib/caminos/archivo";
 import { iconoPorElNombre } from "@/lib/anotaciones/importar";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import { COLORES_DE_TRAZO, TRAZO, type ColorDeTrazo } from "@/lib/anotaciones/colores-de-trazo";
-import { ACTIVIDADES } from "@/lib/rutas/actividades";
+import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { ActividadRuta, IconoPunto } from "@/types/database";
@@ -175,10 +175,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <BotonVolver alVolver={alVolver} disabled={guardando} />
-        <h2 className="text-xl font-bold text-texto">Traer de afuera</h2>
-      </div>
+      <EncabezadoDeMapas titulo="Marcas" subtitulo="Traer de afuera" alVolver={alVolver} volverDeshabilitado={guardando} />
       <p className="text-base text-texto-suave">Elegí un archivo de Google Earth o GPS. Vas a decidir qué es cada línea y cada punto. El archivo original no se guarda.</p>
       <label className="block text-base font-medium text-texto">
         Archivo KML, KMZ o GPX
@@ -233,14 +230,10 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
           ))}
           {cantidadDeCaminos > 0 ? (
             <Tarjeta className="space-y-2">
-              <h3 className="text-lg font-semibold text-texto">Actividades de los Caminos nuevos</h3>
-              <p className="text-base text-texto-suave">Elegí al menos una. Después podés cambiarlas en cada Camino.</p>
-              <div className="flex flex-wrap gap-2">
-                {ACTIVIDADES.map((opcion) => <Boton key={opcion.tipo} variante={actividades.includes(opcion.tipo) ? "principal" : "secundario"}
-                  aria-pressed={actividades.includes(opcion.tipo)} disabled={guardando || guardadas.size > 0}
-                  onClick={() => setActividades((actuales) => actuales.includes(opcion.tipo)
-                    ? actuales.filter((valor) => valor !== opcion.tipo) : [...actuales, opcion.tipo])}>{opcion.etiqueta}</Boton>)}
-              </div>
+              <ElegirActividades etiqueta="Actividades de los Caminos nuevos" modo="varias" obligatorio
+                elegidas={actividades} deshabilitado={guardando || guardadas.size > 0}
+                alTocar={(actividad) => setActividades((actuales) => actuales.includes(actividad)
+                  ? actuales.filter((valor) => valor !== actividad) : [...actuales, actividad])} />
             </Tarjeta>
           ) : null}
           {datos.puntos.length > 0 ? <h3 className="flex items-center gap-2 text-lg font-bold text-texto"><IconoDeClase grupo="punto" />Puntos</h3> : null}
@@ -263,7 +256,6 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
           <Tarjeta className="space-y-3">
             <p className="text-base text-texto">Vas a sumar {cantidadDeCaminos} Caminos, {cantidadDeTrazos} trazos y {cantidadDePuntos} puntos. Se omiten {lineas.filter((linea) => linea.destino === "omitir").length + puntos.filter((punto) => punto.destino === "omitir").length} elementos.</p>
             {pendientes > 0 ? <p className="text-base text-ambar-texto">Falta decidir qué hacer con {pendientes} elementos.</p> : null}
-            {cantidadDeCaminos > 0 && actividades.length === 0 ? <p className="text-base text-ambar-texto">Elegí al menos una actividad para los Caminos.</p> : null}
             <Boton disabled={!listo || guardando || (guardadas.size === cantidadDeCaminos && anotacionesGuardadas)}
               onClick={() => void sumarAlMapa()}>{guardando ? "Sumando al mapa…" : "Sumar al mapa"}</Boton>
           </Tarjeta>

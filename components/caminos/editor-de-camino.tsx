@@ -7,7 +7,7 @@ import {
 } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
-import { BotonVolver } from "@/components/ui/boton-volver";
+import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -161,13 +161,10 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <BotonVolver alVolver={alVolver} />
-        <h2 className="text-xl font-bold text-texto">{camino?.nombre ?? "Camino"}</h2>
-        {camino ? <MenuDeAcciones className="ml-auto" etiqueta={`Opciones de ${camino.nombre}`}
+      <EncabezadoDeMapas titulo="Marcas" subtitulo={camino?.nombre ?? "Camino"} alVolver={alVolver}
+        accion={camino ? <MenuDeAcciones etiqueta={`Opciones de ${camino.nombre}`}
           acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
-            alElegir: () => setConfirmarRetiro(true) }]} /> : null}
-      </div>
+            alElegir: () => setConfirmarRetiro(true) }]} /> : null} />
       {cargando ? <p role="status" className="text-base text-texto">Abriendo el Camino…</p> : null}
       {aviso ? <Tarjeta franja={aviso.startsWith("Se ") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
       {camino ? (

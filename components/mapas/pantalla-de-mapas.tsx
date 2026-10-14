@@ -26,6 +26,7 @@ export function PantallaDeMapas({
   avisaIncompletoSola = false,
   accion,
   esLaEntrada = false,
+  encabezadoAdentro = false,
 }: {
   titulo: string;
   children: (datos: DatosDeLaApp) => ReactNode;
@@ -40,17 +41,25 @@ export function PantallaDeMapas({
    * los datos de la app, porque solo muestra las cuatro entradas.
    */
   esLaEntrada?: boolean;
+  /**
+   * `true` mientras está abierta una pantalla interna (como «Camino nuevo»),
+   * que dibuja su propio {@link EncabezadoDeMapas} con subtítulo y su flecha.
+   * Así no quedan dos títulos ni dos flechas que hacen cosas distintas.
+   */
+  encabezadoAdentro?: boolean;
 }) {
   const haySenal = useHaySenal();
   const datos = useDatosDeLaApp();
+  const conDatos = datos.estado !== "abriendo" && datos.estado !== "sin_datos";
+  // La pantalla interna pone su encabezado solo mientras se ve: si se va la
+  // señal o faltan los datos, vuelve el de siempre.
+  const encabezadoPropio = !(encabezadoAdentro && haySenal && conDatos);
 
   return (
     <div className={`space-y-3 ${ancha ? "" : "max-w-3xl"}`}>
-      <div className="flex items-center gap-3">
-        {esLaEntrada ? null : <BotonVolver destinoSiNoHayVuelta="/mapas" className="lg:hidden" />}
-        <h1 className="min-w-0 flex-1 text-2xl font-bold uppercase text-texto">{titulo}</h1>
-        {haySenal && datos.estado !== "abriendo" && datos.estado !== "sin_datos" ? accion : null}
-      </div>
+      {encabezadoPropio ? (
+        <EncabezadoDeMapas titulo={titulo} esLaEntrada={esLaEntrada} accion={haySenal && conDatos ? accion : null} />
+      ) : null}
       {!haySenal ? (
         <Tarjeta franja="ambar" className="space-y-3">
           <p role="status" className="text-base text-texto">Mapas necesita conexión. Cuando haya señal, se abre solo.</p>
@@ -85,6 +94,43 @@ export function PantallaDeMapas({
           {children(datos)}
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * El encabezado de las pantallas de Mapas. Con `subtitulo` es el de una
+ * pantalla interna —«Marcas / Camino nuevo»— y su única flecha vuelve a la
+ * pantalla de arriba, también en la computadora. Sin subtítulo, la flecha
+ * solo está en el celular y vuelve a «Mapas».
+ */
+export function EncabezadoDeMapas({
+  titulo,
+  subtitulo,
+  alVolver,
+  volverDeshabilitado = false,
+  esLaEntrada = false,
+  accion,
+}: {
+  titulo: string;
+  subtitulo?: string;
+  /** Para las pantallas internas: qué hace la flecha. */
+  alVolver?: () => void;
+  volverDeshabilitado?: boolean;
+  esLaEntrada?: boolean;
+  accion?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      {subtitulo !== undefined ? (
+        <BotonVolver alVolver={alVolver} disabled={volverDeshabilitado} />
+      ) : esLaEntrada ? null : (
+        <BotonVolver destinoSiNoHayVuelta="/mapas" className="lg:hidden" />
+      )}
+      <h1 className="min-w-0 flex-1 text-2xl font-bold uppercase text-texto">
+        {subtitulo !== undefined ? `${titulo} / ${subtitulo}` : titulo}
+      </h1>
+      {accion}
     </div>
   );
 }

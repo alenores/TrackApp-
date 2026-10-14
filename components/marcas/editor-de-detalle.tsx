@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { FormularioDeAnotacion } from "@/components/anotaciones/formulario-de-anotacion";
-import { BotonVolver } from "@/components/ui/boton-volver";
+import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useAnotaciones } from "@/hooks/use-anotaciones";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
@@ -59,10 +59,7 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <BotonVolver alVolver={() => alVolver(null)} disabled={anotar.guardando} />
-        <h2 className="text-xl font-bold text-texto">{titulo}</h2>
-      </div>
+      <EncabezadoDeMapas titulo="Marcas" subtitulo={titulo} alVolver={() => alVolver(null)} volverDeshabilitado={anotar.guardando} />
       {anotar.estado === "abriendo" ? (
         <Tarjeta><p role="status" className="text-base text-texto-suave">Abriendo las marcas…</p></Tarjeta>
       ) : anotar.estado === "sin_datos" ? (

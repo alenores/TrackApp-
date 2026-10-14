@@ -538,8 +538,6 @@ export function Mapa({
     }
     setAPantallaCompleta(false);
   }, [setAPantallaCompleta]);
-  /** Cuántas cosas hay dibujadas encima del fondo. */
-  const [dibujado, setDibujado] = useState(0);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
   const tipoDeFondoRef = useRef<TipoDeFondo>("dibujo");
@@ -1764,8 +1762,6 @@ export function Mapa({
       }
       actualizarEscalaDeEtiquetas();
 
-      setDibujado(features.length);
-
       /**
        * El mapa se reencuadra **solo si hace falta**.
        *
@@ -1954,11 +1950,6 @@ export function Mapa({
         <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
           El fondo del mapa no se pudo dibujar: {avisoDelFondo} Lo que ves —la
           ruta, tu posición y los recuadros— sigue siendo correcto.
-        </p>
-      ) : dibujado === 0 && !recorrido?.features.length && !caminos?.features.length && !circuito?.features.length
-        && !verticesDeCamino?.length && anotaciones.length === 0 ? (
-        <p className="absolute bottom-3 left-3 right-20 rounded-xl border border-borde bg-superficie px-3 py-2 text-sm leading-6 text-texto-suave">
-          El mapa está armado pero no hay nada que dibujar todavía.
         </p>
       ) : null}
 

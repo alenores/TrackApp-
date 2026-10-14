@@ -6,13 +6,12 @@ import { crearCaminoNuevo } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
-import { BotonVolver } from "@/components/ui/boton-volver";
+import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { Campo } from "@/components/ui/campo";
-import { Opciones } from "@/components/ui/opciones";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
-import { ACTIVIDADES } from "@/lib/rutas/actividades";
+import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { LARGO_MAXIMO_DE_LA_DESCRIPCION, LARGO_MAXIMO_DEL_NOMBRE } from "@/lib/caminos/datos";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
@@ -97,10 +96,7 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <BotonVolver alVolver={() => void volver()} disabled={guardando} />
-        <h2 className="text-xl font-bold text-texto">Camino nuevo</h2>
-      </div>
+      <EncabezadoDeMapas titulo="Marcas" subtitulo="Camino nuevo" alVolver={() => void volver()} volverDeshabilitado={guardando} />
 
       <div className="grid gap-3 lg:grid-cols-[1fr_minmax(20rem,26rem)]">
         <div className="space-y-2">
@@ -150,14 +146,13 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
           <Tarjeta className="space-y-4">
             <h3 className="text-lg font-semibold text-texto">Los datos del Camino</h3>
             <fieldset disabled={guardando} className="min-w-0 space-y-4">
-              <Campo label="Nombre" id="nombre-del-camino-nuevo" value={nombre} maxLength={LARGO_MAXIMO_DEL_NOMBRE}
+              <Campo label="Nombre" obligatorio id="nombre-del-camino-nuevo" value={nombre} maxLength={LARGO_MAXIMO_DEL_NOMBRE}
                 onChange={(evento) => setNombre(evento.target.value)} />
-              <AreaDeTexto label="Descripción (opcional)" id="descripcion-del-camino-nuevo" value={descripcion}
+              <AreaDeTexto label="Descripción" id="descripcion-del-camino-nuevo" value={descripcion}
                 maxLength={LARGO_MAXIMO_DE_LA_DESCRIPCION} onChange={(evento) => setDescripcion(evento.target.value)} />
-              <Opciones etiqueta="Actividades" ayuda="Elegí al menos una. Después podés cambiarlas." multiple columnas={3}
-                opciones={ACTIVIDADES.map((actividad) => ({ valor: actividad.tipo, etiqueta: actividad.etiqueta }))}
+              <ElegirActividades etiqueta="Actividades" modo="varias" obligatorio
                 elegidas={actividades}
-                alElegir={(actividad) => setActividades((actuales) => actuales.includes(actividad)
+                alTocar={(actividad) => setActividades((actuales) => actuales.includes(actividad)
                   ? actuales.filter((cada) => cada !== actividad) : [...actuales, actividad])} />
               <p className="text-sm leading-6 text-texto-suave">
                 El largo, las alturas y el desnivel los calcula la app con el relieve del terreno al guardar.
@@ -170,11 +165,6 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
                   {guardando ? "Guardando…" : "Guardar el Camino"}
                 </Boton>
               </div>
-              {!nombre.trim() || actividades.length === 0 ? (
-                <p className="text-base text-ambar-texto">
-                  {!nombre.trim() ? "Falta el nombre." : ""} {actividades.length === 0 ? "Falta elegir al menos una actividad." : ""}
-                </p>
-              ) : null}
             </fieldset>
           </Tarjeta>
         )}

@@ -72,24 +72,28 @@ const LISTA: Vista = { clase: "lista" };
 
 export function PantallaDeMarcas() {
   const { miCategoria: categoria, miPerfilId } = useQuienSoy();
+  // Vive acá y no en la lista: con una pantalla interna abierta, el título
+  // de arriba lo pone ella, con su subtítulo y su única flecha.
+  const [vista, setVista] = useState<Vista>(LISTA);
   return (
-    <PantallaDeMapas titulo="Marcas" ancha avisaIncompletoSola>
+    <PantallaDeMapas titulo="Marcas" ancha avisaIncompletoSola encabezadoAdentro={vista.clase !== "lista"}>
       {({ paquete, estado, aviso }) => <Marcas paquete={paquete} incompleto={estado === "incompleto" ? aviso : null}
-        categoria={categoria} miPerfilId={miPerfilId} />}
+        categoria={categoria} miPerfilId={miPerfilId} vista={vista} setVista={setVista} />}
     </PantallaDeMapas>
   );
 }
 
-function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
+function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }: {
   paquete: Paquete | null;
   incompleto: string | null;
   categoria: CategoriaUsuario;
   miPerfilId: string | null;
+  vista: Vista;
+  setVista: (vista: Vista) => void;
 }) {
   const router = useRouter();
   const { confirmar, avisar } = useDialogos();
   const ancha = usePantallaAncha();
-  const [vista, setVista] = useState<Vista>(LISTA);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [eligiendo, setEligiendo] = useState<"nada" | "como" | "que">("nada");
   const [panelArriba, setPanelArriba] = useState(false);
@@ -164,7 +168,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId }: {
   const volverALista = useCallback((nuevoMensaje: string | null) => {
     setVista(LISTA);
     setMensaje(nuevoMensaje);
-  }, []);
+  }, [setVista]);
   // Adentro de agregar o editar, el atrás del celular vuelve a la lista.
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
   useCerrarConAtras(vista.clase !== "lista" && vista.clase !== "dibujar-camino", alAtras);
