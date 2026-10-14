@@ -8,6 +8,7 @@ import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { Campo } from "@/components/ui/campo";
+import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
@@ -98,11 +99,11 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
     <div className="space-y-3">
       <EncabezadoDeMapas titulo="Marcas" subtitulo="Camino nuevo" alVolver={() => void volver()} volverDeshabilitado={guardando} />
 
-      <div className="grid gap-3 lg:grid-cols-[1fr_minmax(20rem,26rem)]">
-        <div className="space-y-2">
+      <MapaConPanel
+        mapa={
           <CargadorDeMapa
             enVivo
-            principal
+            llenarElAltoEnLaComputadora
             encuadre={CORDOBA_COMPLETA}
             encuadrarSoloAlAbrir
             recorrido={linea}
@@ -112,14 +113,13 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
             marcandoPunto={paso === "linea"}
             alMarcarPunto={(lon, lat) => setPuntos((actuales) => [...actuales, [lon, lat]])}
           />
-          {paso === "linea" ? (
-            <p className="text-sm leading-6 text-texto-suave">
-              Tocá el mapa por donde va el Camino, de a un punto por vez y en orden. Un punto ya puesto se mueve arrastrándolo.
-            </p>
-          ) : null}
-        </div>
-
-        {paso === "linea" ? (
+        }
+        debajoDelMapa={paso === "linea" ? (
+          <p className="text-sm leading-6 text-texto-suave">
+            Tocá el mapa por donde va el Camino, de a un punto por vez y en orden. Un punto ya puesto se mueve arrastrándolo.
+          </p>
+        ) : null}
+        panel={paso === "linea" ? (
           <Tarjeta className="space-y-3">
             <h3 className="text-lg font-semibold text-texto">La línea</h3>
             <p className="text-base text-texto">
@@ -168,7 +168,7 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
             </fieldset>
           </Tarjeta>
         )}
-      </div>
+      />
     </div>
   );
 }

@@ -169,7 +169,7 @@ export function Armazon({
               ].join(" ")}
             >
               {children}
-              <SelloDeVersion />
+              <SelloDeVersion className="mt-8 pb-2 lg:hidden" />
             </div>
           </main>
         </div>

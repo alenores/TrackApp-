@@ -126,11 +126,17 @@
    * Los paneles que suben desde abajo. De noche se ven como siempre; con sol
    * se pintan de gris, porque blanco sobre blanco no se sabía dónde empezaba
    * el panel (Ale, 2026-10-13). Adentro, el texto suave se oscurece para no
-   * bajar de 7:1 sobre ese gris.
+   * bajar de 7:1 sobre ese gris. La cabecera —la franja con el título— va un
+   * gris más oscuro que el cuerpo, para que también ella se despegue de la
+   * pantalla de atrás. Todos los paneles van con estos colores, en el celular
+   * y en la computadora.
    */
   --panel: var(--fondo);
   --panel-borde: var(--borde);
   --panel-texto-suave: var(--texto-suave);
+  --panel-cabeza: var(--superficie);
+  --panel-cabeza-texto-suave: var(--texto-suave);
+  --panel-cabeza-manija: var(--borde-fuerte);
 
   color-scheme: dark;
 }
@@ -219,6 +225,10 @@
   --panel: #e2e8f0;
   --panel-borde: #475569;
   --panel-texto-suave: #334155;
+  /* Sobre la cabecera gris: texto suave 8.3:1 y manija 5.1:1. */
+  --panel-cabeza: #cbd5e1;
+  --panel-cabeza-texto-suave: #283548;
+  --panel-cabeza-manija: #475569;
 
   color-scheme: light;
 }
@@ -334,6 +344,30 @@ html.pwa-standalone-zoom-lock body {
 }
 
 /*
+ * Pantallas de dibujar, cargar y editar sobre el mapa (`MapaConPanel`): en la
+ * computadora la página no se desliza. Cada caja entre el área de la pantalla
+ * y la pieza pasa a ser una columna que reparte el alto: lo de arriba —el
+ * título, un aviso— conserva su alto y la pieza se queda con el resto. Así no
+ * hay que adivinar cuánto alto restarle al mapa, que era lo que fallaba.
+ */
+@media (min-width: 1024px) {
+  .app-scroll-pane:has([data-pantalla-fija]) {
+    display: flex;
+    flex-direction: column;
+  }
+  .app-scroll-pane :has([data-pantalla-fija]) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+  .app-scroll-pane [data-pantalla-fija] {
+    flex: 1 1 0%;
+    min-height: 24rem;
+  }
+}
+
+/*
  * El mapa lo dibuja MapLibre, que no entiende las clases de la app.
  *
  * El fondo va transparente a propósito: el color lo pone el recuadro que
@@ -408,7 +442,14 @@ html.pwa-standalone-zoom-lock body {
   }
 }
 
-/* Adentro de un panel que sube, el texto suave usa el tono del panel. */
+/* Adentro de un panel, el texto suave usa el tono del panel. */
 .panel-que-sube {
   --texto-suave: var(--panel-texto-suave);
+}
+
+/* La cabecera de un panel: la franja con la manija y el título. */
+.cabeza-de-panel {
+  background-color: var(--panel-cabeza);
+  --texto-suave: var(--panel-cabeza-texto-suave);
+  --borde-fuerte: var(--panel-cabeza-manija);
 }

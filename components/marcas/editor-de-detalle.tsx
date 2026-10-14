@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { FormularioDeAnotacion } from "@/components/anotaciones/formulario-de-anotacion";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
+import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useAnotaciones } from "@/hooks/use-anotaciones";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
@@ -67,21 +68,21 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
           <p role="alert" className="text-base text-texto">{anotar.aviso ?? "No llegaron los datos de la app."} Recargá la pantalla para volver a intentar.</p>
         </Tarjeta>
       ) : (
-        <div className="grid gap-3 lg:grid-cols-[1fr_minmax(20rem,26rem)]">
-          <div className="space-y-2">
+        <MapaConPanel
+          mapa={
             <CargadorDeMapa
               enVivo
-              principal
+              llenarElAltoEnLaComputadora
               encuadre={anotar.enfoque ?? CORDOBA_COMPLETA}
               anotaciones={anotar.enElMapa}
               marcandoPunto={anotar.marcando}
               alMarcarPunto={anotar.alTocarElMapa}
               mostrarFichaAnotacion={false}
             />
-            {queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
-          </div>
-          <FormularioDeAnotacion anotar={anotar} />
-        </div>
+          }
+          debajoDelMapa={queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
+          panel={<FormularioDeAnotacion anotar={anotar} />}
+        />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import {
 } from "react";
 import { CampoDeCoordenada } from "@/components/ui/campo-de-coordenada";
 import { Boton } from "@/components/ui/boton";
+import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Campo } from "@/components/ui/campo";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
@@ -107,6 +108,118 @@ export function CamposDeTerritorio({
     armado.ok &&
     !estaAdentroDe(armado.rectangulo, contexto.rectangulo);
 
+  const columnaDeCampos = (
+    <div className="space-y-3">
+      <Tarjeta className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+          Cómo se llama
+        </h2>
+
+        <Campo
+          label="Nombre"
+          id={`nombre-de-la-${queEs}`}
+          value={campos.nombre}
+          onChange={(evento) => cambiar({ nombre: evento.target.value })}
+          placeholder={
+            queEs === "zona"
+              ? "Sierras de Comechingones"
+              : "Refugio Tabaquillo"
+          }
+          maxLength={120}
+        />
+
+        <AreaDeTexto
+          label="Descripción"
+          id={`descripcion-de-la-${queEs}`}
+          rows={2}
+          value={campos.descripcion}
+          onChange={(evento) => cambiar({ descripcion: evento.target.value })}
+          placeholder="Para qué sirve y qué abarca."
+        />
+
+        {queEs === "zona" && fotoZona ? (
+          <div className="space-y-2 pt-1">
+            <p className="text-sm font-medium text-texto-suave">Foto de la zona</p>
+            <SelectorDeFoto
+              foto={fotoZona}
+              etiqueta="Elegir foto de la zona"
+              fotoActual={fotoActualZona}
+            />
+          </div>
+        ) : null}
+      </Tarjeta>
+
+      <Tarjeta className="space-y-4">
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+            Las dos esquinas
+          </h2>
+          <p className="mt-1.5 text-sm leading-6 text-texto-suave">
+            {queEs === "zona"
+              ? "Una zona es el territorio grande. Marcá sus dos esquinas y después la vas llenando de sectores."
+              : "Un sector es el pedazo de mapa que se descarga de una vez. Marcá sus dos esquinas."}{" "}
+            Pegá lo que tengas: el link de Google Maps, los números sueltos o
+            los grados con minutos.
+          </p>
+        </div>
+
+        <CampoDeCoordenada
+          id={`esquina-noroeste-${queEs}`}
+          etiqueta="Esquina de arriba a la izquierda (noroeste)"
+          valor={campos.noroeste}
+          lectura={lecturaNoroeste}
+          alCambiar={(texto) => cambiar({ noroeste: texto })}
+        />
+
+        <CampoDeCoordenada
+          id={`esquina-sudeste-${queEs}`}
+          etiqueta="Esquina de abajo a la derecha (sudeste)"
+          valor={campos.sudeste}
+          lectura={lecturaSudeste}
+          alCambiar={(texto) => cambiar({ sudeste: texto })}
+        />
+
+        {!armado.ok && armado.error ? (
+          <div className="rounded-xl border border-rojo-borde bg-rojo-fondo px-3 py-3">
+            <p role="alert" className="text-sm leading-6 text-rojo-texto">
+              {armado.error}
+            </p>
+          </div>
+        ) : null}
+
+        {armado.ok ? (
+          <div className="space-y-2 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-sm text-texto-suave">
+                Le da a {queEs === "zona" ? "la zona" : "el sector"}
+              </span>
+              <span className="text-base font-semibold tabular-nums text-texto">
+                {mostrarTamano(armado.rectangulo)}
+              </span>
+            </div>
+            {queEs === "sector" ? (
+              <p className="text-sm leading-6 text-texto-suave">
+                Su mapa va a pesar{" "}
+                <strong className="font-semibold text-dato">
+                  {mostrarPeso(pesoAproximadoDelMapa(armado.rectangulo))}
+                </strong>{" "}
+                más o menos en el celular de cada uno.
+              </p>
+            ) : (
+              <p className="text-sm leading-6 text-texto-suave">
+                El rectángulo de la zona no se descarga: sirve para ver qué
+                parte del territorio todavía no tiene sector encima. Lo que se
+                baja son los sectores.
+              </p>
+            )}
+          </div>
+        ) : null}
+      </Tarjeta>
+
+      {pie}
+    </div>
+  );
+
   return (
     /*
       En el celular, una columna: los campos y abajo el mapa, como siempre.
@@ -114,163 +227,61 @@ export function CamposDeTerritorio({
       pueda leer, y el mapa a la derecha ocupando todo el alto, que es lo que
       de verdad hay que mirar antes de guardar.
     */
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start">
-      <div className="space-y-3">
-        <Tarjeta className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-            Cómo se llama
-          </h2>
-
-          <Campo
-            label="Nombre"
-            id={`nombre-de-la-${queEs}`}
-            value={campos.nombre}
-            onChange={(evento) => cambiar({ nombre: evento.target.value })}
-            placeholder={
-              queEs === "zona"
-                ? "Sierras de Comechingones"
-                : "Refugio Tabaquillo"
-            }
-            maxLength={120}
-          />
-
-          <AreaDeTexto
-            label="Descripción"
-            id={`descripcion-de-la-${queEs}`}
-            rows={2}
-            value={campos.descripcion}
-            onChange={(evento) => cambiar({ descripcion: evento.target.value })}
-            placeholder="Para qué sirve y qué abarca."
-          />
-
-          {queEs === "zona" && fotoZona ? (
-            <div className="space-y-2 pt-1">
-              <p className="text-sm font-medium text-texto-suave">Foto de la zona</p>
-              <SelectorDeFoto
-                foto={fotoZona}
-                etiqueta="Elegir foto de la zona"
-                fotoActual={fotoActualZona}
-              />
+    <>
+      {armado.ok || contexto ? (
+        <MapaConPanel
+          panelPrimero
+          panel={columnaDeCampos}
+          arribaDelMapa={
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
+                Dónde queda
+              </h2>
+              <Boton
+                variante={dibujando ? "principal" : "secundario"}
+                onClick={() => setDibujando(!dibujando)}
+              >
+                {dibujando ? "Listo, ya lo marqué" : "Marcar en el mapa"}
+              </Boton>
             </div>
-          ) : null}
-        </Tarjeta>
-
-        <Tarjeta className="space-y-4">
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-              Las dos esquinas
-            </h2>
-            <p className="mt-1.5 text-sm leading-6 text-texto-suave">
-              {queEs === "zona"
-                ? "Una zona es el territorio grande. Marcá sus dos esquinas y después la vas llenando de sectores."
-                : "Un sector es el pedazo de mapa que se descarga de una vez. Marcá sus dos esquinas."}{" "}
-              Pegá lo que tengas: el link de Google Maps, los números sueltos o
-              los grados con minutos.
-            </p>
-          </div>
-
-          <CampoDeCoordenada
-            id={`esquina-noroeste-${queEs}`}
-            etiqueta="Esquina de arriba a la izquierda (noroeste)"
-            valor={campos.noroeste}
-            lectura={lecturaNoroeste}
-            alCambiar={(texto) => cambiar({ noroeste: texto })}
-          />
-
-          <CampoDeCoordenada
-            id={`esquina-sudeste-${queEs}`}
-            etiqueta="Esquina de abajo a la derecha (sudeste)"
-            valor={campos.sudeste}
-            lectura={lecturaSudeste}
-            alCambiar={(texto) => cambiar({ sudeste: texto })}
-          />
-
-          {!armado.ok && armado.error ? (
-            <div className="rounded-xl border border-rojo-borde bg-rojo-fondo px-3 py-3">
-              <p role="alert" className="text-sm leading-6 text-rojo-texto">
-                {armado.error}
-              </p>
-            </div>
-          ) : null}
-
-          {armado.ok ? (
-            <div className="space-y-2 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-sm text-texto-suave">
-                  Le da a {queEs === "zona" ? "la zona" : "el sector"}
-                </span>
-                <span className="text-base font-semibold tabular-nums text-texto">
-                  {mostrarTamano(armado.rectangulo)}
-                </span>
-              </div>
-              {queEs === "sector" ? (
-                <p className="text-sm leading-6 text-texto-suave">
-                  Su mapa va a pesar{" "}
-                  <strong className="font-semibold text-dato">
-                    {mostrarPeso(pesoAproximadoDelMapa(armado.rectangulo))}
-                  </strong>{" "}
-                  más o menos en el celular de cada uno.
+          }
+          mapa={
+            <CargadorDeMapa
+              enVivo
+              llenarElAltoEnLaComputadora
+              dibujando={dibujando}
+              alDibujar={alDibujar}
+              rectangulo={armado.ok ? armado.rectangulo : null}
+              encuadre={contexto?.rectangulo ?? null}
+              rectangulos={rectangulosDeReferencia}
+            />
+          }
+          debajoDelMapa={
+            <>
+              {dibujando ? (
+                <p className="rounded-xl bg-superficie-alta px-3 py-2 text-sm leading-6 text-texto">
+                  Arrastrá sobre el mapa de una esquina a la otra. Mientras marcás,
+                  el mapa no se mueve. Cuando termines, tocá «Listo».
                 </p>
               ) : (
                 <p className="text-sm leading-6 text-texto-suave">
-                  El rectángulo de la zona no se descarga: sirve para ver qué
-                  parte del territorio todavía no tiene sector encima. Lo que se
-                  baja son los sectores.
+                  {contexto
+                    ? `Marcá el rectángulo sobre el mapa, o pegá las coordenadas. El recuadro grande es ${contexto.nombre}.`
+                    : "Mirá que el recuadro caiga donde querés antes de guardar."}
                 </p>
               )}
-            </div>
-          ) : null}
-        </Tarjeta>
 
-        {pie}
-      </div>
-
-      {armado.ok || contexto ? (
-        <Tarjeta className="space-y-2 lg:sticky lg:top-0">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-              Dónde queda
-            </h2>
-            <Boton
-              variante={dibujando ? "principal" : "secundario"}
-              onClick={() => setDibujando(!dibujando)}
-            >
-              {dibujando ? "Listo, ya lo marqué" : "Marcar en el mapa"}
-            </Boton>
-          </div>
-
-          <CargadorDeMapa
-            enVivo
-            principal
-            dibujando={dibujando}
-            alDibujar={alDibujar}
-            rectangulo={armado.ok ? armado.rectangulo : null}
-            encuadre={contexto?.rectangulo ?? null}
-            rectangulos={rectangulosDeReferencia}
-          />
-
-          {dibujando ? (
-            <p className="rounded-xl bg-superficie-alta px-3 py-2 text-sm leading-6 text-texto">
-              Arrastrá sobre el mapa de una esquina a la otra. Mientras marcás,
-              el mapa no se mueve. Cuando termines, tocá «Listo».
-            </p>
-          ) : (
-            <p className="text-sm leading-6 text-texto-suave">
-              {contexto
-                ? `Marcá el rectángulo sobre el mapa, o pegá las coordenadas. El recuadro grande es ${contexto.nombre}.`
-                : "Mirá que el recuadro caiga donde querés antes de guardar."}
-            </p>
-          )}
-
-          {seSale ? (
-            <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
-              Este sector se sale de {contexto?.nombre}. Lo podés guardar igual
-              —la zona es una referencia, no un límite— pero fijate que sea a
-              propósito.
-            </p>
-          ) : null}
-        </Tarjeta>
-      ) : null}
-    </div>
+              {seSale ? (
+                <p className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-sm leading-6 text-ambar-texto">
+                  Este sector se sale de {contexto?.nombre}. Lo podés guardar igual
+                  —la zona es una referencia, no un límite— pero fijate que sea a
+                  propósito.
+                </p>
+              ) : null}
+            </>
+          }
+        />
+      ) : columnaDeCampos}
+    </>
   );
 }

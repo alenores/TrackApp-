@@ -209,6 +209,12 @@ type MapaProps = {
    * en grande.
    */
   llenarElLugar?: boolean;
+  /**
+   * `true` adentro de `MapaConPanel`: en la computadora ocupa todo el alto que
+   * le deja la pantalla, en vez de un alto calculado a ojo. En el celular,
+   * el alto de siempre.
+   */
+  llenarElAltoEnLaComputadora?: boolean;
   /** Controles propios de quien usa el mapa, que viajan a pantalla completa. */
   controlesAdicionales?: ReactNode;
   /** Función para cerrar cuando está en pantalla completa externa (ej. navegación). */
@@ -366,6 +372,7 @@ export function Mapa({
   principal = false,
   alturaExtendida = false,
   llenarElLugar = false,
+  llenarElAltoEnLaComputadora = false,
   controlesAdicionales = null,
   alCerrarPantallaCompleta,
   forzarCentradoEn,
@@ -1906,6 +1913,8 @@ export function Mapa({
             ? "relative h-full w-full"
             : llenarElLugar
               ? "relative h-full min-h-0 w-full rounded-xl border border-borde"
+            : llenarElAltoEnLaComputadora
+              ? "relative h-72 w-full rounded-xl border border-borde sm:h-96 lg:h-full"
             : principal
               ? alturaExtendida
                 ? "relative h-144 w-full rounded-xl border border-borde sm:h-192 lg:h-[calc(100vh-13rem)]"

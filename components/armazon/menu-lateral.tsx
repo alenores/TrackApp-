@@ -1,5 +1,6 @@
 "use client";
 
+import { SelloDeVersion } from "@/components/armazon/sello-de-version";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -115,6 +116,7 @@ export function MenuLateral({
               {loggingOut ? "Saliendo…" : "Salir"}
             </Boton>
           ) : null}
+          <SelloDeVersion className="hidden lg:block" />
         </div>
       ) : null}
     </nav>

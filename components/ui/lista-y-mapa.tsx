@@ -189,15 +189,17 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
 
   if (ancha) {
     return (
-      <div className="space-y-3">
-      {avisos ? <div className="space-y-2">{avisos}</div> : null}
-      <div className="grid h-[calc(100dvh-6rem)] min-h-[32rem] grid-cols-[minmax(20rem,26rem)_1fr] gap-4">
-        <section aria-label={tituloDelPanel} className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-borde bg-fondo">
-          <div className="flex shrink-0 items-center gap-3 border-b border-borde bg-superficie px-4 py-2">
+      // Ocupa el alto que le queda debajo del título y los avisos, sin
+      // adivinarlo: la página no se desliza (`[data-pantalla-fija]`).
+      <div data-pantalla-fija className="flex flex-col gap-3">
+      {avisos ? <div className="shrink-0 space-y-2">{avisos}</div> : null}
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(20rem,26rem)_1fr] grid-rows-[minmax(0,1fr)] gap-4">
+        <section aria-label={tituloDelPanel} className="panel-que-sube flex min-h-0 flex-col overflow-hidden rounded-xl border border-panel-borde bg-panel">
+          <div className="cabeza-de-panel flex shrink-0 items-center gap-3 border-b border-borde px-4 py-2">
             <h2 className="min-h-10 min-w-0 flex-1 content-center truncate text-base font-bold text-texto">{tituloDelPanel}</h2>
             {accionDelEncabezado}
           </div>
-          {cabezaDelPanel ? <div className="shrink-0 border-b border-borde bg-superficie px-4 py-3">{cabezaDelPanel}</div> : null}
+          {cabezaDelPanel ? <div className="shrink-0 border-b border-borde px-4 py-3">{cabezaDelPanel}</div> : null}
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3">{panel}</div>
           {pie ? <div className="shrink-0 border-t border-borde px-4 py-3">{pie}</div> : null}
         </section>
@@ -229,7 +231,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
         onClick={() => { if (!recienAbierto()) subir(); }}
         onKeyDown={(evento) => { if (evento.key === "Enter" || evento.key === " ") { evento.preventDefault(); subir(); } }}
         {...gestoParaSubir}
-        className={`shrink-0 cursor-pointer touch-none select-none border border-borde bg-superficie shadow-[var(--sombra-alta)] ${pantallaCompletaEnCelular
+        className={`cabeza-de-panel shrink-0 cursor-pointer touch-none select-none border border-panel-borde shadow-[var(--sombra-alta)] ${pantallaCompletaEnCelular
           ? "-mx-2 -mb-[calc(env(safe-area-inset-bottom)+0.5rem)] rounded-t-2xl border-b-0 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
           : "rounded-2xl"}`}>
         <div className="flex justify-center pt-2.5" aria-hidden>
@@ -261,7 +263,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
             <div role="button" tabIndex={0} aria-label={`Bajar ${tituloDelPanel.toLowerCase()} y ver el mapa`}
               onClick={() => { if (!fueArrastre() && !recienAbierto()) bajar(); }}
               onKeyDown={(evento) => { if (evento.key === "Enter" || evento.key === " ") { evento.preventDefault(); bajar(); } }}
-              className="shrink-0 cursor-pointer touch-none select-none border-b border-borde bg-superficie" {...manija}>
+              className="cabeza-de-panel shrink-0 cursor-pointer touch-none select-none border-b border-borde" {...manija}>
               <div className="flex justify-center pt-2.5" aria-hidden>
                 <span className="h-1 w-9 rounded-full bg-borde-fuerte" />
               </div>
@@ -278,7 +280,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
                   stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
               </div>
             </div>
-            {cabezaDelPanel ? <div className="shrink-0 border-b border-borde bg-superficie px-4 py-3">{cabezaDelPanel}</div> : null}
+            {cabezaDelPanel ? <div className="shrink-0 border-b border-borde px-4 py-3">{cabezaDelPanel}</div> : null}
             <div ref={cuerpoRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3">{panel}</div>
           </section>
         </>

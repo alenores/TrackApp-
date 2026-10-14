@@ -6,6 +6,7 @@ import { crearCaminoNuevo } from "@/app/actions/caminos";
 import { crearAnotacionesEnTanda, type DatosDeAnotacion } from "@/app/actions/territorio";
 import { Boton } from "@/components/ui/boton";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
+import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { leerArchivoDeCaminos, FORMATOS_DE_CAMINOS, type LecturaDeCaminos } from "@/lib/caminos/archivo";
@@ -184,82 +185,84 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
       </label>
       {leyendo ? <p role="status" className="text-base text-texto">Leyendo el archivo…</p> : null}
       {aviso ? <Tarjeta franja={aviso.startsWith("Se sumaron") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
-      {datos ? (
-        <>
-          <p className="text-base text-texto">{nombreDelArchivo}: {datos.lineas.length} líneas, {datos.puntos.length} puntos y {datos.omitidos.length} elementos que no se pueden usar.</p>
-          {datos.omitidos.map((elemento) => <p key={elemento.orden} className="text-base text-ambar-texto">{elemento.nombre ?? `Elemento ${elemento.orden + 1}`}: {elemento.motivo}</p>)}
-          {vistaPrevia ? (
-            <div className="space-y-2">
-              <p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}. Las demás líneas se ven más tenues.` : "Vista previa del archivo completo. Elegí «Ver en el mapa» para destacar una línea o un punto."}</p>
-              <CargadorDeMapa key={`${nombreDelArchivo}-${elementoEnVista?.tipo ?? "todo"}-${elementoEnVista?.indice ?? 0}`}
-                enVivo principal caminos={vistaPrevia.caminos} verticesDeCamino={vistaPrevia.punto}
-                encuadre={vistaPrevia.encuadre} />
-              {elementoEnVista ? <Boton variante="secundario" onClick={() => setElementoEnVista(null)}>Ver todo el archivo</Boton> : null}
+      {datos && vistaPrevia ? (
+        <MapaConPanel
+          arribaDelMapa={<p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}. Las demás líneas se ven más tenues.` : "Vista previa del archivo completo. Elegí «Ver en el mapa» para destacar una línea o un punto."}</p>}
+          mapa={
+            <CargadorDeMapa key={`${nombreDelArchivo}-${elementoEnVista?.tipo ?? "todo"}-${elementoEnVista?.indice ?? 0}`}
+              enVivo llenarElAltoEnLaComputadora caminos={vistaPrevia.caminos} verticesDeCamino={vistaPrevia.punto}
+              encuadre={vistaPrevia.encuadre} />
+          }
+          debajoDelMapa={elementoEnVista ? <Boton variante="secundario" onClick={() => setElementoEnVista(null)}>Ver todo el archivo</Boton> : null}
+          panel={
+            <div className="space-y-4">
+              <p className="text-base text-texto">{nombreDelArchivo}: {datos.lineas.length} líneas, {datos.puntos.length} puntos y {datos.omitidos.length} elementos que no se pueden usar.</p>
+              {datos.omitidos.map((elemento) => <p key={elemento.orden} className="text-base text-ambar-texto">{elemento.nombre ?? `Elemento ${elemento.orden + 1}`}: {elemento.motivo}</p>)}
+              {datos.lineas.length > 0 ? <h3 className="text-lg font-bold text-texto">Líneas</h3> : null}
+              {datos.lineas.map((linea, indice) => (
+                <Tarjeta key={`linea-${linea.orden}`} className="space-y-3">
+                  <p className="text-base font-semibold text-texto">{indice + 1}. {linea.nombreSugerido} · {(linea.largoM / 1000).toFixed(1).replace(".", ",")} km</p>
+                  <Boton variante="secundario" onClick={() => setElementoEnVista({ tipo: "linea", indice })}>Ver en el mapa</Boton>
+                  <div className="flex flex-wrap gap-2">
+                    {(["camino", "trazo", "omitir"] as const).map((destino) => (
+                      <Boton key={destino} variante={lineas[indice]?.destino === destino ? "principal" : "secundario"}
+                        aria-pressed={lineas[indice]?.destino === destino} disabled={guardando || guardadas.has(indice)}
+                        onClick={() => actualizarLinea(indice, { destino })}>
+                        {destino === "omitir" ? "Omitir" : <span className="inline-flex items-center gap-2">
+                          <IconoDeClase grupo={destino} />{destino === "camino" ? "Camino" : "Trazo de referencia"}
+                        </span>}
+                      </Boton>
+                    ))}
+                  </div>
+                  {lineas[indice]?.destino === "camino" ? (
+                    <label className="block text-base text-texto">Nombre del Camino
+                      <input className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-texto" value={lineas[indice].nombre}
+                        maxLength={120} disabled={guardando || guardadas.has(indice)} onChange={(evento) => actualizarLinea(indice, { nombre: evento.target.value })} />
+                    </label>
+                  ) : null}
+                  {lineas[indice]?.destino === "trazo" ? (
+                    <div className="flex flex-wrap gap-2" aria-label="Color del trazo">
+                      {COLORES_DE_TRAZO.map((color) => <Boton key={color} variante={lineas[indice].color === color ? "principal" : "secundario"}
+                        aria-pressed={lineas[indice].color === color} disabled={guardando || anotacionesGuardadas}
+                        onClick={() => actualizarLinea(indice, { color })}>{TRAZO[color].nombre}</Boton>)}
+                    </div>
+                  ) : null}
+                </Tarjeta>
+              ))}
+              {cantidadDeCaminos > 0 ? (
+                <Tarjeta className="space-y-2">
+                  <ElegirActividades etiqueta="Actividades de los Caminos nuevos" modo="varias" obligatorio
+                    elegidas={actividades} deshabilitado={guardando || guardadas.size > 0}
+                    alTocar={(actividad) => setActividades((actuales) => actuales.includes(actividad)
+                      ? actuales.filter((valor) => valor !== actividad) : [...actuales, actividad])} />
+                </Tarjeta>
+              ) : null}
+              {datos.puntos.length > 0 ? <h3 className="flex items-center gap-2 text-lg font-bold text-texto"><IconoDeClase grupo="punto" />Puntos</h3> : null}
+              {datos.puntos.map((punto, indice) => (
+                <Tarjeta key={`punto-${punto.orden}`} className="space-y-2">
+                  <p className="text-base font-semibold text-texto">{punto.nombreSugerido}</p>
+                  <Boton variante="secundario" onClick={() => setElementoEnVista({ tipo: "punto", indice })}>Ver en el mapa</Boton>
+                  <div className="flex flex-wrap gap-2">
+                    {(["sumar", "omitir"] as const).map((destino) => <Boton key={destino} variante={puntos[indice]?.destino === destino ? "principal" : "secundario"}
+                      aria-pressed={puntos[indice]?.destino === destino} disabled={guardando || anotacionesGuardadas}
+                      onClick={() => actualizarPunto(indice, { destino })}>{destino === "sumar" ? "Sumar punto" : "Omitir"}</Boton>)}
+                  </div>
+                  {puntos[indice]?.destino === "sumar" ? <div className="flex flex-wrap gap-2" aria-label="Ícono del punto">
+                    {(Object.keys(COMO_SE_LLAMA) as IconoPunto[]).map((icono) => <Boton key={icono} variante={puntos[indice].icono === icono ? "principal" : "secundario"}
+                      aria-pressed={puntos[indice].icono === icono} disabled={guardando || anotacionesGuardadas}
+                      onClick={() => actualizarPunto(indice, { icono })}>{COMO_SE_LLAMA[icono]}</Boton>)}
+                  </div> : null}
+                </Tarjeta>
+              ))}
+              <Tarjeta className="space-y-3">
+                <p className="text-base text-texto">Vas a sumar {cantidadDeCaminos} Caminos, {cantidadDeTrazos} trazos y {cantidadDePuntos} puntos. Se omiten {lineas.filter((linea) => linea.destino === "omitir").length + puntos.filter((punto) => punto.destino === "omitir").length} elementos.</p>
+                {pendientes > 0 ? <p className="text-base text-ambar-texto">Falta decidir qué hacer con {pendientes} elementos.</p> : null}
+                <Boton disabled={!listo || guardando || (guardadas.size === cantidadDeCaminos && anotacionesGuardadas)}
+                  onClick={() => void sumarAlMapa()}>{guardando ? "Sumando al mapa…" : "Sumar al mapa"}</Boton>
+              </Tarjeta>
             </div>
-          ) : null}
-          {datos.lineas.length > 0 ? <h3 className="text-lg font-bold text-texto">Líneas</h3> : null}
-          {datos.lineas.map((linea, indice) => (
-            <Tarjeta key={`linea-${linea.orden}`} className="space-y-3">
-              <p className="text-base font-semibold text-texto">{indice + 1}. {linea.nombreSugerido} · {(linea.largoM / 1000).toFixed(1).replace(".", ",")} km</p>
-              <Boton variante="secundario" onClick={() => setElementoEnVista({ tipo: "linea", indice })}>Ver en el mapa</Boton>
-              <div className="flex flex-wrap gap-2">
-                {(["camino", "trazo", "omitir"] as const).map((destino) => (
-                  <Boton key={destino} variante={lineas[indice]?.destino === destino ? "principal" : "secundario"}
-                    aria-pressed={lineas[indice]?.destino === destino} disabled={guardando || guardadas.has(indice)}
-                    onClick={() => actualizarLinea(indice, { destino })}>
-                    {destino === "omitir" ? "Omitir" : <span className="inline-flex items-center gap-2">
-                      <IconoDeClase grupo={destino} />{destino === "camino" ? "Camino" : "Trazo de referencia"}
-                    </span>}
-                  </Boton>
-                ))}
-              </div>
-              {lineas[indice]?.destino === "camino" ? (
-                <label className="block text-base text-texto">Nombre del Camino
-                  <input className="mt-1 block w-full rounded-xl border border-borde bg-superficie p-2 text-texto" value={lineas[indice].nombre}
-                    maxLength={120} disabled={guardando || guardadas.has(indice)} onChange={(evento) => actualizarLinea(indice, { nombre: evento.target.value })} />
-                </label>
-              ) : null}
-              {lineas[indice]?.destino === "trazo" ? (
-                <div className="flex flex-wrap gap-2" aria-label="Color del trazo">
-                  {COLORES_DE_TRAZO.map((color) => <Boton key={color} variante={lineas[indice].color === color ? "principal" : "secundario"}
-                    aria-pressed={lineas[indice].color === color} disabled={guardando || anotacionesGuardadas}
-                    onClick={() => actualizarLinea(indice, { color })}>{TRAZO[color].nombre}</Boton>)}
-                </div>
-              ) : null}
-            </Tarjeta>
-          ))}
-          {cantidadDeCaminos > 0 ? (
-            <Tarjeta className="space-y-2">
-              <ElegirActividades etiqueta="Actividades de los Caminos nuevos" modo="varias" obligatorio
-                elegidas={actividades} deshabilitado={guardando || guardadas.size > 0}
-                alTocar={(actividad) => setActividades((actuales) => actuales.includes(actividad)
-                  ? actuales.filter((valor) => valor !== actividad) : [...actuales, actividad])} />
-            </Tarjeta>
-          ) : null}
-          {datos.puntos.length > 0 ? <h3 className="flex items-center gap-2 text-lg font-bold text-texto"><IconoDeClase grupo="punto" />Puntos</h3> : null}
-          {datos.puntos.map((punto, indice) => (
-            <Tarjeta key={`punto-${punto.orden}`} className="space-y-2">
-              <p className="text-base font-semibold text-texto">{punto.nombreSugerido}</p>
-              <Boton variante="secundario" onClick={() => setElementoEnVista({ tipo: "punto", indice })}>Ver en el mapa</Boton>
-              <div className="flex flex-wrap gap-2">
-                {(["sumar", "omitir"] as const).map((destino) => <Boton key={destino} variante={puntos[indice]?.destino === destino ? "principal" : "secundario"}
-                  aria-pressed={puntos[indice]?.destino === destino} disabled={guardando || anotacionesGuardadas}
-                  onClick={() => actualizarPunto(indice, { destino })}>{destino === "sumar" ? "Sumar punto" : "Omitir"}</Boton>)}
-              </div>
-              {puntos[indice]?.destino === "sumar" ? <div className="flex flex-wrap gap-2" aria-label="Ícono del punto">
-                {(Object.keys(COMO_SE_LLAMA) as IconoPunto[]).map((icono) => <Boton key={icono} variante={puntos[indice].icono === icono ? "principal" : "secundario"}
-                  aria-pressed={puntos[indice].icono === icono} disabled={guardando || anotacionesGuardadas}
-                  onClick={() => actualizarPunto(indice, { icono })}>{COMO_SE_LLAMA[icono]}</Boton>)}
-              </div> : null}
-            </Tarjeta>
-          ))}
-          <Tarjeta className="space-y-3">
-            <p className="text-base text-texto">Vas a sumar {cantidadDeCaminos} Caminos, {cantidadDeTrazos} trazos y {cantidadDePuntos} puntos. Se omiten {lineas.filter((linea) => linea.destino === "omitir").length + puntos.filter((punto) => punto.destino === "omitir").length} elementos.</p>
-            {pendientes > 0 ? <p className="text-base text-ambar-texto">Falta decidir qué hacer con {pendientes} elementos.</p> : null}
-            <Boton disabled={!listo || guardando || (guardadas.size === cantidadDeCaminos && anotacionesGuardadas)}
-              onClick={() => void sumarAlMapa()}>{guardando ? "Sumando al mapa…" : "Sumar al mapa"}</Boton>
-          </Tarjeta>
-        </>
+          }
+        />
       ) : null}
     </div>
   );
