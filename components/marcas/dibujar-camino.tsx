@@ -4,17 +4,21 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FeatureCollection, LineString } from "geojson";
 import { crearCaminoNuevo } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+import { BuscadorDelMapa } from "@/components/marcas/buscador-del-mapa";
+import { LineasDelTerritorio } from "@/components/mapas/lineas-del-territorio";
+import { useAlMarcar } from "@/hooks/use-al-marcar";
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
 import { Boton } from "@/components/ui/boton";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { Campo } from "@/components/ui/campo";
 import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { useDialogos } from "@/components/ui/dialogos";
+import { SALIR_SIN_GUARDAR, useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { LARGO_MAXIMO_DE_LA_DESCRIPCION, LARGO_MAXIMO_DEL_NOMBRE } from "@/lib/caminos/datos";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
+import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { ActividadRuta } from "@/types/database";
 
@@ -32,8 +36,11 @@ import type { ActividadRuta } from "@/types/database";
 
 const PUNTOS_MINIMOS = 2;
 
-export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null) => void }) {
+export function DibujarCamino({ alVolver }: {
+  alVolver: (mensaje: string | null, dondeEstaba?: VistaDelMapa | null) => void;
+}) {
   const { confirmar } = useDialogos();
+  const marcar = useAlMarcar();
   const [puntos, setPuntos] = useState<number[][]>([]);
   const [paso, setPaso] = useState<"linea" | "datos">("linea");
   const [nombre, setNombre] = useState("");
@@ -43,6 +50,8 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
   const [error, setError] = useState<string | null>(null);
   // Traba inmediata: dos toques no crean dos Caminos.
   const ocupado = useRef(false);
+  // El lugar que se está mirando, para que al guardar el mapa no vuelva a Córdoba.
+  const dondeEstaba = useRef<VistaDelMapa | null>(null);
 
   const linea = useMemo<FeatureCollection<LineString> | null>(() => puntos.length < PUNTOS_MINIMOS ? null : {
     type: "FeatureCollection",
@@ -54,12 +63,7 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
   const volver = async () => {
     if (guardando) return;
     if (puntos.length > 0) {
-      const seguro = await confirmar({
-        titulo: "¿Dejar el Camino sin guardar?",
-        mensaje: "Se pierde lo que dibujaste.",
-        textoDeAceptar: "Dejarlo",
-        destructivo: true,
-      });
+      const seguro = await confirmar(SALIR_SIN_GUARDAR);
       if (!seguro) return;
     }
     alVolver(null);
@@ -74,6 +78,8 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
 
   const guardar = async () => {
     if (!listo || ocupado.current) return;
+    // Antes de guardar: si el mapa se mueve mientras espera, este lugar ya quedó.
+    const lugar = dondeEstaba.current;
     ocupado.current = true;
     setGuardando(true);
     setError(null);
@@ -86,7 +92,7 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
       const puesta = await ponerAlDiaDespuesDeGuardar();
       alVolver(puesta.clase === "fallo"
         ? `El Camino «${resultado.datos.nombre}» quedó guardado, pero todavía no aparece en este celular: ${puesta.motivo}. Recargá con conexión.`
-        : `Camino «${resultado.datos.nombre}» guardado.`);
+        : `Camino «${resultado.datos.nombre}» guardado.`, lugar);
     } catch (causa) {
       setError(`No se pudo guardar el Camino: ${causa instanceof Error ? causa.message : String(causa)}. Revisá la señal y volvé a intentar.`);
     } finally {
@@ -104,9 +110,23 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
           <CargadorDeMapa
             enVivo
             llenarElAltoEnLaComputadora
-            encuadre={CORDOBA_COMPLETA}
+            encuadre={marcar.vista ?? CORDOBA_COMPLETA}
+            viaje={marcar.viaje}
             encuadrarSoloAlAbrir
+            rectangulos={marcar.rectangulos}
+            controlesAdicionales={
+              <BuscadorDelMapa
+                zonas={marcar.zonas}
+                sectores={marcar.sectores}
+                caminosSinLinea={marcar.caminosSinLinea}
+                caminos={marcar.caminos}
+                anotaciones={marcar.anotaciones}
+                cargandoCaminos={marcar.cargandoCaminos}
+                alElegir={marcar.ir}
+              />
+            }
             recorrido={linea}
+            alMoverVista={(vista) => { dondeEstaba.current = vista; }}
             verticesDeCamino={puntos}
             alMoverVerticeDeCamino={paso === "linea" ? (indice, lon, lat) =>
               setPuntos((actuales) => actuales.map((punto, cada) => cada === indice ? [lon, lat] : punto)) : undefined}
@@ -120,6 +140,8 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
           </p>
         ) : null}
         panel={paso === "linea" ? (
+          <div className="space-y-3">
+          <LineasDelTerritorio valor={marcar.lineas} alElegir={marcar.setLineas} />
           <Tarjeta className="space-y-3">
             <h3 className="text-lg font-semibold text-texto">La línea</h3>
             <p className="text-base text-texto">
@@ -142,7 +164,10 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
               Terminé la línea
             </Boton>
           </Tarjeta>
+          </div>
         ) : (
+          <div className="space-y-3">
+          <LineasDelTerritorio valor={marcar.lineas} alElegir={marcar.setLineas} />
           <Tarjeta className="space-y-4">
             <h3 className="text-lg font-semibold text-texto">Los datos del Camino</h3>
             <fieldset disabled={guardando} className="min-w-0 space-y-4">
@@ -167,6 +192,7 @@ export function DibujarCamino({ alVolver }: { alVolver: (mensaje: string | null)
               </div>
             </fieldset>
           </Tarjeta>
+          </div>
         )}
       />
     </div>

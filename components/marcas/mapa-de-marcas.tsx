@@ -6,15 +6,24 @@ import { Boton } from "@/components/ui/boton";
 import { Enlace } from "@/components/ui/enlace";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { MarcaDeApertura } from "@/components/ui/tarjeta-que-abre";
-import { CORDOBA_COMPLETA, zonasEnElMapaGeneral } from "@/lib/mapas/general";
-import type { Anotacion, ActividadRuta, Rectangulo, Zona } from "@/types/database";
+import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
+import type { VistaDelMapa } from "@/lib/mapas/vista";
+import { rectangulosDeLineas, type VistaDeLineas } from "@/lib/mapas/lineas-del-territorio";
+import type { Anotacion, ActividadRuta, Rectangulo, Sector, Zona } from "@/types/database";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
 import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
 
 type Propiedades = {
-  /** Las zonas que se ven: perímetro y nombre. */
+  /** Las zonas que se ven: perímetro y nombre, según `lineas`. */
   zonas: Zona[];
+  /** Los sectores que se suman cuando `lineas` lo pide. */
+  sectores?: Sector[];
+  /**
+   * Qué líneas de territorio se dibujan. En Consultas abre en zonas; el
+   * resto de los mapas que usan esta pieza sigue mostrando solo zonas.
+   */
+  lineas?: VistaDeLineas;
   /** Los puntos y trazos que se ven. */
   anotaciones: Anotacion[];
   /** Los Caminos que se ven, ya con su línea. */
@@ -24,6 +33,15 @@ type Propiedades = {
   sectoresPorZona: Record<number, number>;
   /** A qué encuadrar. Sin esto, Córdoba entera. */
   encuadre?: Rectangulo | null;
+  /**
+   * El lugar exacto que hay que conservar, como al volver de guardar un
+   * Camino. Mientras esté, no se usa el encuadre de apertura.
+   */
+  dondeEstaba?: VistaDelMapa | null;
+  /** Sube uno para viajar hasta el encuadre, en vez de saltar. */
+  viaje?: number;
+  /** Cada vez que el mapa queda quieto, el pedazo que se está viendo. */
+  alMirar?: (vista: Rectangulo) => void;
   /** `true` dentro de la lista y mapa, que le da todo su lugar. */
   llenarElLugar?: boolean;
   /**
@@ -43,16 +61,21 @@ const SIN_CAMINOS: CaminoGuardado[] = [];
  * compartido); tocar una zona, su ficha breve, que se abre tocándola entera.
  * La imagen de Google va debajo solo para consultar (decisión 050).
  *
- * La referencia de colores y líneas no va adentro del mapa: va siempre a la
- * vista, abajo de la barrita del panel, pedido de Ale.
+ * Este mapa no lleva la ayuda de colores y líneas. En Consultas no va
+ * (decisión 055).
  */
 export function MapaDeMarcas({
   zonas,
+  sectores = [],
+  lineas = "zonas",
   anotaciones,
   caminos = SIN_CAMINOS,
   actividad,
   sectoresPorZona,
   encuadre = null,
+  dondeEstaba = null,
+  viaje = 0,
+  alMirar,
   llenarElLugar = false,
   avisoSinNada = null,
 }: Propiedades) {
@@ -60,7 +83,7 @@ export function MapaDeMarcas({
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
   const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const zonaIdRef = useRef<number | null>(null);
-  const rectangulos = useMemo(() => zonasEnElMapaGeneral(zonas), [zonas]);
+  const rectangulos = useMemo(() => rectangulosDeLineas(zonas, sectores, lineas), [zonas, sectores, lineas]);
   const dibujo = useMemo(() => dibujarCaminos(caminos, actividad), [caminos, actividad]);
   const elegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const zonaElegida = zonas.find((zona) => zona.id === zonaId) ?? null;
@@ -89,7 +112,10 @@ export function MapaDeMarcas({
       principal
       alturaExtendida={!llenarElLugar}
       llenarElLugar={llenarElLugar}
-      encuadre={encuadre ?? CORDOBA_COMPLETA}
+      encuadre={dondeEstaba ? null : (encuadre ?? CORDOBA_COMPLETA)}
+      vista={dondeEstaba}
+      viaje={viaje}
+      alMirar={alMirar}
       rectangulos={rectangulos}
       anotaciones={anotaciones}
       caminos={dibujo}

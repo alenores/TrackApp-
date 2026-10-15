@@ -69,12 +69,15 @@ se retiró; el panel de lista de Consultas y Marcas no cambia.
 - **Consultas**, para todo público: el mapa con todo lo marcado y las zonas.
   Filtros simples: la actividad (decide qué clasificación de los Caminos se
   destaca) y prender o apagar **Caminos**, **Zonas** y **Detalles**. Detalles
-  junta puntos y trazos. Reemplaza al mapa general.
+  junta puntos y trazos. Reemplaza al mapa general. Actualización 2026-10-15
+  (decisión 055): arriba del panel hay un buscador, y en Caminos no va la
+  ayuda de colores y líneas.
 - **Marcas**, para todos; Normal consulta sin «+» y sin editar. Lista agrupada
   por clase con tildes por marca y por grupo, las zonas como un grupo más,
   filtros por clase, actividad de los Caminos y autor. En el mapa queda lo
   tildado que pasa los filtros. Tocar un renglón lo muestra en el mapa; editar
-  y eliminar van en los tres puntos.
+  y eliminar van en los tres puntos. Actualización 2026-10-15 (decisión 057):
+  la lista muestra solo lo que entra en el pedazo de mapa que se está mirando.
 - Lo elegido —tildes, filtros y capas— se recuerda en el celular.
 
 ### Lista y mapa: dos momentos

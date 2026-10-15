@@ -131,6 +131,16 @@ const withPWA = withPWAInit({
       options: {},
     },
     {
+      /**
+       * Búsqueda de pueblos: siempre a internet y sin copia guardada. Una
+       * respuesta vieja llevaría el mapa a un lugar que ya no es el pedido.
+       */
+      urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+        sameOrigin && url.pathname === "/api/lugares",
+      handler: "NetworkOnly",
+      options: {},
+    },
+    {
       /** Cocina interna de la app que no es un archivo: nunca se guarda. */
       urlPattern: ({ url }: { url: URL }) =>
         url.pathname.startsWith("/_next/") && !url.pathname.startsWith("/_next/static/"),

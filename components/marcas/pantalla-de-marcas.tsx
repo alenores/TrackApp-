@@ -24,6 +24,7 @@ import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
 import { usePreferencia } from "@/hooks/use-preferencia";
 import { sectoresPorZona } from "@/lib/mapas/general";
+import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { puedeCambiarDelMapa, puedeSumarAlMapa } from "@/lib/mapas/permisos";
 import {
   alternarGrupo,
@@ -40,6 +41,7 @@ import {
   type GrupoArmado,
   type MarcaDeLaLista,
 } from "@/lib/marcas/lista";
+import { entraEnLoQueSeMira, lugarDeMarca } from "@/lib/marcas/en-la-vista";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
@@ -52,7 +54,9 @@ import { useQuienSoy } from "@/components/armazon/quien-soy";
  * **Marcas**: todo lo que se dibuja encima del mapa, en detalle (decisión 052).
  *
  * Todos la consultan: la lista con tildes y filtros, y el mapa con lo
- * tildado. Administrador y Premium además ven el «+» para agregar —a mano o
+ * tildado. La lista muestra solo lo que entra en el pedazo de mapa que se
+ * está mirando; lo tildado sigue dibujado aunque quede afuera de la lista.
+ * Administrador y Premium además ven el «+» para agregar —a mano o
  * trayendo un archivo— y los tres puntos para editar o eliminar lo que les
  * toca. Lo que trajo de OpenStreetMap no se edita: queda como vino de
  * OpenStreetMap.
@@ -97,6 +101,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const [eligiendo, setEligiendo] = useState<"nada" | "como" | "que">("nada");
   const [panelArriba, setPanelArriba] = useState(false);
   const [encuadre, setEncuadre] = useState<Rectangulo | null>(null);
+  const [pedazo, setPedazo] = useState<Rectangulo | null>(null);
+  const [dondeEstaba, setDondeEstaba] = useState<VistaDelMapa | null>(null);
+  const [viaje, setViaje] = useState(0);
   const [actividadPrincipal] = useActividadPrincipal();
   const [filtros, guardarFiltros] = usePreferencia<FiltrosDeMarcas>("filtros-de-marcas", SIN_FILTROS, leerFiltrosDeMarcas);
   const [destildadasGuardadas, guardarDestildadas] = usePreferencia<string[]>("marcas-destildadas", [], leerDestildadas);
@@ -117,6 +124,21 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   }), [caminosSinLinea, caminos, detalles, zonas]);
 
   const marcas = useMemo(() => armarLaLista(caminosSinLinea, detalles, zonas), [caminosSinLinea, detalles, zonas]);
+  const guardarPedazo = useCallback((nuevo: Rectangulo) => {
+    setPedazo((actual) => {
+      if (!actual) return nuevo;
+      const igual = Math.abs(actual.latNorte - nuevo.latNorte) < 1e-6
+        && Math.abs(actual.latSur - nuevo.latSur) < 1e-6
+        && Math.abs(actual.lonEste - nuevo.lonEste) < 1e-6
+        && Math.abs(actual.lonOeste - nuevo.lonOeste) < 1e-6;
+      return igual ? actual : nuevo;
+    });
+  }, []);
+  const marcasEnLaLista = useMemo(() => marcas.filter((marca) => entraEnLoQueSeMira(
+    lugarDeMarca(marca, porId.caminos, porId.detalles, porId.zonas),
+    pedazo,
+    marca.grupo === "camino" && cargandoCaminos,
+  )), [marcas, porId, pedazo, cargandoCaminos]);
   const enElMapa = useMemo(
     () => lasDelMapa(marcas, filtrosQueSeAplican(filtros), miPerfilId, destildadas),
     [marcas, filtros, miPerfilId, destildadas],
@@ -141,10 +163,12 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const encuadreDe = useCallback((lista: MarcaDeLaLista[]): Rectangulo | null =>
     rectanguloDe(lista.flatMap((marca) => coordenadasDe(marca, porId.caminos, porId.detalles, porId.zonas))), [porId]);
 
-  // En la computadora el mapa está al lado: cada cambio se encuadra al
-  // instante. En el celular se encuadra al bajar el panel.
+  // Prender o apagar se encuadra al instante. Elegir una marca viaja hasta
+  // ella, en la computadora y en el celular.
   const alCambiarLoElegido = (nuevosFiltros: FiltrosDeMarcas, nuevasDestildadas: string[]) => {
-    if (ancha) setEncuadre(encuadreDe(lasDelMapa(marcas, filtrosQueSeAplican(nuevosFiltros), miPerfilId, new Set(nuevasDestildadas))));
+    if (!ancha) return;
+    setDondeEstaba(null);
+    setEncuadre(encuadreDe(lasDelMapa(marcas, filtrosQueSeAplican(nuevosFiltros), miPerfilId, new Set(nuevasDestildadas))));
   };
   const cambiarFiltros = (nuevos: FiltrosDeMarcas) => {
     guardarFiltros(nuevos);
@@ -155,18 +179,31 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     alCambiarLoElegido(filtros, nuevas);
   };
   const alCambiarPanel = (arriba: boolean) => {
-    if (!arriba) setEncuadre(encuadreDe(enElMapa));
+    if (!arriba) {
+      setDondeEstaba(null);
+      setEncuadre(encuadreDe(enElMapa));
+    }
     setPanelArriba(arriba);
   };
   const mostrar = (marca: MarcaDeLaLista) => {
     if (destildadas.has(marca.clave)) cambiarDestildadas(alternarUna(marca.clave, destildadasGuardadas));
+    setDondeEstaba(null);
     setEncuadre(encuadreDe([marca]));
+    setViaje((vez) => vez + 1);
     setPanelArriba(false);
   };
 
-  const volverALista = useCallback((nuevoMensaje: string | null) => {
+  const volverALista = useCallback((nuevoMensaje: string | null, lugar?: VistaDelMapa | null) => {
     setVista(LISTA);
-    setMensaje(nuevoMensaje);
+    // «Guardado» no se anuncia: el cartel de arriba obligaba a apretar Cerrar.
+    // Sí se dice cuando algo no quedó bien.
+    setMensaje(nuevoMensaje && esUnProblema(nuevoMensaje) ? nuevoMensaje : null);
+    if (lugar) {
+      setDondeEstaba(lugar);
+      setEncuadre(null);
+    } else {
+      setDondeEstaba(null);
+    }
   }, [setVista]);
   // Adentro de agregar o editar, el atrás del celular vuelve a la lista.
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
@@ -181,7 +218,6 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
       const resultado = await retirarCamino(camino.id, camino.actualizadoEn);
       if (!resultado.ok) { await avisar({ titulo: "No se eliminó el Camino", mensaje: resultado.error }); return; }
       await ponerAlDiaDespuesDeGuardar();
-      setMensaje(`Camino «${camino.nombre}» eliminado.`);
       router.refresh();
     } catch (error) {
       await avisar({ titulo: "No se eliminó el Camino",
@@ -199,7 +235,6 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
       const resultado = await borrarAnotacion(detalle.id);
       if (!resultado.ok) { await avisar({ titulo: `No se eliminó el ${nombre}`, mensaje: resultado.error }); return; }
       await ponerAlDiaDespuesDeGuardar();
-      setMensaje(`${nombre === "punto" ? "Punto eliminado" : "Trazo eliminado"}.`);
     } catch (error) {
       await avisar({ titulo: `No se eliminó el ${nombre}`,
         mensaje: `${error instanceof Error ? error.message : String(error)}. Revisá la señal y probá de nuevo.` });
@@ -241,8 +276,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
         accionDelEncabezado={puedeAgregar ? <BotonAgregar etiqueta="Agregar una marca" alTocar={() => { setPanelArriba(false); setEligiendo("como"); }} /> : null}
         avisos={mensaje || (cargandoCaminos && caminosSinLinea.length > 0) || errorDeCaminos || incompleto ? <>
           {mensaje ? (
-            <Tarjeta franja={/no |todavía|ya no/i.test(mensaje) ? "ambar" : "verde"} className="flex items-start gap-3">
-              <p role="status" className="flex-1 text-base text-texto">{mensaje}</p>
+            <Tarjeta franja="ambar" className="flex items-start gap-3">
+              <p role="alert" className="flex-1 text-base text-texto">{mensaje}</p>
               <button type="button" className="text-sm font-medium text-texto-suave" onClick={() => setMensaje(null)}>Cerrar</button>
             </Tarjeta>
           ) : null}
@@ -255,7 +290,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
         alCambiarAbierto={alCambiarPanel}
         panel={
           <ListaDeMarcas
-            marcas={marcas}
+            marcas={marcasEnLaLista}
+            nadaEnEstaVista={pedazo !== null && marcas.length > 0 && marcasEnLaLista.length === 0}
             caminos={porId.caminosSinLinea}
             detalles={porId.detalles}
             zonas={porId.zonas}
@@ -279,6 +315,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             actividad={actividad}
             sectoresPorZona={cantidades}
             encuadre={encuadre}
+            dondeEstaba={dondeEstaba}
+            viaje={viaje}
+            alMirar={guardarPedazo}
             avisoSinNada={enElMapa.length === 0
               ? marcas.length === 0
                 ? "Todavía no hay marcas en el mapa."
@@ -312,6 +351,11 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
       </Emergente>
     </div>
   );
+}
+
+/** Un aviso de que algo no quedó bien. «Guardado» a secas no lo es. */
+function esUnProblema(mensaje: string): boolean {
+  return /no |todavía|ya no/i.test(mensaje);
 }
 
 /** Las coordenadas de una marca, para encuadrarla. */

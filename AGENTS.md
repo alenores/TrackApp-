@@ -147,11 +147,22 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Todo lo que se dibuja encima del mapa es una marca**: Caminos, puntos
   y trazos (decisión 052; las tranqueras son puntos y los alambrados, trazos). Mapas tiene cuatro entradas
   en el menú, sin pestañas adentro: **Consultas, Marcas, Zonas y Descargas**.
-  Consultas, para todos, muestra perímetros y nombres de zonas más todas las
-  marcas, con filtros simples (actividad; Caminos, Zonas y Detalles). Marcas
-  es la lista con tildes y filtros; el «+» y los tres puntos solo para
-  Administrador y Premium. La navegación libre también muestra todas las
-  marcas. Nunca divisiones ni etiquetas de sectores en esos mapas. Al tocar
+  Consultas, para todos, muestra las marcas, con filtros simples (actividad;
+  Caminos, Zonas y Detalles) y un buscador arriba del panel: ignora mayúsculas
+  y tildes, pone primero las zonas, después los Caminos y al final los
+  Detalles, y al elegir uno el mapa viaja hasta ahí, de a poco. Arriba del
+  panel hay tres opciones de líneas: al abrir se ven las de las zonas; se
+  pueden sumar las de los sectores, o no ver ninguna. En Caminos no va la
+  ayuda de colores y líneas. En punto nuevo, Camino nuevo y trazo nuevo esas
+  mismas tres opciones empiezan sin líneas, arriba de los datos. En esos
+  mapas, junto a ubicarme y ver en grande, una lupa abre un buscador: mientras
+  se escribe filtra zonas, sectores, Caminos, puntos y trazos; los pueblos y
+  ciudades se buscan en internet recién al apretar el botón, y al elegir
+  cualquiera el mapa viaja hasta ahí. Marcas es la lista con tildes y filtros,
+  y muestra solo lo que entra en el mapa que se está mirando (decisión 057);
+  el «+» y los tres puntos solo para Administrador y Premium. La navegación
+  libre también muestra todas las marcas. Marcas y la navegación libre no
+  dibujan sectores. Al tocar
   una zona aparece su ficha breve, que se abre tocándola completa. Nombres e
   íconos aparecen gradualmente al acercarse. Ver `docs/decisiones/029` y `052`.
 - **Lista y mapa son dos momentos**: en la computadora van lado a lado; en el

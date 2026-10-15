@@ -41,13 +41,23 @@ entradas en el menú, sin pestañas adentro: Consultas, Marcas, Zonas y
 Descargas (decisión 052). Consultas y Marcas usan **lista y mapa**: lado a lado
 en la computadora; en el celular el mapa llena la pantalla y la lista es un
 panel que sube desde abajo, con los gestos de Vías de Escalada, una barrita con
-el resumen al bajarlo y el botón «Ver mapa». Consultas abre encuadrando Córdoba
-y muestra cada zona con su perímetro y un solo nombre, además de las marcas. No
-dibuja
-las divisiones ni los nombres de los sectores: con varias zonas juntas taparían
-el territorio. Al hacer clic o tocar una zona aparece una ficha breve con
-acceso al detalle tocando cualquier parte de la ficha; los sectores se ven en
-ese detalle. Los nombres y
+el resumen al bajarlo y el botón «Ver mapa». Consultas abre encuadrando Córdoba y muestra las marcas. Arriba del panel hay
+un buscador: al elegir un resultado el mapa viaja hasta esa zona, Camino o
+detalle, acercándose de a poco (decisión 055). Lo mismo al elegir una marca
+en Marcas. En el mismo panel hay tres opciones de líneas: al abrir se ven las
+de las zonas, con su perímetro y un solo nombre; se pueden sumar las de los
+sectores, o no ver ninguna (decisión 056). En punto nuevo, Camino nuevo y
+trazo nuevo esas opciones empiezan sin líneas y van arriba de los datos. Ahí
+el mapa lleva una lupa, junto a ubicarme y ver en grande: al escribir filtra
+lo que ya está cargado, y los pueblos se buscan al apretar un botón. En la
+sección Caminos no va la ayuda de colores y líneas. En la lista de Marcas,
+la casilla de cada marca va en verde suave y la de toda la categoría en verde
+lleno, para distinguir tildar una de tildar todas (Ale, 2026-10-15). Esa lista
+se achica a lo que entra en el mapa: al acercarse o moverse, lo que quedó
+afuera deja de listarse (decisión 057). Marcas y la navegación
+libre no dibujan sectores. Al hacer clic o tocar una zona aparece una ficha
+breve con acceso al detalle tocando cualquier parte de la ficha; el detalle
+de la zona sigue mostrando sus sectores. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
 no se muestran y los íconos que se pisan se ocultan. Ver
 `decisiones/029-mapa-general-de-cordoba.md`. En cualquier mapa, tocar un punto

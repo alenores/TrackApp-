@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
-import type { Anotacion, Zona } from "@/types/database";
+import type { Anotacion, Sector, Zona } from "@/types/database";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
@@ -83,6 +83,29 @@ describe("mapa de las marcas", () => {
       Object.defineProperty(toqueAfuera, "pointerType", { value: "touch" });
       await act(async () => document.body.dispatchEvent(toqueAfuera));
       expect(contenedor.querySelector("[data-ficha-zona]")).toBeNull();
+    } finally {
+      act(() => raiz.unmount());
+    }
+  });
+
+  it("esconde las líneas o suma las de los sectores", async () => {
+    const zona = {
+      id: 1,
+      nombre: "Zona de prueba",
+      rectangulo: { latNorte: -31, latSur: -32, lonOeste: -65, lonEste: -64 },
+    } as Zona;
+    const sector = { id: 3, zonaId: 1, nombre: "A1 - Cumbre", rectangulo: zona.rectangulo } as Sector;
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(
+        <MapaDeMarcas zonas={[zona]} sectores={[sector]} lineas="nada" anotaciones={[]} actividad="trekking" sectoresPorZona={{}} />,
+      ));
+      expect(contenedor.querySelector("[data-clases]")?.getAttribute("data-clases")).toBe("");
+      await act(async () => raiz.render(
+        <MapaDeMarcas zonas={[zona]} sectores={[sector]} lineas="zonas_y_sectores" anotaciones={[]} actividad="trekking" sectoresPorZona={{}} />,
+      ));
+      expect(contenedor.querySelector("[data-clases]")?.getAttribute("data-clases")).toBe("zona_general,sector");
     } finally {
       act(() => raiz.unmount());
     }

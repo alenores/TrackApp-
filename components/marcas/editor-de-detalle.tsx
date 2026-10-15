@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BuscadorDelMapa } from "@/components/marcas/buscador-del-mapa";
+import { LineasDelTerritorio } from "@/components/mapas/lineas-del-territorio";
+import { useAlMarcar } from "@/hooks/use-al-marcar";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { FormularioDeAnotacion } from "@/components/anotaciones/formulario-de-anotacion";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
@@ -22,9 +25,20 @@ export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo" } | { clase: "
 
 export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (mensaje: string | null) => void }) {
   const anotar = useAnotaciones({ clase: "cordoba" });
+  const marcar = useAlMarcar();
+  const esNuevo = que.clase === "nuevo";
+  const enfoqueAnterior = useRef(anotar.enfoque);
+  const mostrarLugar = marcar.mostrar;
   const empezo = useRef(false);
   const huboFormulario = useRef(false);
   const datosListos = anotar.estado !== "abriendo" && anotar.estado !== "sin_datos";
+
+  // Una coordenada escrita mueve el mapa de un salto, aunque antes se haya buscado un pueblo.
+  useEffect(() => {
+    if (!esNuevo || anotar.enfoque === enfoqueAnterior.current) return;
+    enfoqueAnterior.current = anotar.enfoque;
+    if (anotar.enfoque) mostrarLugar(anotar.enfoque);
+  }, [anotar.enfoque, esNuevo, mostrarLugar]);
 
   // Arranca una sola vez, apenas están los datos: marcando lo nuevo o con lo
   // existente abierto en el formulario.
@@ -77,15 +91,33 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
             <CargadorDeMapa
               enVivo
               llenarElAltoEnLaComputadora
-              encuadre={anotar.enfoque ?? CORDOBA_COMPLETA}
+              encuadre={(esNuevo ? marcar.vista : null) ?? anotar.enfoque ?? CORDOBA_COMPLETA}
+              viaje={esNuevo ? marcar.viaje : 0}
+              rectangulos={esNuevo ? marcar.rectangulos : []}
               anotaciones={anotar.enElMapa}
               marcandoPunto={anotar.marcando}
               alMarcarPunto={anotar.alTocarElMapa}
               mostrarFichaAnotacion={false}
+              controlesAdicionales={esNuevo ? (
+                <BuscadorDelMapa
+                  zonas={marcar.zonas}
+                  sectores={marcar.sectores}
+                  caminosSinLinea={marcar.caminosSinLinea}
+                  caminos={marcar.caminos}
+                  anotaciones={marcar.anotaciones}
+                  cargandoCaminos={marcar.cargandoCaminos}
+                  alElegir={marcar.ir}
+                />
+              ) : null}
             />
           }
           debajoDelMapa={queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
-          panel={<FormularioDeAnotacion anotar={anotar} />}
+          panel={
+            <div className="space-y-3">
+              {esNuevo ? <LineasDelTerritorio valor={marcar.lineas} alElegir={marcar.setLineas} /> : null}
+              <FormularioDeAnotacion anotar={anotar} />
+            </div>
+          }
         />
       )}
     </div>

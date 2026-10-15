@@ -4,6 +4,141 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-15 — La lista de Marcas sigue al mapa
+
+### Estado al inicio
+
+En Marcas, la lista mostraba todas las zonas, Caminos, puntos y trazos, aunque
+el mapa estuviera acercado a un solo lugar.
+
+### Lo que se hizo
+
+La lista de Marcas queda con lo que entra en el mapa que se está mirando. Al
+acercarse o moverse, lo de afuera deja de listarse. El mapa sigue mostrando
+lo tildado. Consultas no cambia.
+
+### Decisiones tomadas
+
+Decisión 057.
+
+### Documentos actualizados
+
+Decisión 057, glosario, diseño exterior, decisión 052, reglas de agentes y
+este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Probarlo en el celular, con la cuenta iniciada.
+
+---
+
+## Sesión 2026-10-15 — Casillas de cada marca más claras
+
+### Estado al inicio
+
+En Marcas, la casilla de una zona y la de toda la categoría Zonas se veían iguales.
+
+### Lo que se hizo
+
+La casilla de cada marca quedó en verde suave. La de la categoría sigue en verde lleno.
+
+### Decisiones tomadas
+
+Pedido de Ale, 2026-10-15. Quedó anotado en el diseño exterior.
+
+### Documentos actualizados
+
+Diseño exterior y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular, en modo sol y en modo noche.
+
+---
+
+## Sesión 2026-10-15 — Líneas y buscador al marcar
+
+### Estado al inicio
+
+Consultas mostraba siempre el perímetro de las zonas y no las líneas de los
+sectores. Al marcar un punto, un Camino o un trazo el mapa no tenía lupa ni
+forma de prender esas líneas.
+
+### Lo que se hizo
+
+- Tres opciones de líneas, las mismas en Consultas y al marcar. Consultas
+  abre con las zonas. Marcar abre sin líneas. Los sectores se suman solo
+  junto con las zonas.
+- En punto nuevo, Camino nuevo y trazo nuevo, una lupa junto a ubicarme y ver
+  en grande. Al escribir filtra lo que ya está cargado. Los pueblos se buscan
+  al apretar un botón, y el mapa viaja hasta el lugar elegido.
+
+### Decisiones tomadas
+
+Decisión 056.
+
+### Documentos actualizados
+
+Decisión 056, glosario, diseño exterior, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Probar la lupa y las líneas en el celular, con la cuenta iniciada.
+
+---
+
+## Sesión 2026-10-15 — Buscador en Consultas
+
+### Estado al inicio
+
+Consultas mostraba los filtros de Caminos, Zonas y Detalles. Adentro de
+Caminos estaba la ayuda de colores y líneas.
+
+### Lo que se hizo
+
+- Se sacó esa ayuda de la sección Caminos.
+- Arriba del panel, en la computadora y en el celular, hay un buscador de
+  zonas, Caminos y Detalles. No distingue mayúsculas ni tildes. Cada carácter
+  vale más en una zona, después en un Camino y al final en un detalle.
+- Al elegir un resultado, el mapa se acerca. Si esa capa estaba apagada, se
+  prende. En el celular el panel baja para ver el mapa.
+- Ese acercamiento, y el de elegir una marca en Marcas, es un viaje: el mapa
+  se traslada y se acerca de a poco, para que se vea de dónde venía. Abrir el
+  mapa y cambiar filtros siguen siendo un salto.
+- Al salir de una página sin guardar, el cartel pregunta si querés salir. Los
+  botones dicen Cancelar y Confirmar. Vale para un Camino nuevo y para marcar
+  en el cerro.
+
+### Decisiones tomadas
+
+Decisión 055.
+
+### Documentos actualizados
+
+Decisión 055, glosario, diseño exterior, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Ninguno de este cambio.
+
+---
+
 ## Sesión 2026-10-14 — Pantallas de casa y señal al volver del mapa
 
 ### Lo que se hizo

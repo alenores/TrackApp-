@@ -38,6 +38,7 @@ import {
 } from "@/components/mapa/capas-de-relieve";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
+import { accionDeLaCamara, type VistaDelMapa } from "@/lib/mapas/vista";
 import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
 import { puntosSinPaso } from "@/lib/rutas/partes";
@@ -168,6 +169,26 @@ type MapaProps = {
   miPosicion?: PosicionEnElMapa | null;
   /** A qué encuadrar al abrir. */
   encuadre?: Rectangulo | null;
+  /**
+   * Sube uno cada vez que hay que **viajar** hasta el encuadre, como al elegir
+   * algo en Consultas o en Marcas. El mapa se acerca y se traslada de a poco,
+   * para que se vea el camino. Sin esto, el encuadre es un salto: abrir el
+   * mapa o cambiar filtros no tiene que animarse.
+   */
+  viaje?: number;
+  /**
+   * Centro y acercamiento a conservar, por ejemplo al volver de guardar un
+   * Camino. Se aplica una sola vez y gana al encuadre de apertura: si no, el
+   * mapa salta a la vista inicial aunque el usuario estuviera en otra zona.
+   */
+  vista?: VistaDelMapa | null;
+  /** Avisa el lugar que se está mirando, para poder volver a él después. */
+  alMoverVista?: (vista: VistaDelMapa) => void;
+  /**
+   * Cada vez que el mapa queda quieto, el pedazo de mundo que se está viendo.
+   * Marcas lo usa para achicar la lista a lo que entra en pantalla.
+   */
+  alMirar?: (pedazo: Rectangulo) => void;
   /**
    * `true` para encuadrar una sola vez, al abrir.
    *
@@ -318,6 +339,23 @@ function comoPoligono(
   };
 }
 
+/** El pedazo de mundo que entra en el mapa ahora. */
+function pedazoVisible(mapa: maplibregl.Map): Rectangulo | null {
+  const limites = mapa.getBounds();
+  const norte = limites.getNorth();
+  const sur = limites.getSouth();
+  const oeste = limites.getWest();
+  const este = limites.getEast();
+  if (![norte, sur, oeste, este].every(Number.isFinite) || norte <= sur) return null;
+  const ancho = este - oeste;
+  return {
+    latNorte: norte,
+    latSur: sur,
+    lonOeste: ancho >= 360 ? -180 : oeste,
+    lonEste: ancho >= 360 ? 180 : este,
+  };
+}
+
 function limitesDe(rectangulo: Rectangulo): maplibregl.LngLatBoundsLike {
   return [
     [rectangulo.lonOeste, rectangulo.latSur],
@@ -371,6 +409,10 @@ export function Mapa({
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
+  viaje = 0,
+  vista = null,
+  alMoverVista,
+  alMirar,
   encuadrarSoloAlAbrir = false,
   rectangulo = null,
   rectangulos = [],
@@ -405,6 +447,14 @@ export function Mapa({
 }: MapaProps) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<maplibregl.Map | null>(null);
+  /** La vista del primer dibujo: el mapa nace ahí y no muestra Córdoba un instante. */
+  const vistaAlAbrirRef = useRef(vista);
+  /** La primera medida del lienzo ya respetó esa vista. */
+  const yaMidioConVistaRef = useRef(false);
+  const alMoverVistaRef = useRef(alMoverVista);
+  const alMirarRef = useRef(alMirar);
+  useEffect(() => { alMoverVistaRef.current = alMoverVista; }, [alMoverVista]);
+  useEffect(() => { alMirarRef.current = alMirar; }, [alMirar]);
   const verticesDeCaminoRef = useRef(verticesDeCamino);
   const moverVerticeRef = useRef(alMoverVerticeDeCamino);
   useEffect(() => { verticesDeCaminoRef.current = verticesDeCamino; }, [verticesDeCamino]);
@@ -690,6 +740,13 @@ export function Mapa({
     };
   }, [sesionGoogleActiva, tipoDeFondo]);
 
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !armado) return;
+    const pedazo = pedazoVisible(mapa);
+    if (pedazo) alMirarRef.current?.(pedazo);
+  }, [armado]);
+
   // Armado del mapa. Una sola vez.
   useEffect(() => {
     if (!contenedorRef.current || mapaRef.current) return;
@@ -706,8 +763,11 @@ export function Mapa({
       container: contenedorRef.current,
       style: estiloDelMapa(modoRef.current, enVivoRef.current),
       // Córdoba, para que sin fondo el mapa igual arranque en algún lado.
-      center: [-64.5, -31.5],
-      zoom: 9,
+      // Si hay que conservar un lugar, nace ahí: si no, se ve el salto.
+      center: vistaAlAbrirRef.current
+        ? [vistaAlAbrirRef.current.lon, vistaAlAbrirRef.current.lat]
+        : [-64.5, -31.5],
+      zoom: vistaAlAbrirRef.current?.zoom ?? 9,
       attributionControl: false,
       // Los controles propios de la librería son chicos: se usan los de la app.
       dragRotate: false,
@@ -1071,6 +1131,17 @@ export function Mapa({
     });
 
     mapaRef.current = mapa;
+    const avisarLaVista = () => {
+      const avisar = alMoverVistaRef.current;
+      if (avisar) {
+        const centro = mapa.getCenter();
+        avisar({ lon: centro.lng, lat: centro.lat, zoom: mapa.getZoom() });
+      }
+      const pedazo = pedazoVisible(mapa);
+      if (pedazo) alMirarRef.current?.(pedazo);
+    };
+    mapa.on("moveend", avisarLaVista);
+    mapa.on("resize", avisarLaVista);
 
     return () => {
       if (esperaDeImagenGoogle) clearTimeout(esperaDeImagenGoogle);
@@ -1207,22 +1278,60 @@ export function Mapa({
 
   // La línea de la ruta.
   const yaEncuadroRef = useRef(false);
+  /** La vista ya puesta. Otra distinta sí se aplica; la misma no vuelve a saltar. */
+  const vistaAplicadaRef = useRef<VistaDelMapa | null>(null);
+  /** El último viaje que ya se animó. El primero (abrir) no viaja: salta. */
+  const viajeVisto = useRef(viaje);
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa) return;
+    let vigente = true;
+    const viajar = viaje !== viajeVisto.current;
 
     const poner = () => {
+      if (!vigente) return;
       ponerDatos(mapa, FUENTE_RUTA, recorrido ?? VACIO);
       ponerDatos(mapa, "x-sin-paso", recorrido ? puntosSinPaso(recorrido) : VACIO);
 
-      if (encuadre && !(encuadrarSoloAlAbrir && yaEncuadroRef.current)) {
-        mapa.fitBounds(limitesDe(encuadre), { padding: 28, animate: false });
+      // `viaje` se anima aunque el mapa ya se haya encuadrado al abrir: si no,
+      // buscar un lugar en un Camino nuevo no movería la vista.
+      if (viajar) viajeVisto.current = viaje;
+      const accion = accionDeLaCamara({
+        hayVistaNueva: vista !== null && vistaAplicadaRef.current !== vista,
+        hayEncuadre: encuadre !== null,
+        viajar,
+        encuadrarSoloAlAbrir,
+        yaEncuadro: yaEncuadroRef.current,
+      });
+      if (accion === "vista" && vista) {
+        mapa.jumpTo({ center: [vista.lon, vista.lat], zoom: vista.zoom });
+        vistaAplicadaRef.current = vista;
+        yaEncuadroRef.current = true;
+      } else if (accion === "encuadre" && encuadre) {
+        // Sin `maxDuration`: si el viaje calculado lo pasa, el mapa lo corta
+        // de golpe en vez de acortarlo.
+        mapa.fitBounds(limitesDe(encuadre), viajar
+          ? { padding: 28, speed: 1.2, curve: 1.42 }
+          : { padding: 28, animate: false });
         yaEncuadroRef.current = true;
       }
     };
 
+    // Un cuadro de espera: si el efecto se descarta al toque y se vuelve a
+    // correr, no arranca un viaje que el segundo pase pisaría con un salto.
+    if (viajar) {
+      const frame = requestAnimationFrame(() => {
+        if (vigente) cuandoEsteListo(poner);
+      });
+      return () => {
+        vigente = false;
+        cancelAnimationFrame(frame);
+      };
+    }
+
     cuandoEsteListo(poner);
-  }, [recorrido, encuadre, encuadrarSoloAlAbrir]);
+    return () => { vigente = false; };
+  }, [recorrido, encuadre, encuadrarSoloAlAbrir, viaje, vista]);
 
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -1894,6 +2003,13 @@ export function Mapa({
 
     const cuandoSeAcomode = window.setTimeout(() => {
       mapa.resize();
+
+      // Al nacer con un lugar conservado, esta primera medida no puede
+      // encuadrar: pisaría el acercamiento que el usuario dejó al guardar.
+      if (vistaAlAbrirRef.current && !yaMidioConVistaRef.current) {
+        yaMidioConVistaRef.current = true;
+        return;
+      }
 
       // Se vuelve a encuadrar lo que hay que mirar, no lo que se estaba
       // mirando: un recuadro ancho y bajo metido en una pantalla alta deja la

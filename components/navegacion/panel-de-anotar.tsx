@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
-import { useDialogos } from "@/components/ui/dialogos";
+import { SALIR_SIN_GUARDAR, useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import type { Gps } from "@/hooks/use-gps";
@@ -111,16 +111,11 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alGuardar }: PanelP
    */
   const [vueltaDelAtras, setVueltaDelAtras] = useState(0);
 
-  // Pantalla mojada: tirar lo que se marcó pide confirmación.
+  // Pantalla mojada: salir sin guardar pide confirmación.
   const cancelar = useCallback(
     async (desdeElAtras: boolean) => {
       if (marcado.hayAlgo) {
-        const seguro = await confirmar({
-          titulo: "¿Tirar lo que marcaste?",
-          mensaje: "Se pierde lo que escribiste y marcaste en el mapa.",
-          textoDeAceptar: "Tirar",
-          destructivo: true,
-        });
+        const seguro = await confirmar(SALIR_SIN_GUARDAR);
         if (!seguro) {
           if (desdeElAtras) setVueltaDelAtras((cada) => cada + 1);
           return;

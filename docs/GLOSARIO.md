@@ -27,9 +27,16 @@ Marcas, Zonas y Descargas. Ver decisión 052.
 
 **Consultas**
 La entrada de Mapas para todo público: el mapa con todas las marcas y las
-zonas, para mirar. Filtros simples: la actividad y prender o apagar Caminos,
-Zonas y Detalles. Al tocar una zona muestra su ficha breve; al tocar un punto,
-su nombre, comentario y foto. Reemplazó al «mapa general».
+zonas, para mirar. Arriba del panel hay un buscador de zonas, Caminos y
+Detalles: no distingue mayúsculas ni tildes; si el mismo texto está en las
+tres, la zona queda primera, después el Camino y al final el detalle. Al
+elegir uno, el mapa viaja hasta ahí, de a poco. Lo mismo al elegir una marca
+en Marcas. En el panel hay tres opciones de líneas: al abrir se ven las de
+las zonas; se pueden sumar las de los sectores, o no ver ninguna. Filtros
+simples: la actividad y prender o apagar Caminos, Zonas y Detalles. En
+Caminos no se muestra la ayuda de colores y líneas. Al tocar una zona muestra
+su ficha breve; al tocar un punto, su nombre, comentario y foto. Reemplazó al
+«mapa general».
 
 **Detalles**
 En Consultas, el grupo que junta puntos y trazos: todo
@@ -129,9 +136,11 @@ mirar. Reemplaza a «anotación», que se retiró el 2026-10-13 y solo queda en 
 código y en la tabla vieja de la base. Ver decisión 052.
 
 **Marcas (entrada de Mapas)**
-La lista de todas las marcas con tildes, grupos y filtros, y el mapa con lo
-tildado. Todos la consultan; Administrador y Premium además agregan y editan
-con el «+» y los tres puntos.
+La lista de las marcas que entran en el pedazo de mapa que se está mirando,
+con tildes, grupos y filtros, y el mapa con lo tildado. Al acercarse o
+moverse, lo que quedó afuera deja de listarse. Todos la consultan;
+Administrador y Premium además agregan y editan con el «+» y los tres puntos.
+Ver decisión 057.
 
 **Marcar en el cerro**
 Agregar un punto o un trazo desde los mapas del cerro: el círculo «Marcas» y

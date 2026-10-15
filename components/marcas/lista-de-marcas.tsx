@@ -50,6 +50,11 @@ type Propiedades = {
   /** Lo que se puede hacer con cada marca: vacío si nada. */
   accionesDe: (marca: MarcaDeLaLista) => AccionDelMenu[];
   /**
+   * Hay marcas, pero ninguna entra en el pedazo de mapa que se está mirando.
+   * El mapa sigue mostrando lo tildado: esto solo explica la lista vacía.
+   */
+  nadaEnEstaVista?: boolean;
+  /**
    * Lo que solo explica a un grupo y va adentro de él, cuando está abierto:
    * la referencia de colores y líneas va adentro de Caminos.
    */
@@ -146,7 +151,9 @@ export function ListaDeMarcas(propiedades: Propiedades) {
         <Tarjeta>
           <p className="text-base leading-6 text-texto-suave">
             {marcas.length === 0
-              ? "Todavía no hay marcas en el mapa."
+              ? propiedades.nadaEnEstaVista
+                ? "En lo que estás mirando no hay nada de la lista. Alejate o mové el mapa."
+                : "Todavía no hay marcas en el mapa."
               : "Ninguna marca cumple con estos filtros. Probá sacando alguno."}
           </p>
         </Tarjeta>
@@ -200,7 +207,7 @@ function Renglon({ marca, caminos, detalles, zonas, sectoresPorZona, destildadas
   const acciones = accionesDe(marca);
   return (
     <li className="flex min-h-14 items-center gap-3 border-b border-borde px-3 py-1 last:border-b-0">
-      <Casilla tildada={!destildadas.has(marca.clave)} etiqueta={`Ver «${titulo}» en el mapa`} alTocar={() => alTildarUna(marca.clave)} />
+      <Casilla clara tildada={!destildadas.has(marca.clave)} etiqueta={`Ver «${titulo}» en el mapa`} alTocar={() => alTildarUna(marca.clave)} />
       <button type="button" onClick={() => alMostrar(marca)} title="Mostrar en el mapa"
         className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-lg text-left hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde">
         {icono}
