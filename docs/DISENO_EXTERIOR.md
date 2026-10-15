@@ -44,10 +44,12 @@ panel que sube desde abajo, con los gestos de Vías de Escalada, una barrita con
 el resumen al bajarlo y el botón «Ver mapa». Consultas abre encuadrando Córdoba y muestra las marcas. Arriba del panel hay
 un buscador: al elegir un resultado el mapa viaja hasta esa zona, Camino o
 detalle, acercándose de a poco (decisión 055). Lo mismo al elegir una marca
-en Marcas. En el mismo panel hay tres opciones de líneas: al abrir se ven las
-de las zonas, con su perímetro y un solo nombre; se pueden sumar las de los
-sectores, o no ver ninguna (decisión 056). En punto nuevo, Camino nuevo y
-trazo nuevo esas opciones empiezan sin líneas y van arriba de los datos. Ahí
+en Marcas. Los resultados van justo debajo del cuadro, juntos en un recuadro
+(decisión 058). Destildar Zonas oculta sus líneas; con Zonas prendida,
+adentro se elige si se ven solo las zonas o también los sectores (decisión
+058). En punto nuevo, Camino nuevo y
+trazo nuevo hay tres opciones de líneas, que empiezan sin líneas y van arriba
+de los datos (decisión 056). Ahí
 el mapa lleva una lupa, junto a ubicarme y ver en grande: al escribir filtra
 lo que ya está cargado, y los pueblos se buscan al apretar un botón. En la
 sección Caminos no va la ayuda de colores y líneas. En la lista de Marcas,

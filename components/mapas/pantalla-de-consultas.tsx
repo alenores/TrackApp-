@@ -18,7 +18,7 @@ import { usePreferencia } from "@/hooks/use-preferencia";
 import { sectoresPorZona } from "@/lib/mapas/general";
 import type { VistaDeLineas } from "@/lib/mapas/lineas-del-territorio";
 import { CAPAS_DE_CONSULTAS, leerCapasDeConsultas, resumenDeCapas, TODAS_LAS_CAPAS, type CapaDeConsultas } from "@/lib/marcas/consultas";
-import { buscarEnConsultas, type CoincidenciaDeConsulta, type ElementoBuscable } from "@/lib/marcas/buscar-en-consultas";
+import { buscarEnConsultas, type BusquedaDeConsultas, type CoincidenciaDeConsulta, type ElementoBuscable } from "@/lib/marcas/buscar-en-consultas";
 import { rectanguloDe } from "@/lib/marcas/lista";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
@@ -31,12 +31,15 @@ import type { Paquete } from "@/lib/offline/paquete";
  *
  * Arriba del panel hay un buscador. No distingue mayúsculas ni tildes, y si
  * el mismo texto está en una zona, un Camino y un detalle, la zona queda
- * primera. Al elegir uno, el mapa se acerca para mostrarlo.
+ * primera. Los resultados van justo debajo del cuadro, todos en un recuadro.
+ * Al elegir uno, el mapa se acerca para mostrarlo.
  *
  * Los filtros son pocos a propósito: la actividad (que decide qué
  * clasificación de los Caminos se destaca) y prender o apagar Caminos, Zonas y
- * Detalles. Detalles junta puntos y trazos. Lo elegido se recuerda en el
- * celular. En Caminos no va la ayuda de colores y líneas.
+ * Detalles. Destildar Zonas oculta sus líneas. Con Zonas prendida, adentro se
+ * elige si se ven solo las zonas o también los sectores. Detalles junta
+ * puntos y trazos. Lo elegido se recuerda en el celular. En Caminos no va la
+ * ayuda de colores y líneas.
  *
  * El detalle fino —tildar marca por marca— está en Marcas, que es para quien
  * carga y necesita ver con lupa.
@@ -83,11 +86,6 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
     if (capa === "zonas" && !prendida && lineas === "nada") setLineas("zonas");
     guardarCapas(prendida ? capas.filter((cada) => cada !== capa) : [...capas, capa]);
   };
-  const elegirLineas = (vista: VistaDeLineas) => {
-    setLineas(vista);
-    if (vista !== "nada" && !ver("zonas")) guardarCapas([...capas, "zonas"]);
-  };
-
   const elegir = (coincidencia: CoincidenciaDeConsulta) => {
     if (!ver(coincidencia.capa)) guardarCapas([...capas, coincidencia.capa]);
     if (coincidencia.capa === "zonas" && lineas === "nada") setLineas("zonas");
@@ -112,7 +110,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
         </> : null}
         tituloDelPanel="Qué mirar"
         pantallaCompletaEnCelular="Consultas" destinoSiNoHayVuelta="/mapas"
-        panelCorto={!buscando}
+        panelCorto
         resumen={resumenDeCapas(capas)}
         abierto={panelArriba}
         alCambiarAbierto={setPanelArriba}
@@ -131,49 +129,27 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
               }}
             />
             {avisoDeBusqueda ? <p role="status" className="text-base text-texto">{avisoDeBusqueda}</p> : null}
+            {buscando ? <ResultadosDeLaBusqueda busqueda={busqueda} alElegir={elegir} /> : null}
           </div>
         }
         panel={
-          <div className="space-y-4">
-            <LineasDelTerritorio valor={lineas} alElegir={elegirLineas} />
-            {buscando ? (
-              <div className="space-y-2">
-                <p className={CLASE_DE_TITULO_DE_SECCION}>Resultados</p>
-                {busqueda.lista.length === 0 ? (
-                  <p role="status" className="text-base text-texto-suave">Nada coincide con eso. Probá con otra palabra.</p>
-                ) : (
-                  <ul className="space-y-1" aria-label="Resultados de la búsqueda">
-                    {busqueda.lista.map((coincidencia) => (
-                      <li key={`${coincidencia.capa}-${coincidencia.id}`}>
-                        <button type="button" onClick={() => elegir(coincidencia)}
-                          className={`${CLASE_DE_RESPUESTA_AL_TOQUE} flex min-h-10 w-full items-center gap-3 rounded-lg text-left hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde`}>
-                          <span className="text-texto-suave"><IconoDeClase grupo={coincidencia.grupo} /></span>
-                          <span className="min-w-0 flex-1 truncate text-base font-semibold text-texto">{coincidencia.titulo}</span>
-                          <span className="shrink-0 text-base text-texto-suave">{coincidencia.aclaracion}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {busqueda.hayMas ? (
-                  <p role="status" className="text-base text-texto-suave">Hay más. Seguí escribiendo para achicar la lista.</p>
-                ) : null}
-              </div>
-            ) : null}
-            <div className="space-y-2">
-              <p className={CLASE_DE_TITULO_DE_SECCION}>Mostrar</p>
-              {CAPAS_DE_CONSULTAS.map((capa) => (
-                <RenglonDeCapa key={capa.valor} titulo={capa.etiqueta} queMuestra={capa.queMuestra}
-                  icono={ICONOS_DE_LA_CAPA[capa.valor].map((grupo) => <IconoDeClase key={grupo} grupo={grupo} />)}
-                  prendida={ver(capa.valor)} alAlternar={() => alternar(capa.valor)}>
-                  {capa.valor === "caminos" && ver("caminos") ? (
-                    <SelectorDeActividadPrincipal forma="insignias" actividad={actividad} alCambiar={elegirActividad} />
-                  ) : capa.valor === "zonas" && ver("zonas") && zonas.length === 0 ? (
+          <div className="space-y-2">
+            <p className={CLASE_DE_TITULO_DE_SECCION}>Mostrar</p>
+            {CAPAS_DE_CONSULTAS.map((capa) => (
+              <RenglonDeCapa key={capa.valor} titulo={capa.etiqueta} queMuestra={capa.queMuestra}
+                icono={ICONOS_DE_LA_CAPA[capa.valor].map((grupo) => <IconoDeClase key={grupo} grupo={grupo} />)}
+                prendida={ver(capa.valor)} alAlternar={() => alternar(capa.valor)}>
+                {capa.valor === "caminos" && ver("caminos") ? (
+                  <SelectorDeActividadPrincipal forma="insignias" actividad={actividad} alCambiar={elegirActividad} />
+                ) : capa.valor === "zonas" && ver("zonas") ? (
+                  zonas.length === 0 ? (
                     <p className="text-sm text-texto-suave">Todavía no hay zonas dibujadas en Córdoba.</p>
-                  ) : null}
-                </RenglonDeCapa>
-              ))}
-            </div>
+                  ) : (
+                    <LineasDelTerritorio lugar="en-zonas" valor={lineas} alElegir={setLineas} />
+                  )
+                ) : null}
+              </RenglonDeCapa>
+            ))}
           </div>
         }
         mapa={
@@ -192,6 +168,37 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
           />
         }
       />
+    </div>
+  );
+}
+
+/** Los resultados van juntos, justo debajo del cuadro de buscar. */
+function ResultadosDeLaBusqueda({ busqueda, alElegir }: {
+  busqueda: BusquedaDeConsultas;
+  alElegir: (coincidencia: CoincidenciaDeConsulta) => void;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-borde bg-superficie">
+      <p className={`px-3 pt-2 ${CLASE_DE_TITULO_DE_SECCION}`}>Resultados</p>
+      {busqueda.lista.length === 0 ? (
+        <p role="status" className="px-3 py-2 text-base text-texto-suave">Nada coincide con eso. Probá con otra palabra.</p>
+      ) : (
+        <ul className="max-h-60 overflow-y-auto" aria-label="Resultados de la búsqueda">
+          {busqueda.lista.map((coincidencia) => (
+            <li key={`${coincidencia.capa}-${coincidencia.id}`} className="border-t border-borde">
+              <button type="button" onClick={() => alElegir(coincidencia)}
+                className={`${CLASE_DE_RESPUESTA_AL_TOQUE} flex min-h-10 w-full items-center gap-3 px-3 text-left hover:bg-superficie-alta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-acento-borde`}>
+                <span className="text-texto-suave"><IconoDeClase grupo={coincidencia.grupo} /></span>
+                <span className="min-w-0 flex-1 truncate text-base font-semibold text-texto">{coincidencia.titulo}</span>
+                <span className="shrink-0 text-base text-texto-suave">{coincidencia.aclaracion}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {busqueda.hayMas ? (
+        <p role="status" className="border-t border-borde px-3 py-2 text-base text-texto-suave">Hay más. Seguí escribiendo para achicar la lista.</p>
+      ) : null}
     </div>
   );
 }

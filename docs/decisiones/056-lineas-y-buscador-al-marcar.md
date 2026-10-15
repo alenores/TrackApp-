@@ -4,11 +4,13 @@
 
 ## La decisión
 
-En Consultas, en punto nuevo, en Camino nuevo y en trazo nuevo hay tres
-opciones de líneas: nada, zonas, o zonas y sectores. Los sectores no se ven
-solos.
+En punto nuevo, en Camino nuevo y en trazo nuevo hay tres opciones de líneas:
+nada, zonas, o zonas y sectores. Los sectores no se ven solos. En Consultas,
+desde la decisión 058, esas tres opciones no van sueltas: destildar Zonas es
+no ver líneas, y adentro de Zonas se elige solo las zonas o también los
+sectores.
 
-- En Consultas, al abrir, está elegida la de las zonas.
+- En Consultas, al abrir, se ven las líneas de las zonas.
 - Al marcar un punto, un Camino o un trazo, al abrir no hay líneas. Las
   opciones van arriba de los datos: debajo del mapa en el celular, y en la
   columna de la derecha en la computadora.

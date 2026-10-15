@@ -4,6 +4,40 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-15 — Líneas de zonas y resultados en Consultas
+
+### Estado al inicio
+
+En Consultas, los circulitos de líneas (nada, zonas, zonas y sectores) iban
+arriba del panel, aparte del casillero de Zonas. Los resultados de la
+búsqueda quedaban debajo de esos circulitos, sueltos.
+
+### Lo que se hizo
+
+Destildar Zonas apaga las líneas. Con Zonas prendida, adentro se elige si se
+ven solo las zonas o también los sectores. Los resultados quedan justo debajo
+del cuadro de buscar, juntos en un recuadro. Al marcar un punto, un Camino o
+un trazo, los tres circulitos siguen igual.
+
+### Decisiones tomadas
+
+Decisión 058.
+
+### Documentos actualizados
+
+Decisión 058, decisión 056, glosario, diseño exterior, reglas de agentes y
+este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Probarlo en el celular, con la cuenta iniciada.
+
+---
+
 ## Sesión 2026-10-15 — La lista de Marcas sigue al mapa
 
 ### Estado al inicio

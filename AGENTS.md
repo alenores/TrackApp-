@@ -150,11 +150,13 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   Consultas, para todos, muestra las marcas, con filtros simples (actividad;
   Caminos, Zonas y Detalles) y un buscador arriba del panel: ignora mayúsculas
   y tildes, pone primero las zonas, después los Caminos y al final los
-  Detalles, y al elegir uno el mapa viaja hasta ahí, de a poco. Arriba del
-  panel hay tres opciones de líneas: al abrir se ven las de las zonas; se
-  pueden sumar las de los sectores, o no ver ninguna. En Caminos no va la
-  ayuda de colores y líneas. En punto nuevo, Camino nuevo y trazo nuevo esas
-  mismas tres opciones empiezan sin líneas, arriba de los datos. En esos
+  Detalles, y al elegir uno el mapa viaja hasta ahí, de a poco. Los resultados
+  van justo debajo del cuadro de buscar, juntos en un recuadro. Destildar
+  Zonas oculta sus líneas; con Zonas prendida, adentro se elige si se ven
+  solo las zonas o también los sectores. En Caminos no va la
+  ayuda de colores y líneas. En punto nuevo, Camino nuevo y trazo nuevo las
+  tres opciones de líneas (nada, zonas, o zonas y sectores) empiezan sin
+  líneas, arriba de los datos. En esos
   mapas, junto a ubicarme y ver en grande, una lupa abre un buscador: mientras
   se escribe filtra zonas, sectores, Caminos, puntos y trazos; los pueblos y
   ciudades se buscan en internet recién al apretar el botón, y al elegir

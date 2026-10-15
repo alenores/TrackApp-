@@ -30,9 +30,10 @@ La entrada de Mapas para todo público: el mapa con todas las marcas y las
 zonas, para mirar. Arriba del panel hay un buscador de zonas, Caminos y
 Detalles: no distingue mayúsculas ni tildes; si el mismo texto está en las
 tres, la zona queda primera, después el Camino y al final el detalle. Al
-elegir uno, el mapa viaja hasta ahí, de a poco. Lo mismo al elegir una marca
-en Marcas. En el panel hay tres opciones de líneas: al abrir se ven las de
-las zonas; se pueden sumar las de los sectores, o no ver ninguna. Filtros
+elegir uno, el mapa viaja hasta ahí, de a poco. Lo mismo al elegir una
+marca en Marcas. Los resultados van justo debajo del cuadro de buscar,
+juntos en un recuadro. Destildar Zonas oculta sus líneas; con Zonas prendida,
+adentro se elige si se ven solo las zonas o también los sectores. Filtros
 simples: la actividad y prender o apagar Caminos, Zonas y Detalles. En
 Caminos no se muestra la ayuda de colores y líneas. Al tocar una zona muestra
 su ficha breve; al tocar un punto, su nombre, comentario y foto. Reemplazó al
