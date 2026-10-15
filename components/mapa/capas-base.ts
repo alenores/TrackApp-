@@ -1,7 +1,7 @@
 import { layers, namedFlavor } from "@protomaps/basemaps";
-import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
-import { ajustarParaLaMontana } from "@/components/mapa/ajustes-de-montana";
-import { coloresDelMapa } from "@/components/mapa/colores";
+import type { ExpressionSpecification, LayerSpecification, LineLayerSpecification, StyleSpecification } from "maplibre-gl";
+import { ajustarParaLaMontana, SENDEROS } from "@/components/mapa/ajustes-de-montana";
+import { coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
 import {
   DIRECCION_DE_LA_FOTO_GUARDADA,
@@ -145,6 +145,58 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
   };
 }
 
+/** Arroyos sobre la foto: más gruesos que en el dibujo, para leerse en la imagen. */
+const ANCHO_ARROYO: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 12, 2, 14, 3, 17, 4.5];
+
+/** Ríos sobre la foto. */
+const ANCHO_RIO: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 11, 2.2, 14, 3.5, 17, 6];
+
+/** Huellas y calles chicas: en el dibujo son de medio píxel y sobre la foto no se ven. */
+const ANCHO_HUELLA: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 13, 1.8, 15, 2.8, 17, 4.5];
+
+/**
+ * ¿Esta línea ayuda a ubicarse sobre la foto?
+ *
+ * Entran ríos, arroyos, senderos, huellas y calles. Quedan afuera el relleno
+ * del terreno, el borde de las calles (se confunde con la foto) y lo que no
+ * es un paso: vías, pistas y muelles.
+ */
+function esLineaParaLaFoto(capa: LayerSpecification): capa is LineLayerSpecification {
+  if (capa.type !== "line" || !("source-layer" in capa)) return false;
+  const fuente = capa["source-layer"];
+  if (fuente !== "roads" && fuente !== "water") return false;
+  const id = capa.id;
+  return !id.includes("casing") && !id.includes("rail") && !id.includes("runway") && !id.includes("taxiway") && !id.includes("pier");
+}
+
+/**
+ * Las mismas líneas del mapa simple, preparadas para ir encima de la foto.
+ *
+ * Ríos, arroyos y senderos conservan su color. Las huellas y las calles no:
+ * en el dibujo son casi blancas de día y casi negras de noche, y sobre la
+ * foto desaparecen. Van del color del texto, oscuras con sol y claras de noche.
+ */
+function lineasSobreLaFoto(capas: LayerSpecification[], colores: ColoresDelMapa): LayerSpecification[] {
+  return capas.filter(esLineaParaLaFoto).map((capa) => {
+    const copia = structuredClone(capa);
+    if (copia["source-layer"] === "water") {
+      copia.paint = {
+        ...copia.paint,
+        "line-width": copia.id === "water_river" ? ANCHO_RIO : ANCHO_ARROYO,
+      };
+      return copia;
+    }
+    if (copia.id === SENDEROS) return copia;
+    const gruesa = copia.id.includes("highway") || copia.id.includes("major");
+    copia.paint = {
+      ...copia.paint,
+      "line-color": colores.texto,
+      ...(gruesa ? {} : { "line-width": ANCHO_HUELLA }),
+    };
+    return copia;
+  });
+}
+
 /**
  * Las capas que dibujan el mapa, para un modo de color.
  *
@@ -158,13 +210,19 @@ export function capasDelFondo(
   tipo: TipoDeFondo = "dibujo",
   /** Con curvas encima, la foto lleva velo para que se lean. */
   conVelo = true,
+  /**
+   * En la navegación, sobre la foto van ríos, arroyos, senderos y huellas.
+   * Al marcar un rectángulo no: ahí se mira el terreno pelado.
+   */
+  conLineas = false,
 ): LayerSpecification[] {
+  const colores = coloresDelMapa();
   const dibujo = ajustarParaLaMontana(
     layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
       lang: "es",
     }).filter((capa) => capa.type !== "background"),
     FUENTE_DEL_FONDO,
-    coloresDelMapa(),
+    colores,
   );
 
   if (tipo === "dibujo") return dibujo;
@@ -173,9 +231,8 @@ export function capasDelFondo(
   }
 
   /*
-    Sobre la foto van solo los nombres. Los caminos y el relleno del dibujo
-    taparían el terreno, que es justo lo que se quiere mirar; los nombres, en
-    cambio, son lo que permite reconocer dónde está uno.
+    El relleno del terreno taparía la foto. Los nombres van siempre. Las
+    líneas de agua y de paso solo al navegar (decisión 060).
   */
   return [
     {
@@ -193,13 +250,19 @@ export function capasDelFondo(
           ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
           : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 },
     },
+    ...(conLineas ? lineasSobreLaFoto(dibujo, colores) : []),
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];
 }
 
 /** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */
 export function todasLasCapasDelFondo(modo: Modo): LayerSpecification[] {
-  return [...capasDelFondo(modo, "dibujo"), ...capasDelFondo(modo, "satelital"), ...capasDelFondo(modo, "google")];
+  return [
+    ...capasDelFondo(modo, "dibujo"),
+    ...capasDelFondo(modo, "satelital"),
+    ...capasDelFondo(modo, "satelital", true, true),
+    ...capasDelFondo(modo, "google"),
+  ];
 }
 
 /**

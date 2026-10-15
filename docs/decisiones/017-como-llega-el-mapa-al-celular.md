@@ -85,7 +85,8 @@ Una zona entera son 3292 pedazos. **Por eso existen los sectores.**
 - **El satelital entró el 2026-09-23 por el mismo puente** (`api/satelital`).
   Es Sentinel-2 sin nubes, de EOX: su licencia deja guardarlo para uso no
   comercial citando la fuente. Un sector satelital baja el mismo dibujo (de ahí
-  salen los nombres sobre la foto), el mismo relieve y además los pedazos de la
+  salen los nombres y, al navegar, los ríos, arroyos, senderos y huellas sobre
+  la foto; decisión 060), el mismo relieve y además los pedazos de la
   foto, hasta el mismo acercamiento. Medido sobre el Champaquí: 11 a 22 KB por
   pedazo. Se lee con su propio candado (`foto-guardada://`), que tampoco sale a
   internet. Desde el 2026-09-24 un sector puede tener los dos (decisión 012):

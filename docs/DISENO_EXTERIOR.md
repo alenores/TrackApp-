@@ -56,8 +56,9 @@ sección Caminos no va la ayuda de colores y líneas. En la lista de Marcas,
 la casilla de cada marca va en verde suave y la de toda la categoría en verde
 lleno, para distinguir tildar una de tildar todas (Ale, 2026-10-15). Esa lista
 se achica a lo que entra en el mapa: al acercarse o moverse, lo que quedó
-afuera deja de listarse (decisión 057). Marcas y la navegación
-libre no dibujan sectores. Al hacer clic o tocar una zona aparece una ficha
+afuera deja de listarse (decisión 057). Arriba del panel de Marcas hay
+tres opciones de líneas: nada, las zonas tildadas, o esas zonas y sus
+sectores (decisión 059). La navegación libre no dibuja sectores. Al hacer clic o tocar una zona aparece una ficha
 breve con acceso al detalle tocando cualquier parte de la ficha; el detalle
 de la zona sigue mostrando sus sectores. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
@@ -211,6 +212,16 @@ el camino. Todo lo demás compite por espacio con eso.
 **Consecuencia obligatoria:** si el mapa ocupa todo, tiene que haber una salida
 visible y el botón físico de atrás tiene que funcionar. Un mapa a pantalla
 completa sin salida clara es una trampa.
+
+## Por qué sobre la foto van las líneas de paso
+
+La foto satelital que se puede bajar no alcanza para ver un río o una huella.
+En el mapa simple esas líneas se leen de una. En la navegación se dibujan
+encima de la foto, sin pintar el color de la tierra, así la foto sigue
+sirviendo para el terreno y las líneas dicen por dónde pasa el agua y el paso.
+
+Al armar una zona, en cambio, la foto queda pelada: ahí se mira el terreno,
+no el dibujo.
 
 ## Por qué la pantalla no se apaga navegando
 

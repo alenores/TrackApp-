@@ -58,9 +58,10 @@ import type { Sector } from "@/types/database";
  * no está completo. Un mapa de montaña sin desnivel no sirve (decisión 013).
  *
  * El **satelital** es el simple más la foto: baja el mismo dibujo —de ahí
- * salen los nombres que van encima de la foto—, el mismo relieve y, además,
- * los pedazos de la foto. Un sector puede tener uno, el otro o los dos: bajar
- * el satelital de un sector que ya tiene el simple solo trae la foto, porque
+ * salen los nombres y, al navegar, los ríos, arroyos, senderos y huellas que
+ * van encima de la foto—, el mismo relieve y, además, los pedazos de la foto.
+ * Un sector puede tener uno, el otro o los dos: bajar el satelital de un
+ * sector que ya tiene el simple solo trae la foto, porque
  * el resto ya está.
  *
  * Las fotos de las anotaciones **no** bajan con el mapa desde el 2026-09-24:

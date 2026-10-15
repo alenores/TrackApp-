@@ -15,10 +15,11 @@ import {
  * Van **encima del fondo y debajo de todo lo de la app**: los recuadros, la
  * ruta, el punto del GPS y las anotaciones siempre se ven por encima.
  *
- * **Las curvas van en magenta** porque no hay roca, pasto, agua ni tierra
- * magenta: cualquier cosa de ese color es, sin duda, un dibujo de la app. Las
- * gruesas llevan el número de altura, con borde para que no se pierda sobre
- * lo que tenga debajo. Ver docs/decisiones/013.
+ * **En el mapa simple van en magenta**, porque no hay roca, pasto, agua ni
+ * tierra de ese color. **Sobre la foto satelital van en naranja clarito**: el
+ * violeta no se distingue del terreno. El mapa elige el color al pintar, según
+ * el fondo. Las gruesas llevan el número de altura, con borde para que no se
+ * pierda. Ver docs/decisiones/013.
  */
 
 export const FUENTE_DE_LAS_CURVAS = "curvas";

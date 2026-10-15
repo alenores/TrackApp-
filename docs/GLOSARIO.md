@@ -66,7 +66,10 @@ El mapa sin vista satelital. **Siempre incluye curvas de nivel**, sin excepción
 
 **Mapa satelital**
 El mapa con la foto del terreno real de fondo. También puede mostrar curvas de
-nivel, que se prenden y apagan.
+nivel, que se prenden y apagan. En la navegación, sobre la foto se dibujan los
+ríos, arroyos, senderos y huellas del mapa simple: la foto no deja ver por
+dónde pasan, y esas líneas sí. El color de la tierra no se pinta, para que la
+foto se siga viendo.
 
 **Foto satelital**
 La imagen del terreno que va de fondo en el mapa satelital. Sale de Sentinel-2
@@ -174,7 +177,8 @@ ofrecería recuperar justo lo que él decidió tirar.
 
 **Punto**
 Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
-puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera).
+puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera,
+estacionamiento, sitio).
 Puede llevar comentario y foto. Se ubica tocando el mapa propio o pegando la
 coordenada de Google Earth. No pertenece a ningún sector: se carga desde
 **Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las demás

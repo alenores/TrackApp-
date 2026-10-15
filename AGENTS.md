@@ -161,10 +161,12 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   se escribe filtra zonas, sectores, Caminos, puntos y trazos; los pueblos y
   ciudades se buscan en internet recién al apretar el botón, y al elegir
   cualquiera el mapa viaja hasta ahí. Marcas es la lista con tildes y filtros,
-  y muestra solo lo que entra en el mapa que se está mirando (decisión 057);
-  el «+» y los tres puntos solo para Administrador y Premium. La navegación
-  libre también muestra todas las marcas. Marcas y la navegación libre no
-  dibujan sectores. Al tocar
+  y muestra solo lo que entra en el mapa que se está mirando (decisión 057).
+  Arriba del panel hay tres opciones de líneas: al abrir se ven las de las
+  zonas tildadas; se pueden sumar las de sus sectores, o no ver ninguna. El
+  «+» y los tres puntos solo para Administrador y Premium. La navegación
+  libre también muestra todas las marcas. La navegación libre no
+  dibuja sectores. Al tocar
   una zona aparece su ficha breve, que se abre tocándola completa. Nombres e
   íconos aparecen gradualmente al acercarse. Ver `docs/decisiones/029` y `052`.
 - **Lista y mapa son dos momentos**: en la computadora van lado a lado; en el

@@ -5,6 +5,7 @@ import type { Position } from "geojson";
 import { useRouter } from "next/navigation";
 import { retirarCamino } from "@/app/actions/caminos";
 import { borrarAnotacion } from "@/app/actions/territorio";
+import { LineasDelTerritorio } from "@/components/mapas/lineas-del-territorio";
 import { PantallaDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
 import { ListaDeMarcas } from "@/components/marcas/lista-de-marcas";
@@ -24,6 +25,7 @@ import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
 import { usePreferencia } from "@/hooks/use-preferencia";
 import { sectoresPorZona } from "@/lib/mapas/general";
+import type { VistaDeLineas } from "@/lib/mapas/lineas-del-territorio";
 import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { puedeCambiarDelMapa, puedeSumarAlMapa } from "@/lib/mapas/permisos";
 import {
@@ -60,6 +62,9 @@ import { useQuienSoy } from "@/components/armazon/quien-soy";
  * trayendo un archivo— y los tres puntos para editar o eliminar lo que les
  * toca. Lo que trajo de OpenStreetMap no se edita: queda como vino de
  * OpenStreetMap.
+ *
+ * Arriba del panel hay tres opciones de líneas: nada, las zonas tildadas, o
+ * esas zonas y sus sectores. Al abrir se ven las de las zonas.
  *
  * Lo elegido —tildes y filtros— se recuerda en el celular.
  */
@@ -104,6 +109,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const [pedazo, setPedazo] = useState<Rectangulo | null>(null);
   const [dondeEstaba, setDondeEstaba] = useState<VistaDelMapa | null>(null);
   const [viaje, setViaje] = useState(0);
+  const [lineas, setLineas] = useState<VistaDeLineas>("zonas");
   const [actividadPrincipal] = useActividadPrincipal();
   const [filtros, guardarFiltros] = usePreferencia<FiltrosDeMarcas>("filtros-de-marcas", SIN_FILTROS, leerFiltrosDeMarcas);
   const [destildadasGuardadas, guardarDestildadas] = usePreferencia<string[]>("marcas-destildadas", [], leerDestildadas);
@@ -288,6 +294,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
         resumen={`${cuantas} ${cuantas === 1 ? "marca" : "marcas"} en el mapa${zonasEnElMapa > 0 ? ` · ${zonasEnElMapa} ${zonasEnElMapa === 1 ? "zona" : "zonas"}` : ""}`}
         abierto={panelArriba}
         alCambiarAbierto={alCambiarPanel}
+        cabezaDelPanel={<LineasDelTerritorio valor={lineas} alElegir={setLineas} />}
         panel={
           <ListaDeMarcas
             marcas={marcasEnLaLista}
@@ -310,6 +317,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
           <MapaDeMarcas
             llenarElLugar
             zonas={dibujo.zonas}
+            sectores={paquete?.sectores ?? []}
+            lineas={lineas}
             anotaciones={dibujo.detalles}
             caminos={dibujo.caminos}
             actividad={actividad}
@@ -341,7 +350,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
           <div className="space-y-2">
             <OpcionDeEmergente icono={<IconoDeClase grupo="camino" />} titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino" }); }} />
-            <OpcionDeEmergente icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, arroyo, cruce, tranquera…"
+            <OpcionDeEmergente icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, estacionamiento, sitio, tranquera…"
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto" } }); }} />
             <OpcionDeEmergente icono={<IconoDeClase grupo="trazo" />} titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" } }); }} />

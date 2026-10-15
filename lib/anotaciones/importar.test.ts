@@ -20,6 +20,8 @@ describe("adivinar el ícono por el nombre", () => {
     ["Cerro Champaquí", "cumbre"],
     ["Vado del arroyo", "arroyo"],
     ["Tranquera de la estancia", "tranquera"],
+    ["Estacionamiento del Champaquí", "estacionamiento"],
+    ["Sitio del Mortero", "sitio"],
     ["Mirador", "mirador"],
     ["", "cruce"],
     ["Cosa rara", "cruce"],

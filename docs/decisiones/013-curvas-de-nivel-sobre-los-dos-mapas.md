@@ -44,21 +44,22 @@ que las líneas se recorten contra ella.
 
 No inventa una regla nueva: reutiliza la que ya rige toda la app.
 
-### 2. Las líneas van en un color que no existe en el terreno
+### 2. Las líneas van en un color que se distinga del fondo
 
-**Color elegido: magenta.**
+**En el mapa simple: magenta.** No hay roca, pasto, agua ni tierra magenta.
+Cualquier cosa de ese color es un dibujo de la app y no parte del mapa.
 
-El motivo: **no hay roca, pasto, agua ni tierra magenta.** Cualquier cosa magenta
-en pantalla es, sin ambigüedad, un dibujo de la app y no parte de la foto.
+**Sobre la foto satelital: naranja clarito** (Ale, 2026-10-15). El violeta no
+se distingue del terreno cuando las curvas están prendidas. Vale para las dos
+navegaciones, en modo sol y en modo noche. El mapa simple no cambia.
 
-**Descartados y por qué:**
+**Descartados en el mapa simple, y por qué:**
 
-- **Naranja** (la primera idea): en Córdoba el pastizal seco de otoño e invierno
-  es exactamente naranja dorado. La curva se perdería justo en la temporada de
-  más salidas.
+- **Naranja** (la primera idea, 2026-09-18): en Córdoba el pastizal seco es
+  naranja dorado y la curva se perdía sobre el dibujo. Sobre la foto, Ale
+  pidió justo ese naranja clarito porque el violeta no se lee.
 - **Marrón**, que es el estándar cartográfico: el terreno es marrón.
-- **Celeste**: se lee bien, pero se confunde con el agua, que es justamente algo
-  que hay que poder distinguir.
+- **Celeste**: se lee bien, pero se confunde con el agua.
 
 ### 3. Los números de altura llevan borde
 

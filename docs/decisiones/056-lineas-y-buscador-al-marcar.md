@@ -26,7 +26,8 @@ En esos tres mapas de marcar, junto a ubicarme y ver en grande, hay una lupa.
   líneas si estaban apagadas; elegir un sector prende también las de los
   sectores.
 
-Marcas y la navegación libre siguen sin dibujar sectores.
+La navegación libre sigue sin dibujar sectores. En Marcas, las tres opciones
+van arriba del panel (decisión 059).
 
 ## Auditoría de fuentes
 

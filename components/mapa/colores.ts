@@ -31,12 +31,22 @@ export type ColoresDelMapa = {
   rectanguloSinBajar: string;
   /** El borde de los puntos, para que se despeguen de lo que tengan debajo. */
   contorno: string;
+  /**
+   * Las huellas y calles sobre la foto satelital.
+   *
+   * En el mapa simple esas líneas son casi blancas de día y casi negras de
+   * noche: sobre la foto desaparecen. Acá siguen al texto, oscuras con sol y
+   * claras de noche.
+   */
+  texto: string;
   /** El sendero a pie, distinto del camino de auto. */
   sendero: string;
   /** Arroyos y ríos. */
   agua: string;
-  /** Las curvas de nivel y sus números. */
+  /** Las curvas de nivel y sus números, sobre el mapa simple. */
   curva: string;
+  /** Las mismas curvas sobre la foto satelital: naranja clarito. */
+  curvaSobreFoto: string;
 };
 
 /** Por si se pregunta antes de que el navegador tenga las variables listas. */
@@ -58,9 +68,11 @@ const DE_RESPALDO: ColoresDelMapa = {
   rectanguloBajado: "#059669",
   rectanguloSinBajar: "#b45309",
   contorno: "#1e293b",
+  texto: "#f1f5f9",
   sendero: "#e8a765",
   agua: "#5fc3e4",
   curva: "#f0abfc",
+  curvaSobreFoto: "#ffc266",
 };
 
 function leer(nombre: string, deRespaldo: string): string {
@@ -92,8 +104,20 @@ export function coloresDelMapa(): ColoresDelMapa {
     rectanguloBajado: leer("--verde-borde", DE_RESPALDO.rectanguloBajado),
     rectanguloSinBajar: leer("--ambar-borde", DE_RESPALDO.rectanguloSinBajar),
     contorno: leer("--superficie", DE_RESPALDO.contorno),
+    texto: leer("--texto", DE_RESPALDO.texto),
     sendero: leer("--mapa-sendero", DE_RESPALDO.sendero),
     agua: leer("--mapa-agua", DE_RESPALDO.agua),
     curva: leer("--mapa-curva", DE_RESPALDO.curva),
+    curvaSobreFoto: leer("--mapa-curva-foto", DE_RESPALDO.curvaSobreFoto),
   };
+}
+
+/**
+ * Color de las curvas de nivel según el fondo.
+ *
+ * En el mapa simple siguen en magenta. Sobre la foto satelital van en naranja
+ * clarito: el violeta no se distingue del terreno (Ale, 2026-10-15).
+ */
+export function colorDeLasCurvas(sobreLaFoto: boolean, colores: ColoresDelMapa): string {
+  return sobreLaFoto ? colores.curvaSobreFoto : colores.curva;
 }

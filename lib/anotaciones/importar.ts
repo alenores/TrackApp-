@@ -40,6 +40,8 @@ const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
   mirador: ["mirador", "vista", "balcon", "balcón"],
   cascada: ["cascada", "salto", "chorro"],
   tranquera: ["tranquera", "porton", "portón", "puerta"],
+  estacionamiento: ["estacionamiento", "parking", "aparcamiento"],
+  sitio: ["sitio", "sitios"],
 };
 
 export function iconoPorElNombre(nombre: string | null | undefined): IconoPunto {

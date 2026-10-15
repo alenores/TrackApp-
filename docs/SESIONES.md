@@ -4,6 +4,133 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-15 — Ríos y huellas sobre el satelital
+
+### Estado al inicio
+
+En la navegación, el satelital mostraba la foto, los nombres y las curvas. Los
+ríos y las huellas, que en el mapa simple se leen bien, no se dibujaban encima
+de la foto.
+
+### Lo que se hizo
+
+En la navegación libre y en la de un Circuito, sobre la foto van ríos, arroyos,
+senderos y huellas. El color de la tierra no se pinta. Al marcar un rectángulo
+la foto sigue pelada.
+
+### Decisiones tomadas
+
+Decisión 060. Las huellas y las calles van oscuras con sol y claras de noche,
+porque el color del mapa simple desaparece sobre la foto.
+
+### Documentos actualizados
+
+Decisión 060, glosario, diseño exterior, la decisión de cómo llega el mapa y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular, con un mapa satelital ya bajado, de día y de noche.
+
+---
+
+## Sesión 2026-10-15 — Líneas de zonas y sectores en Marcas
+
+### Estado al inicio
+
+En Marcas, las zonas tildadas dibujaban su borde y no había forma de apagarlo
+ni de ver los sectores.
+
+### Lo que se hizo
+
+Arriba del panel de Marcas quedaron los tres circulitos: nada, zonas, o zonas
+y sectores. Al abrir se ven las zonas tildadas. La navegación libre no cambia.
+
+### Decisiones tomadas
+
+Decisión 059.
+
+### Documentos actualizados
+
+Decisión 059, decisión 056, diseño exterior, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Probarlo en el celular, con la cuenta iniciada.
+
+---
+
+## Sesión 2026-10-15 — Curvas naranjas sobre el satelital
+
+### Estado al inicio
+
+Las curvas de nivel iban en violeta en los dos mapas. Sobre la foto satelital
+no se distinguían del terreno.
+
+### Lo que se hizo
+
+En la navegación libre y en la de un Circuito, con el satelital y las curvas
+prendidas, las líneas y los números van en naranja clarito. En el mapa simple
+siguen en violeta.
+
+### Decisiones tomadas
+
+Actualización de la decisión 013. Ale, 2026-10-15.
+
+### Documentos actualizados
+
+Decisión 013 y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Mirarlas al sol, sobre pasto seco, por si el naranja clarito se pierde igual.
+
+---
+
+## Sesión 2026-10-15 — Estacionamiento y Sitio en los puntos
+
+### Estado al inicio
+
+Al marcar un punto se elegía entre doce tipos: refugio, arroyo, cumbre,
+puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada y tranquera.
+
+### Lo que se hizo
+
+Se sumaron dos tipos: **Estacionamiento** y **Sitio**. Aparecen al elegir qué
+es el punto, en la lista y en el mapa, con su dibujo.
+
+### Decisiones tomadas
+
+Ale pidió esas dos categorías. El botón dice «Sitio», en singular, como el
+resto (Refugio, Tranquera).
+
+### Documentos actualizados
+
+Glosario, esquema de la base y este registro.
+
+### Deuda o inconsistencias detectadas
+
+La base tiene que aceptar los dos nombres nuevos. Si no, al guardar uno de
+esos puntos va a rechazarlo.
+
+### Pendientes para la próxima
+
+Confirmar en la base que ya acepta estacionamiento y sitio, y probar marcar
+uno de cada uno.
+
+---
+
 ## Sesión 2026-10-15 — Líneas de zonas y resultados en Consultas
 
 ### Estado al inicio

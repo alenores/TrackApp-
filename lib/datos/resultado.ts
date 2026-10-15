@@ -50,6 +50,10 @@ export function traducirErrorDeBase(mensaje: string): string {
     return "Un punto lleva ícono y un trazo lleva color. Revisá qué estás cargando.";
   }
 
+  if (texto.includes("invalid input value for enum icono_punto")) {
+    return "Ese tipo de punto todavía no se puede guardar: la base no lo acepta. Hay que habilitarlo ahí y volver a intentar.";
+  }
+
   if (texto.includes("violates foreign key")) {
     return "Estás apuntando a algo que ya no existe. Recargá la pantalla y probá de nuevo.";
   }

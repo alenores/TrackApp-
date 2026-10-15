@@ -12,6 +12,7 @@ import {
   QUIEN_HIZO_LA_FOTO,
   todasLasCapasDelFondo,
 } from "@/components/mapa/capas-base";
+import { coloresDelMapa } from "@/components/mapa/colores";
 
 /**
  * Las pruebas del fondo del mapa.
@@ -135,7 +136,7 @@ describe("la foto del terreno", () => {
     expect(enVivo.tiles[0]).toMatch(/^https:/);
   });
 
-  it("sobre la foto van solo los nombres, no el dibujo entero", () => {
+  it("al marcar un rectángulo, sobre la foto van solo los nombres", () => {
     // El relleno y los caminos taparían el terreno, que es justo lo que se
     // quiere mirar al marcar un rectángulo.
     const capas = capasDelFondo("sol", "satelital");
@@ -143,6 +144,40 @@ describe("la foto del terreno", () => {
     expect(capas[0].type).toBe("raster");
     expect(capas.slice(1).every((capa) => capa.type === "symbol")).toBe(true);
     expect(capas.length).toBeLessThan(capasDelFondo("sol", "dibujo").length);
+  });
+
+  it("navegando, sobre la foto van ríos, arroyos, senderos y huellas, sin tapar el terreno", () => {
+    const capas = capasDelFondo("sol", "satelital", true, true);
+    const ids = capas.map((capa) => capa.id);
+    const colores = coloresDelMapa();
+
+    expect(capas[0].id).toBe("foto-del-terreno");
+    expect(capas.some((capa) => capa.type === "fill")).toBe(false);
+    expect(ids).toEqual(expect.arrayContaining(["water_stream", "water_river", "roads_other", "senderos"]));
+    expect(ids).not.toContain("earth");
+    expect(ids).not.toContain("water");
+    expect(ids).not.toContain("roads_minor_casing");
+    expect(ids).not.toContain("roads_rail");
+
+    const arroyo = capas.find((capa) => capa.id === "water_stream") as { paint: Record<string, unknown> };
+    const huella = capas.find((capa) => capa.id === "roads_other") as { paint: Record<string, unknown> };
+    const sendero = capas.find((capa) => capa.id === "senderos") as { paint: Record<string, unknown> };
+    expect(arroyo.paint["line-color"]).toBe(colores.agua);
+    expect(huella.paint["line-color"]).toBe(colores.texto);
+    expect(sendero.paint["line-color"]).toBe(colores.sendero);
+    expect(sendero.paint["line-dasharray"]).toEqual([2, 1.5]);
+
+    const primerNombre = capas.findIndex((capa) => capa.type === "symbol");
+    expect(ids.indexOf("water_stream")).toBeLessThan(ids.indexOf("roads_other"));
+    expect(ids.indexOf("roads_other")).toBeLessThan(ids.indexOf("senderos"));
+    expect(ids.indexOf("senderos")).toBeLessThan(primerNombre);
+    expect(capas.length).toBeLessThan(capasDelFondo("sol", "dibujo").length);
+  });
+
+  it("las líneas sobre la foto son las mismas de día y de noche", () => {
+    const deSol = capasDelFondo("sol", "satelital", true, true).map((capa) => capa.id);
+    const deNoche = capasDelFondo("noche", "satelital", true, true).map((capa) => capa.id);
+    expect(deSol).toEqual(deNoche);
   });
 
   it("se puede sacar todo el fondo al cambiar de tipo", () => {
@@ -153,6 +188,9 @@ describe("la foto del terreno", () => {
       for (const capa of capasDelFondo("sol", tipo)) {
         expect(todas).toContain(capa.id);
       }
+    }
+    for (const capa of capasDelFondo("sol", "satelital", true, true)) {
+      expect(todas).toContain(capa.id);
     }
   });
 

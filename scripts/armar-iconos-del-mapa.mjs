@@ -55,6 +55,8 @@ const PROPIOS = [
   { nombre: "cartel", dibujo: "cartel", paleta: "natural" },
   { nombre: "cruce", dibujo: "cruce", paleta: "natural" },
   { nombre: "tranquera", dibujo: "tranquera", paleta: "natural" },
+  { nombre: "estacionamiento", dibujo: "estacionamiento", paleta: "natural" },
+  { nombre: "sitio", dibujo: "sitio", paleta: "natural" },
 ];
 
 /** Medidos sobre los íconos de Protomaps de cada familia, píxel por píxel. */

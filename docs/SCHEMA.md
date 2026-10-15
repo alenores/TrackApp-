@@ -218,7 +218,8 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 | `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | como en toda tabla |
 
 **Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
-fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21)
+fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21) ·
+estacionamiento · sitio (desde 2026-10-15)
 
 **La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
 un trazo lleva color y no lleva ícono.

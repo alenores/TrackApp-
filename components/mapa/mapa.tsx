@@ -13,7 +13,7 @@ import {
   todasLasCapasDelFondo,
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
-import { coloresDelMapa } from "@/components/mapa/colores";
+import { colorDeLasCurvas, coloresDelMapa } from "@/components/mapa/colores";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
@@ -102,6 +102,8 @@ function ponerElFondo(
   modo: Modo,
   tipo: TipoDeFondo,
   conCurvas: boolean,
+  /** Navegando, la foto lleva ríos, arroyos, senderos y huellas. */
+  conLineas: boolean,
 ): string | null {
   try {
     for (const vieja of todasLasCapasDelFondo(modo)) {
@@ -114,7 +116,7 @@ function ponerElFondo(
 
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
-    for (const capa of capasDelFondo(modo, tipo, conCurvas)) mapa.addLayer(capa, debajoDe);
+    for (const capa of capasDelFondo(modo, tipo, conCurvas, conLineas)) mapa.addLayer(capa, debajoDe);
 
     // Las curvas: siempre en el simple; en el satelital, según el botón.
     for (const capa of CAPAS_DE_RELIEVE) {
@@ -681,7 +683,7 @@ export function Mapa({
           maxzoom: 22,
         });
       }
-      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current));
+      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current, !enVivoRef.current));
     });
   }, [sesionGoogleActiva]);
 
@@ -1063,6 +1065,8 @@ export function Mapa({
             "cartel", "cartel",
             "cruce", "cruce",
             "tranquera", "tranquera",
+            "estacionamiento", "estacionamiento",
+            "sitio", "sitio",
             "none"
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],
@@ -1105,7 +1109,7 @@ export function Mapa({
       esperandoRef.current = [];
 
       setAvisoDelFondo(
-        ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current),
+        ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current, !enVivoRef.current),
       );
     });
 
@@ -1163,7 +1167,7 @@ export function Mapa({
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
-      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas));
+      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo));
 
       for (const capa of CAPAS_DE_PARTES) {
         mapa.setPaintProperty(capa, "line-color", [
@@ -1265,16 +1269,17 @@ export function Mapa({
       }
 
       if (mapa.getLayer(ALTURAS)) {
+        const colorDeCurva = colorDeLasCurvas(tipoDeFondo === "satelital", colores);
         for (const capa of [CURVAS_FINAS, CURVAS_GRUESAS]) {
-          mapa.setPaintProperty(capa, "line-color", colores.curva);
+          mapa.setPaintProperty(capa, "line-color", colorDeCurva);
         }
-        mapa.setPaintProperty(ALTURAS, "text-color", colores.curva);
+        mapa.setPaintProperty(ALTURAS, "text-color", colorDeCurva);
         mapa.setPaintProperty(ALTURAS, "text-halo-color", colores.contorno);
       }
     };
 
     cuandoEsteListo(pintar);
-  }, [modo, tipoDeFondo, conCurvas]);
+  }, [modo, tipoDeFondo, conCurvas, enVivo]);
 
   // La línea de la ruta.
   const yaEncuadroRef = useRef(false);
