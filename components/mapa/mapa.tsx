@@ -1976,17 +1976,13 @@ export function Mapa({
   }, [margenInferiorAlCentrar]);
 
   useEffect(() => {
-    cuandoEsteListo(() => {
-      const mapa = mapaRef.current;
-      if (!mapa) return;
-      const alto = mapa.getContainer().clientHeight;
-      const abajo = margenInferiorAlCentrar <= 0
-        ? 0
-        : Math.min(margenInferiorAlCentrar, Math.max(0, alto - 80));
-      mapa.setPadding({ top: 0, bottom: abajo, left: 0, right: 0 });
-    });
-    // cuandoEsteListo se rearma en cada dibujado; el margen es lo que importa.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    const alto = mapa.getContainer().clientHeight;
+    const abajo = margenInferiorAlCentrar <= 0
+      ? 0
+      : Math.min(margenInferiorAlCentrar, Math.max(0, alto - 80));
+    mapa.setPadding({ top: 0, bottom: abajo, left: 0, right: 0 });
   }, [margenInferiorAlCentrar]);
 
   useEffect(() => {

@@ -124,13 +124,11 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
   const [vueltaDelAtras, setVueltaDelAtras] = useState(0);
 
   const seccionRef = useRef<HTMLElement>(null);
-  const centrarRef = useRef(alCentrarEnMi);
-  const medirRef = useRef(alMedirElPanel);
   const yaCentroAlAbrir = useRef(false);
-  centrarRef.current = alCentrarEnMi;
-  medirRef.current = alMedirElPanel;
+  const hayPosicion = gps.posicion !== null;
 
   // Al abrirse, el mapa que queda arriba se centra donde está el GPS.
+  // Si el GPS todavía no respondió, se espera a la primera posición.
   // Si después el panel se achica o vuelve a crecer, solo se acomoda el
   // margen: no se lleva el mapa de vuelta al GPS.
   useLayoutEffect(() => {
@@ -141,12 +139,13 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
     const alto = seccionRef.current?.offsetHeight ?? 0;
     if (alto <= 0) return;
     if (!yaCentroAlAbrir.current) {
+      if (!hayPosicion) return;
       yaCentroAlAbrir.current = true;
-      centrarRef.current(alto);
+      alCentrarEnMi(alto);
       return;
     }
-    medirRef.current(alto);
-  }, [marcado.abierto, marcado.dibujando]);
+    alMedirElPanel(alto);
+  }, [marcado.abierto, marcado.dibujando, hayPosicion, alCentrarEnMi, alMedirElPanel]);
 
   // Pantalla mojada: salir sin guardar pide confirmación.
   const cancelar = useCallback(

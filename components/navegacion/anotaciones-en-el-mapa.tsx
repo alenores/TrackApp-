@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { ElegirAnotacionesDelMapa } from "@/components/navegacion/elegir-anotaciones-del-mapa";
@@ -69,8 +69,8 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   const [eligiendoTipo, setEligiendoTipo] = useState(false);
   const [eligiendoFiltro, setEligiendoFiltro] = useState(false);
   const [guardadoHace, setGuardadoHace] = useState<number | null>(null);
-  const [margenAlCentrar, setMargenAlCentrar] = useState(0);
-  const centroPendiente = useRef(false);
+  const [altoDelPanel, setAltoDelPanel] = useState(0);
+  const margenAlCentrar = marcado.abierto ? altoDelPanel : 0;
 
   useEffect(() => {
     if (guardadoHace === null) return;
@@ -110,34 +110,17 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   // alto (se achica para dibujar, o vuelve el formulario) lo que se estaba
   // mirando sigue en la parte de mapa que queda a la vista.
   const medirElPanel = useCallback((alto: number) => {
-    setMargenAlCentrar(alto);
+    setAltoDelPanel(alto);
   }, []);
 
-  // El panel, al abrirse, pide centrar el mapa que queda arriba. Si el GPS
-  // todavía no respondió, se hace apenas haya posición, una sola vez.
+  // El panel, al abrirse, pide centrar el mapa que queda arriba.
   const centrarViendoElPanel = useCallback(
     (alto: number) => {
-      setMargenAlCentrar(alto);
-      if (gps.posicion) {
-        centroPendiente.current = false;
-        centrarEnMi();
-      } else {
-        centroPendiente.current = true;
-      }
+      setAltoDelPanel(alto);
+      centrarEnMi();
     },
-    [centrarEnMi, gps.posicion],
+    [centrarEnMi],
   );
-
-  useEffect(() => {
-    if (!marcado.abierto) {
-      centroPendiente.current = false;
-      setMargenAlCentrar(0);
-      return;
-    }
-    if (!centroPendiente.current || !gps.posicion) return;
-    centroPendiente.current = false;
-    centrarEnMi();
-  }, [marcado.abierto, gps.posicion, centrarEnMi]);
 
   const cambiar = useCallback(
     (anotacion: AnotacionEnPantalla) => {
