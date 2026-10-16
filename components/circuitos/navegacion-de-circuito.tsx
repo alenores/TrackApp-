@@ -142,7 +142,9 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
           encuadre={ficha.rectangulo} pantallaCompleta sinCruzArriba
           fondoInicial={fondoInicial && fondosDisponibles.includes(fondoInicial) ? fondoInicial : fondosDisponibles[0] ?? "dibujo"}
           fondosDisponibles={fondosDisponibles}
-          forzarCentradoEn={centrarGps} sinMapaDescargado={avisoDelMapa !== null || fondosDisponibles.length === 0} />
+          forzarCentradoEn={centrarGps}
+          margenInferiorAlCentrar={deAnotaciones.margenAlCentrar}
+          sinMapaDescargado={avisoDelMapa !== null || fondosDisponibles.length === 0} />
       </div>
 
       {deAnotaciones.aviso}

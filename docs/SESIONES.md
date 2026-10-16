@@ -4,6 +4,51 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-16 — Marcar un punto ya no queda cortado
+
+### Estado al inicio
+
+Desde la navegación libre, el lapicito, el «+» y después un punto abrían un
+formulario más alto que el celular. No se podía bajar y quedaba cortado en el
+borde de la pantalla. Lo mismo iba a pasar con un trazo, y en la navegación de
+un Circuito.
+
+### Lo que se hizo
+
+Ese formulario ahora se desplaza hasta Guardar, sin salirse de la pantalla. El
+dedo ya no se frena encima de él. Sirve para punto y trazo, en las dos
+navegaciones.
+
+En la navegación libre, el botón «Actividad» pasó a ser un círculo con el
+ícono de Caminos, el mismo de Marcas. El texto ancho tapaba el mapa.
+
+La pantalla de marcar, en las dos navegaciones, cierra con una X y con el
+botón de atrás. Al lado de la X está el ícono de centrar en el GPS, el mismo
+de siempre. Al abrir, el mapa que queda arriba se centra donde estás. Un
+punto queda ahí salvo que se toque otro lugar. Un trazo se dibuja recién al
+apretar «Comenzar a dibujar»: el panel se achica y quedan deshacer, cancelar
+y finalizar.
+
+### Decisiones tomadas
+
+Decisión 061. El trazo no arranca en el GPS. Finalizar vuelve al formulario;
+se guarda con Guardar.
+
+### Documentos actualizados
+
+Decisión 061, diseño exterior y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular: navegación libre y la de un Circuito, punto y trazo,
+hasta llegar a Guardar.
+
+---
+
 ## Sesión 2026-10-15 — Ríos y huellas sobre el satelital
 
 ### Estado al inicio

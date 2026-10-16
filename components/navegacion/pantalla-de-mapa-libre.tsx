@@ -131,6 +131,7 @@ export function PantallaDeMapaLibre() {
             fondoInicial={fondosDisponibles[0] ?? "dibujo"}
             fondosDisponibles={fondosDisponibles}
             forzarCentradoEn={centrarGps}
+            margenInferiorAlCentrar={deAnotaciones.margenAlCentrar}
             sinMapaDescargado={mapasBajados.length === 0}
             alTocarAnotacion={deAnotaciones.alTocarAnotacion}
             alTocarCamino={(_lon, _lat, propiedades) => {
@@ -213,7 +214,9 @@ export function PantallaDeMapaLibre() {
               {ICONOS_DEL_CERRO.salir}
             </BotonRedondo>
             {deAnotaciones.boton}
-            <Boton variante="secundario" onClick={() => setElegirActividad(true)}>Actividad</Boton>
+            <BotonRedondo etiqueta="Actividad" onClick={() => setElegirActividad(true)}>
+              {ICONOS_DEL_CERRO.caminos}
+            </BotonRedondo>
             <span className="flex-1" />
             {registro.enCurso ? (
               <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!posicion} />

@@ -22,15 +22,26 @@ import type { Anotacion, IconoPunto } from "@/types/database";
  * Marcar una anotación desde el cerro: un punto o un trazo, con comentario y
  * foto. **Todo queda en el celular** y sube solo cuando hay señal.
  *
- * **Manda el punto del GPS.** Un punto se guarda donde estás; solo si el GPS
- * no anda, o no da novedades, se marca a mano tocando el mapa. Y lo que se
- * guarda es la posición del GPS **al guardar**, no la de cuando se abrió.
+ * **Un punto arranca donde está el GPS.** Si no se toca el mapa, se guarda
+ * esa posición al apretar Guardar. Un toque lo mueve a ese lugar. Un trazo no
+ * arranca en el GPS: los puntos se cargan a mano, y solo mientras se está
+ * dibujando.
  */
 
 /** Con menos que esto no hay línea: lo exige también la base. */
 export const PUNTOS_MINIMOS_DE_UN_TRAZO = 2;
 
 export type TipoDeMarca = "punto" | "trazo";
+
+/**
+ * Un toque en el mapa mueve el punto siempre. En un trazo, solo suma un
+ * punto mientras se está dibujando: con el formulario abierto el mapa no
+ * se marca sin querer.
+ */
+export function elToqueMarcaEnElMapa(tipo: TipoDeMarca | null, dibujando: boolean): boolean {
+  if (tipo === "punto") return true;
+  return tipo === "trazo" && dibujando;
+}
 
 type Borrador = {
   tipo: TipoDeMarca;
@@ -46,8 +57,10 @@ type Borrador = {
   modo: "gps" | "a_mano";
   /** Un punto: el lugar marcado a mano, o el que ya tenía al cambiarlo. */
   aMano: [number, number] | null;
-  /** Un trazo: los toques en el mapa, en orden. */
+  /** Un trazo: los toques en el mapa, en orden. El primero no es el GPS. */
   puntos: [number, number][];
+  /** Un trazo: el panel está chico y los toques en el mapa suman puntos. */
+  dibujando: boolean;
   quitarLaFoto: boolean;
 };
 
@@ -68,7 +81,11 @@ export type Marcado = {
   /** ¿Se escribió o marcó algo? Para confirmar antes de tirarlo. */
   hayAlgo: boolean;
   puedeGuardar: boolean;
+  /** Un trazo con el mapa listo para ir sumando puntos. */
+  dibujando: boolean;
   empezar: (tipo: TipoDeMarca) => void;
+  comenzarADibujar: () => void;
+  finalizarDibujo: () => void;
   cambiar: (anotacion: AnotacionEnPantalla) => void;
   alTocarElMapa: (lon: number, lat: number) => void;
   usarElGps: () => void;
@@ -93,6 +110,7 @@ function borradorVacio(tipo: TipoDeMarca): Borrador {
     modo: "gps",
     aMano: null,
     puntos: [],
+    dibujando: false,
     quitarLaFoto: false,
   };
 }
@@ -115,9 +133,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       : borrador.aMano;
   }, [borrador, usaElGps, posicionDelGps]);
 
-  // Sin GPS que sirva, el punto se marca a mano: el toque en el mapa queda
-  // prendido solo, no hay que buscar un botón.
-  const marcandoEnElMapa = borrador !== null && (borrador.tipo === "trazo" || !usaElGps);
+  const marcandoEnElMapa = elToqueMarcaEnElMapa(borrador?.tipo ?? null, borrador?.dibujando ?? false);
 
   const cerrar = useCallback(() => {
     setBorrador(null);
@@ -163,9 +179,20 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
   const alTocarElMapa = useCallback((lon: number, lat: number) => {
     setBorrador((actual) => {
       if (!actual) return actual;
-      if (actual.tipo === "trazo") return { ...actual, puntos: [...actual.puntos, [lon, lat]] };
+      if (actual.tipo === "trazo") {
+        if (!actual.dibujando) return actual;
+        return { ...actual, puntos: [...actual.puntos, [lon, lat]] };
+      }
       return { ...actual, modo: "a_mano", aMano: [lon, lat] };
     });
+  }, []);
+
+  const comenzarADibujar = useCallback(() => {
+    setBorrador((actual) => (actual?.tipo === "trazo" ? { ...actual, dibujando: true } : actual));
+  }, []);
+
+  const finalizarDibujo = useCallback(() => {
+    setBorrador((actual) => (actual ? { ...actual, dibujando: false } : actual));
   }, []);
 
   const usarElGps = useCallback(() => {
@@ -338,7 +365,10 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     vistaPrevia,
     hayAlgo,
     puedeGuardar,
+    dibujando: borrador?.dibujando ?? false,
     empezar,
+    comenzarADibujar,
+    finalizarDibujo,
     cambiar,
     alTocarElMapa,
     usarElGps,

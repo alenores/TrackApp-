@@ -51,6 +51,43 @@ function isInsideScrollPane(target: EventTarget | null): HTMLElement | null {
   return target.closest(SELECTOR_DEL_PANEL_QUE_SE_DESPLAZA) as HTMLElement | null;
 }
 
+/**
+ * La caja más cercana que de verdad se desplaza, si el dedo no está en el mapa.
+ *
+ * Sirve para el panel de marcar un punto o un trazo: vive adentro de la
+ * navegación, que no se desplaza, pero el formulario sí. Sin esto se creía
+ * que no había nada que mover y se frenaba el dedo: la ficha quedaba cortada
+ * en el borde del celular.
+ */
+function cajaQueSeDesplaza(desde: EventTarget | null): HTMLElement | null {
+  let actual: Element | null = desde instanceof Element ? desde : null;
+  while (actual && !(actual instanceof HTMLElement)) actual = actual.parentElement;
+  while (actual instanceof HTMLElement) {
+    const { overflowY } = getComputedStyle(actual);
+    const seDesplaza =
+      (overflowY === "auto" || overflowY === "scroll") &&
+      actual.scrollHeight > actual.clientHeight + 1;
+    if (seDesplaza) return actual;
+    actual = actual.parentElement;
+  }
+  return null;
+}
+
+/**
+ * El dedo va sobre una caja que todavía tiene contenido de ese lado.
+ * En ese caso el gesto es de esa caja: no se frena.
+ */
+export function elGestoLoAtiendeUnaCajaDeAdentro(estado: {
+  hayContenidoArriba: boolean;
+  hayContenidoAbajo: boolean;
+  dedoHaciaAbajo: boolean;
+  dedoHaciaArriba: boolean;
+}): boolean {
+  if (estado.dedoHaciaAbajo && estado.hayContenidoArriba) return true;
+  if (estado.dedoHaciaArriba && estado.hayContenidoAbajo) return true;
+  return false;
+}
+
 function mountScrollPaneOverscrollLock(): () => void {
   let activePane: HTMLElement | null = null;
   let touchStartY = 0;
@@ -68,6 +105,23 @@ function mountScrollPaneOverscrollLock(): () => void {
     const touchY = event.touches[0]?.clientY ?? 0;
     const pullingDown = touchY > touchStartY;
     const pullingUp = touchY < touchStartY;
+
+    // Una caja de adentro (el formulario de marcar) se desplaza sola.
+    // Si se le frena el dedo, queda cortada por el borde del celular.
+    const caja = cajaQueSeDesplaza(event.target);
+    if (
+      caja &&
+      caja !== pane &&
+      elGestoLoAtiendeUnaCajaDeAdentro({
+        hayContenidoArriba: caja.scrollTop > 0,
+        hayContenidoAbajo: caja.scrollTop + caja.clientHeight < caja.scrollHeight - 1,
+        dedoHaciaAbajo: pullingDown,
+        dedoHaciaArriba: pullingUp,
+      })
+    ) {
+      return;
+    }
+
     const atTop = pane.scrollTop <= 0;
     const atBottom =
       pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 1;

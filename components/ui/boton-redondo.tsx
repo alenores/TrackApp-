@@ -3,6 +3,7 @@
 import type { ButtonHTMLAttributes, PointerEvent, ReactNode } from "react";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
+import { trazosDeClase } from "@/components/marcas/icono-de-clase";
 import { ICONO_DE_CIRCUITOS, ICONO_DE_MARCAS, iconoDeUbicarme } from "@/components/ui/iconos";
 
 /**
@@ -90,6 +91,8 @@ export const ICONOS_DEL_CERRO = {
   marcas: ICONO_DE_MARCAS,
   /** Otros Circuitos en el mapa. */
   circuitos: ICONO_DE_CIRCUITOS,
+  /** El mismo dibujo de Camino que en Marcas. En la navegación libre abre la actividad. */
+  caminos: trazosDeClase("camino"),
   centrar: iconoDeUbicarme(true),
   mapa: <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />,
   /** El gráfico de alturas: una línea que sube y baja sobre su base. */

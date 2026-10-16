@@ -58,7 +58,10 @@ lleno, para distinguir tildar una de tildar todas (Ale, 2026-10-15). Esa lista
 se achica a lo que entra en el mapa: al acercarse o moverse, lo que quedó
 afuera deja de listarse (decisión 057). Arriba del panel de Marcas hay
 tres opciones de líneas: nada, las zonas tildadas, o esas zonas y sus
-sectores (decisión 059). La navegación libre no dibuja sectores. Al hacer clic o tocar una zona aparece una ficha
+sectores (decisión 059). La navegación libre no dibuja sectores. Al marcar
+un punto o un trazo desde la navegación, el mapa que queda arriba se centra
+en el GPS, se cierra con una X o con el botón de atrás, y el trazo se dibuja
+recién al apretar «Comenzar a dibujar» (decisión 061). Al hacer clic o tocar una zona aparece una ficha
 breve con acceso al detalle tocando cualquier parte de la ficha; el detalle
 de la zona sigue mostrando sus sectores. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi

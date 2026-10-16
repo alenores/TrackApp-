@@ -251,6 +251,12 @@ type MapaProps = {
   sinCruzArriba?: boolean;
   /** Cambiar este número fuerza al mapa a centrarse en la posición actual. */
   forzarCentradoEn?: number;
+  /**
+   * Píxeles tapados abajo, para que el centro caiga en el mapa que queda a
+   * la vista. Lo usa el panel de marcar: si no, el GPS queda detrás del
+   * formulario.
+   */
+  margenInferiorAlCentrar?: number;
   /** Fondo inicial al abrir el mapa, por defecto dibujo. */
   fondoInicial?: TipoDeFondo;
   /** Se llama cuando el usuario cambia el tipo de fondo. */
@@ -428,6 +434,7 @@ export function Mapa({
   alCerrarPantallaCompleta,
   sinCruzArriba = false,
   forzarCentradoEn,
+  margenInferiorAlCentrar = 0,
   fondoInicial = "dibujo",
   alCambiarFondo,
   fondosDisponibles,
@@ -1963,6 +1970,25 @@ export function Mapa({
     posicionParaCentrarRef.current = posicionEfectiva;
   }, [posicionEfectiva]);
 
+  const margenAlCentrarRef = useRef(margenInferiorAlCentrar);
+  useEffect(() => {
+    margenAlCentrarRef.current = margenInferiorAlCentrar;
+  }, [margenInferiorAlCentrar]);
+
+  useEffect(() => {
+    cuandoEsteListo(() => {
+      const mapa = mapaRef.current;
+      if (!mapa) return;
+      const alto = mapa.getContainer().clientHeight;
+      const abajo = margenInferiorAlCentrar <= 0
+        ? 0
+        : Math.min(margenInferiorAlCentrar, Math.max(0, alto - 80));
+      mapa.setPadding({ top: 0, bottom: abajo, left: 0, right: 0 });
+    });
+    // cuandoEsteListo se rearma en cada dibujado; el margen es lo que importa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [margenInferiorAlCentrar]);
+
   useEffect(() => {
     if (!forzarCentradoEn) return;
 
@@ -1973,9 +1999,12 @@ export function Mapa({
       const mapa = mapaRef.current;
       const posicion = posicionParaCentrarRef.current;
       if (!mapa || !posicion) return;
+      const alto = mapa.getContainer().clientHeight;
+      const abajo = Math.min(margenAlCentrarRef.current, Math.max(0, alto - 80));
       mapa.flyTo({
         center: [posicion.lon, posicion.lat],
         zoom: mapa.getZoom() > 14 ? mapa.getZoom() : 14,
+        padding: { top: 0, bottom: abajo, left: 0, right: 0 },
       });
     });
   }, [forzarCentradoEn]);

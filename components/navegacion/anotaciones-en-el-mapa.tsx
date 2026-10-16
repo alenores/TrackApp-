@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { ElegirAnotacionesDelMapa } from "@/components/navegacion/elegir-anotaciones-del-mapa";
@@ -50,6 +50,11 @@ export type AnotacionesEnElMapa = {
   aviso: ReactNode;
   /** Las emergentes, para poner al final. */
   resto: ReactNode;
+  /**
+   * Alto del panel, en píxeles, para que el GPS quede en el mapa que se ve
+   * arriba y no escondido detrás del formulario.
+   */
+  margenAlCentrar: number;
 };
 
 /** Cuánto queda a la vista el aviso de «guardado». Todo lo que aparece, se va. */
@@ -64,6 +69,8 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
   const [eligiendoTipo, setEligiendoTipo] = useState(false);
   const [eligiendoFiltro, setEligiendoFiltro] = useState(false);
   const [guardadoHace, setGuardadoHace] = useState<number | null>(null);
+  const [margenAlCentrar, setMargenAlCentrar] = useState(0);
+  const centroPendiente = useRef(false);
 
   useEffect(() => {
     if (guardadoHace === null) return;
@@ -95,11 +102,42 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
       if (!cerro.puedeAnotar) return;
       setEligiendoTipo(false);
       marcado.empezar(tipo);
-      // La pantalla de anotar abre siempre donde está el GPS.
-      centrarEnMi();
     },
-    [cerro.puedeAnotar, marcado, centrarEnMi],
+    [cerro.puedeAnotar, marcado],
   );
+
+  // Solo acomoda el margen, sin viajar al GPS: cuando el panel cambia de
+  // alto (se achica para dibujar, o vuelve el formulario) lo que se estaba
+  // mirando sigue en la parte de mapa que queda a la vista.
+  const medirElPanel = useCallback((alto: number) => {
+    setMargenAlCentrar(alto);
+  }, []);
+
+  // El panel, al abrirse, pide centrar el mapa que queda arriba. Si el GPS
+  // todavía no respondió, se hace apenas haya posición, una sola vez.
+  const centrarViendoElPanel = useCallback(
+    (alto: number) => {
+      setMargenAlCentrar(alto);
+      if (gps.posicion) {
+        centroPendiente.current = false;
+        centrarEnMi();
+      } else {
+        centroPendiente.current = true;
+      }
+    },
+    [centrarEnMi, gps.posicion],
+  );
+
+  useEffect(() => {
+    if (!marcado.abierto) {
+      centroPendiente.current = false;
+      setMargenAlCentrar(0);
+      return;
+    }
+    if (!centroPendiente.current || !gps.posicion) return;
+    centroPendiente.current = false;
+    centrarEnMi();
+  }, [marcado.abierto, gps.posicion, centrarEnMi]);
 
   const cambiar = useCallback(
     (anotacion: AnotacionEnPantalla) => {
@@ -159,7 +197,8 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     <PanelDeAnotar
       marcado={marcado}
       gps={gps}
-      alCentrarEnMi={centrarEnMi}
+      alCentrarEnMi={centrarViendoElPanel}
+      alMedirElPanel={medirElPanel}
       alGuardar={() => setGuardadoHace(Date.now())}
     />
   ) : null;
@@ -211,5 +250,6 @@ export function useAnotacionesEnElMapa({ delPaquete, gps, centrarEnMi }: Opcione
     panel,
     aviso,
     resto,
+    margenAlCentrar,
   };
 }
