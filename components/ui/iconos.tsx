@@ -16,14 +16,17 @@ export const ICONO_DE_MARCAS = <path d="M4 20l1-4L16 5l3 3L8 19l-4 1ZM14 7l3 3" 
 export const ICONO_DE_CIRCUITOS = <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" />;
 
 /**
- * Ubicarme y centrar en mi ubicación: una mira. Con el GPS andando el centro
- * va lleno. No se parece al alfiler de Punto a propósito.
+ * Ubicarme y centrar en mi ubicación: una mira. El botón no cambia de fondo.
+ * El dibujo va del mismo azul que el punto del GPS, y amarillo cuando esa
+ * posición quedó vieja. Con el GPS andando el centro va lleno. No se parece
+ * al alfiler de Punto a propósito.
  */
-export function iconoDeUbicarme(prendido: boolean) {
+export function iconoDeUbicarme(prendido: boolean, perdido = false) {
+  const color = perdido ? "var(--ambar-icono)" : "var(--gps)";
   return <>
-    <circle cx="12" cy="12" r="7" />
-    <circle cx="12" cy="12" r="2" fill={prendido ? "currentColor" : "none"} />
-    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    <circle cx="12" cy="12" r="7" stroke={color} />
+    <circle cx="12" cy="12" r="2" fill={prendido ? color : "none"} stroke={color} />
+    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke={color} />
   </>;
 }
 

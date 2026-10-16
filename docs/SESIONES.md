@@ -4,6 +4,78 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-16 — El GPS viejo no tapa el mapa
+
+### Estado al inicio
+
+Si el celular quedaba guardado un rato, al abrirlo aparecía un cartel amarillo
+grande. Decía que el GPS no daba novedades y no se entendía qué había que hacer.
+
+### Lo que se hizo
+
+Ese cartel ya no aparece. La mira del botón de centrar es azul, como el punto
+del mapa. Cuando la posición queda vieja, la mira pasa a amarillo y vuelve al
+azul en cuanto el celular dice de nuevo dónde estás.
+
+### Decisiones tomadas
+
+Ale, 2026-10-16: el aviso es el color de la mira, no un cartel.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Probar en el celular, con la pantalla bloqueada un par de minutos, que la mira
+pase a amarillo y que no aparezca el cartel.
+
+---
+
+## Sesión 2026-10-16 — Panel de marcar y actividades en la navegación
+
+### Estado al inicio
+
+Punto nuevo y trazo nuevo, dentro de las navegaciones, tenían un panel con
+fondo y título propios, sin la cabecera ni los colores del resto. El círculo
+de Caminos en la navegación libre abría un recuadro suelto que solo dejaba
+elegir una actividad.
+
+### Lo que se hizo
+
+El formulario de marcar usa el mismo panel que el resto: cabecera arriba,
+colores del panel, y el contenido se desplaza debajo. Sirve para punto y
+trazo, en las dos navegaciones.
+
+La ventana de actividades es la misma que las demás. Al abrirla vienen las
+cinco prendidas. Se puede dejar una, algunas o todas, y tiene que quedar al
+menos una. En el mapa se ven los Caminos de las que quedaron prendidas. Si
+un Camino sirve para varias de esas, muestra la clasificación de la primera.
+La elección queda recordada en el celular. Consultas no cambia.
+
+### Decisiones tomadas
+
+Decisión 062. Ajusta la 036 solo en la navegación libre.
+
+### Documentos actualizados
+
+Decisión 062, un apunte en la 036, diseño exterior, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Probar en el celular, con sol y de noche, el panel de marcar y la ventana de
+actividades. No está publicado.
+
+---
+
 ## Sesión 2026-10-16 — Marcar un punto ya no queda cortado
 
 ### Estado al inicio

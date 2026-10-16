@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dibujarCaminos } from "@/lib/caminos/dibujo";
+import { actividadParaMostrar, dibujarCaminos, dibujarCaminosVisibles } from "@/lib/caminos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 
 describe("dibujo de Caminos por actividad", () => {
@@ -26,5 +26,16 @@ describe("dibujo de Caminos por actividad", () => {
   it("deja visible en gris un Camino de otra actividad", () => {
     const kayak = dibujarCaminos([camino], "kayak");
     expect(kayak.features[0].properties).toMatchObject({ paso: "otra_actividad", complejidad: null });
+  });
+
+  it("en la navegación muestra el Camino si comparte alguna actividad prendida", () => {
+    const todas = dibujarCaminosVisibles([camino], ["trekking", "correr", "mountain_bike", "kayak", "canyoning"]);
+    expect(actividadParaMostrar(camino.actividades, ["mountain_bike", "trekking"])).toBe("trekking");
+    expect(todas.features[0].properties).toMatchObject({ paso: "transitable", complejidad: "facil" });
+
+    const soloBici = dibujarCaminosVisibles([camino], ["mountain_bike"]);
+    expect(soloBici.features[0].properties).toMatchObject({ paso: "sin_paso", complejidad: "media" });
+
+    expect(dibujarCaminosVisibles([camino], ["kayak"]).features).toEqual([]);
   });
 });

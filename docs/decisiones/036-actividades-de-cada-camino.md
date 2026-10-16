@@ -21,6 +21,9 @@ comparten entre actividades (decisión 038).
 
 ## Presentación en el mapa
 
+En Consultas sigue así. En la navegación libre, la decisión 062 la ajusta:
+ahí se elige cuáles actividades se ven, y vienen las cinco prendidas.
+
 Ale decidió que la persona elige una **actividad principal** para ver el mapa:
 
 - Se siguen viendo **todos** los Caminos; la actividad elegida no filtra ni

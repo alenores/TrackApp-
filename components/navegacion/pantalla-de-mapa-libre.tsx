@@ -12,9 +12,11 @@ import {
   PreguntaDeRegistrar,
 } from "@/components/navegacion/registro-de-salida";
 import { useRegistroDeSalida } from "@/hooks/use-registro-de-salida";
-import { Boton } from "@/components/ui/boton";
+import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { BotonVolver } from "@/components/ui/boton-volver";
+import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
+import { iconoDeUbicarme } from "@/components/ui/iconos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
@@ -23,10 +25,9 @@ import { useGps } from "@/hooks/use-gps";
 import { useMapasBajados } from "@/hooks/use-mapa-del-sector";
 import { areaDeLasZonas } from "@/lib/navegacion/mapa-libre";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
-import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
-import { dibujarCaminos } from "@/lib/caminos/dibujo";
+import { useActividadesVisibles } from "@/hooks/use-actividades-visibles";
+import { actividadParaMostrar, dibujarCaminosVisibles } from "@/lib/caminos/dibujo";
 import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
-import { SelectorDeActividadPrincipal } from "@/components/caminos/selector-de-actividad-principal";
 
 /**
  * El mapa libre: todos los mapas bajados, todos los Caminos y todas las
@@ -56,7 +57,6 @@ export function PantallaDeMapaLibre() {
     error: errorDelGps,
     posicion,
     prender: prenderGps,
-    segundosSinNoticias,
     posicionVieja,
   } = gps;
 
@@ -66,7 +66,7 @@ export function PantallaDeMapaLibre() {
 
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
   const [elegirActividad, setElegirActividad] = useState(false);
-  const [actividadPrincipal, cambiarActividad] = useActividadPrincipal();
+  const [actividadesVisibles, cambiarActividades] = useActividadesVisibles();
   const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const [centrarGps, setCentrarGps] = useState(0);
 
@@ -76,8 +76,22 @@ export function PantallaDeMapaLibre() {
   const anotaciones = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
   const caminosSinLinea = useMemo(() => paquete?.caminos ?? [], [paquete]);
   const { caminos, error: errorDeCaminos } = useCaminosGuardados(caminosSinLinea);
-  const dibujoDeCaminos = useMemo(() => dibujarCaminos(caminos, actividadPrincipal), [caminos, actividadPrincipal]);
+  const dibujoDeCaminos = useMemo(
+    () => dibujarCaminosVisibles(caminos, actividadesVisibles),
+    [caminos, actividadesVisibles],
+  );
   const caminoElegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
+  const actividadDeLaFicha = caminoElegido
+    ? actividadParaMostrar(caminoElegido.actividades, actividadesVisibles) ?? caminoElegido.actividades[0]
+    : null;
+  const tocarActividad = (actividad: (typeof actividadesVisibles)[number]) => {
+    const esta = actividadesVisibles.includes(actividad);
+    if (esta && actividadesVisibles.length === 1) return;
+    const siguientes = esta
+      ? actividadesVisibles.filter((cada) => cada !== actividad)
+      : [...actividadesVisibles, actividad];
+    cambiarActividades(siguientes);
+  };
   const centrarEnMi = useCallback(() => setCentrarGps(Date.now()), []);
   // Todas las anotaciones: el mapa libre muestra todo lo bajado.
   const deAnotaciones = useAnotacionesEnElMapa({ delPaquete: anotaciones, gps, centrarEnMi });
@@ -156,32 +170,16 @@ export function PantallaDeMapaLibre() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
         ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
-          {caminoElegido && caminoTocado ? (
+          {caminoElegido && caminoTocado && actividadDeLaFicha ? (
             <FichaDeCamino
               camino={caminoElegido}
               indice={caminoTocado.indice}
-              actividad={actividadPrincipal}
+              actividad={actividadDeLaFicha}
               alSenalarPunto={setPuntoSenalado}
               enNavegacion
               alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
             />
           ) : null}
-          {elegirActividad ? (
-            <div className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2">
-              <SelectorDeActividadPrincipal actividad={actividadPrincipal} alCambiar={(nueva) => { cambiarActividad(nueva); setElegirActividad(false); }} />
-              <Boton variante="fantasma" onClick={() => setElegirActividad(false)}>Cerrar</Boton>
-            </div>
-          ) : null}
-          {posicionVieja ? (
-            <div
-              role="alert"
-              className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-center text-lg text-ambar-texto"
-            >
-              Hace {segundosSinNoticias} segundos que el GPS no da novedades. Tu
-              punto puede estar desactualizado.
-            </div>
-          ) : null}
-
           {estadoDelGps === "pidiendo" ? (
             <p
               role="status"
@@ -214,7 +212,7 @@ export function PantallaDeMapaLibre() {
               {ICONOS_DEL_CERRO.salir}
             </BotonRedondo>
             {deAnotaciones.boton}
-            <BotonRedondo etiqueta="Actividad" onClick={() => setElegirActividad(true)}>
+            <BotonRedondo etiqueta="Actividades" onClick={() => setElegirActividad(true)}>
               {ICONOS_DEL_CERRO.caminos}
             </BotonRedondo>
             <span className="flex-1" />
@@ -224,8 +222,11 @@ export function PantallaDeMapaLibre() {
               <BotonEmpezarARegistrar alTocar={() => setPreguntandoSiRegistrar(true)} />
             )}
             {estadoDelGps === "andando" ? (
-              <BotonRedondo etiqueta="Centrar en mi ubicación" onClick={() => setCentrarGps(Date.now())}>
-                {ICONOS_DEL_CERRO.centrar}
+              <BotonRedondo
+                etiqueta={posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
+                onClick={() => setCentrarGps(Date.now())}
+              >
+                {iconoDeUbicarme(true, posicionVieja)}
               </BotonRedondo>
             ) : null}
           </div>
@@ -245,6 +246,21 @@ export function PantallaDeMapaLibre() {
           void registro.empezar(null, null);
         }}
       />
+
+      <Emergente
+        abierto={elegirActividad}
+        alCerrar={() => setElegirActividad(false)}
+        titulo="Actividades"
+        descripcion="Elegí cuáles se ven en el mapa. Tiene que quedar al menos una."
+        acciones={<BotonDeEmergente onClick={() => setElegirActividad(false)}>Listo</BotonDeEmergente>}
+      >
+        <ElegirActividades
+          etiqueta="Cuáles se ven"
+          modo="varias"
+          elegidas={actividadesVisibles}
+          alTocar={tocarActividad}
+        />
+      </Emergente>
 
       <ModalDeSalida
         open={open}

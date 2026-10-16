@@ -36,8 +36,9 @@ persona cree que está bien ubicada y no lo está.
 
 - **Ninguna falla termina en pantalla vacía ni en un mapa congelado sin cartel.**
   Si algo se rompe, en pantalla tiene que decir *qué pasó* y *qué hacer*.
-- **Si el GPS se pierde o la posición envejece, se dice en pantalla.** No alcanza
-  con dejar de mover el punto azul.
+- **Si el GPS se pierde o la posición envejece, la mira del botón se pone
+  amarilla.** No hay cartel. No alcanza con dejar de mover el punto azul.
+  Decisión de Ale, 2026-10-16.
 - **Un error atrapado que no se muestra es una falla invisible.** Si una acción
   puede fallar, el aviso va en pantalla con el motivo real adentro. «No se pudo»
   a secas no sirve.
@@ -122,14 +123,16 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Cada Camino indica una o más actividades, con al menos una obligatoria.**
   Usa las cinco existentes: Trekking, Correr, Mountain bike, Kayak y Canyoning.
   La condición de paso y la complejidad de cada parte se clasifican por
-  actividad y pueden ser distintas entre actividades. En el mapa la actividad
-  elegida determina qué clasificación se destaca. **Todos los Caminos siguen
-  visibles y consultables**; los de otras actividades se muestran con menor
-  protagonismo, sin desaparecer. Cada persona elige la actividad principal en
-  el mapa y se recuerda su última elección. Observación y fecha de
+  actividad y pueden ser distintas entre actividades. En Consultas, la
+  actividad elegida determina qué clasificación se destaca. Ahí todos los
+  Caminos siguen visibles; los de otras actividades se muestran con menor
+  protagonismo. En la navegación libre se elige cuáles actividades se ven:
+  vienen todas prendidas, y se puede dejar una, algunas o todas. Un Camino
+  se ve si sirve para alguna de las prendidas, con la clasificación de la
+  primera de esas. Se recuerda la elección. Observación y fecha de
   comprobación son únicas por parte, compartidas entre actividades. Partir
   una parte vale para todas las actividades. **Una parte «sin paso» no lleva
-  complejidad** (Ale, 2026-10-14). Decisiones 036 y 038.
+  complejidad** (Ale, 2026-10-14). Decisiones 036, 038 y 062.
 - **Un Camino mal dibujado se puede corregir como el mismo Camino**, por su
   autor o por el Administrador; no se exige volver a importarlo como otro.
   Corregir la línea conserva condición y complejidad de todas las partes que

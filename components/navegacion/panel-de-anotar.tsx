@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
+import { iconoDeUbicarme } from "@/components/ui/iconos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { SALIR_SIN_GUARDAR, useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
@@ -97,7 +98,7 @@ function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
     gps.estado === "apagado" || gps.estado === "pidiendo"
       ? "El GPS todavía está buscando tu posición."
       : gps.posicionVieja
-        ? `Hace ${gps.segundosSinNoticias} segundos que el GPS no da novedades: tu posición puede estar corrida.`
+        ? "El GPS se perdió."
         : (gps.error ?? "El GPS no está dando tu posición.");
 
   return (
@@ -194,31 +195,8 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
     if (alto > 0) alCentrarEnMi(alto);
   };
 
-  const encabezado = (
-    <div className="flex items-center gap-2">
-      <h2 className="min-w-0 flex-1 truncate text-xl font-bold text-texto">{titulo}</h2>
-      <BotonRedondo
-        etiqueta="Centrar en mi ubicación"
-        disabled={gps.posicion === null || marcado.guardando}
-        onClick={centrar}
-      >
-        {ICONOS_DEL_CERRO.centrar}
-      </BotonRedondo>
-      <BotonRedondo etiqueta="Cerrar" disabled={marcado.guardando} onClick={() => void cancelar(false)}>
-        {ICONOS_DEL_CERRO.salir}
-      </BotonRedondo>
-    </div>
-  );
-
-  return (
-    <section
-      ref={seccionRef}
-      aria-label={titulo}
-      className="pointer-events-auto max-h-[min(62dvh,calc(100dvh-env(safe-area-inset-top)))] touch-pan-y overflow-y-auto overscroll-contain rounded-t-2xl border-t border-borde-fuerte bg-superficie px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 shadow-[var(--sombra-alta)]"
-    >
-      {borrador.tipo === "trazo" && borrador.dibujando ? (
+  const cuerpo = borrador.tipo === "trazo" && borrador.dibujando ? (
         <div className="space-y-3">
-          {encabezado}
           {!marcado.gpsSirve ? <EstadoDelGps gps={gps} gpsSirve={false} /> : null}
           <p className="text-lg text-texto">
             {borrador.puntos.length === 0
@@ -251,8 +229,6 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
         </div>
       ) : (
         <div className="space-y-4">
-          {encabezado}
-
           <EstadoDelGps gps={gps} gpsSirve={marcado.gpsSirve} />
 
           {borrador.tipo === "punto" ? (
@@ -315,7 +291,30 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
             </Boton>
           </div>
         </div>
-      )}
+      );
+
+  return (
+    <section
+      ref={seccionRef}
+      aria-label={titulo}
+      className="panel-que-sube pointer-events-auto flex max-h-[min(62dvh,calc(100dvh-env(safe-area-inset-top)))] flex-col overflow-hidden rounded-t-2xl border border-panel-borde bg-panel pb-[env(safe-area-inset-bottom)] shadow-[var(--sombra-alta)]"
+    >
+      <div className="cabeza-de-panel flex shrink-0 items-center gap-2 border-b border-borde px-4 py-2">
+        <h2 className="min-h-10 min-w-0 flex-1 content-center truncate text-base font-bold text-texto">{titulo}</h2>
+        <BotonRedondo
+          etiqueta={gps.posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
+          disabled={gps.posicion === null || marcado.guardando}
+          onClick={centrar}
+        >
+          {iconoDeUbicarme(true, gps.posicionVieja)}
+        </BotonRedondo>
+        <BotonRedondo etiqueta="Cerrar" disabled={marcado.guardando} onClick={() => void cancelar(false)}>
+          {ICONOS_DEL_CERRO.salir}
+        </BotonRedondo>
+      </div>
+      <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 py-3">
+        {cuerpo}
+      </div>
     </section>
   );
 }

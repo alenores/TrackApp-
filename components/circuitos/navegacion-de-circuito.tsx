@@ -15,6 +15,7 @@ import {
 } from "@/components/navegacion/registro-de-salida";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
+import { iconoDeUbicarme } from "@/components/ui/iconos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Emergente } from "@/components/ui/emergente";
 import { GraficoDeAlturas } from "@/components/ui/grafico-de-alturas";
@@ -153,9 +154,6 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
         <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
       ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 pb-safe-4">
-          {gps.posicionVieja ? <p role="alert" className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo p-2 text-lg text-ambar-texto">
-            Hace {gps.segundosSinNoticias} segundos que el GPS no da novedades. Tu punto puede estar desactualizado.
-          </p> : null}
           {gps.estado === "pidiendo" ? <p role="status" className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2 text-lg text-texto">
             Buscando tu posición con el GPS…
           </p> : null}
@@ -171,7 +169,14 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
             {registro.enCurso
               ? <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!gps.posicion} />
               : <BotonEmpezarARegistrar alTocar={() => setPreguntandoSiRegistrar(true)} />}
-            {gps.estado === "andando" ? <BotonRedondo etiqueta="Centrar en mi ubicación" onClick={() => setCentrarGps(Date.now())}>{ICONOS_DEL_CERRO.centrar}</BotonRedondo> : null}
+            {gps.estado === "andando" ? (
+              <BotonRedondo
+                etiqueta={gps.posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
+                onClick={() => setCentrarGps(Date.now())}
+              >
+                {iconoDeUbicarme(true, gps.posicionVieja)}
+              </BotonRedondo>
+            ) : null}
           </div>
         </div>
       )}
