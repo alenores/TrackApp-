@@ -184,6 +184,7 @@ describe("dibujar trazos", () => {
     await act(async () => anotar.alTocarElMapa(-64.4, -31.4));
     await act(async () => anotar.deshacerElUltimoPunto());
     expect(anotar.puedeGuardar).toBe(true);
+    await act(async () => anotar.setColor("huella"));
     await act(async () => { await anotar.guardar(); });
     expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({
       tipo: "trazo",
@@ -192,6 +193,23 @@ describe("dibujar trazos", () => {
       geometria: { type: "LineString", coordinates: [[-64.6, -31.6], [-64.5, -31.5]] },
     }));
     expect(anotar.mensaje).toBe("Trazo guardado.");
+  });
+
+  it("sin color no guarda y avisa qué falta", async () => {
+    await act(async () => anotar.empezarUnTrazo());
+    await act(async () => anotar.alTocarElMapa(-64.6, -31.6));
+    await act(async () => anotar.alTocarElMapa(-64.5, -31.5));
+    await act(async () => { await anotar.guardar(); });
+    expect(dobles.crear).not.toHaveBeenCalled();
+    expect(anotar.error).toBe("Elegí el color del trazo.");
+  });
+
+  it("sin tipo no guarda un punto y avisa qué falta", async () => {
+    await act(async () => anotar.empezarUnPunto());
+    await act(async () => anotar.setCoordenada(COORDENADA));
+    await act(async () => { await anotar.guardar(); });
+    expect(dobles.crear).not.toHaveBeenCalled();
+    expect(anotar.error).toBe("Elegí qué es el punto.");
   });
 
   it("abre un trazo guardado con su línea y permite volver a dibujarlo", async () => {

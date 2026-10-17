@@ -4,6 +4,76 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-17 — Ficha de Camino y cruces de sin paso
+
+### Estado al inicio
+
+De lejos, las X de un Camino sin paso no se achicaban y se armaba una mancha
+negra sobre la línea. Al tocar un Camino, la ficha ponía el nombre arriba y
+los datos seguidos, como un texto corrido. Consultas y la navegación libre
+compartían esa ficha; al navegar un Circuito, tocarlo no la abría.
+
+### Lo que se hizo
+
+Las X se achican al alejarse y las que se pisarían no se dibujan. La ficha
+dice Consulta Camino arriba y cada dato va aparte. La misma se abre en
+Consultas, en la navegación libre y al tocar un Camino dentro de un Circuito.
+
+### Decisiones tomadas
+
+Ale, 2026-10-17: misma ficha en los tres lugares; encabezado Consulta Camino;
+datos separados; las X siguen el acercamiento del mapa. Decisión 063.
+
+### Documentos actualizados
+
+Decisión 063, diseño exterior y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en el mapa, de lejos y de cerca, y abrir la ficha en los tres lugares.
+
+---
+
+## Sesión 2026-10-17 — Ventanas: título, actividades y la elección de marca
+
+### Estado al inicio
+
+En las ventanas, el título quedaba más arriba que la cruz de cerrar. En la
+navegación, el aviso de actividades tenía un texto de ayuda debajo del título
+y el botón Listo no se veía como confirmación. Al marcar, elegir punto o
+trazo abría la pantalla siguiente al toque, sin mostrar cuál se había tocado.
+
+### Lo que se hizo
+
+El título y la cruz de todas las ventanas quedan a la misma altura. El texto
+de ayuda de actividades se sacó y Listo quedó en verde. Al elegir punto o
+trazo, esa opción se marca en verde un instante y recién ahí se abre la
+pantalla de marcar.
+
+### Decisiones tomadas
+
+Ale, 2026-10-17: título y cruz alineados; sin texto de ayuda en actividades;
+Listo en verde; un instante para ver si se eligió punto o trazo.
+
+### Documentos actualizados
+
+Decisión 061 y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular: la cruz a la altura del título, y que al tocar punto o
+trazo se note cuál fue antes de que cambie la pantalla.
+
+---
+
 ## Sesión 2026-10-16 — El GPS viejo no tapa el mapa
 
 ### Estado al inicio

@@ -10,6 +10,9 @@ tiene arriba a la derecha el ícono de centrar en el GPS —el mismo de toda la
 app— y, a su derecha, una X que cierra. El botón de atrás del celular también
 cierra esa pantalla.
 
+Al elegir punto o trazo, esa opción queda marcada un instante —en verde—
+antes de abrir la pantalla de marcar, para que se vea cuál se tocó.
+
 Al abrirse, el pedazo de mapa que queda arriba del formulario se centra donde
 está el GPS, para ver el lugar del punto.
 

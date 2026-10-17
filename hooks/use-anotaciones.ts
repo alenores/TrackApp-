@@ -9,10 +9,10 @@ import { useHaySenal } from "@/hooks/use-hay-senal";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import {
   claveDelColor,
-  COLOR_DE_TRAZO_POR_DEFECTO,
   type ColorDeTrazo,
   TRAZO,
 } from "@/lib/anotaciones/colores-de-trazo";
+import { avisoSiNoEligio } from "@/lib/anotaciones/que-falta";
 import { anotacionesDelLugar, anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 import { leerCoordenada } from "@/lib/coordenadas";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
@@ -36,8 +36,8 @@ export type LugarDeAnotaciones = { clase: "cordoba" } | { clase: "sector"; secto
 
 /** Lo que se está armando en el formulario. `null` es formulario cerrado. */
 export type Borrador =
-  | { tipo: "punto"; icono: IconoPunto }
-  | { tipo: "trazo"; color: ColorDeTrazo; puntos: [number, number][] };
+  | { tipo: "punto"; icono: IconoPunto | null }
+  | { tipo: "trazo"; color: ColorDeTrazo | null; puntos: [number, number][] };
 
 /** Con menos que esto no hay línea: lo exige también la base. */
 export const PUNTOS_MINIMOS_DE_UN_TRAZO = 2;
@@ -139,7 +139,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
       return { ...base, tipo: "punto", icono: borrador.icono, color: null, geometria };
     }
     if (borrador.puntos.length === 0) return null;
-    const color = TRAZO[borrador.color].color;
+    const color = borrador.color ? TRAZO[borrador.color].color : null;
     // Un trazo con un solo toque todavía no es una línea: se ve dónde arrancó.
     if (borrador.puntos.length === 1) {
       return {
@@ -179,7 +179,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     if (ocupado.current) return;
     limpiar();
     setMensaje(null);
-    setBorrador({ tipo: "punto", icono: "cruce" });
+    setBorrador({ tipo: "punto", icono: null });
     setMarcando(true);
   }
 
@@ -187,7 +187,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     if (ocupado.current) return;
     limpiar();
     setMensaje(null);
-    setBorrador({ tipo: "trazo", color: COLOR_DE_TRAZO_POR_DEFECTO, puntos: [] });
+    setBorrador({ tipo: "trazo", color: null, puntos: [] });
     setMarcando(true);
   }
 
@@ -202,7 +202,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     setComentario(anotacion.comentario ?? "");
     if (anotacion.geometria.type === "Point") {
       const [lon, lat] = anotacion.geometria.coordinates;
-      setBorrador({ tipo: "punto", icono: anotacion.icono ?? "cruce" });
+      setBorrador({ tipo: "punto", icono: anotacion.icono });
       setCoordenadaEscrita(`${lat}, ${lon}`);
       setEnfoque(enfoqueDe(lat, lon));
     } else {
@@ -237,10 +237,12 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
   }
 
   function setIcono(icono: IconoPunto) {
+    setError(null);
     if (borrador?.tipo === "punto") setBorrador({ ...borrador, icono });
   }
 
   function setColor(color: ColorDeTrazo) {
+    setError(null);
     if (borrador?.tipo === "trazo") setBorrador({ ...borrador, color });
   }
 
@@ -271,9 +273,29 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
   }
 
   async function guardar(): Promise<boolean> {
-    if (ocupado.current || !borrador || !geometria || !haySenal) return false;
+    if (ocupado.current || !borrador || !haySenal) return false;
+    const falta = avisoSiNoEligio(
+      borrador.tipo,
+      borrador.tipo === "punto" ? borrador.icono : null,
+      borrador.tipo === "trazo" ? borrador.color : null,
+    );
+    if (falta) {
+      setError(falta);
+      return false;
+    }
+    if (!geometria) {
+      setError(
+        borrador.tipo === "punto"
+          ? "Todavía no hay lugar para el punto: tocá el mapa o pegá la coordenada."
+          : "Un trazo necesita al menos dos puntos: tocá el mapa por donde va.",
+      );
+      return false;
+    }
     // Se mira la foto en el momento del toque: pudo empezar a prepararse recién.
-    if (foto.estado !== "vacio" && foto.estado !== "lista") return false;
+    if (foto.estado !== "vacio" && foto.estado !== "lista") {
+      setError("La foto todavía se está preparando. Esperá un momento y volvé a guardar.");
+      return false;
+    }
     ocupado.current = true;
     setGuardando(true);
     setError(null);
@@ -284,7 +306,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
         sectorId: seleccionado?.sectorId ?? sector?.id ?? null,
         tipo: borrador.tipo,
         icono: borrador.tipo === "punto" ? borrador.icono : null,
-        color: borrador.tipo === "trazo" ? TRAZO[borrador.color].color : null,
+        color: borrador.tipo === "trazo" && borrador.color ? TRAZO[borrador.color].color : null,
         comentario: comentario.trim() || null,
         geometria,
       };

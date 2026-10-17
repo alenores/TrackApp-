@@ -8,7 +8,7 @@ import {
 import { editarPerfil } from "@/app/actions/perfil";
 import { Boton } from "@/components/ui/boton";
 import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
-import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { BotonCerrar } from "@/components/ui/boton-redondo";
 import { Campo } from "@/components/ui/campo";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
@@ -139,9 +139,7 @@ export function FormularioDePerfil({
         actividades={actividades}
       />
       <div className="absolute right-3 top-3 z-20">
-        {editing ? <BotonRedondo etiqueta="Cerrar edición" onClick={cancelEditing}>
-          <path d="M6 6l12 12M18 6 6 18" />
-        </BotonRedondo> : <MenuDeAcciones etiqueta="Opciones del perfil"
+        {editing ? <BotonCerrar etiqueta="Cerrar edición" onClick={cancelEditing} /> : <MenuDeAcciones etiqueta="Opciones del perfil"
           acciones={[{ etiqueta: "Editar", alElegir: startEditing }]} />}
       </div>
 
@@ -154,21 +152,17 @@ export function FormularioDePerfil({
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-texto-suave">Foto de portada</p>
                 <SelectorDeFoto
                   foto={fotoPortada}
                   deshabilitado={loading}
-                  etiqueta="Elegir portada"
                   fotoActual={portadaUrl}
                 />
               </div>
               
               <div className="space-y-2">
-                <p className="text-sm font-medium text-texto-suave">Foto de perfil</p>
                 <SelectorDeFoto
                   foto={foto}
                   deshabilitado={loading}
-                  etiqueta="Elegir tu foto"
                   fotoActual={avatarUrl}
                   vistaPreviaRedonda
                 />

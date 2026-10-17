@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
 import { useSearchParams } from "next/navigation";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
@@ -27,6 +28,8 @@ import { useMapasBajados, useSectoresConMapaBajado } from "@/hooks/use-mapa-del-
 import { usePaqueteGuardado } from "@/hooks/use-paquete-guardado";
 import { useRegistroDeSalida } from "@/hooks/use-registro-de-salida";
 import { useDibujosDeCircuitos } from "@/hooks/use-dibujos-de-circuitos";
+import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
+import { parteEn, ubicarEnCamino } from "@/lib/caminos/partes";
 import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
 import { loQueFaltaDesde, lugarEnElCircuito } from "@/lib/circuitos/alturas";
 import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
@@ -61,6 +64,12 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
   const [cargando, setCargando] = useState(true);
   const [centrarGps, setCentrarGps] = useState(0);
   const [verAlturas, setVerAlturas] = useState(false);
+  const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
+  const [avisoDeCamino, setAvisoDeCamino] = useState<string | null>(null);
+  const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
+  const caminosSinLinea = useMemo(() => paquete?.caminos ?? [], [paquete]);
+  const { caminos, error: errorDeCaminos } = useCaminosGuardados(caminosSinLinea);
+  const caminoElegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const { open, requestExit, cancelExit, confirmExit } = useSalidaDeNavegacion("/");
   const gps = useGps();
   const prenderGps = gps.prender;
@@ -139,6 +148,29 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
           alMarcarPunto={deAnotaciones.alMarcarPunto}
           alTocarAnotacion={deAnotaciones.alTocarAnotacion}
           mostrarFichaAnotacion={false}
+          puntoSenalado={puntoSenalado}
+          alTocarCamino={(lon, lat, propiedades) => {
+            const id = Number(propiedades.camino_id);
+            if (!Number.isInteger(id) || id <= 0) return;
+            const camino = caminos.find((cada) => cada.id === id);
+            if (!camino) {
+              setCaminoTocado(null);
+              setPuntoSenalado(null);
+              setAvisoDeCamino(errorDeCaminos ?? "Este Camino no está en el celular. Abrí la app con señal en casa para ponerlo al día.");
+              return;
+            }
+            const explicito = Number(propiedades.parte_indice);
+            const lugar = ubicarEnCamino(camino, lon, lat);
+            const indice = Number.isInteger(explicito) ? explicito : lugar ? parteEn(camino, lugar.distanciaM) : null;
+            if (indice === null || !camino.partes[indice]) {
+              setCaminoTocado(null);
+              setPuntoSenalado(null);
+              setAvisoDeCamino("No se pudo saber qué parte tocaste. Tocá de nuevo sobre la línea del Camino.");
+              return;
+            }
+            setAvisoDeCamino(null);
+            setCaminoTocado({ id, indice });
+          }}
           miPosicion={gps.posicion ? { lat: gps.posicion.lat, lon: gps.posicion.lon } : null}
           encuadre={ficha.rectangulo} pantallaCompleta sinCruzArriba
           fondoInicial={fondoInicial && fondosDisponibles.includes(fondoInicial) ? fondoInicial : fondosDisponibles[0] ?? "dibujo"}
@@ -154,6 +186,11 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
         <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
       ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 pb-safe-4">
+          {avisoDeCamino ? (
+            <p role="alert" className="pointer-events-auto rounded-xl border border-ambar-borde bg-ambar-fondo p-2 text-lg text-ambar-texto">
+              {avisoDeCamino}
+            </p>
+          ) : null}
           {gps.estado === "pidiendo" ? <p role="status" className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2 text-lg text-texto">
             Buscando tu posición con el GPS…
           </p> : null}
@@ -196,6 +233,17 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
       posicion={gps.posicion}
       fondosDisponibles={fondosDisponibles}
     />
+
+    {caminoElegido && caminoTocado && !deAnotaciones.anotando ? (
+      <FichaDeCamino
+        camino={caminoElegido}
+        indice={caminoTocado.indice}
+        actividad={ficha.actividad}
+        alSenalarPunto={setPuntoSenalado}
+        enNavegacion
+        alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
+      />
+    ) : null}
 
     {deAnotaciones.resto}
 

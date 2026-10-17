@@ -139,10 +139,8 @@ export function CamposDeTerritorio({
 
         {queEs === "zona" && fotoZona ? (
           <div className="space-y-2 pt-1">
-            <p className="text-sm font-medium text-texto-suave">Foto de la zona</p>
             <SelectorDeFoto
               foto={fotoZona}
-              etiqueta="Elegir foto de la zona"
               fotoActual={fotoActualZona}
             />
           </div>

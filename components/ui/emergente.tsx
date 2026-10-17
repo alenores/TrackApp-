@@ -1,11 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type HTMLAttributes, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { useArrastreHaciaAbajo } from "@/hooks/use-arrastre-hacia-abajo";
 import { Boton } from "@/components/ui/boton";
+import { BotonCerrar } from "@/components/ui/boton-redondo";
 import { NIVEL_DE_LAS_EMERGENTES } from "@/lib/capas";
 
 /**
@@ -100,20 +101,12 @@ export function Emergente({
   if (vaAlCostado && lugarAlCostado) {
     return createPortal(
       <div role="dialog" aria-label={titulo} className="flex min-h-0 flex-1 flex-col">
-        <div className="cabeza-de-panel flex shrink-0 items-start gap-3 border-b border-borde px-4 py-2">
-          <div className="min-w-0 flex-1 py-2">
-            <h2 className="text-base font-bold text-texto">{titulo}</h2>
-            {descripcion ? <p className="mt-1 text-sm text-texto-suave">{descripcion}</p> : null}
-          </div>
-          <button
-            type="button"
-            onClick={alCerrar}
-            aria-label="Cerrar"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
-          >
-            ×
-          </button>
-        </div>
+        <CabezaDeEmergente
+          titulo={titulo}
+          descripcion={descripcion}
+          alCerrar={alCerrar}
+          className="cabeza-de-panel flex shrink-0 flex-col border-b border-borde px-4 py-2"
+        />
         {children ? (
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">{children}</div>
         ) : null}
@@ -153,24 +146,13 @@ export function Emergente({
             <span className="h-1 w-9 rounded-full bg-borde-fuerte" />
           </div>
         ) : null}
-        <div className={`flex items-start gap-3 border-b border-borde px-4 cabeza-de-panel ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
-          {...(hoja ? manija : {})}>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-texto">{titulo}</h2>
-            {descripcion ? (
-              <p className="mt-1 text-sm text-texto-suave">{descripcion}</p>
-            ) : null}
-          </div>
-
-          <button
-            type="button"
-            onClick={alCerrar}
-            aria-label="Cerrar"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-texto-suave hover:bg-superficie-alta hover:text-texto"
-          >
-            ×
-          </button>
-        </div>
+        <CabezaDeEmergente
+          titulo={titulo}
+          descripcion={descripcion}
+          alCerrar={alCerrar}
+          className={`flex flex-col border-b border-borde px-4 cabeza-de-panel ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
+          {...(hoja ? manija : {})}
+        />
 
         {children ? (
           <div ref={hoja ? cuerpoRef : undefined} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
@@ -186,6 +168,34 @@ export function Emergente({
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * El título y la cruz van en la misma fila, a la misma altura. El texto de
+ * ayuda, si lo hay, queda debajo: si compartiera la fila, la cruz se centraría
+ * contra el bloque entero y el título volvería a quedar más arriba.
+ */
+function CabezaDeEmergente({
+  titulo,
+  descripcion,
+  alCerrar,
+  className,
+  ...resto
+}: {
+  titulo: string;
+  descripcion?: string;
+  alCerrar: () => void;
+  className: string;
+} & HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={className} {...resto}>
+      <div className="flex items-center gap-3">
+        <h2 className="flex min-h-10 min-w-0 flex-1 items-center text-base font-bold text-texto">{titulo}</h2>
+        <BotonCerrar onClick={alCerrar} />
+      </div>
+      {descripcion ? <p className="mt-1 text-sm text-texto-suave">{descripcion}</p> : null}
+    </div>
   );
 }
 

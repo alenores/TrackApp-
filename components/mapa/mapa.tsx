@@ -13,13 +13,14 @@ import {
   todasLasCapasDelFondo,
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
-import { colorDeLasCurvas, coloresDelMapa } from "@/components/mapa/colores";
+import { colorDeLasCurvas, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
 import { useModo } from "@/hooks/use-modo";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { BotonDeModo } from "@/components/ui/boton-de-modo";
+import { BotonCerrar } from "@/components/ui/boton-redondo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
@@ -76,6 +77,36 @@ const FUENTE_ANOTACIONES = "anotaciones";
 const FUENTE_RECTANGULOS = "rectangulos";
 
 const VACIO: FeatureCollection = { type: "FeatureCollection", features: [] };
+
+/**
+ * Las X de «sin paso» siguen el acercamiento, como los íconos de los puntos.
+ * De lejos se achican y las que se pisan no se dibujan: si no, a tamaño fijo
+ * se amontonan y la línea parece una mancha negra.
+ */
+function agregarCrucesSinPaso(
+  mapa: maplibregl.Map,
+  id: string,
+  source: string,
+  colores: Pick<ColoresDelMapa, "parteX" | "parteXHalo">,
+) {
+  mapa.addLayer({
+    id,
+    type: "symbol",
+    source,
+    layout: {
+      "text-field": "×",
+      "text-font": ["Noto Sans Regular"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 8, 7, 11, 14, 13, 18, 16, 24],
+      "text-allow-overlap": false,
+      "text-padding": 4,
+    },
+    paint: {
+      "text-color": colores.parteX,
+      "text-halo-color": colores.parteXHalo,
+      "text-halo-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 11, 1, 16, 2],
+    },
+  });
+}
 
 /**
  * La primera capa propia de la app.
@@ -385,7 +416,7 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
         titulo: [anotacion.icono, anotacion.comentario]
           .filter(Boolean)
           .join(" · "),
-        icono: anotacion.icono ?? "cruce",
+        ...(anotacion.icono ? { icono: anotacion.icono } : {}),
       },
       geometry: anotacion.geometria,
     })),
@@ -913,11 +944,7 @@ export function Mapa({
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
       }
-      mapa.addLayer({
-        id: "camino-sin-paso-x", type: "symbol", source: "x-sin-paso-caminos",
-        layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
-        paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 },
-      });
+      agregarCrucesSinPaso(mapa, "camino-sin-paso-x", "x-sin-paso-caminos", colores);
       mapa.addLayer({ id: "otros-circuitos", type: "line", source: "otros-circuitos",
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.circuitoPropio, "line-width": 4, "line-opacity": 0.55 } });
@@ -945,9 +972,7 @@ export function Mapa({
           paint: { "line-color": colorDeParte, "line-width": 7, "line-opacity": opacidad,
             ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
       }
-      mapa.addLayer({ id: "circuito-sin-paso-x", type: "symbol", source: "x-sin-paso-circuito",
-        layout: { "text-field": "×", "text-font": ["Noto Sans Regular"], "text-size": 25, "text-allow-overlap": true },
-        paint: { "text-color": colores.parteX, "text-halo-color": colores.parteXHalo, "text-halo-width": 2 } });
+      agregarCrucesSinPaso(mapa, "circuito-sin-paso-x", "x-sin-paso-circuito", colores);
       mapa.addLayer({ id: "circuito-final-conservado", type: "circle", source: FUENTE_FINAL_CONSERVADO,
         paint: { "circle-color": colores.circuitoPropio, "circle-radius": 7,
           "circle-stroke-color": colores.circuitoBorde, "circle-stroke-width": 3 } });
@@ -980,22 +1005,7 @@ export function Mapa({
           },
         });
       }
-      mapa.addLayer({
-        id: "ruta-sin-paso-x",
-        type: "symbol",
-        source: "x-sin-paso",
-        layout: {
-          "text-field": "×",
-          "text-font": ["Noto Sans Regular"],
-          "text-size": 25,
-          "text-allow-overlap": true,
-        },
-        paint: {
-          "text-color": colores.parteX,
-          "text-halo-color": colores.parteXHalo,
-          "text-halo-width": 2,
-        },
-      });
+      agregarCrucesSinPaso(mapa, "ruta-sin-paso-x", "x-sin-paso", colores);
       mapa.addLayer({
         id: "extremos-de-parte-punto",
         type: "circle",
@@ -1736,7 +1746,7 @@ export function Mapa({
       return mapa.queryRenderedFeatures([[x - 9, y - 9], [x + 9, y + 9]], { layers: capas })[0] ?? null;
     };
     const buscarCamino = (evento: maplibregl.MapMouseEvent) => {
-      const capas = CAPAS_DE_CAMINOS.filter((capa) => mapa.getLayer(capa));
+      const capas = [...CAPAS_DE_CAMINOS, ...CAPAS_DEL_CIRCUITO.slice(1)].filter((capa) => mapa.getLayer(capa));
       if (capas.length === 0) return null;
       const { x, y } = evento.point;
       return mapa.queryRenderedFeatures([[x - 9, y - 9], [x + 9, y + 9]], { layers: capas })[0] ?? null;
@@ -2243,10 +2253,8 @@ export function Mapa({
         <div className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] flex items-center gap-2">
           <BotonDeModo />
           {mostrarCruz ? (
-            <button
-              type="button"
-              aria-label="Cerrar el mapa grande"
-              onPointerDown={() => vibrarAlTocar()}
+            <BotonCerrar
+              etiqueta="Cerrar el mapa grande"
               onClick={() => {
                 anotarLoQueSeMira();
                 if (enGrande) {
@@ -2255,26 +2263,7 @@ export function Mapa({
                   alCerrarPantallaCompleta();
                 }
               }}
-              className={[
-                CLASE_DE_RESPUESTA_AL_TOQUE,
-                "flex h-10 w-10 items-center justify-center rounded-full",
-                "border border-borde-fuerte bg-superficie text-texto shadow-[var(--sombra-alta)]",
-                "hover:bg-superficie-alta",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
-              ].join(" ")}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                aria-hidden
-              >
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
+            />
           ) : null}
         </div>
       ) : null}

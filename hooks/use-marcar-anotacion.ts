@@ -6,10 +6,10 @@ import { useFoto, type FotoDeFormulario } from "@/hooks/use-foto";
 import type { Gps } from "@/hooks/use-gps";
 import {
   claveDelColor,
-  COLOR_DE_TRAZO_POR_DEFECTO,
   type ColorDeTrazo,
   TRAZO,
 } from "@/lib/anotaciones/colores-de-trazo";
+import { avisoSiNoEligio } from "@/lib/anotaciones/que-falta";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 import {
   anotarUnaMarcaNueva,
@@ -47,8 +47,8 @@ type Borrador = {
   tipo: TipoDeMarca;
   /** La anotación que se está cambiando, o `null` si es nueva. */
   cambiando: AnotacionEnPantalla | null;
-  icono: IconoPunto;
-  color: ColorDeTrazo;
+  icono: IconoPunto | null;
+  color: ColorDeTrazo | null;
   comentario: string;
   /**
    * Un punto: de dónde sale el lugar. Con `gps`, de tu posición; si el GPS no
@@ -104,8 +104,8 @@ function borradorVacio(tipo: TipoDeMarca): Borrador {
   return {
     tipo,
     cambiando: null,
-    icono: "cruce",
-    color: COLOR_DE_TRAZO_POR_DEFECTO,
+    icono: null,
+    color: null,
     comentario: "",
     modo: "gps",
     aMano: null,
@@ -158,7 +158,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       setBorrador({
         ...base,
         cambiando: anotacion,
-        icono: anotacion.icono ?? "cruce",
+        icono: anotacion.icono,
         color: claveDelColor(anotacion.color),
         comentario: anotacion.comentario ?? "",
         // Al cambiarla, el punto se queda donde estaba hasta que digas otra cosa.
@@ -188,8 +188,15 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
   }, []);
 
   const comenzarADibujar = useCallback(() => {
-    setBorrador((actual) => (actual?.tipo === "trazo" ? { ...actual, dibujando: true } : actual));
-  }, []);
+    if (!borrador || borrador.tipo !== "trazo") return;
+    const falta = avisoSiNoEligio("trazo", borrador.icono, borrador.color);
+    if (falta) {
+      setError(falta);
+      return;
+    }
+    setError(null);
+    setBorrador({ ...borrador, dibujando: true });
+  }, [borrador]);
 
   const finalizarDibujo = useCallback(() => {
     setBorrador((actual) => (actual ? { ...actual, dibujando: false } : actual));
@@ -230,9 +237,11 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
   }, []);
 
   const cambiarIcono = useCallback((icono: IconoPunto) => {
+    setError(null);
     setBorrador((actual) => (actual ? { ...actual, icono } : actual));
   }, []);
   const cambiarColor = useCallback((color: ColorDeTrazo) => {
+    setError(null);
     setBorrador((actual) => (actual ? { ...actual, color } : actual));
   }, []);
   const cambiarComentario = useCallback((comentario: string) => {
@@ -254,10 +263,18 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     (borrador.comentario.trim() !== "" ||
       borrador.puntos.length > 0 ||
       foto.archivo !== null ||
-      (borrador.cambiando === null && borrador.modo === "a_mano" && borrador.aMano !== null));
+      (borrador.cambiando === null && borrador.modo === "a_mano" && borrador.aMano !== null) ||
+      (borrador.cambiando === null && borrador.icono !== null) ||
+      (borrador.cambiando === null && borrador.color !== null));
 
   const guardar = useCallback(async (): Promise<boolean> => {
     if (!borrador) return false;
+
+    const falta = avisoSiNoEligio(borrador.tipo, borrador.icono, borrador.color);
+    if (falta) {
+      setError(falta);
+      return false;
+    }
 
     // Lo que se guarda es la posición del GPS de este momento.
     const punto = lugarDelPunto;
@@ -279,7 +296,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     const datos: DatosDeLaMarca = {
       tipo: borrador.tipo,
       icono: borrador.tipo === "punto" ? borrador.icono : null,
-      color: borrador.tipo === "trazo" ? TRAZO[borrador.color].color : null,
+      color: borrador.tipo === "trazo" && borrador.color ? TRAZO[borrador.color].color : null,
       comentario: borrador.comentario.trim() || null,
       geometria:
         borrador.tipo === "punto"
@@ -338,7 +355,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       creadoEn: "",
       actualizadoEn: "",
     };
-    const color = TRAZO[borrador.color].color;
+    const color = borrador.color ? TRAZO[borrador.color].color : null;
 
     if (borrador.tipo === "punto") {
       return lugarDelPunto

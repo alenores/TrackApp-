@@ -1,6 +1,6 @@
 import type { ActividadRuta } from "@/types/database";
 import type { ComplejidadDeParte, DatosDeParte, PasoDeParte } from "@/lib/rutas/partes";
-import { Boton } from "@/components/ui/boton";
+import { BotonCerrar } from "@/components/ui/boton-redondo";
 
 export function nombreDelPaso(paso: PasoDeParte, actividades: ActividadRuta[] = []): string {
   if (paso === "por_explorar") return "Por explorar";
@@ -103,7 +103,7 @@ export function FichaDeParte({
     <div className="rounded-xl border border-borde-fuerte bg-superficie p-3 text-lg text-texto shadow-[var(--sombra-alta)]">
       <div className="flex items-start justify-between gap-2">
         <p className="font-semibold">{nombreRuta}</p>
-        <Boton variante="fantasma" onClick={alCerrar} aria-label="Cerrar el detalle de esta parte">×</Boton>
+        <BotonCerrar etiqueta="Cerrar el detalle de esta parte" onClick={alCerrar} />
       </div>
       <p>{nombreDelPaso(datos.paso, actividades)} · {nombreDeComplejidad(datos.complejidad)}</p>
       {datos.observacion ? <p className="mt-1 whitespace-pre-wrap">{datos.observacion}</p> : null}

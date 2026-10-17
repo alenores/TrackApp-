@@ -79,10 +79,13 @@ Cada parte combina dos señales independientes: el **color** expresa su
 complejidad local (verde, amarillo, rojo o gris si todavía no se clasificó),
 y la **forma de la línea** expresa cómo se pasa. Por explorar va entrecortada,
 transitable va continua, a pie con equipo va punteada, y sin paso conserva su
-línea con X negras. Una X no vuelve roja la línea por sí sola. Al tocar una
-parte se ven su condición, complejidad, observación y fecha disponible. La
+línea con X negras. Esas X se achican al alejarse, como el resto de las
+marcas: de lejos no se amontonan en una mancha. Una X no vuelve roja la línea
+por sí sola. Al tocar un Camino —en Consultas, en la navegación libre y al
+navegar un Circuito— se abre la misma ficha: arriba dice Consulta Camino y
+cada dato va aparte, con su nombre y su valor. La
 valoración de esfuerzo y dificultad técnica de la ruta completa queda en su
-ficha y no interviene en el dibujo. Ver decisión 033.
+ficha y no interviene en el dibujo. Ver decisiones 033 y 063.
 
 ### Dibujo de Circuitos en computadora
 

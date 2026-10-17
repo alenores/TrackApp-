@@ -370,33 +370,17 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
       </Tarjeta>
 
       <Tarjeta className="space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-texto-suave">
-          Fotos
-        </h2>
-        <p className="text-sm leading-6 text-texto-suave">
-          Hasta {MAXIMO_DE_FOTOS}. La portada se recorta apaisada, del mismo tamaño
-          con que se ve en la lista, y al elegirla ves exactamente cómo queda.
-        </p>
         <SelectorDeFoto
           foto={portada}
           deshabilitado={guardando}
-          etiqueta="Elegir la portada"
           fotoActual={portadaGuardada}
           alQuitarFotoActual={() => setPortadaGuardada(null)}
         />
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-texto-suave">
-            {demas.fotos.length === 0 ? "Las demás fotos" : `Las demás fotos (${demas.fotos.length})`}
-          </h3>
-          <p className="text-sm leading-6 text-texto-suave">
-            Elegí varias juntas de la galería; se suben como vinieron. Tocá una para quitarla.
-          </p>
-          <GrillaDeFotos
-            varias={demas}
-            lugarLibre={MAXIMO_DE_FOTOS - 1 - demas.fotos.length}
-            deshabilitado={guardando}
-          />
-        </div>
+        <GrillaDeFotos
+          varias={demas}
+          lugarLibre={MAXIMO_DE_FOTOS - 1 - demas.fotos.length}
+          deshabilitado={guardando}
+        />
       </Tarjeta>
 
       <Tarjeta className="space-y-3">

@@ -50,7 +50,7 @@ type Props = {
 export function SelectorDeFoto({
   foto,
   deshabilitado = false,
-  etiqueta = "Elegir una foto",
+  etiqueta = "Agregar una foto",
   fotoActual = null,
   vistaPreviaRedonda = false,
   alQuitarFotoActual,
@@ -166,9 +166,6 @@ export function SelectorDeFoto({
                 <path d="M8.5 6 10 3.5h4L15.5 6" />
               </svg>
               <span>{etiqueta}</span>
-              <span className="text-sm text-texto-suave">
-                Sacala de la galería como la tengas: la app la deja lista.
-              </span>
             </>
           )}
         </button>

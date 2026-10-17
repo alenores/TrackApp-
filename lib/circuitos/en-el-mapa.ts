@@ -41,6 +41,8 @@ export type PropiedadDeParteDelCircuito = {
   camino_nombre: string | null;
   actividad_del_camino: ActividadRuta | null;
   camino_retirado: boolean;
+  /** Qué parte del Camino es este tramo. `null` en una parte dibujada solo para el Circuito. */
+  parte_indice: number | null;
   paso: string | null;
   complejidad: string | null;
   otra_actividad: boolean;
@@ -69,7 +71,7 @@ export function partesDelCircuitoEnElMapa(
     if (parte.tipo === "libre") {
       features.push(feature(parte.coordenadas, {
         clase: "propia", camino_id: null, camino_nombre: null, actividad_del_camino: null,
-        camino_retirado: false, paso: null, complejidad: null, otra_actividad: false,
+        camino_retirado: false, parte_indice: null, paso: null, complejidad: null, otra_actividad: false,
       }));
       continue;
     }
@@ -107,6 +109,7 @@ export function partesDelCircuitoEnElMapa(
         camino_nombre: camino.nombre,
         actividad_del_camino: actividad,
         camino_retirado: camino.eliminadoEn !== null,
+        parte_indice: camino.partes.indexOf(cada),
         paso: clasificacion.paso,
         complejidad: clasificacion.complejidad,
         otra_actividad: actividad !== actividadDelCircuito,

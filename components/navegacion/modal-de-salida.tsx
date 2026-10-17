@@ -45,7 +45,7 @@ export function ModalDeSalida({
             </>
           ) : (
             <BotonDeEmergente variante="destructivo" onClick={onConfirm}>
-              Salir
+              SALIR
             </BotonDeEmergente>
           )}
         </div>

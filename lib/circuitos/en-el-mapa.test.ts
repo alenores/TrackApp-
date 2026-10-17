@@ -52,8 +52,8 @@ describe("Circuitos conservan visualmente de dónde sale cada parte", () => {
     const dibujo = partesDelCircuitoEnElMapa(partes.datos, [datos], "mountain_bike");
     if (!dibujo.ok) throw new Error(dibujo.error);
     expect(dibujo.datos.features.map((cada) => cada.properties)).toMatchObject([
-      { clase: "camino", paso: "transitable", complejidad: "facil" },
-      { clase: "camino", paso: "a_pie", complejidad: "dificil" },
+      { clase: "camino", paso: "transitable", complejidad: "facil", parte_indice: 0 },
+      { clase: "camino", paso: "a_pie", complejidad: "dificil", parte_indice: 1 },
     ]);
   });
 

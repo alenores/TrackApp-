@@ -103,7 +103,7 @@ export function GrillaDeFotos({ varias, lugarLibre, deshabilitado = false }: Pro
           disabled={deshabilitado || ocupada}
           onClick={() => entrada.current?.click()}
         >
-          {ocupada ? "Preparando…" : varias.fotos.length === 0 ? "Sumar fotos" : "Sumar más fotos"}
+          {ocupada ? "Preparando…" : "Agregar una foto"}
         </Boton>
       ) : (
         <p className="text-sm text-texto-suave">Llegaste al tope de fotos de una salida.</p>

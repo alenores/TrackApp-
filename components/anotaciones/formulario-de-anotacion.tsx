@@ -7,7 +7,6 @@ import { Campo } from "@/components/ui/campo";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { PUNTOS_MINIMOS_DE_UN_TRAZO, type useAnotaciones } from "@/hooks/use-anotaciones";
-import { COLOR_DE_TRAZO_POR_DEFECTO } from "@/lib/anotaciones/colores-de-trazo";
 import { TRAZO_DE_AGREGAR_PUNTO, TRAZO_DE_DESHACER, TRAZO_DE_VOLVER_A_DIBUJAR } from "@/components/ui/iconos";
 
 /** El ícono arriba del nombre, como las opciones de editar la línea de un Camino. */
@@ -131,9 +130,9 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
 
           <CamposDeAnotacion
             tipo={borrador.tipo}
-            icono={borrador.tipo === "punto" ? borrador.icono : "cruce"}
+            icono={borrador.tipo === "punto" ? borrador.icono : null}
             alCambiarIcono={anotar.setIcono}
-            color={borrador.tipo === "trazo" ? borrador.color : COLOR_DE_TRAZO_POR_DEFECTO}
+            color={borrador.tipo === "trazo" ? borrador.color : null}
             alCambiarColor={anotar.setColor}
             comentario={anotar.comentario}
             alCambiarComentario={anotar.setComentario}
@@ -155,7 +154,7 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
             </p>
           ) : null}
 
-          <Boton type="submit" anchoCompleto disabled={!anotar.puedeGuardar || anotar.guardando}>
+          <Boton type="submit" anchoCompleto disabled={anotar.guardando}>
             {anotar.guardando ? "Guardando…" : `Guardar el ${nombre}`}
           </Boton>
 

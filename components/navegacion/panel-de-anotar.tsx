@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
-import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
+import { BotonCerrar, BotonRedondo } from "@/components/ui/boton-redondo";
 import { iconoDeUbicarme } from "@/components/ui/iconos";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { SALIR_SIN_GUARDAR, useDialogos } from "@/components/ui/dialogos";
@@ -11,7 +11,6 @@ import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import type { Gps } from "@/hooks/use-gps";
 import type { Marcado, TipoDeMarca } from "@/hooks/use-marcar-anotacion";
-import { COLOR_DE_TRAZO_POR_DEFECTO } from "@/lib/anotaciones/colores-de-trazo";
 
 /**
  * Anotar desde el cerro: el panel de abajo, con el mapa a la vista arriba.
@@ -39,33 +38,69 @@ type ElegirProps = {
   alElegir: (tipo: TipoDeMarca) => void;
 };
 
+/** Lo justo para ver cuál se tocó, antes de que se abra la pantalla siguiente. */
+const MOMENTO_PARA_VER_LA_ELECCION = 320;
+
 /** El primer paso: ¿un punto o un trazo? */
 export function ElegirQueAnotar({ abierto, alCerrar, alElegir }: ElegirProps) {
+  const [elegida, setElegida] = useState<TipoDeMarca | null>(null);
+  const espera = useRef<number | null>(null);
+
+  const soltarLaEspera = useCallback(() => {
+    if (espera.current === null) return;
+    window.clearTimeout(espera.current);
+    espera.current = null;
+  }, []);
+
+  useEffect(() => () => soltarLaEspera(), [soltarLaEspera]);
+
+  const cerrar = () => {
+    soltarLaEspera();
+    setElegida(null);
+    alCerrar();
+  };
+
+  const elegir = (tipo: TipoDeMarca) => {
+    if (elegida !== null) return;
+    setElegida(tipo);
+    espera.current = window.setTimeout(() => {
+      espera.current = null;
+      setElegida(null);
+      alElegir(tipo);
+    }, MOMENTO_PARA_VER_LA_ELECCION);
+  };
+
+  const opcion = (tipo: TipoDeMarca, titulo: string, detalle: string, variante: "principal" | "secundario") => {
+    const esta = elegida === tipo;
+    return (
+      <Boton
+        variante={esta ? "principal" : variante}
+        anchoCompleto
+        aria-pressed={esta}
+        disabled={elegida !== null && !esta}
+        className={["flex-col", esta ? "ring-2 ring-acento-tenue ring-offset-2 ring-offset-panel" : ""].filter(Boolean).join(" ")}
+        onClick={() => elegir(tipo)}
+      >
+        <span className="font-bold">{titulo}</span>
+        <span className="text-xs font-normal">{detalle}</span>
+      </Boton>
+    );
+  };
+
   return (
     <Emergente
       abierto={abierto}
-      alCerrar={alCerrar}
+      alCerrar={cerrar}
       titulo="¿Qué querés marcar?"
       acciones={
-        <BotonDeEmergente variante="fantasma" onClick={alCerrar}>
+        <BotonDeEmergente variante="fantasma" onClick={cerrar}>
           Cancelar
         </BotonDeEmergente>
       }
     >
       <div className="space-y-3">
-        <Boton anchoCompleto className="flex-col" onClick={() => alElegir("punto")}>
-          <span className="font-bold">Un punto</span>
-          <span className="text-xs font-normal">Un cruce, una fuente, un peligro</span>
-        </Boton>
-        <Boton
-          variante="secundario"
-          anchoCompleto
-          className="flex-col"
-          onClick={() => alElegir("trazo")}
-        >
-          <span className="font-bold">Un trazo</span>
-          <span className="text-xs font-normal">Una huella o un paso que el mapa no tiene</span>
-        </Boton>
+        {opcion("punto", "Un punto", "Un cruce, una fuente, un peligro", "principal")}
+        {opcion("trazo", "Un trazo", "Una huella o un paso que el mapa no tiene", "secundario")}
       </div>
     </Emergente>
   );
@@ -84,31 +119,6 @@ type PanelProps = {
   /** Se llama después de guardar bien, para avisarlo en el mapa. */
   alGuardar: () => void;
 };
-
-function EstadoDelGps({ gps, gpsSirve }: { gps: Gps; gpsSirve: boolean }) {
-  if (gpsSirve) {
-    return (
-      <p className="text-lg text-texto-suave">
-        GPS andando{gps.precision !== null ? ` · ±${gps.precision} m` : ""}
-      </p>
-    );
-  }
-
-  const texto =
-    gps.estado === "apagado" || gps.estado === "pidiendo"
-      ? "El GPS todavía está buscando tu posición."
-      : gps.posicionVieja
-        ? "El GPS se perdió."
-        : (gps.error ?? "El GPS no está dando tu posición.");
-
-  return (
-    <div className="space-y-2">
-      <p role="alert" className="rounded-xl border border-ambar-borde bg-ambar-fondo px-3 py-2 text-lg leading-7 text-ambar-texto">
-        {texto} Marcá el lugar tocando el mapa.
-      </p>
-    </div>
-  );
-}
 
 export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alGuardar }: PanelProps) {
   const { confirmar } = useDialogos();
@@ -197,7 +207,6 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
 
   const cuerpo = borrador.tipo === "trazo" && borrador.dibujando ? (
         <div className="space-y-3">
-          {!marcado.gpsSirve ? <EstadoDelGps gps={gps} gpsSirve={false} /> : null}
           <p className="text-lg text-texto">
             {borrador.puntos.length === 0
               ? "Tocá el mapa por donde va. El primer punto lo ponés vos."
@@ -212,25 +221,33 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
           ) : null}
           <div className="grid grid-cols-3 gap-2">
             <Boton
-              variante="secundario"
+              variante="principal"
               className="w-full px-2"
               disabled={borrador.puntos.length === 0 || marcado.guardando}
               onClick={marcado.deshacerElUltimoPunto}
             >
               Deshacer
             </Boton>
-            <Boton variante="fantasma" className="w-full px-2" disabled={marcado.guardando} onClick={() => void cancelar(false)}>
+            <Boton
+              variante="principal"
+              className="w-full px-2"
+              disabled={marcado.guardando}
+              onClick={() => void cancelar(false)}
+            >
               Cancelar
             </Boton>
-            <Boton className="w-full px-2" disabled={marcado.guardando} onClick={marcado.finalizarDibujo}>
+            <Boton
+              variante="principal"
+              className="w-full px-2"
+              disabled={marcado.guardando}
+              onClick={marcado.finalizarDibujo}
+            >
               Finalizar
             </Boton>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
-          <EstadoDelGps gps={gps} gpsSirve={marcado.gpsSirve} />
-
           {borrador.tipo === "punto" ? (
             <div className="space-y-2 rounded-xl border border-borde-suave bg-fondo px-3 py-3">
               <p className="text-lg text-texto">
@@ -248,16 +265,21 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-lg text-texto">
-                {borrador.puntos.length === 0
-                  ? "El trazo no arranca donde estás: lo marcás vos. Apretá comenzar a dibujar y tocá el mapa por donde va."
-                  : borrador.puntos.length === 1
+              {borrador.puntos.length > 0 ? (
+                <p className="text-lg text-texto">
+                  {borrador.puntos.length === 1
                     ? "1 punto: falta al menos uno más para poder guardarlo."
                     : `${borrador.puntos.length} puntos. Podés seguir dibujando o guardarlo.`}
-              </p>
+                </p>
+              ) : null}
               <Boton anchoCompleto disabled={marcado.guardando} onClick={marcado.comenzarADibujar}>
                 {borrador.puntos.length === 0 ? "Comenzar a dibujar" : "Seguir dibujando"}
               </Boton>
+              {marcado.error ? (
+                <p role="alert" className="rounded-xl bg-rojo-fondo px-3 py-2 text-lg leading-7 text-rojo-texto">
+                  {marcado.error}
+                </p>
+              ) : null}
             </div>
           )}
 
@@ -265,7 +287,7 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
             tipo={borrador.tipo}
             icono={borrador.icono}
             alCambiarIcono={marcado.cambiarIcono}
-            color={borrador.color ?? COLOR_DE_TRAZO_POR_DEFECTO}
+            color={borrador.color}
             alCambiarColor={marcado.cambiarColor}
             comentario={borrador.comentario}
             alCambiarComentario={marcado.cambiarComentario}
@@ -283,7 +305,7 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
           ) : null}
 
           <div className="space-y-2">
-            <Boton anchoCompleto disabled={!marcado.puedeGuardar} onClick={() => void guardar()}>
+            <Boton anchoCompleto disabled={marcado.guardando} onClick={() => void guardar()}>
               {marcado.guardando ? "Guardando…" : "Guardar en el celular"}
             </Boton>
             <Boton variante="fantasma" anchoCompleto disabled={marcado.guardando} onClick={() => void cancelar(false)}>
@@ -308,9 +330,7 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
         >
           {iconoDeUbicarme(true, gps.posicionVieja)}
         </BotonRedondo>
-        <BotonRedondo etiqueta="Cerrar" disabled={marcado.guardando} onClick={() => void cancelar(false)}>
-          {ICONOS_DEL_CERRO.salir}
-        </BotonRedondo>
+        <BotonCerrar disabled={marcado.guardando} onClick={() => void cancelar(false)} />
       </div>
       <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 py-3">
         {cuerpo}

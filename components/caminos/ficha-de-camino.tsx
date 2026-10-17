@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import type { Position } from "geojson";
 import { Emergente } from "@/components/ui/emergente";
 import { GraficoDeAlturas, type TramoDelGrafico } from "@/components/ui/grafico-de-alturas";
@@ -23,6 +23,11 @@ type Propiedades = {
   enNavegacion?: boolean;
 };
 
+/**
+ * La ficha de un Camino. La misma en Consultas, en la navegación libre y al
+ * navegar un Circuito: el encabezado dice de qué pantalla se trata y cada
+ * dato va aparte, con su nombre arriba y el valor abajo.
+ */
 export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPunto, enNavegacion = false }: Propiedades) {
   const parte = camino.partes[indice];
   // Si el Camino no es de la actividad elegida, los colores son los de su primera actividad.
@@ -45,21 +50,24 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
   return (
     // Como toda ficha: en el celular tapa todo, con la cruz y deslizable por
     // dentro; en la computadora, en Mapas, va al costado del mapa.
-    <Emergente abierto alCerrar={alCerrar} titulo={camino.nombre} ancho="amplio" alCostado>
-    <div className="space-y-3">
-
-      <dl className={`flex flex-wrap gap-x-4 gap-y-1 ${texto} text-texto`}>
-        <div><dt className="inline text-texto-suave">Largo </dt><dd className="inline font-semibold">{textoDeDistancia(camino.largoM)}</dd></div>
+    <Emergente abierto alCerrar={alCerrar} titulo="Consulta Camino" ancho="amplio" alCostado>
+      <dl className="divide-y divide-borde">
+        <Dato nombre="Nombre" texto={texto}>{camino.nombre}</Dato>
+        <Dato nombre="Largo" texto={texto}>{textoDeDistancia(camino.largoM)}</Dato>
         {camino.alturas ? (
           <>
-            <div><dt className="inline text-texto-suave">Desnivel positivo </dt><dd className="inline font-semibold">{textoDeAltura(camino.alturas.desnivelPositivoM)}</dd></div>
-            <div><dt className="inline text-texto-suave">Desnivel negativo </dt><dd className="inline font-semibold">{textoDeAltura(camino.alturas.desnivelNegativoM)}</dd></div>
+            <Dato nombre="Desnivel positivo" texto={texto}>{textoDeAltura(camino.alturas.desnivelPositivoM)}</Dato>
+            <Dato nombre="Desnivel negativo" texto={texto}>{textoDeAltura(camino.alturas.desnivelNegativoM)}</Dato>
           </>
-        ) : null}
+        ) : (
+          <Dato nombre="Alturas" texto={texto}>
+            Este Camino todavía no tiene sus alturas en este celular. Abrí la app con conexión para ponerla al día.
+          </Dato>
+        )}
       </dl>
 
       {camino.alturas ? (
-        <div className="space-y-1">
+        <div className="mt-4 space-y-3">
           <GraficoDeAlturas
             perfil={perfil}
             tramos={tramos}
@@ -72,28 +80,35 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
             Colores según {mostrarActividad(actividadDelGrafico).etiqueta}. Las alturas salen del relieve del terreno: son una estimación.
           </p>
         </div>
-      ) : (
-        <p className={`${texto} text-texto`}>
-          Este Camino todavía no tiene sus alturas en este celular. Abrí la app con conexión para ponerla al día.
-        </p>
-      )}
+      ) : null}
 
-      <p className={`${texto} text-texto-suave`}>Parte {indice + 1} de {camino.partes.length}</p>
-      <div className="space-y-2">
+      <dl className="mt-4 divide-y divide-borde">
+        <Dato nombre="Parte" texto={texto}>{indice + 1} de {camino.partes.length}</Dato>
         {camino.actividades.map((cada) => {
           const datos = parte.porActividad[cada];
-          return datos ? (
-            <p key={cada} className={`${texto} text-texto`}>
-              <strong>{mostrarActividad(cada).etiqueta}:</strong> {nombreDelPaso(datos.paso, [cada])} · {nombreDeComplejidad(datos.complejidad)}
-            </p>
-          ) : null;
+          if (!datos) return null;
+          return (
+            <Dato key={cada} nombre={mostrarActividad(cada).etiqueta} texto={texto}>
+              {nombreDelPaso(datos.paso, [cada])} · {nombreDeComplejidad(datos.complejidad)}
+            </Dato>
+          );
         })}
-      </div>
-      {parte.observacion ? <p className={`whitespace-pre-wrap ${texto} text-texto`}>{parte.observacion}</p> : null}
-      {parte.comprobadoEl ? (
-        <p className={`${texto} text-texto-suave`}>Comprobado el {new Date(`${parte.comprobadoEl}T12:00:00`).toLocaleDateString("es-AR")}</p>
-      ) : null}
-    </div>
+        {parte.observacion ? <Dato nombre="Observación" texto={texto}>{parte.observacion}</Dato> : null}
+        {parte.comprobadoEl ? (
+          <Dato nombre="Comprobado" texto={texto}>
+            {new Date(`${parte.comprobadoEl}T12:00:00`).toLocaleDateString("es-AR")}
+          </Dato>
+        ) : null}
+      </dl>
     </Emergente>
+  );
+}
+
+function Dato({ nombre, texto, children }: { nombre: string; texto: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1 py-3 first:pt-0 last:pb-0">
+      <dt className={`${texto} font-semibold text-texto-suave`}>{nombre}</dt>
+      <dd className={`whitespace-pre-wrap ${texto} font-semibold text-texto`}>{children}</dd>
+    </div>
   );
 }

@@ -251,8 +251,7 @@ export function PantallaDeMapaLibre() {
         abierto={elegirActividad}
         alCerrar={() => setElegirActividad(false)}
         titulo="Actividades"
-        descripcion="Elegí cuáles se ven en el mapa. Tiene que quedar al menos una."
-        acciones={<BotonDeEmergente onClick={() => setElegirActividad(false)}>Listo</BotonDeEmergente>}
+        acciones={<BotonDeEmergente variante="principal" onClick={() => setElegirActividad(false)}>Listo</BotonDeEmergente>}
       >
         <ElegirActividades
           etiqueta="Cuáles se ven"

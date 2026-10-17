@@ -98,3 +98,18 @@ export const ICONOS_DEL_CERRO = {
   /** El gráfico de alturas: una línea que sube y baja sobre su base. */
   alturas: <path d="M3 20h18M3 16l5-7 4 4 3-5 6 8" />,
 };
+
+/**
+ * La cruz para cerrar. Siempre el mismo círculo, del alto de un botón normal:
+ * emergentes, hojas, fichas, paneles y el mapa en grande.
+ */
+export function BotonCerrar({
+  etiqueta = "Cerrar",
+  ...props
+}: Omit<Props, "children" | "etiqueta"> & { etiqueta?: string }) {
+  return (
+    <BotonRedondo etiqueta={etiqueta} {...props}>
+      {ICONOS_DEL_CERRO.salir}
+    </BotonRedondo>
+  );
+}

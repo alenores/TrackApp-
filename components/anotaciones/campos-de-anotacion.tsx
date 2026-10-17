@@ -1,6 +1,7 @@
 "use client";
 
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
+import { Tarjeta } from "@/components/ui/tarjeta";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
@@ -25,9 +26,9 @@ import { ICONOS_PUNTO, type IconoPunto } from "@/types/database";
 
 type Props = {
   tipo: "punto" | "trazo";
-  icono: IconoPunto;
+  icono: IconoPunto | null;
   alCambiarIcono: (icono: IconoPunto) => void;
-  color: ColorDeTrazo;
+  color: ColorDeTrazo | null;
   alCambiarColor: (color: ColorDeTrazo) => void;
   comentario: string;
   alCambiarComentario: (comentario: string) => void;
@@ -54,7 +55,7 @@ export function CamposDeAnotacion({
   guardando,
   delCerro = false,
 }: Props) {
-  const claseDeOpcion = (elegida: boolean) =>
+  const claseDeTipo = (elegida: boolean) =>
     [
       "min-h-10 px-4 text-sm",
       "rounded-xl border font-semibold transition-colors",
@@ -63,11 +64,23 @@ export function CamposDeAnotacion({
         : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
     ].join(" ");
 
+  // El fondo se despega de la tarjeta. El elegido va un tono más oscuro, sin el verde de los botones.
+  const claseDeColor = (elegida: boolean) =>
+    [
+      "min-h-10 px-4 text-sm",
+      "rounded-xl border font-semibold transition-colors",
+      elegida
+        ? "border-borde-fuerte bg-[var(--panel-cabeza)] text-texto"
+        : "border-borde bg-superficie-alta text-texto hover:border-borde-fuerte",
+    ].join(" ");
+
+  const claseDeTitulo = `text-texto-suave ${delCerro ? "text-lg" : "text-sm"}`;
+
   return (
     <div className="space-y-3">
       {tipo === "punto" ? (
-        <div>
-          <p className={`mb-1.5 text-texto-suave ${delCerro ? "text-lg" : "text-sm"}`}>Qué es</p>
+        <Tarjeta className="space-y-2">
+          <p className={claseDeTitulo}>Qué es</p>
           <div className="flex flex-wrap gap-2">
             {ICONOS_PUNTO.map((cual) => (
               <button
@@ -75,7 +88,7 @@ export function CamposDeAnotacion({
                 type="button"
                 onClick={() => alCambiarIcono(cual)}
                 aria-pressed={icono === cual}
-                className={`inline-flex items-center gap-2 ${claseDeOpcion(icono === cual)}`}
+                className={`inline-flex items-center gap-2 ${claseDeTipo(icono === cual)}`}
               >
                 {/* El mismo dibujo que tiene en las listas de Marcas. */}
                 <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden>
@@ -85,10 +98,10 @@ export function CamposDeAnotacion({
               </button>
             ))}
           </div>
-        </div>
+        </Tarjeta>
       ) : (
-        <div>
-          <p className={`mb-1.5 text-texto-suave ${delCerro ? "text-lg" : "text-sm"}`}>De qué color</p>
+        <Tarjeta className="space-y-2">
+          <p className={claseDeTitulo}>COLOR:</p>
           <div className="flex flex-wrap gap-2">
             {COLORES_DE_TRAZO.map((cual) => (
               <button
@@ -96,7 +109,7 @@ export function CamposDeAnotacion({
                 type="button"
                 onClick={() => alCambiarColor(cual)}
                 aria-pressed={color === cual}
-                className={`flex items-center gap-2 ${claseDeOpcion(color === cual)}`}
+                className={`flex items-center gap-2 ${claseDeColor(color === cual)}`}
               >
                 <span
                   aria-hidden
@@ -108,11 +121,11 @@ export function CamposDeAnotacion({
               </button>
             ))}
           </div>
-        </div>
+        </Tarjeta>
       )}
 
       <AreaDeTexto
-        label="Qué hay que saber"
+        label="Descripción"
         id="comentario-de-la-anotacion"
         rows={3}
         value={comentario}
@@ -127,7 +140,6 @@ export function CamposDeAnotacion({
 
       <SelectorDeFoto
         foto={foto}
-        etiqueta="Agregar una foto del lugar"
         deshabilitado={guardando}
         fotoActual={fotoActual}
         alQuitarFotoActual={alQuitarFotoActual}

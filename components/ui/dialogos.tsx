@@ -34,11 +34,12 @@ type PedidoDeConfirmacion = {
  * El cartel de salir sin guardar, el mismo en toda pantalla que lo pide.
  *
  * Pregunta si querés salir de la página. Los botones son Cancelar y
- * Confirmar: Confirmar va en rojo porque se pierde lo que no se guardó.
+ * SALIR: SALIR va en rojo porque se pierde lo que no se guardó.
  */
 export const SALIR_SIN_GUARDAR: PedidoDeConfirmacion = {
   titulo: "¿Querés salir de esta página?",
   mensaje: "Lo que no guardaste se pierde.",
+  textoDeAceptar: "SALIR",
   destructivo: true,
 };
 
