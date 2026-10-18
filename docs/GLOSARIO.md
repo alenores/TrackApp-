@@ -116,7 +116,7 @@ El dibujo de cuánto sube y baja una línea a lo largo de su largo, como en las
 apps de montaña: abajo la distancia, al costado la altura. Va en la ficha de
 cada Camino y de cada Circuito, pintado con los colores y marcas de las partes.
 Al pasar el dedo o el mouse dice la altura de ese punto y lo marca en el mapa.
-En la navegación de un Circuito lleva la marca **Estás acá**.
+En la navegación de un Circuito va dentro de **Información**, con la marca **Estás acá**.
 
 **Qué llevar**
 Lo que conviene llevar a un Circuito: agua, repuestos, abrigo. Texto libre.
@@ -304,13 +304,23 @@ Lleva técnica, esfuerzo, qué llevar, complicaciones y comentario cargados a
 mano; su largo, su desnivel y su **gráfico de alturas** se calculan solos con
 la línea vigente. La lista de Circuitos se abre desde el menú; Salidas es el
 inicio de la app (decisión 051). Al navegarlo
-se puede registrar la Salida, marcar, prender otros Circuitos y ver las
-alturas con «Estás acá». Ver decisión 049.
+se puede registrar la Salida, marcar, prender otros Circuitos y abrir
+**Información**: el nombre, la forma vista desde arriba, dónde estás y el
+gráfico de alturas con «Estás acá». Ver decisiones 049 y 067.
+
+**Información**
+La ventana que se abre al navegar un Circuito. El título dice Información;
+adentro van el nombre, la miniatura de la línea vista desde arriba (con los
+colores y las marcas de cada tramo), el largo, dónde estás y el gráfico de
+alturas. La ayuda de colores y líneas no está a la vista: se abre con el
+círculo de ayuda y se cierra al tocarlo de nuevo. Ver decisión 067.
 
 **Circuitos en el mapa**
-La lista para prender otros Circuitos sobre el mapa al navegar uno, por zona y
-sector, con el mapa chico de la zona. En el detalle de una zona, el botón del
-mapa que muestra los Circuitos que la cruzan.
+La lista para prender otros Circuitos sobre el mapa al navegar uno. Arriba se
+elige el sector por su nombre; si hay más de una zona, primero la zona. El
+Circuito que se está haciendo va aparte, sin tilde. Debajo van los otros de
+ese sector. En el detalle de una zona, el botón del mapa que muestra los
+Circuitos que la cruzan. Ver decisión 068.
 
 **Ruta** — *retirada el 2026-10-08 (decisión 049)*
 El módulo viejo: una línea subida desde un archivo con sus datos globales. Lo
@@ -372,10 +382,9 @@ GPS. Abre mostrando todas las zonas desde arriba y, cuando el GPS responde, va
 a donde estás. Tiene las mismas reglas que la navegación: nunca consulta
 internet.
 
-**Mapa de la zona**
-El mapa chico que se abre con el ícono de mapa en «Circuitos en el mapa»: la zona
-con sus sectores y tu punto azul. Tocando un sector, la lista pasa a ser la de
-ese sector. Lee solo lo guardado en el celular.
+**Mapa de la zona** — *retirado de la navegación el 2026-10-18 (decisión 068)*
+Era el mapa chico para cambiar de sector dentro de «Circuitos en el mapa».
+Ahí el sector se elige por su nombre.
 
 **Filtro de rutas** — *retirado con Rutas (decisión 049)*
 Achicaba la lista de rutas. La lista de Circuitos todavía no tiene filtro.

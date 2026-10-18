@@ -34,9 +34,14 @@ y nada que no sirva.
     responde, no hay sector elegido y el mapa muestra todas las zonas desde
     arriba; cuando responde, el mapa va a donde estás.
 - **Todo sale de lo guardado en el celular**, también el mapa de la zona.
-- **Mapa sin bajar: un cartel chico, nada más.** Arriba a la izquierda, donde
-  va Simple/Satelital, un cartel ámbar que dice «Sin mapa descargado». Sin
-  más texto. Reemplaza a los carteles grandes de abajo.
+- **Ajuste del 2026-10-18 (decisión 068).** Al navegar un Circuito, el sector
+  ya no se cambia con un mapa adentro de la ventana. Se elige por su nombre.
+  El Circuito que se está haciendo va aparte de los demás.
+- **Mapa sin bajar: un círculo ámbar con «!», nada más.** Arriba a la
+  izquierda, junto a Simple/Satelital, del mismo alto que ese botón. El texto
+  se ve al tocarlo y se cierra al tocar afuera. Decisión 066: la pastilla
+  «Sin mapa descargado» siempre abierta nombraba un tramo chico como si no
+  hubiera mapa.
 - **Simple/Satelital, chato**, y al lado, con la foto satelital, un círculo
   con líneas para las curvas de nivel: un toque las prende o las apaga, como
   sol y noche. Apagado se ve deshabilitado.

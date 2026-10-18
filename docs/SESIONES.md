@@ -4,6 +4,103 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-18 — Circuitos en el mapa se lee en tres partes
+
+### Estado al inicio
+
+Al navegar un Circuito, la ventana mezclaba el sector, un ícono de mapa y
+el Circuito que se estaba haciendo, con tilde, en el mismo bloque.
+
+### Lo que se hizo
+
+El sector se elige por su nombre. El Circuito que se está haciendo queda
+aparte, sin tilde. Los demás del sector van abajo, y recién ahí aparecen
+Todos y Ninguno. El mapa de adentro se sacó.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: tres partes, sin texto de ayuda, y sin un mapa para llegar
+a otro sector. Decisión 068.
+
+### Documentos actualizados
+
+Decisión 068, el ajuste en la 025, glosario y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en una zona con varios sectores y en una con uno solo.
+
+---
+
+## Sesión 2026-10-18 — Información al navegar un Circuito
+
+### Estado al inicio
+
+Al navegar un Circuito, un círculo abría una ventana titulada Alturas. El
+gráfico se entendía; los colores y las líneas de abajo, no.
+
+### Lo que se hizo
+
+Esa ventana pasó a llamarse Información. Adentro van el nombre del Circuito,
+la forma vista desde arriba con los colores de cada tramo, el largo y dónde
+estás, y el gráfico de alturas como estaba. La ayuda de colores se abre solo
+al tocar el círculo de ayuda.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: el título dice qué muestra la ventana, no el nombre del
+Circuito. La miniatura es la línea vista desde arriba. La ayuda no queda
+siempre a la vista. Decisión 067.
+
+### Documentos actualizados
+
+Decisión 067, diseño exterior, glosario, reglas de la app y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Abrirlo en el celular, con sol y de noche, en un Circuito con tramos de
+distinto color.
+
+---
+
+## Sesión 2026-10-18 — El aviso de mapa es un círculo
+
+### Estado al inicio
+
+Al navegar un Circuito, si faltaba un tramo de mapa, arriba a la izquierda
+quedaba escrito «Sin mapa descargado», aunque el mapa simple sí estuviera.
+
+### Lo que se hizo
+
+Esa pastilla pasó a ser un círculo ámbar con «!». El texto se ve al tocarlo
+y se cierra al tocar afuera. Si falta un tramo, el texto dice eso.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: el cartel fijo era invasivo y nombraba de más. Decisión 066.
+
+### Documentos actualizados
+
+Decisiones 014, 025 y 066, y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular, en un Circuito con el simple bajado y un tramo sin mapa.
+
+---
+
 ## Sesión 2026-10-17 — La mira roja cuando el GPS falla
 
 ### Estado al inicio

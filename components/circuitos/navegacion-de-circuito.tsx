@@ -19,8 +19,7 @@ import { BotonCerrar, BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/bot
 import { BotonDelGps, CartelDeFallaDelGps } from "@/components/navegacion/aviso-del-gps";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Emergente } from "@/components/ui/emergente";
-import { GraficoDeAlturas } from "@/components/ui/grafico-de-alturas";
-import { ReferenciaDePartes } from "@/components/rutas/referencia-de-partes";
+import { InformacionDelCircuito } from "@/components/circuitos/informacion-del-circuito";
 import { useGps } from "@/hooks/use-gps";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
@@ -31,8 +30,9 @@ import { useDibujosDeCircuitos } from "@/hooks/use-dibujos-de-circuitos";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { parteEn, ubicarEnCamino } from "@/lib/caminos/partes";
 import { anotacionesParaMapaDelLugar } from "@/lib/anotaciones/lugar";
-import { loQueFaltaDesde, lugarEnElCircuito } from "@/lib/circuitos/alturas";
-import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
+import { loQueFaltaDesde, lugarEnElCircuito, puntoEnElCircuito } from "@/lib/circuitos/alturas";
+import { segmentosParaLaMiniatura, textoDeDondeEstas } from "@/lib/circuitos/miniatura";
+import { textoDeDistancia } from "@/lib/alturas/grafico";
 import { avisoPorFaltaDeMapa } from "@/lib/navegacion/aviso-de-mapa";
 import { sectorPrincipalDelCircuito } from "@/lib/navegacion/mapa-libre";
 import { seSuperponen } from "@/lib/datos/rectangulo";
@@ -46,8 +46,9 @@ import { leerCircuitoPreparado, type CircuitoPreparado } from "@/lib/offline/cir
  * GPS funciona por satélite y no necesita señal.
  *
  * Hace todo lo que hacía navegar una ruta (decisión 049): registrar la Salida,
- * anotar desde el cerro y prender otros Circuitos sobre el mapa. Suma el
- * gráfico de alturas con «Estás acá».
+ * anotar desde el cerro y prender otros Circuitos sobre el mapa. Suma la
+ * ventana Información: la forma vista desde arriba, dónde estás y el gráfico
+ * de alturas con «Estás acá».
  *
  * **El GPS se prende solo al entrar y se apaga solo al salir.**
  */
@@ -63,12 +64,12 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
   const [preparado, setPreparado] = useState<CircuitoPreparado | null>(null);
   const [cargando, setCargando] = useState(true);
   const [centrarGps, setCentrarGps] = useState(0);
-  const [verAlturas, setVerAlturas] = useState(false);
+  const [verInformacion, setVerInformacion] = useState(false);
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
   const [avisoDeCamino, setAvisoDeCamino] = useState<string | null>(null);
   const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const caminosSinLinea = useMemo(() => paquete?.caminos ?? [], [paquete]);
-  const { caminos, error: errorDeCaminos } = useCaminosGuardados(caminosSinLinea);
+  const { caminos, error: errorDeCaminos, cargando: cargandoCaminos } = useCaminosGuardados(caminosSinLinea);
   const caminoElegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const { open, requestExit, cancelExit, confirmExit } = useSalidaDeNavegacion("/");
   const gps = useGps();
@@ -130,6 +131,17 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
   const aquiM = lugar && lugar.alejamientoM <= CERCA_DEL_CIRCUITO_M ? lugar.distanciaM : null;
   const alturas = preparado?.alturas ?? null;
   const falta = alturas?.ok && aquiM !== null ? loQueFaltaDesde(alturas.datos, aquiM) : null;
+  const segmentos = useMemo(() => {
+    if (!preparado?.partes || !ficha) return null;
+    return segmentosParaLaMiniatura(preparado.partes, caminos, ficha.actividad);
+  }, [preparado, caminos, ficha]);
+  const aquiEnLaLinea = preparado?.partes && aquiM !== null ? puntoEnElCircuito(preparado.partes, aquiM) : null;
+  const dondeEstas = textoDeDondeEstas({
+    largoM: alturas?.ok ? alturas.datos.largoM : ficha?.totales?.largoM ?? null,
+    llevasM: aquiM,
+    alejamientoM: lugar && aquiM === null ? lugar.alejamientoM : null,
+    hayPosicion: gps.posicion !== null,
+  });
 
   if (cargando && ficha) return <Tarjeta><p role="status" className="text-lg text-texto">Abriendo el Circuito guardado…</p></Tarjeta>;
   if (!ficha || !preparado) return <Tarjeta franja="rojo" className="space-y-3">
@@ -177,7 +189,8 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
           fondosDisponibles={fondosDisponibles}
           forzarCentradoEn={centrarGps}
           margenInferiorAlCentrar={deAnotaciones.margenAlCentrar}
-          sinMapaDescargado={avisoDelMapa !== null || fondosDisponibles.length === 0} />
+          sinMapaDescargado={avisoDelMapa !== null || fondosDisponibles.length === 0}
+          textoDelAvisoDeMapa={avisoDelMapa} />
       </div>
 
       {deAnotaciones.aviso}
@@ -203,7 +216,7 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
             <BotonCerrar etiqueta="Salir de la navegación" onClick={() => requestExit()} />
             {deAnotaciones.boton}
             <BotonRedondo etiqueta="Circuitos en el mapa" onClick={() => setEligiendoCircuitos(true)}>{ICONOS_DEL_CERRO.circuitos}</BotonRedondo>
-            <BotonRedondo etiqueta="Ver las alturas" onClick={() => setVerAlturas(true)}>{ICONOS_DEL_CERRO.alturas}</BotonRedondo>
+            <BotonRedondo etiqueta="Información" onClick={() => setVerInformacion(true)}>{ICONOS_DEL_CERRO.informacion}</BotonRedondo>
             <span className="flex-1" />
             {registro.enCurso
               ? <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!gps.posicion} />
@@ -226,8 +239,6 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
       prendidas={otrosPrendidos}
       alCambiar={setOtrosPrendidos}
       fija={circuitoId}
-      posicion={gps.posicion}
-      fondosDisponibles={fondosDisponibles}
     />
 
     {caminoElegido && caminoTocado && !deAnotaciones.anotando ? (
@@ -243,20 +254,25 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
 
     {deAnotaciones.resto}
 
-    <Emergente abierto={verAlturas} alCerrar={() => setVerAlturas(false)} titulo="Alturas" ancho="amplio">
-      {!alturas ? <p role="alert" className="text-lg text-texto">Las alturas de este Circuito todavía no están en el celular. Abrí la app con señal en casa para ponerla al día.</p>
-        : !alturas.ok ? <p role="alert" className="text-lg text-texto">{alturas.error}</p>
-          : <div className="space-y-3">
-            {falta ? <p className="text-lg text-texto">
-              Hasta el final: <strong>{textoDeDistancia(falta.metros)}</strong> · desnivel positivo <strong>{textoDeAltura(falta.desnivelPositivoM)}</strong> · negativo <strong>{textoDeAltura(falta.desnivelNegativoM)}</strong>
-            </p> : <p className="text-lg text-texto">
-              {lugar ? `Estás a ${textoDeDistancia(lugar.alejamientoM)} del Circuito: el gráfico no marca dónde estás.`
-                : "Todavía no hay posición del GPS: el gráfico no marca dónde estás."}
-            </p>}
-            <GraficoDeAlturas perfil={alturas.datos.perfil} tramos={alturas.datos.tramos} aquiM={aquiM} enNavegacion
-              descripcion={`Alturas del Circuito: ${textoDeDistancia(alturas.datos.largoM)}, desnivel positivo ${textoDeAltura(alturas.datos.desnivelPositivoM)} y negativo ${textoDeAltura(alturas.datos.desnivelNegativoM)}.`} />
-            <ReferenciaDePartes navegando conPartesPropias />
-          </div>}
+    <Emergente abierto={verInformacion} alCerrar={() => setVerInformacion(false)} titulo="Información" ancho="amplio">
+      <InformacionDelCircuito
+        nombre={ficha.nombre}
+        segmentos={segmentos?.ok ? segmentos.datos : null}
+        leyendo={Boolean(preparado.partes) && cargandoCaminos && !segmentos?.ok}
+        avisoDeLinea={!preparado.partes
+          ? "Este Circuito no tiene la línea en el celular. Abrí la app con señal en casa para ponerla al día."
+          : segmentos && !segmentos.ok && !cargandoCaminos
+            ? (errorDeCaminos ?? segmentos.error)
+            : null}
+        aqui={aquiEnLaLinea}
+        dondeEstas={dondeEstas}
+        alturas={alturas}
+        falta={falta}
+        textoSinMarca={lugar
+          ? `Estás a ${textoDeDistancia(lugar.alejamientoM)} del Circuito: el gráfico no marca dónde estás.`
+          : "Todavía no hay posición del GPS: el gráfico no marca dónde estás."}
+        aquiM={aquiM}
+      />
     </Emergente>
 
     <PreguntaDeRegistrar

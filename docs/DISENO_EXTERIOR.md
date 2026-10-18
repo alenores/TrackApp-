@@ -116,6 +116,18 @@ en el lugar marcado originalmente. Si la nueva línea del Camino ya no lo
 alcanza, el mapa muestra la separación y el resumen indica «Partes sin unir»;
 no se dibuja una conexión supuesta. Ver decisión 048.
 
+Al navegar un Circuito, el círculo de Información abre una ventana con ese
+título. Adentro van el nombre, una miniatura de la línea vista desde arriba
+con los colores y las marcas de cada tramo, el largo y dónde estás, y el
+gráfico de alturas. La ayuda de colores y líneas no está siempre a la vista:
+se abre con el círculo de ayuda, del tamaño normal, y se cierra al tocarlo
+de nuevo. Ver decisión 067.
+
+Al navegar un Circuito, «Circuitos en el mapa» se lee en tres partes: el
+sector, elegido por su nombre; el Circuito que se está haciendo, aparte y
+sin tilde; y los otros de ese sector. No abre un mapa adentro de la ventana.
+Ver decisión 068.
+
 ---
 
 ## Por qué el modo oscuro es un error con sol

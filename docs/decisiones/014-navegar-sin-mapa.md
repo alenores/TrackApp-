@@ -13,7 +13,9 @@ aprieta «Navegar»:
 
 ## La decisión: opción A
 
-**Se navega igual. Con el cartel a la vista, siempre.**
+**Se navega igual.** El aviso queda en el mapa, pero desde el 2026-10-18
+(decisión 066) no es un cartel fijo: es un círculo ámbar con «!». El texto
+de abajo se lee al tocarlo.
 
 ## Por qué
 
@@ -32,11 +34,12 @@ incomparablemente mejor que no poder navegar.
 
 ## Lo que sí es obligatorio
 
-El cartel. **Una pantalla que muestra la línea sin fondo y no explica por qué
-es peligrosa**, porque el usuario puede creer que está viendo un mapa vacío en
-vez de un mapa que falta.
+El aviso. **Una pantalla que muestra la línea sin fondo y no da forma de
+enterarse es peligrosa**, porque el usuario puede creer que está viendo un
+mapa vacío en vez de un mapa que falta. El círculo queda a la vista; el texto
+se lee al tocarlo.
 
-El cartel dice, según el caso:
+El texto dice, según el caso:
 
 - que todavía no hay mapas cargados en la app;
 - cuántos kilómetros de la ruta caen fuera de todo sector;

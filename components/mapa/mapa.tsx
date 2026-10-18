@@ -37,6 +37,7 @@ import {
   FUENTE_DE_LAS_CURVAS,
   fuenteDeLasCurvas,
 } from "@/components/mapa/capas-de-relieve";
+import { AvisoDeMapaFaltante } from "@/components/mapa/aviso-de-mapa-faltante";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { accionDeLaCamara, type VistaDelMapa } from "@/lib/mapas/vista";
@@ -341,10 +342,15 @@ type MapaProps = {
   /** Solo consulta: ofrece imagen de Google con señal, nunca en edición ni navegación. */
   consultaGoogle?: boolean;
   /**
-   * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, donde
-   * va Simple/Satelital, aparece un cartel chico: «Sin mapa descargado».
+   * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, junto
+   * a Simple/Satelital, aparece un círculo ámbar con «!».
    */
   sinMapaDescargado?: boolean;
+  /**
+   * Lo que dice el cartel al tocar el círculo. Si no viene, «Sin mapa descargado».
+   * En un Circuito es el aviso del tramo que falta, no esa frase genérica.
+   */
+  textoDelAvisoDeMapa?: string | null;
   /**
    * `true` para el mapa chico de adentro de una emergente, como el de la zona
    * en «Rutas en el mapa»: sin botones propios (ubicarme, ver en grande) y con
@@ -482,6 +488,7 @@ export function Mapa({
   enVivo = false,
   consultaGoogle = false,
   sinMapaDescargado = false,
+  textoDelAvisoDeMapa = null,
   miniatura = false,
   className = "",
 }: MapaProps) {
@@ -2139,8 +2146,8 @@ export function Mapa({
 
       {/*
         Arriba a la izquierda y chatos, para no tapar el mapa: Simple o
-        Satelital (solo los que hay: sin ninguno bajado no aparece) con el
-        círculo de las curvas al lado, y debajo el cartel de que falta mapa.
+        Satelital (solo los que hay: sin ninguno bajado no aparece), el
+        círculo de las curvas al lado, y el «!» si falta un pedazo de mapa.
       */}
       {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
@@ -2213,16 +2220,11 @@ export function Mapa({
                 </svg>
               </button>
             ) : null}
-          </div>
 
-          {sinMapaDescargado ? (
-            <p
-              role="status"
-              className="rounded-full border border-ambar-borde bg-ambar-fondo px-3 py-1 text-xs font-semibold text-ambar-texto shadow-[var(--sombra-alta)]"
-            >
-              Sin mapa descargado
-            </p>
-          ) : null}
+            {sinMapaDescargado ? (
+              <AvisoDeMapaFaltante texto={textoDelAvisoDeMapa?.trim() || "Sin mapa descargado"} />
+            ) : null}
+          </div>
         </div>
       ) : null}
 

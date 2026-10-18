@@ -385,8 +385,8 @@ conocido.
   el cerro (se ven dentro de la navegación y la navegación libre), no hay nada
   nuevo que calentar. Si se agrega una ficha de camino para el cerro, entra en
   `pantallasParaCalentar`.
-- **Pendiente heredado (R30):** la navegación arma el aviso de «sin mapa» pero
-  solo muestra la pastilla «Sin mapa descargado», no el texto. Sigue abierto.
+- **Pendiente heredado (R30), cerrado el 2026-10-18:** el aviso de «sin mapa»
+  se lee al tocar el círculo ámbar con «!». Ya no es una pastilla fija.
 
 ### 5.2 Lo que se sabe en casa
 

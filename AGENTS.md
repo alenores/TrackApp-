@@ -198,9 +198,10 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
-  salir.** No hay botón para prenderlo. Abajo a la izquierda van salir,
-  Marcas y «Circuitos en el mapa»; no hay carteles de desvío. Ver
-  `docs/decisiones/025` y `049`.
+  salir.** No hay botón para prenderlo. Abajo a la izquierda van salir
+  y Marcas. En la navegación libre sigue el círculo de actividades. Al
+  navegar un Circuito siguen «Circuitos en el mapa» e Información. No hay
+  carteles de desvío. Ver `docs/decisiones/025`, `049`, `062` y `067`.
 - **La pantalla no se apaga mientras se está navegando.**
 
 ---
