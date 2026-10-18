@@ -15,8 +15,8 @@ import { useRegistroDeSalida } from "@/hooks/use-registro-de-salida";
 import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
-import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
-import { iconoDeUbicarme } from "@/components/ui/iconos";
+import { BotonDelGps, CartelDeFallaDelGps } from "@/components/navegacion/aviso-del-gps";
+import { BotonCerrar, BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useSalidaDeNavegacion } from "@/hooks/use-salida-de-navegacion";
 import { usePantallaDespierta } from "@/hooks/use-pantalla-despierta";
@@ -54,10 +54,8 @@ export function PantallaDeMapaLibre() {
   const [preguntandoSiRegistrar, setPreguntandoSiRegistrar] = useState(false);
   const {
     estado: estadoDelGps,
-    error: errorDelGps,
     posicion,
     prender: prenderGps,
-    posicionVieja,
   } = gps;
 
   useEffect(() => {
@@ -167,7 +165,10 @@ export function PantallaDeMapaLibre() {
         ) : null}
 
         {deAnotaciones.anotando ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end">
+            <div className="order-2">{deAnotaciones.panel}</div>
+            <CartelDeFallaDelGps gps={gps} className="order-1 px-3 pb-2" />
+          </div>
         ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end gap-2 p-3 pb-safe-4">
           {caminoElegido && caminoTocado && actividadDeLaFicha ? (
@@ -189,28 +190,19 @@ export function PantallaDeMapaLibre() {
             </p>
           ) : null}
 
-          {errorDelGps ? (
-            <p
-              role="alert"
-              className="pointer-events-auto rounded-xl border border-rojo-borde bg-superficie p-2 text-lg leading-7 text-rojo-texto"
-            >
-              {errorDelGps}
-            </p>
-          ) : null}
-
           {registro.enCurso ? (
+            <div className="order-2">
             <FranjaDeRegistro
               kilometros={registro.kilometros}
               puntos={registro.puntos}
               marcaRecien={registro.marcaRecien}
               error={registro.error}
             />
+            </div>
           ) : null}
 
-          <div className="pointer-events-auto flex items-center gap-2">
-            <BotonRedondo etiqueta="Salir de la navegación libre" onClick={() => requestExit()}>
-              {ICONOS_DEL_CERRO.salir}
-            </BotonRedondo>
+          <div className="pointer-events-auto order-3 flex items-center gap-2">
+            <BotonCerrar etiqueta="Salir de la navegación libre" onClick={() => requestExit()} />
             {deAnotaciones.boton}
             <BotonRedondo etiqueta="Actividades" onClick={() => setElegirActividad(true)}>
               {ICONOS_DEL_CERRO.caminos}
@@ -221,15 +213,9 @@ export function PantallaDeMapaLibre() {
             ) : (
               <BotonEmpezarARegistrar alTocar={() => setPreguntandoSiRegistrar(true)} />
             )}
-            {estadoDelGps === "andando" ? (
-              <BotonRedondo
-                etiqueta={posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
-                onClick={() => setCentrarGps(Date.now())}
-              >
-                {iconoDeUbicarme(true, posicionVieja)}
-              </BotonRedondo>
-            ) : null}
+            <BotonDelGps gps={gps} alCentrar={() => setCentrarGps(Date.now())} />
           </div>
+          <CartelDeFallaDelGps gps={gps} className="order-1" />
         </div>
         )}
       </div>

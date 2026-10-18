@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
-import { BotonCerrar, BotonRedondo } from "@/components/ui/boton-redondo";
-import { iconoDeUbicarme } from "@/components/ui/iconos";
+import { BotonDelGps } from "@/components/navegacion/aviso-del-gps";
+import { BotonCerrar } from "@/components/ui/boton-redondo";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { SALIR_SIN_GUARDAR, useDialogos } from "@/components/ui/dialogos";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
@@ -323,13 +323,11 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
     >
       <div className="cabeza-de-panel flex shrink-0 items-center gap-2 border-b border-borde px-4 py-2">
         <h2 className="min-h-10 min-w-0 flex-1 content-center truncate text-base font-bold text-texto">{titulo}</h2>
-        <BotonRedondo
-          etiqueta={gps.posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
-          disabled={gps.posicion === null || marcado.guardando}
-          onClick={centrar}
-        >
-          {iconoDeUbicarme(true, gps.posicionVieja)}
-        </BotonRedondo>
+        <BotonDelGps
+          gps={gps}
+          disabled={marcado.guardando || (gps.error === null && gps.posicion === null)}
+          alCentrar={centrar}
+        />
         <BotonCerrar disabled={marcado.guardando} onClick={() => void cancelar(false)} />
       </div>
       <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 py-3">

@@ -39,6 +39,10 @@ persona cree que está bien ubicada y no lo está.
 - **Si el GPS se pierde o la posición envejece, la mira del botón se pone
   amarilla.** No hay cartel. No alcanza con dejar de mover el punto azul.
   Decisión de Ale, 2026-10-16.
+- **Si el GPS falla, la mira se pone roja y sigue en el mapa.** Sin permiso o
+  sin ubicación, el cartel aparece solo y se puede cerrar. Si tarda demasiado
+  o deja de responder, no hay cartel hasta que se toca la mira. En los cuatro
+  casos, tocarla muestra qué pasó y qué hacer. Decisión de Ale, 2026-10-17.
 - **Un error atrapado que no se muestra es una falla invisible.** Si una acción
   puede fallar, el aviso va en pantalla con el motivo real adentro. «No se pudo»
   a secas no sirve.
@@ -346,9 +350,10 @@ que es la única memoria que el navegador no puede borrar.
   tuvieron mapa —una tarea—. Van en una **franja ámbar chica arriba de todo**
   que dice cuántos hay y se toca para verlos enteros; nunca abiertos ocupando
   la pantalla. Además **cada tarjeta de Circuito dice cuánto mapa tiene
-  bajado** (en sectores). Decisión 053. El inicio abre Salidas con conexión;
-  sin señal muestra un aviso y accesos a Circuitos y navegación libre (decisión
-  051).
+  bajado** (en sectores). Decisión 053. El inicio abre Salidas con conexión.
+  Sin señal abre Circuitos, la pantalla de siempre. Mientras todavía no se
+  sabe si hay señal, solo se ve que la app está pensando: no hay una pantalla
+  aparte con accesos (decisión 065).
 - **Sacar un mapa a propósito se hace en Descargas, con señal.** Si la base no
   contesta, el sacado queda anotado como pendiente en el celular y no se cuenta
   como perdido hasta que la base lo acepte. Sin eso, la app le ofrece al usuario bajar de
@@ -487,7 +492,9 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
   Prohibido usarlo «porque hay opciones para elegir». Decisión de Ale,
   2026-10-13.
 - **Toda emergente se cierra con el botón físico de atrás**, y ese atrás cierra la
-  emergente, no sale de la app.
+  emergente, no sale de la app. Si hay varias, cierra solo la de adelante.
+  **En la computadora, Escape hace lo mismo que la cruz**: cierra solo lo que
+  está adelante. Si hay varias, la de atrás se queda.
 - **Los botones de volver vuelven, no van.** Volver rearma una pantalla que ya
   estaba dibujada; ir a una dirección obliga a armarla de nuevo y sin señal eso
   termina en blanco.
@@ -577,6 +584,7 @@ once puntos.**
 3. Se ve bien en modo sol **y** en modo noche. Se probaron los dos.
 4. Todos los botones tienen el tamaño normal. Ninguno agrandado.
 5. Las emergentes usan la pieza única y cierran con el botón físico de atrás.
+   En la computadora, Escape hace lo mismo que la cruz de lo que está adelante.
 6. Los botones de volver vuelven, no van.
 7. Tiene resuelto **qué se ve cuando no hay nada**, **mientras carga** y **cuando
    falla**. Ninguno de los tres queda mudo.

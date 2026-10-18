@@ -222,6 +222,10 @@ el camino. Todo lo demás compite por espacio con eso.
 visible y el botón físico de atrás tiene que funcionar. Un mapa a pantalla
 completa sin salida clara es una trampa.
 
+En la computadora, la tecla Escape hace lo mismo que la cruz de cerrar: cierra
+la pantalla, el panel o la ventana que está adelante. El atrás del celular
+también: si hay otra detrás, esa se queda. Decisión 064.
+
 ## Por qué sobre la foto van las líneas de paso
 
 La foto satelital que se puede bajar no alcanza para ver un río o una huella.

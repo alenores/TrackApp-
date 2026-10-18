@@ -15,8 +15,8 @@ import {
   PreguntaDeRegistrar,
 } from "@/components/navegacion/registro-de-salida";
 import { BotonVolver } from "@/components/ui/boton-volver";
-import { BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
-import { iconoDeUbicarme } from "@/components/ui/iconos";
+import { BotonCerrar, BotonRedondo, ICONOS_DEL_CERRO } from "@/components/ui/boton-redondo";
+import { BotonDelGps, CartelDeFallaDelGps } from "@/components/navegacion/aviso-del-gps";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { Emergente } from "@/components/ui/emergente";
 import { GraficoDeAlturas } from "@/components/ui/grafico-de-alturas";
@@ -183,7 +183,10 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
       {deAnotaciones.aviso}
 
       {deAnotaciones.anotando ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0">{deAnotaciones.panel}</div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end">
+          <div className="order-2">{deAnotaciones.panel}</div>
+          <CartelDeFallaDelGps gps={gps} className="order-1 px-3 pb-2" />
+        </div>
       ) : (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 pb-safe-4">
           {avisoDeCamino ? (
@@ -194,11 +197,10 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
           {gps.estado === "pidiendo" ? <p role="status" className="pointer-events-auto rounded-xl border border-borde bg-superficie p-2 text-lg text-texto">
             Buscando tu posición con el GPS…
           </p> : null}
-          {gps.error ? <p role="alert" className="pointer-events-auto rounded-xl border border-rojo-borde bg-superficie p-2 text-lg text-rojo-texto">{gps.error}</p> : null}
-          {registro.enCurso ? <FranjaDeRegistro kilometros={registro.kilometros} puntos={registro.puntos}
-            marcaRecien={registro.marcaRecien} error={registro.error} /> : null}
-          <div className="pointer-events-auto flex items-center gap-2">
-            <BotonRedondo etiqueta="Salir de la navegación" onClick={() => requestExit()}>{ICONOS_DEL_CERRO.salir}</BotonRedondo>
+          {registro.enCurso ? <div className="order-2"><FranjaDeRegistro kilometros={registro.kilometros} puntos={registro.puntos}
+            marcaRecien={registro.marcaRecien} error={registro.error} /></div> : null}
+          <div className="pointer-events-auto order-3 flex items-center gap-2">
+            <BotonCerrar etiqueta="Salir de la navegación" onClick={() => requestExit()} />
             {deAnotaciones.boton}
             <BotonRedondo etiqueta="Circuitos en el mapa" onClick={() => setEligiendoCircuitos(true)}>{ICONOS_DEL_CERRO.circuitos}</BotonRedondo>
             <BotonRedondo etiqueta="Ver las alturas" onClick={() => setVerAlturas(true)}>{ICONOS_DEL_CERRO.alturas}</BotonRedondo>
@@ -206,15 +208,9 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
             {registro.enCurso
               ? <BotonMarcarAca alTocar={registro.marcarAca} deshabilitado={!gps.posicion} />
               : <BotonEmpezarARegistrar alTocar={() => setPreguntandoSiRegistrar(true)} />}
-            {gps.estado === "andando" ? (
-              <BotonRedondo
-                etiqueta={gps.posicionVieja ? "El GPS se perdió" : "Centrar en mi ubicación"}
-                onClick={() => setCentrarGps(Date.now())}
-              >
-                {iconoDeUbicarme(true, gps.posicionVieja)}
-              </BotonRedondo>
-            ) : null}
+            <BotonDelGps gps={gps} alCentrar={() => setCentrarGps(Date.now())} />
           </div>
+          <CartelDeFallaDelGps gps={gps} className="order-1" />
         </div>
       )}
     </div>

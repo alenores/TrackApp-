@@ -24,6 +24,15 @@
 /** ¿Quedó una entrada puesta por una emergente que ya se cerró? */
 let entradaDeSobra = false;
 
+/** Cada apertura tiene un número, para no borrar la marca de la que quedó atrás. */
+let siguienteId = 1;
+
+/**
+ * Las que están abiertas, en orden. El atrás del celular cierra solo la última:
+ * la que se está viendo. La de atrás se queda.
+ */
+const abiertasEnOrden: Array<{ cerrar: () => void }> = [];
+
 /**
  * Cuántas emergentes hay abiertas ahora.
  *
@@ -46,6 +55,8 @@ export function soltarEmergente(): void {
 export function olvidarLaEntradaDeSobra(): void {
   entradaDeSobra = false;
   abiertas = 0;
+  siguienteId = 1;
+  abiertasEnOrden.length = 0;
 }
 
 export function hayEntradaDeSobra(): boolean {
@@ -58,33 +69,51 @@ export function hayEntradaDeSobra(): boolean {
  * Reusa la entrada que dejó una emergente anterior, si la hay: abrir y cerrar
  * carteles diez veces no puede dejar diez entradas muertas en el historial.
  */
-export function abrirEnElHistorial(): void {
+export function abrirEnElHistorial(): number {
   abiertas += 1;
-  const marca = { ...window.history.state, emergenteAbierta: true };
+  const id = siguienteId;
+  siguienteId += 1;
+  const marca = { ...window.history.state, emergenteAbierta: true, emergenteId: id };
 
   if (entradaDeSobra) {
     entradaDeSobra = false;
     window.history.replaceState(marca, "");
-    return;
+    return id;
   }
 
   window.history.pushState(marca, "");
+  return id;
 }
 
 /**
  * Saca la marca al cerrar con un botón, **sin moverse del lugar**.
  *
- * Si la emergente se cerró con el botón físico de atrás, la entrada ya se
- * consumió sola y acá no hay nada que hacer.
+ * Solo si la entrada de ahora es la de esta emergente. Si se cerró con el
+ * atrás, el celular ya pasó a la de atrás: esa marca no se toca.
  */
-export function cerrarEnElHistorial(): void {
-  if (!window.history.state?.emergenteAbierta) return;
+export function cerrarEnElHistorial(id: number): void {
+  if (window.history.state?.emergenteId !== id) return;
 
   window.history.replaceState(
-    { ...window.history.state, emergenteAbierta: false },
+    { ...window.history.state, emergenteAbierta: false, emergenteId: null },
     "",
   );
   entradaDeSobra = true;
+}
+
+/** Anota una emergente abierta. Al cerrarse hay que soltarla, si no el atrás la sigue encontrando. */
+export function anotarCierreConAtras(cerrar: () => void): () => void {
+  const entrada = { cerrar };
+  abiertasEnOrden.push(entrada);
+  return () => {
+    const indice = abiertasEnOrden.indexOf(entrada);
+    if (indice >= 0) abiertasEnOrden.splice(indice, 1);
+  };
+}
+
+/** Cierra solo la que está adelante. */
+export function cerrarSoloLaDeAdelante(): void {
+  abiertasEnOrden[abiertasEnOrden.length - 1]?.cerrar();
 }
 
 /**

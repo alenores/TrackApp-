@@ -13,6 +13,49 @@ export type EstadoDelGps =
   | "sin_permiso"
   | "no_disponible";
 
+/** Cómo se pinta la mira: azul si anda, amarilla si la posición envejeció, roja si falló. */
+export type TonoDeLaMira = "bien" | "viejo" | "fallo";
+
+export function tonoDeLaMira(estado: EstadoDelGps, posicionVieja: boolean): TonoDeLaMira {
+  if (estado === "sin_permiso" || estado === "no_disponible") return "fallo";
+  if (estado === "andando" && posicionVieja) return "viejo";
+  return "bien";
+}
+
+export function etiquetaDeLaMira(tono: TonoDeLaMira): string {
+  if (tono === "fallo") return "El GPS no anda";
+  if (tono === "viejo") return "El GPS se perdió";
+  return "Centrar en mi ubicación";
+}
+
+/**
+ * El cartel sale solo si la app no tiene permiso o el GPS no está dando
+ * posición. Si tarda o deja de responder, la mira queda roja y el cartel
+ * espera a que la toquen.
+ */
+export function elCartelDelGpsSaleSolo(error: GeolocationPositionError): boolean {
+  return error.code === error.PERMISSION_DENIED || error.code === error.POSITION_UNAVAILABLE;
+}
+
+export type AvisoDeFallaDelGps = {
+  mensaje: string | null;
+  abierto: boolean;
+};
+
+/**
+ * Una falla que se repite no vuelve a abrir el cartel que el usuario cerró.
+ * Una falla distinta sí, si es de las que salen solas.
+ */
+export function alLlegarUnaFalla(
+  vigente: AvisoDeFallaDelGps,
+  llegada: { mensaje: string; saleSolo: boolean },
+): AvisoDeFallaDelGps {
+  if (vigente.mensaje === llegada.mensaje) {
+    return { mensaje: llegada.mensaje, abierto: vigente.abierto };
+  }
+  return { mensaje: llegada.mensaje, abierto: llegada.saleSolo };
+}
+
 /**
  * Qué decirle al usuario cuando el GPS no anda.
  *

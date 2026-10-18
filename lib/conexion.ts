@@ -61,6 +61,8 @@ const PAUSA_ENTRE_PRUEBAS_MS = 10_000;
 
 type Estado = "sin_probar" | "sirve" | "debil";
 
+export type EstadoDeLaSenal = "pensando" | "hay" | "no_hay";
+
 let estado: Estado = "sin_probar";
 let pruebaEnCurso: Promise<boolean> | null = null;
 let ultimaPrueba = 0;
@@ -82,6 +84,20 @@ function navegando(): boolean {
  */
 export function hayConexion(): boolean {
   return tieneRed() && estado === "sirve";
+}
+
+/**
+ * Lo que ya se sabe de la señal, para la entrada de la app.
+ *
+ * `pensando` es el rato en que todavía no se probó y el teléfono dice que hay
+ * red. Sin red, o con señal que no sirve, ya se sabe: `no_hay`.
+ */
+export function estadoDeLaSenal(): EstadoDeLaSenal {
+  if (typeof navigator === "undefined") return "pensando";
+  if (!tieneRed()) return "no_hay";
+  if (estado === "sirve") return "hay";
+  if (estado === "debil") return "no_hay";
+  return "pensando";
 }
 
 /** Hay red pero no responde: el gris del cerro. Para el cartel de la falla. */

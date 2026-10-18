@@ -4,6 +4,106 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-17 — La mira roja cuando el GPS falla
+
+### Estado al inicio
+
+Si el GPS fallaba, un cartel rojo quedaba fijo sobre el mapa. La mira del
+botón no aparecía.
+
+### Lo que se hizo
+
+En los cuatro fallos la mira queda en el mapa y se pone roja. Sin permiso o
+sin ubicación, el cartel aparece y se puede cerrar. Si tarda o deja de
+responder, el cartel sale solo al tocar la mira.
+
+### Decisiones tomadas
+
+Ale, 2026-10-17: cartel solo en los dos fallos graves, y siempre se puede
+cerrar. La mira roja avisa los cuatro.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular: sin permiso, con la ubicación apagada, y tocando la
+mira roja cuando el GPS tarda.
+
+---
+
+## Sesión 2026-10-17 — El inicio no inventa una pantalla
+
+### Estado al inicio
+
+Al abrir, hasta saber si había señal, aparecía un aviso con accesos a
+Circuitos y Navegación libre. Un momento después, si había señal, esa
+pantalla desaparecía y se abría Salidas.
+
+### Lo que se hizo
+
+Esa pantalla se eliminó. Mientras se averigua la señal solo se ve que la app
+está pensando. Con señal abre Salidas. Sin señal abre Circuitos.
+
+### Decisiones tomadas
+
+Ale, 2026-10-17: sin señal el inicio es Circuitos. Mientras piensa, una
+animación, no una pantalla aparte. Decisión 065.
+
+### Documentos actualizados
+
+Decisión 065, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Abrirlo con señal y en modo avión, y mirar que no vuelva el aviso.
+
+---
+
+## Sesión 2026-10-17 — Escape cierra la cruz
+
+### Estado al inicio
+
+En la computadora, la cruz de cerrar no respondía a Escape en todos lados. Donde
+sí respondía, si había dos ventanas abiertas Escape cerraba las dos.
+
+### Lo que se hizo
+
+Escape quedó igual que la cruz: cierra la pantalla, el panel o la ventana que
+está adelante. Si hay otra detrás, se queda. También la cruz de salir de la
+navegación.
+
+El atrás del celular cierra solo la ventana que está adelante. Si hay una
+confirmación encima de otra ventana, la de atrás se queda.
+
+### Decisiones tomadas
+
+Ale, 2026-10-17: en la computadora, Escape activa la cruz de cerrar. Decisión 064.
+
+### Documentos actualizados
+
+Decisión 064, diseño exterior, reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Probarlo en la computadora con una ventana, con una ventana encima de otra, y
+navegando con la ficha de un Camino abierta.
+
+---
+
 ## Sesión 2026-10-17 — Ficha de Camino y cruces de sin paso
 
 ### Estado al inicio

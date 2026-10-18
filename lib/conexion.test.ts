@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   EVENTO_CONEXION,
   esperarConexion,
+  estadoDeLaSenal,
   hayConexion,
   haySenalDebil,
   olvidarLaConexionParaProbar,
@@ -50,12 +51,19 @@ afterEach(() => {
 describe("detector de señal", () => {
   it("mientras no se probó, responde que no hay", () => {
     expect(hayConexion()).toBe(false);
+    expect(estadoDeLaSenal()).toBe("pensando");
+  });
+
+  it("sin red ya se sabe que no hay, sin quedarse pensando", () => {
+    conRed(false);
+    expect(estadoDeLaSenal()).toBe("no_hay");
   });
 
   it("con el servidor respondiendo, hay señal", async () => {
     servidorQue("responde");
     expect(await probarConexion(true)).toBe(true);
     expect(hayConexion()).toBe(true);
+    expect(estadoDeLaSenal()).toBe("hay");
   });
 
   it("una sola falla no alcanza: prueba de nuevo antes de decidir", async () => {
@@ -77,6 +85,7 @@ describe("detector de señal", () => {
 
     expect(hayConexion()).toBe(false);
     expect(haySenalDebil()).toBe(true);
+    expect(estadoDeLaSenal()).toBe("no_hay");
     expect(avisos).toHaveBeenCalledTimes(2);
     window.removeEventListener(EVENTO_CONEXION, avisos);
   });

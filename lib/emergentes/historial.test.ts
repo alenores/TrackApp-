@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   abrirEnElHistorial,
+  anotarCierreConAtras,
   cerrarEnElHistorial,
+  cerrarSoloLaDeAdelante,
   hayEntradaDeSobra,
   olvidarLaEntradaDeSobra,
 } from "@/lib/emergentes/historial";
@@ -33,8 +35,8 @@ describe("abrir y cerrar una emergente", () => {
   it("cerrar con un botón NO mueve el historial", () => {
     const antes = window.history.length;
 
-    abrirEnElHistorial();
-    cerrarEnElHistorial();
+    const id = abrirEnElHistorial();
+    cerrarEnElHistorial(id);
 
     // Una entrada más por el abrir; ninguna vuelta atrás por el cerrar.
     expect(window.history.length).toBe(antes + 1);
@@ -45,8 +47,8 @@ describe("abrir y cerrar una emergente", () => {
     const antes = window.history.length;
 
     for (let vez = 0; vez < 10; vez += 1) {
-      abrirEnElHistorial();
-      cerrarEnElHistorial();
+      const id = abrirEnElHistorial();
+      cerrarEnElHistorial(id);
     }
 
     expect(window.history.length).toBe(antes + 1);
@@ -64,25 +66,25 @@ describe("abrir y cerrar una emergente", () => {
   it("no se pierde lo que el navegador ya tenía guardado en la entrada", () => {
     window.history.replaceState({ loDeAntes: "sigue acá" }, "");
 
-    abrirEnElHistorial();
+    const id = abrirEnElHistorial();
     expect(window.history.state?.loDeAntes).toBe("sigue acá");
 
-    cerrarEnElHistorial();
+    cerrarEnElHistorial(id);
     expect(window.history.state?.loDeAntes).toBe("sigue acá");
   });
 });
 
 describe("la entrada de sobra", () => {
   it("queda marcada después de cerrar con un botón", () => {
-    abrirEnElHistorial();
-    cerrarEnElHistorial();
+    const id = abrirEnElHistorial();
+    cerrarEnElHistorial(id);
 
     expect(hayEntradaDeSobra()).toBe(true);
   });
 
   it("la siguiente emergente la reusa y deja de estar de sobra", () => {
-    abrirEnElHistorial();
-    cerrarEnElHistorial();
+    const id = abrirEnElHistorial();
+    cerrarEnElHistorial(id);
 
     abrirEnElHistorial();
     expect(hayEntradaDeSobra()).toBe(false);
@@ -90,13 +92,39 @@ describe("la entrada de sobra", () => {
   });
 
   it("cerrar con el atrás físico no deja nada de sobra", () => {
-    abrirEnElHistorial();
+    const id = abrirEnElHistorial();
 
     // Así queda el historial después de un atrás de verdad: la entrada con la
     // marca ya no está.
     window.history.replaceState({}, "");
-    cerrarEnElHistorial();
+    cerrarEnElHistorial(id);
 
     expect(hayEntradaDeSobra()).toBe(false);
+  });
+
+  it("el atrás de la de adelante no borra la marca de la que quedó atrás", () => {
+    const deAtras = abrirEnElHistorial();
+    const estadoDeAtras = window.history.state;
+    const activa = abrirEnElHistorial();
+
+    window.history.replaceState(estadoDeAtras, "");
+    cerrarEnElHistorial(activa);
+
+    expect(window.history.state?.emergenteId).toBe(deAtras);
+    expect(hayEntradaDeSobra()).toBe(false);
+  });
+});
+
+describe("el atrás cierra solo la de adelante", () => {
+  it("con dos abiertas, cierra la última", () => {
+    const deAtras = vi.fn();
+    const activa = vi.fn();
+    anotarCierreConAtras(deAtras);
+    anotarCierreConAtras(activa);
+
+    cerrarSoloLaDeAdelante();
+
+    expect(activa).toHaveBeenCalledOnce();
+    expect(deAtras).not.toHaveBeenCalled();
   });
 });

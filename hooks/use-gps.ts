@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { mensajeDeErrorDelGps, type EstadoDelGps } from "@/lib/navegacion/gps";
+import {
+  alLlegarUnaFalla,
+  elCartelDelGpsSaleSolo,
+  mensajeDeErrorDelGps,
+  type AvisoDeFallaDelGps,
+  type EstadoDelGps,
+} from "@/lib/navegacion/gps";
 
 /**
  * El GPS del celular, para las pantallas del cerro: navegar y el mapa libre.
@@ -25,6 +31,10 @@ export type Gps = {
   segundosSinNoticias: number;
   /** `true` cuando el GPS anda pero hace rato que no da novedades. */
   posicionVieja: boolean;
+  /** El cartel de la falla está a la vista. Se cierra a mano y vuelve al tocar la mira roja. */
+  cartelAbierto: boolean;
+  mostrarElCartel: () => void;
+  ocultarElCartel: () => void;
 };
 
 export function useGps(): Gps {
@@ -36,6 +46,32 @@ export function useGps(): Gps {
   const [altura, setAltura] = useState<number | null>(null);
   const [ultimaNoticia, setUltimaNoticia] = useState<number | null>(null);
   const [ahora, setAhora] = useState(() => Date.now());
+  const [cartelAbierto, setCartelAbierto] = useState(false);
+  const avisoRef = useRef<AvisoDeFallaDelGps>({ mensaje: null, abierto: false });
+
+  const aplicarFalla = useCallback((mensaje: string, saleSolo: boolean) => {
+    const siguiente = alLlegarUnaFalla(avisoRef.current, { mensaje, saleSolo });
+    avisoRef.current = siguiente;
+    setError(siguiente.mensaje);
+    setCartelAbierto(siguiente.abierto);
+  }, []);
+
+  const limpiarFalla = useCallback(() => {
+    avisoRef.current = { mensaje: null, abierto: false };
+    setError(null);
+    setCartelAbierto(false);
+  }, []);
+
+  const mostrarElCartel = useCallback(() => {
+    if (!avisoRef.current.mensaje) return;
+    avisoRef.current = { ...avisoRef.current, abierto: true };
+    setCartelAbierto(true);
+  }, []);
+
+  const ocultarElCartel = useCallback(() => {
+    avisoRef.current = { ...avisoRef.current, abierto: false };
+    setCartelAbierto(false);
+  }, []);
 
   // Un reloj lento, solo para saber si la posición envejeció.
   useEffect(() => {
@@ -54,15 +90,16 @@ export function useGps(): Gps {
 
   const prender = useCallback(() => {
     if (!navigator.geolocation) {
-      setError(
+      aplicarFalla(
         "Este celular no tiene GPS disponible para la app. Fijate en los permisos del navegador.",
+        true,
       );
       setEstado("no_disponible");
       return;
     }
 
     setEstado("pidiendo");
-    setError(null);
+    limpiarFalla();
 
     if (vigilanciaRef.current !== null) {
       navigator.geolocation.clearWatch(vigilanciaRef.current);
@@ -81,17 +118,17 @@ export function useGps(): Gps {
         setEstado("andando");
         // Si antes falló y ahora da posición, el cartel de falla se va: si no,
         // el usuario lee «no da posición» con el punto moviéndose.
-        setError(null);
+        limpiarFalla();
         setUltimaNoticia(Date.now());
         setAhora(Date.now());
       },
       (falla) => {
-        setError(mensajeDeErrorDelGps(falla));
+        aplicarFalla(mensajeDeErrorDelGps(falla), elCartelDelGpsSaleSolo(falla));
         setEstado(falla.code === falla.PERMISSION_DENIED ? "sin_permiso" : "no_disponible");
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
     );
-  }, []);
+  }, [aplicarFalla, limpiarFalla]);
 
   const segundosSinNoticias =
     ultimaNoticia === null ? 0 : Math.round((ahora - ultimaNoticia) / 1000);
@@ -106,5 +143,8 @@ export function useGps(): Gps {
     segundosSinNoticias,
     posicionVieja:
       estado === "andando" && segundosSinNoticias > SEGUNDOS_PARA_AVISAR_POSICION_VIEJA,
+    cartelAbierto,
+    mostrarElCartel,
+    ocultarElCartel,
   };
 }

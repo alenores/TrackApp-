@@ -1,6 +1,7 @@
 "use client";
 
-import type { ButtonHTMLAttributes, PointerEvent, ReactNode } from "react";
+import { useEffect, useRef, type ButtonHTMLAttributes, type PointerEvent, type ReactNode, type Ref } from "react";
+import { anotarCierreConEscape } from "@/lib/emergentes/tecla-escape";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 import { trazosDeClase } from "@/components/marcas/icono-de-clase";
@@ -42,6 +43,7 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   variante?: Variante;
   /** Los trazos del ícono, para dibujar dentro de un `<svg viewBox="0 0 24 24">`. */
   children: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 };
 
 export function BotonRedondo({
@@ -52,6 +54,7 @@ export function BotonRedondo({
   disabled,
   onPointerDown,
   children,
+  ref,
   ...props
 }: Props) {
   const alTocar = (evento: PointerEvent<HTMLButtonElement>) => {
@@ -61,6 +64,7 @@ export function BotonRedondo({
 
   return (
     <button
+      ref={ref}
       type={type}
       disabled={disabled}
       aria-label={etiqueta}
@@ -101,14 +105,22 @@ export const ICONOS_DEL_CERRO = {
 
 /**
  * La cruz para cerrar. Siempre el mismo círculo, del alto de un botón normal:
- * emergentes, hojas, fichas, paneles y el mapa en grande.
+ * emergentes, hojas, fichas, paneles, el mapa en grande y salir de una pantalla.
+ *
+ * En la computadora, Escape aprieta esta cruz. Si hay varias, solo la de adelante.
  */
 export function BotonCerrar({
   etiqueta = "Cerrar",
   ...props
-}: Omit<Props, "children" | "etiqueta"> & { etiqueta?: string }) {
+}: Omit<Props, "children" | "etiqueta" | "ref"> & { etiqueta?: string }) {
+  const referencia = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => anotarCierreConEscape(() => {
+    referencia.current?.click();
+  }), []);
+
   return (
-    <BotonRedondo etiqueta={etiqueta} {...props}>
+    <BotonRedondo etiqueta={etiqueta} {...props} ref={referencia}>
       {ICONOS_DEL_CERRO.salir}
     </BotonRedondo>
   );

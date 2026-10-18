@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import {
   EVENTO_CONEXION,
-  hayConexion,
+  estadoDeLaSenal,
   iniciarVigilanciaDeConexion,
+  type EstadoDeLaSenal,
 } from "@/lib/conexion";
 
 /**
@@ -24,23 +25,25 @@ import {
  * no molesta a nadie; uno que aparece y al tocarlo falla, sí.
  */
 export function useHaySenal(): boolean {
-  const [haySenal, setHaySenal] = useState(false);
+  return useEstadoDeLaSenal() === "hay";
+}
 
-  useEffect(() => {
-    const mirar = () => setHaySenal(hayConexion());
-    iniciarVigilanciaDeConexion();
-    mirar();
+/**
+ * Pensando, hay o no hay. La entrada lo usa para no mostrar la pantalla de
+ * sin señal mientras todavía se está averiguando.
+ */
+export function useEstadoDeLaSenal(): EstadoDeLaSenal {
+  return useSyncExternalStore(suscribir, estadoDeLaSenal, () => "pensando");
+}
 
-    window.addEventListener("online", mirar);
-    window.addEventListener("offline", mirar);
-    window.addEventListener(EVENTO_CONEXION, mirar);
-
-    return () => {
-      window.removeEventListener("online", mirar);
-      window.removeEventListener("offline", mirar);
-      window.removeEventListener(EVENTO_CONEXION, mirar);
-    };
-  }, []);
-
-  return haySenal;
+function suscribir(avisar: () => void): () => void {
+  iniciarVigilanciaDeConexion();
+  window.addEventListener("online", avisar);
+  window.addEventListener("offline", avisar);
+  window.addEventListener(EVENTO_CONEXION, avisar);
+  return () => {
+    window.removeEventListener("online", avisar);
+    window.removeEventListener("offline", avisar);
+    window.removeEventListener(EVENTO_CONEXION, avisar);
+  };
 }
