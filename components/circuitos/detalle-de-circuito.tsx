@@ -10,8 +10,8 @@ import { elEnCurso, empezarUnRegistro } from "@/lib/salidas/registro";
 import { leerCircuitoCompleto, retirarCircuito } from "@/app/actions/circuitos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import type { TipoDeFondo } from "@/components/mapa/capas-base";
-import { Boton } from "@/components/ui/boton";
 import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { ICONO_DE_EDITAR, ICONO_DE_ELIMINAR } from "@/components/ui/iconos";
 import { BotonVolver } from "@/components/ui/boton-volver";
 import { TRAZOS_DE_NAVEGACION } from "@/components/armazon/destinos-del-menu";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -206,9 +206,13 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
       </div>
     </> : null}
     {puedeCambiar ? (
-      <div className="space-y-3">
-        <Boton anchoCompleto disabled={ocupado || !actualizado?.ok} onClick={abrirEdicion}>Editar</Boton>
-        <Boton variante="destructivo" anchoCompleto disabled={ocupado} onClick={() => void retirar()}>Eliminar</Boton>
+      <div className="flex items-center gap-2">
+        <BotonRedondo etiqueta="Editar" disabled={ocupado || !actualizado?.ok} onClick={abrirEdicion}>
+          {ICONO_DE_EDITAR}
+        </BotonRedondo>
+        <BotonRedondo etiqueta="Eliminar" variante="destructivo" disabled={ocupado} onClick={() => void retirar()}>
+          {ICONO_DE_ELIMINAR}
+        </BotonRedondo>
       </div>
     ) : null}
     {ficha && preparadoAlDia ? <>

@@ -13,7 +13,7 @@ import {
   todasLasCapasDelFondo,
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
-import { colorDeLasCurvas, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
+import { colorDeLasCurvas, colorDeLasPartes, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
@@ -916,13 +916,7 @@ export function Mapa({
         },
       });
 
-      const colorDeParte: maplibregl.ExpressionSpecification = [
-        "match", ["get", "complejidad"],
-        "facil", colores.parteFacil,
-        "media", colores.parteMedia,
-        "dificil", colores.parteDificil,
-        colores.parteSinClasificar,
-      ];
+      const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
       mapa.addLayer({
         id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
@@ -1193,31 +1187,18 @@ export function Mapa({
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
       setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo));
 
+      const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
       for (const capa of CAPAS_DE_PARTES) {
-        mapa.setPaintProperty(capa, "line-color", [
-          "match", ["get", "complejidad"],
-          "facil", colores.parteFacil,
-          "media", colores.parteMedia,
-          "dificil", colores.parteDificil,
-          colores.parteSinClasificar,
-        ]);
+        mapa.setPaintProperty(capa, "line-color", colorDeParte);
       }
       for (const capa of CAPAS_DE_CAMINOS.slice(1)) {
-        mapa.setPaintProperty(capa, "line-color", [
-          "match", ["get", "complejidad"],
-          "facil", colores.parteFacil, "media", colores.parteMedia,
-          "dificil", colores.parteDificil, colores.parteSinClasificar,
-        ]);
+        mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.parteX);
       }
       mapa.setPaintProperty(CAPAS_DEL_CIRCUITO[0], "line-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-propio-borde", "line-color", colores.circuitoBorde);
       for (const capa of CAPAS_DEL_CIRCUITO.slice(1)) {
-        mapa.setPaintProperty(capa, "line-color", [
-          "match", ["get", "complejidad"],
-          "facil", colores.parteFacil, "media", colores.parteMedia,
-          "dificil", colores.parteDificil, colores.parteSinClasificar,
-        ]);
+        mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.circuitoBorde);
       }
       mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);

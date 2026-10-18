@@ -16,7 +16,7 @@ import { NIVEL_DE_LOS_BOTONES_FLOTANTES } from "@/lib/capas";
  */
 
 const CLASE_FLOTANTE =
-  "fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-4";
+  "fixed bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] right-4 lg:bottom-[calc(env(safe-area-inset-bottom)+4.5rem)]";
 
 /**
  * El «+» que lleva a cargar algo nuevo. Cargar escribe en la base: sin señal

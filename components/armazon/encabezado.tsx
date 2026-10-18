@@ -32,7 +32,7 @@ export function Encabezado() {
           </span>
         </Link>
 
-        <BotonDeModo className="h-8 w-8 shrink-0 border-white/20 bg-black/40 text-white shadow-sm" />
+        <BotonDeModo sobreFoto className="h-8 w-8 shrink-0" />
       </div>
     </header>
   );

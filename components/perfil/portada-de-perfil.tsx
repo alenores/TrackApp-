@@ -44,7 +44,7 @@ export function PortadaDePerfil({ portadaUrl, avatarUrl, nombre, detalle, activi
           Un aro fino del color de la tarjeta separa el avatar de la portada y
           le da aire. Va por fuera (no cambia el tamaño), así sigue redondo.
         */}
-        <div className="absolute -top-10 left-4 flex rounded-full shadow-[var(--sombra-alta)] ring-[3px] ring-superficie sm:left-5">
+        <div className="absolute -top-10 left-4 flex rounded-full shadow-[var(--sombra-alta)] ring-2 ring-superficie sm:left-5">
           <Avatar src={avatarUrl} name={nombre} size="lg" sinBorde />
         </div>
         {/* El nombre arranca donde termina el avatar: 80 de avatar más el margen. */}

@@ -513,8 +513,10 @@ lugar nuevo, se suma un destino al módulo — no se escribe otra subida.
 - **Un comportamiento, un botón compartido:** volver es un círculo con flecha;
   agregar es un círculo con «+»; navegar usa el ícono de Navegación libre.
   En las listas, editar y eliminar van en los tres puntos. En el detalle de una
-  Salida y de un Circuito, y al editar un punto o un trazo, Eliminar va abajo
-  de todo; en el detalle, Editar queda arriba de Eliminar (Ale, 2026-10-14).
+  Salida y de un Circuito van abajo, uno al lado del otro: un círculo con
+  lápiz para editar y un círculo rojo con tacho para eliminar. El tacho pide
+  confirmación (Ale, 2026-10-18). Al editar un punto o un trazo, Eliminar
+  sigue abajo de todo.
 - **Nada se guarda solo.** Tocar una opción cambia lo que se ve; se guarda
   recién con el botón «Guardar», uno solo al pie de lo que se edita. Prohibido
   el autoguardado (Ale, 2026-10-14).

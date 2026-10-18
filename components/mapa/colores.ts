@@ -15,6 +15,8 @@ export type ColoresDelMapa = {
   parteMedia: string;
   parteDificil: string;
   parteSinClasificar: string;
+  /** El recorrido de una salida: naranja con sol, claro de noche. */
+  lineaDeSalida: string;
   parteX: string;
   parteXHalo: string;
   circuitoPropio: string;
@@ -56,6 +58,7 @@ const DE_RESPALDO: ColoresDelMapa = {
   parteMedia: "#ffd43b",
   parteDificil: "#ff6262",
   parteSinClasificar: "#cbd5e1",
+  lineaDeSalida: "#cbd5e1",
   parteX: "#111827",
   parteXHalo: "#ffffff",
   circuitoPropio: "#000000",
@@ -92,6 +95,7 @@ export function coloresDelMapa(): ColoresDelMapa {
     parteMedia: leer("--parte-media", DE_RESPALDO.parteMedia),
     parteDificil: leer("--parte-dificil", DE_RESPALDO.parteDificil),
     parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
+    lineaDeSalida: leer("--linea-de-salida", DE_RESPALDO.lineaDeSalida),
     parteX: leer("--parte-x", DE_RESPALDO.parteX),
     parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
     circuitoPropio: leer("--circuito-propio", DE_RESPALDO.circuitoPropio),
@@ -120,4 +124,25 @@ export function coloresDelMapa(): ColoresDelMapa {
  */
 export function colorDeLasCurvas(sobreLaFoto: boolean, colores: ColoresDelMapa): string {
   return sobreLaFoto ? colores.curvaSobreFoto : colores.curva;
+}
+
+/**
+ * Color de una parte según su complejidad.
+ *
+ * El recorrido de una salida no tiene complejidad: va en su propio color, para
+ * que con sol sea naranja y de noche siga claro.
+ */
+export function colorDeLasPartes(colores: ColoresDelMapa): unknown[] {
+  return [
+    "case",
+    ["==", ["get", "lineaDeSalida"], true],
+    colores.lineaDeSalida,
+    [
+      "match", ["get", "complejidad"],
+      "facil", colores.parteFacil,
+      "media", colores.parteMedia,
+      "dificil", colores.parteDificil,
+      colores.parteSinClasificar,
+    ],
+  ];
 }

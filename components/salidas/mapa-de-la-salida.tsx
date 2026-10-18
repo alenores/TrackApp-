@@ -9,7 +9,10 @@ import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { traerLaLineaCompleta, type LineaCompleta } from "@/lib/salidas/archivo";
-import { dibujarLinea, lineaComoColeccion, rectanguloDeLaLinea } from "@/lib/salidas/linea";
+import { GraficoDeAlturas } from "@/components/ui/grafico-de-alturas";
+import { dibujarLinea, lineaComoColeccion, marcarRecorridoDeSalida, rectanguloDeLaLinea } from "@/lib/salidas/linea";
+import { perfilDeLaSalida } from "@/lib/salidas/perfil";
+import type { PuntoDelPerfil } from "@/lib/alturas/perfil";
 import type { Salida } from "@/types/database";
 
 /**
@@ -53,7 +56,7 @@ export function MiniaturaDeLaLinea({
       }}
       aria-label="Ver el recorrido en el mapa"
       title="Ver el recorrido en el mapa"
-      className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-borde-fuerte bg-sobre-foto-fondo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
+      className="relative h-48 w-48 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-borde-fuerte bg-sobre-foto-fondo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde"
     >
       {dibujo ? (
         <svg viewBox="0 0 96 96" aria-hidden className="absolute inset-0 h-full w-full">
@@ -153,7 +156,7 @@ export function MapaDeLaSalida({
 
   const liviana = salida.linea;
   const recorrido = completa?.ok
-    ? completa.geometria
+    ? marcarRecorridoDeSalida(completa.geometria)
     : liviana
       ? lineaComoColeccion(liviana)
       : null;
@@ -209,5 +212,48 @@ export function MapaDeLaSalida({
       ) : null}
     </div>,
     document.body,
+  );
+}
+
+/** El gráfico de alturas del recorrido, debajo de la miniatura. */
+export function AlturasDeLaSalida({ salida }: { salida: Salida }) {
+  const [perfil, setPerfil] = useState<PuntoDelPerfil[] | null | undefined>(undefined);
+  const [motivo, setMotivo] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!salida.archivoUrl) return;
+    let vigente = true;
+    void traerLaLineaCompleta(salida.archivoUrl).then((resultado) => {
+      if (!vigente) return;
+      if (!resultado.ok) {
+        setMotivo(resultado.motivo);
+        setPerfil(null);
+        return;
+      }
+      setMotivo(null);
+      setPerfil(perfilDeLaSalida(resultado.geometria));
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [salida.archivoUrl]);
+
+  if (!salida.archivoUrl || (perfil === null && !motivo)) return null;
+  if (motivo) {
+    return (
+      <p role="alert" className="text-base leading-6 text-texto">
+        No se pueden ver las alturas: {motivo}.
+      </p>
+    );
+  }
+  if (!perfil) {
+    return <p role="status" className="text-base text-texto">Trayendo las alturas del recorrido…</p>;
+  }
+
+  return (
+    <GraficoDeAlturas
+      perfil={perfil}
+      descripcion={`Alturas del recorrido de ${salida.titulo}.`}
+    />
   );
 }

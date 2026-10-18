@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { borrarSalida } from "@/app/actions/salidas";
-import { Boton } from "@/components/ui/boton";
 import { BotonVolver } from "@/components/ui/boton-volver";
+import { BotonRedondo, clasesDeBotonRedondo } from "@/components/ui/boton-redondo";
+import { ICONO_DE_EDITAR, ICONO_DE_ELIMINAR } from "@/components/ui/iconos";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Emergente } from "@/components/ui/emergente";
 import { Enlace } from "@/components/ui/enlace";
@@ -12,7 +13,7 @@ import { diaEnPalabras } from "@/lib/fechas";
 import { bajarElArchivo } from "@/lib/salidas/archivo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
-import { MapaDeLaSalida, MiniaturaDeLaLinea } from "@/components/salidas/mapa-de-la-salida";
+import { AlturasDeLaSalida, MapaDeLaSalida, MiniaturaDeLaLinea } from "@/components/salidas/mapa-de-la-salida";
 import {
   NumerosDeSalida,
   PersonasDeSalida,
@@ -25,9 +26,10 @@ import type { Salida } from "@/types/database";
  * La ficha de una salida: todo lo que tiene. El título va arriba, con volver
  * a la izquierda, como en el resto de las pantallas. La portada queda limpia
  * y el día va justo debajo. Los números van en la misma fila que la tarjeta
- * de la lista; abajo, la miniatura del recorrido —sin agrandarla— y, a un
- * costado, el archivo GPS para bajar, chico y sin jerarquía. Editar y eliminar
- * van al final, solo para quien la cargó y con señal.
+ * de la lista; abajo, la miniatura del recorrido, el doble de grande, y
+ * debajo el gráfico de alturas si el archivo GPS las trae. El archivo para
+ * bajar queda chico, sobre la miniatura. Abajo, editar y eliminar son dos
+ * círculos, solo para quien la cargó y con señal.
  */
 
 type Props = {
@@ -135,13 +137,16 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
         <InsigniasDeActividad actividades={salida.actividades} tamano="mediano" />
         {tieneNumeros ? <NumerosDeSalida salida={salida} /> : null}
         {tieneRecorrido ? (
-          <div className="flex justify-center">
-            <MiniaturaDeLaLinea
-              salida={salida}
-              alTocar={() => setMapaAbierto(true)}
-              alBajar={puedeBajar ? () => void alBajarElArchivo(salida.archivoUrl as string) : undefined}
-              bajando={bajando}
-            />
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <MiniaturaDeLaLinea
+                salida={salida}
+                alTocar={() => setMapaAbierto(true)}
+                alBajar={puedeBajar ? () => void alBajarElArchivo(salida.archivoUrl as string) : undefined}
+                bajando={bajando}
+              />
+            </div>
+            <AlturasDeLaSalida salida={salida} />
           </div>
         ) : null}
         {salida.descripcion ? (
@@ -167,13 +172,16 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
       ) : null}
 
       {puedeEditar ? (
-        <div className="space-y-3 pb-2">
-          <Enlace href={`/salidas/${salida.id}/editar`} variante="principal" className="w-full">
-            Editar
+        <div className="flex items-center gap-2 pb-2">
+          <Enlace href={`/salidas/${salida.id}/editar`} aria-label="Editar" title="Editar"
+            className={clasesDeBotonRedondo("secundario")}>
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              {ICONO_DE_EDITAR}
+            </svg>
           </Enlace>
-          <Boton variante="destructivo" anchoCompleto disabled={eliminando} onClick={() => void alEliminar()}>
-            Eliminar
-          </Boton>
+          <BotonRedondo etiqueta="Eliminar" variante="destructivo" disabled={eliminando} onClick={() => void alEliminar()}>
+            {ICONO_DE_ELIMINAR}
+          </BotonRedondo>
         </div>
       ) : null}
 

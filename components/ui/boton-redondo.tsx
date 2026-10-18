@@ -18,11 +18,12 @@ import { ICONO_DE_CIRCUITOS, ICONO_DE_INFORMACION, ICONO_DE_MARCAS, iconoDeUbica
  * de pantalla y lo que aparece al dejar el mouse encima.
  */
 
-type Variante = "principal" | "secundario" | "soloPuntos";
+type Variante = "principal" | "secundario" | "destructivo" | "soloPuntos";
 
 const CLASES_POR_VARIANTE: Record<Exclude<Variante, "soloPuntos">, string> = {
   principal: "border-acento-borde bg-acento text-acento-texto hover:bg-acento-hover",
   secundario: "border-borde-fuerte bg-superficie text-texto hover:bg-superficie-alta",
+  destructivo: "border-rojo-borde bg-rojo-fondo text-rojo-texto hover:bg-rojo-fondo-fuerte",
 };
 
 export function clasesDeBotonRedondo(variante: Variante = "secundario", className = ""): string {

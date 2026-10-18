@@ -150,7 +150,7 @@ export function Armazon({
                     TrackApp
                   </span>
                 </Link>
-                <BotonDeModo className="h-8 w-8 shrink-0 border-white/20 bg-black/40 text-white shadow-sm" />
+                <BotonDeModo sobreFoto className="h-8 w-8 shrink-0" />
               </div>
             </div>
             <MenuLateral
@@ -165,7 +165,7 @@ export function Armazon({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <Encabezado />
 
-          <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] pt-3 sm:px-4 sm:pt-4 lg:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+          <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+6.75rem)] pt-3 sm:px-4 sm:pt-4 lg:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
             <div
               className={[
                 "mx-auto w-full",

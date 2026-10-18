@@ -64,7 +64,7 @@ export function leerLinea(valor: unknown): PuntoDeLinea[] | null {
 
 /** La línea en la forma que entiende el mapa. */
 export function lineaComoColeccion(puntos: PuntoDeLinea[]): FeatureCollection {
-  return {
+  return marcarRecorridoDeSalida({
     type: "FeatureCollection",
     features: [
       {
@@ -73,6 +73,24 @@ export function lineaComoColeccion(puntos: PuntoDeLinea[]): FeatureCollection {
         geometry: { type: "LineString", coordinates: puntos },
       },
     ],
+  });
+}
+
+/**
+ * Marca la línea para que el mapa la pinte como recorrido de una salida:
+ * continua, y naranja con sol.
+ */
+export function marcarRecorridoDeSalida(geometria: FeatureCollection): FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: geometria.features.map((feature) => {
+      const tipo = feature.geometry?.type;
+      if (tipo !== "LineString" && tipo !== "MultiLineString") return feature;
+      return {
+        ...feature,
+        properties: { ...feature.properties, lineaDeSalida: true, paso: "transitable" },
+      };
+    }),
   };
 }
 

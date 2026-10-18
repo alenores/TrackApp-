@@ -4,6 +4,94 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-18 — Barra del celular
+
+### Estado al inicio
+
+En el celular las cinco entradas pesaban igual y la barra usaba el mismo color que las tarjetas.
+
+### Lo que se hizo
+
+La barra flota, separada del borde. La brújula de Navegación libre queda en el medio, verde y un poco más arriba. El fondo de la barra es un gris un paso distinto del de las tarjetas, en sol y en noche.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: la brújula manda, y la barra no se confunde con una tarjeta.
+
+### Documentos actualizados
+
+Este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarla en un celular real, en sol y en noche.
+
+---
+
+## Sesión 2026-10-18 — Editar y eliminar chicos en el detalle
+
+### Estado al inicio
+
+En el detalle de un Circuito y de una Salida, Editar y Eliminar ocupaban
+todo el ancho.
+
+### Lo que se hizo
+
+Pasaron a dos círculos abajo: lápiz para editar y tacho rojo para eliminar.
+El tacho sigue pidiendo confirmación.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: así no se tocan sin querer.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Ninguna.
+
+---
+
+## Sesión 2026-10-18 — El recorrido de una salida
+
+### Estado al inicio
+
+En el detalle, la miniatura del recorrido era chica. Al abrir el mapa, la
+línea salía gris con sol y clara de noche. No había gráfico de alturas.
+
+### Lo que se hizo
+
+La miniatura quedó el doble de grande. Con sol, la línea del mapa es naranja.
+Debajo de la miniatura se ve el gráfico de alturas si el archivo GPS las trae.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18. Decisión 069.
+
+### Documentos actualizados
+
+Decisión 069 y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular, en una salida que tenga archivo GPS con alturas.
+
+---
+
 ## Sesión 2026-10-18 — Circuitos en el mapa se lee en tres partes
 
 ### Estado al inicio

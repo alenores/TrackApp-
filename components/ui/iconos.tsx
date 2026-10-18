@@ -12,6 +12,19 @@
 /** Marcas: lo dibujado sobre el mapa. Un lápiz. */
 export const ICONO_DE_MARCAS = <path d="M4 20l1-4L16 5l3 3L8 19l-4 1ZM14 7l3 3" />;
 
+/** Editar algo que ya está: un lápiz sobre una línea. No es el de Marcas. */
+export const ICONO_DE_EDITAR = <>
+  <path d="M4 20h10" />
+  <path d="M13.5 5.5 17 9 8 18H4.5V14.5L13.5 5.5Z" />
+</>;
+
+/** Eliminar: un tacho. */
+export const ICONO_DE_ELIMINAR = <>
+  <path d="M4 7h16" />
+  <path d="M9 7V5h6v2" />
+  <path d="M7 7l1 12h8l1-12" />
+</>;
+
 /** Circuitos: una línea que sube y baja hasta llegar. */
 export const ICONO_DE_CIRCUITOS = <path d="M3 18 8 8l5 5 8-9M3 18h5m5-5h4" />;
 

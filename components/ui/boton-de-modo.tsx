@@ -16,10 +16,13 @@ import { CLASE_DE_RESPUESTA_AL_TOQUE } from "@/lib/respuesta-al-toque";
 
 type BotonDeModoProps = {
   className?: string;
+  /** Sobre la foto del encabezado: círculo oscuro e ícono claro, en los dos modos. */
+  sobreFoto?: boolean;
 };
 
 export function BotonDeModo({
   className = "",
+  sobreFoto = false,
 }: BotonDeModoProps) {
   const { modo, cambiar } = useModo();
   const vaASol = modo === "noche";
@@ -36,9 +39,11 @@ export function BotonDeModo({
       title={vaASol ? "Pasar al modo sol" : "Pasar al modo noche"}
       className={[
         CLASE_DE_RESPUESTA_AL_TOQUE,
-        "flex shrink-0 items-center justify-center rounded-full border border-borde bg-superficie/90 text-texto-suave shadow-sm backdrop-blur-sm",
-        "hover:bg-superficie-alta hover:text-texto",
+        "flex shrink-0 items-center justify-center rounded-full border shadow-[var(--sombra-alta)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde",
+        sobreFoto
+          ? "border-sobre-foto-texto/40 bg-sobre-foto-fondo text-sobre-foto-texto"
+          : "border-borde-fuerte bg-superficie text-texto hover:bg-superficie-alta",
         tieneTamanoPersonalizado ? "" : tamanoBase,
         className,
       ]
