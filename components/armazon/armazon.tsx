@@ -165,7 +165,7 @@ export function Armazon({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <Encabezado />
 
-          <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+6.75rem)] pt-3 sm:px-4 sm:pt-4 lg:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+          <main className="app-scroll-pane min-h-0 flex-1 px-2 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] pt-3 sm:px-4 sm:pt-4 lg:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
             <div
               className={[
                 "mx-auto w-full",

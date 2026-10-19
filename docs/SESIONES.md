@@ -4,6 +4,30 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-18 — Barra más baja, círculo aparte
+
+### Estado al inicio
+
+En el celular la barra era alta. «Navegación libre» ocupaba dos renglones y el círculo verde iba apoyado sobre la tarjeta.
+
+### Lo que se hizo
+
+La barra quedó más baja. El ícono de cada entrada queda pegado a su palabra. El del medio no lleva texto: es el círculo verde, suelto, y la barra se abre en una curva para que entre los dos se vea el fondo. Asoma hacia arriba un 40 % del círculo, con un aire fino alrededor.
+
+### Decisiones tomadas
+
+Ale, 2026-10-18: sin las palabras «Navegación libre» en la barra, íconos más cerca del texto, y el círculo como una pieza aparte, con aire alrededor.
+
+### Documentos actualizados
+
+Este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+---
+
 ## Sesión 2026-10-18 — Barra del celular
 
 ### Estado al inicio
