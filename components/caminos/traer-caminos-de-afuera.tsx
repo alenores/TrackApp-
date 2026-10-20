@@ -190,7 +190,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
           arribaDelMapa={<p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}. Las demás líneas se ven más tenues.` : "Vista previa del archivo completo. Elegí «Ver en el mapa» para destacar una línea o un punto."}</p>}
           mapa={
             <CargadorDeMapa key={`${nombreDelArchivo}-${elementoEnVista?.tipo ?? "todo"}-${elementoEnVista?.indice ?? 0}`}
-              enVivo llenarElAltoEnLaComputadora caminos={vistaPrevia.caminos} verticesDeCamino={vistaPrevia.punto}
+              enVivo consultaGoogle llenarElAltoEnLaComputadora caminos={vistaPrevia.caminos} verticesDeCamino={vistaPrevia.punto}
               encuadre={vistaPrevia.encuadre} />
           }
           debajoDelMapa={elementoEnVista ? <Boton variante="secundario" onClick={() => setElementoEnVista(null)}>Ver todo el archivo</Boton> : null}

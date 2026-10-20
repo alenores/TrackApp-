@@ -4,6 +4,30 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-20 — Google al traer un archivo
+
+### Estado al inicio
+
+Al traer un archivo, la vista previa usaba el mapa propio. Ahí no se dibuja: se decide si cada línea o punto se suma.
+
+### Lo que se hizo
+
+Esa vista previa pasa a mostrar Google, igual que las consultas. La línea queda como vino en el archivo. Corregirla sigue en el editor, con el mapa propio.
+
+### Decisiones tomadas
+
+Ale, 2026-10-20: Google en esa pantalla, porque solo se confirma. No se marcan puntos ni se mueve la línea.
+
+### Documentos actualizados
+
+Decisión 050 y la regla de producto.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna.
+
+---
+
 ## Sesión 2026-10-18 — Barra más baja, círculo aparte
 
 ### Estado al inicio

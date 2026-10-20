@@ -11,6 +11,12 @@ general de Mapas, el detalle de Circuitos y el mapa de Salidas muestran Google
 debajo de los datos que TrackApp ya conoce. No se crean ni modifican coordenadas
 sobre Google. Si Google falla, se informa el motivo y no se muestra otro fondo.
 
+El 2026-10-20 Ale sumó una excepción acotada: al traer un archivo de afuera, la
+vista previa usa Google. Ahí solo se mira si cada línea o punto, con las
+coordenadas que ya trae el archivo, se suma como Camino, como trazo o se omite.
+No se mueve la línea ni se marcan puntos. La corrección posterior sigue en el
+editor, con el mapa propio.
+
 La clave de Map Tiles API vive en el servidor. Cada consulta abre una sesión
 temporal; imágenes y créditos del área visible pasan por un puente que exige
 una cuenta iniciada. El motor offline tiene una regla `NetworkOnly` anterior a

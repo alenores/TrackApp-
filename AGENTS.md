@@ -117,7 +117,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 ### Mapa
 
-- **Google satelital solo para consulta con señal.** Muestra los datos propios ya guardados; jamás se usa para dibujar, corregir, importar o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisión 050.
+- **Google satelital solo para consulta con señal.** Muestra los datos propios ya guardados. También muestra, al traer un archivo, las líneas y puntos tal como vinieron, para decidir si se suman; ahí no se mueven ni se marcan puntos nuevos. Jamás se usa para dibujar, corregir o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisión 050.
 
 - **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
   clasifican ni delimitan marcas ni Circuitos. Un Camino no
