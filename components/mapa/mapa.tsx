@@ -13,7 +13,7 @@ import {
   todasLasCapasDelFondo,
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
-import { colorDeLasCurvas, colorDeLasPartes, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
+import { colorDeLasCurvas, colorDeLasPartes, colorDelEnvoltorio, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
@@ -824,6 +824,10 @@ export function Mapa({
 
     mapa.on("load", () => {
       const colores = coloresDelMapa();
+      const envoltorio = colorDelEnvoltorio(
+        tipoDeFondoRef.current !== "dibujo" || modoRef.current === "noche",
+        colores,
+      );
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
@@ -918,10 +922,16 @@ export function Mapa({
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
       mapa.addLayer({
+        id: `${CAPAS_DE_CAMINOS[0]}-borde`, type: "line", source: FUENTE_CAMINOS,
+        filter: ["==", ["get", "paso"], "otra_actividad"],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": envoltorio, "line-width": 6, "line-opacity": 0.95 },
+      });
+      mapa.addLayer({
         id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.rectanguloZona, "line-width": 2, "line-opacity": 0.75 },
+        paint: { "line-color": colores.rectanguloZona, "line-width": 4, "line-opacity": 1 },
       });
       for (const [paso, capa, guiones] of [
         ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5]],
@@ -939,7 +949,7 @@ export function Mapa({
         mapa.addLayer({
           id: `${capa}-borde`, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": colores.parteX, "line-width": 7, "line-opacity": 0.85,
+          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": 0.95,
             ...(guiones ? { "line-dasharray": [...guiones] } : {}) },
         });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
@@ -966,7 +976,7 @@ export function Mapa({
         const opacidad: maplibregl.ExpressionSpecification = ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1];
         mapa.addLayer({ id: `${capa}-borde`, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": colores.circuitoBorde, "line-width": 10, "line-opacity": opacidad,
+          paint: { "line-color": envoltorio, "line-width": 10, "line-opacity": opacidad,
             ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
@@ -992,11 +1002,21 @@ export function Mapa({
         ["a_pie", CAPAS_DE_PARTES[2], [0.45, 1.5]],
         ["sin_paso", CAPAS_DE_PARTES[3], null],
       ] as const) {
+        const filtroDeParte: maplibregl.FilterSpecification = ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso];
+        mapa.addLayer({
+          id: `${capa}-borde`,
+          type: "line",
+          source: FUENTE_RUTA,
+          filter: filtroDeParte,
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": 0.95,
+            ...(guiones ? { "line-dasharray": [...guiones] } : {}) },
+        });
         mapa.addLayer({
           id: capa,
           type: "line",
           source: FUENTE_RUTA,
-          filter: ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso],
+          filter: filtroDeParte,
           layout: { "line-cap": "round", "line-join": "round" },
           paint: {
             "line-color": colorDeParte,
@@ -1188,18 +1208,21 @@ export function Mapa({
       setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo));
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
+      const envoltorio = colorDelEnvoltorio(tipoDeFondo !== "dibujo" || modo === "noche", colores);
       for (const capa of CAPAS_DE_PARTES) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
+        mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
       }
+      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-color", envoltorio);
       for (const capa of CAPAS_DE_CAMINOS.slice(1)) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
-        mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.parteX);
+        mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
       }
       mapa.setPaintProperty(CAPAS_DEL_CIRCUITO[0], "line-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-propio-borde", "line-color", colores.circuitoBorde);
       for (const capa of CAPAS_DEL_CIRCUITO.slice(1)) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
-        mapa.setPaintProperty(`${capa}-borde`, "line-color", colores.circuitoBorde);
+        mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
       }
       mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);

@@ -57,7 +57,7 @@ const DE_RESPALDO: ColoresDelMapa = {
   parteFacil: "#2de083",
   parteMedia: "#ffd43b",
   parteDificil: "#ff6262",
-  parteSinClasificar: "#cbd5e1",
+  parteSinClasificar: "#8e9aab",
   lineaDeSalida: "#cbd5e1",
   parteX: "#111827",
   parteXHalo: "#ffffff",
@@ -124,6 +124,20 @@ export function coloresDelMapa(): ColoresDelMapa {
  */
 export function colorDeLasCurvas(sobreLaFoto: boolean, colores: ColoresDelMapa): string {
   return sobreLaFoto ? colores.curvaSobreFoto : colores.curva;
+}
+
+/**
+ * Envoltorio de la línea para que se distinga del terreno.
+ *
+ * Claro sobre la foto y de noche, cuando el fondo es oscuro. Oscuro en el
+ * mapa simple de día, cuando el fondo es claro. En las líneas con rayitas
+ * sigue el trazo, para no tapar el color.
+ */
+export function colorDelEnvoltorio(
+  claro: boolean,
+  colores: Pick<ColoresDelMapa, "parteX" | "parteXHalo">,
+): string {
+  return claro ? colores.parteXHalo : colores.parteX;
 }
 
 /**
