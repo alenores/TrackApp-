@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   cambiarActividadesDelCamino, cambiarDatosDeParteDelCamino, cambiarNombreDelCamino,
-  clasificarParteDelCamino, corregirLineaDelCamino, leerCamino, retirarCamino,
+  clasificarParteDelCamino, corregirLineaDelCamino, leerCamino, partirEntreEnElCamino, quitarParteDelCamino, retirarCamino,
 } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { Boton } from "@/components/ui/boton";
@@ -19,7 +19,8 @@ import { hoyEnCordoba } from "@/lib/salidas/reglas";
 import { Opciones } from "@/components/ui/opciones";
 import { TRAZO_DE_AGREGAR_PUNTO, TRAZO_DE_MOVER_PUNTOS, TRAZO_DE_QUITAR_PUNTO } from "@/components/ui/iconos";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
-import { corregirLinea, ubicarEnCamino, type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
+import { corregirLinea, LARGO_MINIMO_DE_PARTE_M, ubicarEnCamino, type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
+import { puntoEnDistancia } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
@@ -53,8 +54,10 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
   } | null>(null);
   const [actividadesPendientes, setActividadesPendientes] = useState<ActividadRuta[] | null>(null);
   const [confirmarRetiro, setConfirmarRetiro] = useState(false);
-  const [primerCorte, setPrimerCorte] = useState<number | null>(null);
+  const [inicioM, setInicioM] = useState<number | null>(null);
+  const [finalM, setFinalM] = useState<number | null>(null);
   const [partiendo, setPartiendo] = useState(false);
+  const [confirmarQuitarParte, setConfirmarQuitarParte] = useState(false);
   const [borradorLinea, setBorradorLinea] = useState<number[][] | null>(null);
   const [modoCorreccion, setModoCorreccion] = useState<"mover" | "agregar" | "quitar">("mover");
 
@@ -99,7 +102,45 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
   // La sección Línea ya es para editarla: entrar es empezar a corregir, sin botón de más.
   const corrigiendo = pestana === "linea";
   const caminoVisible = corrigiendo && vistaPrevia?.ok ? vistaPrevia.datos : camino;
-  const dibujo = useMemo(() => caminoVisible && actividad ? dibujarCaminos([caminoVisible], actividad) : null, [caminoVisible, actividad]);
+  const dibujo = useMemo(() => {
+    if (!caminoVisible || !actividad) return null;
+    const base = dibujarCaminos([caminoVisible], actividad);
+    if (pestana !== "partes" || partiendo) return base;
+    return {
+      ...base,
+      features: base.features.map((linea) => ({
+        ...linea,
+        properties: { ...linea.properties, elegida: linea.properties?.parte_indice === indice },
+      })),
+    };
+  }, [caminoVisible, actividad, pestana, indice, partiendo]);
+  const bordesDelCamino = camino ? [0, ...camino.partes.map((cada) => cada.hastaM)] : [];
+  const puntoDe = (metros: number | null) => camino && metros !== null ? puntoEnDistancia(camino.coordenadas, metros) : null;
+  const inicioMarcado = puntoDe(inicioM);
+  const finalMarcado = puntoDe(finalM);
+  const esElMismo = (punto: number[], otro: number[] | null) => otro !== null && Math.hypot(punto[0] - otro[0], punto[1] - otro[1]) < 1e-8;
+  const cortesMarcados = partiendo && camino
+    ? bordesDelCamino.map((metros) => ({ coordenada: puntoEnDistancia(camino.coordenadas, metros), metros }))
+      .filter((corte) => !esElMismo(corte.coordenada, inicioMarcado) && !esElMismo(corte.coordenada, finalMarcado))
+    : null;
+  const marcaDeLaParte = partiendo
+    ? (inicioMarcado || finalMarcado
+      ? { inicio: inicioMarcado, final: finalMarcado, metrosInicio: inicioM, metrosFinal: finalM }
+      : undefined)
+    : pestana === "partes" && parte && camino
+      ? {
+        inicio: puntoEnDistancia(camino.coordenadas, parte.desdeM),
+        final: puntoEnDistancia(camino.coordenadas, parte.hastaM),
+      }
+      : undefined;
+  const partesEn = (metros: number) => camino
+    ? camino.partes.flatMap((cada, i) => metros >= cada.desdeM && metros <= cada.hastaM ? [i] : [])
+    : [];
+  const parteEnComun = inicioM !== null && finalM !== null
+    ? partesEn(inicioM).find((i) => partesEn(finalM).includes(i)) ?? null
+    : null;
+  const sePuedeConfirmar = parteEnComun !== null && inicioM !== null && finalM !== null
+    && Math.abs(finalM - inicioM) >= LARGO_MINIMO_DE_PARTE_M;
 
   const seleccionarParte = (nueva: number, de: CaminoGuardado | null = camino) => {
     if (!de?.partes[nueva]) return;
@@ -163,32 +204,42 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
   const tocarCamino = (lon: number, lat: number, propiedades: Record<string, unknown>) => {
     if (!camino) return;
     const indiceTocado = Number(propiedades.parte_indice);
-    if (!Number.isInteger(indiceTocado) || !camino.partes[indiceTocado]) return;
+    const metrosMarcados = Number(propiedades.metros);
+    if (!partiendo && (!Number.isInteger(indiceTocado) || !camino.partes[indiceTocado])) return;
     const lugar = ubicarEnCamino(camino, lon, lat);
-    if (!lugar) return;
-    if (!partiendo) { seleccionarParte(indiceTocado); return; }
-    if (primerCorte === null) {
-      seleccionarParte(indiceTocado);
-      setPrimerCorte(lugar.distanciaM);
-      setAviso("Ahora tocá el final del tramo que querés separar.");
-      setAvisoDePartir(true);
+    if (!lugar && !Number.isFinite(metrosMarcados)) return;
+    const enElBorde = (distancia: number) => {
+      let mejor = distancia;
+      let cercania = LARGO_MINIMO_DE_PARTE_M;
+      for (const borde of [0, ...camino.partes.map((cada) => cada.hastaM)]) {
+        const diferencia = Math.abs(borde - distancia);
+        if (diferencia < cercania) { cercania = diferencia; mejor = borde; }
+      }
+      return mejor;
+    };
+    if (!partiendo) {
+      if (Number.isInteger(indiceTocado)) seleccionarParte(indiceTocado);
       return;
     }
-    const desde = Math.min(primerCorte, lugar.distanciaM);
-    const hasta = Math.max(primerCorte, lugar.distanciaM);
-    if (desde < camino.partes[indice].desdeM || hasta > camino.partes[indice].hastaM) {
-      setAviso("Los dos toques deben estar dentro de la misma parte. Volvé a elegir el inicio.");
-      setAvisoDePartir(true);
-      setPrimerCorte(null);
+    const distancia = Number.isFinite(metrosMarcados) ? metrosMarcados : enElBorde(lugar?.distanciaM ?? Number.NaN);
+    if (!Number.isFinite(distancia)) return;
+    if (inicioM === null) {
+      setInicioM(distancia);
+      setAviso(null);
+      setAvisoDePartir(false);
       return;
     }
-    const actual = actividad ? camino.partes[indice].porActividad[actividad] : null;
-    if (!actividad || !actual) return;
-    setPrimerCorte(null);
-    setPartiendo(false);
-    void guardar((cada) => clasificarParteDelCamino(cada.id, cada.actualizadoEn,
-      { desdeM: desde, hastaM: hasta, actividad, paso: actual.paso, complejidad: actual.complejidad }),
-    "Se separó el tramo y se conservó su clasificación.", true);
+    setFinalM(distancia);
+    setAviso(null);
+    setAvisoDePartir(false);
+  };
+
+  const confirmarCorte = () => {
+    if (!camino || inicioM === null || finalM === null || parteEnComun === null) return;
+    void guardar((cada) => partirEntreEnElCamino(cada.id, cada.actualizadoEn, inicioM, finalM),
+      "Se separó el tramo.", true).then((guardo) => {
+      if (guardo) { setInicioM(null); setFinalM(null); setPartiendo(false); }
+    });
   };
 
   const agregarPunto = (lon: number, lat: number) => {
@@ -228,6 +279,8 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
         <MapaConPanel
           mapa={
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+              extremosDeParte={marcaDeLaParte}
+              cortesMarcados={cortesMarcados}
               alTocarCamino={corrigiendo ? (modoCorreccion === "agregar" ? agregarPunto : undefined) : tocarCamino}
               verticesDeCamino={corrigiendo ? (borradorLinea ?? camino.coordenadas) : null}
               alTocarVerticeDeCamino={corrigiendo && modoCorreccion === "quitar" ? quitarPunto : undefined}
@@ -285,14 +338,19 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
               ) : (
                 <div role="tabpanel" className="space-y-4">
                   {/* Partir vale para todas las actividades: va arriba de todo. */}
-                  <div className="flex flex-wrap gap-2">
-                    <Boton variante="secundario" disabled={ocupado} onClick={() => { setPartiendo(true); setPrimerCorte(null); setAviso("Tocá el inicio del tramo que querés separar."); setAvisoDePartir(true); }}>Partir una parte entre dos toques</Boton>
-                    {partiendo ? <Boton variante="fantasma" onClick={() => { setPartiendo(false); setPrimerCorte(null); setAviso(null); setAvisoDePartir(false); }}>Cancelar los toques</Boton> : null}
-                  </div>
-                  {avisoDePartir ? cartelDeAviso : null}
-                  <Pestanas etiqueta="Partes del Camino" chica elegida={indice} alElegir={(i) => seleccionarParte(i)}
+                  <Tarjeta className="space-y-3">
+                    <h3 className="text-lg font-bold text-texto">Separar un tramo</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Boton variante="secundario" disabled={ocupado || partiendo} onClick={() => { setPartiendo(true); setInicioM(null); setFinalM(null); setAviso(null); }}>Partir una parte entre dos toques</Boton>
+                      {partiendo ? <Boton disabled={ocupado || !sePuedeConfirmar} onClick={confirmarCorte}>Confirmar</Boton> : null}
+                      {partiendo ? <Boton variante="secundario" onClick={() => { setPartiendo(false); setInicioM(null); setFinalM(null); setAviso(null); setAvisoDePartir(false); }}>Cancelar</Boton> : null}
+                    </div>
+                    {partiendo && inicioM !== null && finalM !== null && !sePuedeConfirmar ? <p className="text-base text-ambar-texto">Los dos puntos tienen que estar en la misma parte, y separados.</p> : null}
+                    {avisoDePartir ? cartelDeAviso : null}
+                  </Tarjeta>
+                  <Pestanas etiqueta="Partes del Camino" chica deshabilitadas={partiendo} elegida={indice} alElegir={(i) => seleccionarParte(i)}
                     opciones={camino.partes.map((_, i) => ({ valor: i, texto: `Parte ${i + 1}` }))} />
-                  {parte && actividad ? (
+                  {parte && actividad && !partiendo ? (
                     <Tarjeta className="space-y-4">
                       <h3 className="text-lg font-bold text-texto">Parte {indice + 1} · {((parte.hastaM - parte.desdeM) / 1000).toFixed(2).replace(".", ",")} km</h3>
                       <ElegirActividades etiqueta="Actividad a clasificar" opciones={camino.actividades}
@@ -327,7 +385,8 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
                           <input className="mt-1 block w-44 max-w-full rounded-xl border border-borde bg-superficie p-2 text-texto" type="date" value={fecha}
                             onChange={(evento) => setFecha(evento.target.value)} />
                         </label>
-                        <div className="flex justify-end border-t border-borde pt-3">
+                        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-borde pt-3">
+                        <Boton variante="destructivo" disabled={ocupado || camino.partes.length < 2} onClick={() => setConfirmarQuitarParte(true)}>Eliminar parte</Boton>
                         <Boton disabled={ocupado} onClick={() => void (async () => {
                           const elegidas = Object.entries(borradorVigente) as [ActividadRuta, { paso: CondicionDePaso; complejidad: ComplejidadDeParte | null }][];
                           const guardado = await guardar(async (actual) => {
@@ -362,6 +421,13 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
             setActividadesPendientes(null);
             if (nuevas) guardarDatosYActividades(nuevas);
           }}>Sacar actividad</BotonDeEmergente></>} />
+      <Emergente abierto={confirmarQuitarParte} alCerrar={() => setConfirmarQuitarParte(false)} titulo="¿Eliminar esta parte?"
+        descripcion="Se une con la de al lado y se conserva la clasificación de la que estás viendo. El corte desaparece."
+        acciones={<><BotonDeEmergente onClick={() => setConfirmarQuitarParte(false)}>Cancelar</BotonDeEmergente>
+          <BotonDeEmergente variante="destructivo" disabled={ocupado} onClick={() => {
+            setConfirmarQuitarParte(false);
+            void guardar((cada) => quitarParteDelCamino(cada.id, cada.actualizadoEn, indice), "Se eliminó la parte.");
+          }}>Eliminar parte</BotonDeEmergente></>} />
       <Emergente abierto={confirmarRetiro} alCerrar={() => setConfirmarRetiro(false)} titulo="¿Retirar este Camino?"
         descripcion="Dejará de verse en el mapa. Esta acción no se puede deshacer."
         acciones={<><BotonDeEmergente onClick={() => setConfirmarRetiro(false)}>Cancelar</BotonDeEmergente>

@@ -14,6 +14,7 @@ import {
   dibujoDeLasPartes,
   parteEn,
   partirEntre,
+  quitarParte,
   problemasDelCamino,
   ubicarEnCamino,
   type Camino,
@@ -94,6 +95,19 @@ describe("el control de un Camino sano", () => {
     expect(problemasDelCamino(conHueco)).toContain("Hay un hueco antes de la parte 2.");
     expect(problemasDelCamino(superpuesto)).toContain("La parte 2 se superpone con la anterior.");
     expect(problemasDelCamino(sinKayak)).toContain("A la parte 1 le falta la clasificación de Kayak.");
+  });
+});
+
+describe("quitar una parte", () => {
+  it("la une con la siguiente y conserva su clasificación", () => {
+    const partido = abrir(partirEntre(nuevo(), 200, 500));
+    const delMedio = clasificacionDe(partido.partes[1], "trekking");
+    const sinLaTercera = abrir(quitarParte(partido, 1));
+    expect(sinLaTercera.partes).toHaveLength(partido.partes.length - 1);
+    expect(sinLaTercera.partes[1].desdeM).toBe(partido.partes[1].desdeM);
+    expect(sinLaTercera.partes[1].hastaM).toBe(partido.partes[2].hastaM);
+    expect(clasificacionDe(sinLaTercera.partes[1], "trekking")).toEqual(delMedio);
+    expect(problemasDelCamino(sinLaTercera)).toEqual([]);
   });
 });
 

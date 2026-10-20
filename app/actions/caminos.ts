@@ -15,6 +15,8 @@ import {
   crearCaminoGuardado,
   leerCaminoGuardado,
   leerCaminosVivos,
+  partirEntreGuardado,
+  quitarParteGuardada,
   retirarCaminoGuardado,
   type BaseDeCaminos,
   type ListaDeCaminos,
@@ -189,6 +191,23 @@ export async function corregirLineaDelCamino(
   coordenadas: number[][],
 ): Promise<Resultado<CaminoGuardado>> {
   return conQuienUsa("corregir la línea", (base, quien) => corregirLineaGuardada(base, quien, id, actualizadoEn, coordenadas, alturasDelRelieve));
+}
+
+export async function partirEntreEnElCamino(
+  id: number,
+  actualizadoEn: string,
+  desdeM: number,
+  hastaM: number,
+): Promise<Resultado<CaminoGuardado>> {
+  return conQuienUsa("separar el tramo", (base, quien) => partirEntreGuardado(base, quien, id, actualizadoEn, desdeM, hastaM));
+}
+
+export async function quitarParteDelCamino(
+  id: number,
+  actualizadoEn: string,
+  indice: number,
+): Promise<Resultado<CaminoGuardado>> {
+  return conQuienUsa("eliminar la parte", (base, quien) => quitarParteGuardada(base, quien, id, actualizadoEn, indice));
 }
 
 export async function clasificarParteDelCamino(

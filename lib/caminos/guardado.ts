@@ -7,7 +7,9 @@ import {
   clasificarTramo,
   corregirLinea,
   crearCamino,
+  partirEntre,
   problemasDelCamino,
+  quitarParte,
   type CambioDeClasificacion,
 } from "@/lib/caminos/partes";
 import {
@@ -289,6 +291,33 @@ export function clasificarParteGuardada(
   return editarCaminoGuardado(base, quien, id, actualizadoEnEsperado, (camino) =>
     clasificarTramo(camino, metros(pedido.desdeM), metros(pedido.hastaM), actividad.datos, cambio),
   );
+}
+
+/** Deja un corte en cada lugar. La clasificación de cada pedazo se conserva. */
+export function partirEntreGuardado(
+  base: BaseDeCaminos,
+  quien: QuienUsa,
+  id: unknown,
+  actualizadoEnEsperado: unknown,
+  desdeM: unknown,
+  hastaM: unknown,
+): Promise<Resultado<CaminoGuardado>> {
+  return editarCaminoGuardado(base, quien, id, actualizadoEnEsperado, (camino) =>
+    partirEntre(camino, metros(desdeM), metros(hastaM)),
+  );
+}
+
+/** Saca la parte uniéndola con la de al lado. Se conserva la clasificación de la elegida. */
+export function quitarParteGuardada(
+  base: BaseDeCaminos,
+  quien: QuienUsa,
+  id: unknown,
+  actualizadoEnEsperado: unknown,
+  indice: unknown,
+): Promise<Resultado<CaminoGuardado>> {
+  const numero = Number(indice);
+  if (!Number.isInteger(numero)) return Promise.resolve(falla("Esa parte no existe. Elegila de nuevo."));
+  return editarCaminoGuardado(base, quien, id, actualizadoEnEsperado, (camino) => quitarParte(camino, numero));
 }
 
 export type PedidoDeDatosDeParte = {

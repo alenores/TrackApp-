@@ -71,6 +71,10 @@
   --parte-media: #ffd43b;
   --parte-dificil: #ff6262;
   --parte-sin-clasificar: #8e9aab;
+  /* El tramo que se está mirando o partiendo. No es un color de Camino. */
+  --marca-de-parte: #fb923c;
+  /* Los cortes que ya existen, más claros que la parte que se está mirando. */
+  --marca-de-corte: #fdba74;
   /* El recorrido de una salida. De noche queda claro, igual que sin clasificar. */
   --linea-de-salida: #cbd5e1;
   --parte-x: #111827;
@@ -186,6 +190,8 @@
   --parte-media: #a16207;
   --parte-dificil: #b91c1c;
   --parte-sin-clasificar: #475569;
+  --marca-de-parte: #ea580c;
+  --marca-de-corte: #fb923c;
   /* Naranja del recorrido de una salida con sol. Sobre blanco da más de 4,5:1. */
   --linea-de-salida: #c2410c;
   --parte-x: #111827;

@@ -213,6 +213,27 @@ export function partirEntre<T extends Camino>(camino: T, desdeM: number, hastaM:
   return exito<T>({ ...camino, partes: particion.datos.partes });
 }
 
+/**
+ * Saca una parte uniéndola con la de al lado. Se queda la clasificación de la
+ * que se eligió. La última se une con la anterior; las demás, con la siguiente.
+ */
+export function quitarParte<T extends Camino>(camino: T, indice: number): Resultado<T> {
+  if (!Number.isInteger(indice) || indice < 0 || indice >= camino.partes.length) {
+    return falla("Esa parte no existe. Elegila de nuevo.");
+  }
+  if (camino.partes.length < 2) return falla("Este Camino tiene una sola parte. No hay un corte para sacar.");
+  const partes = camino.partes.map((parte) => ({ ...parte, porActividad: copiarClasificaciones(parte.porActividad) }));
+  if (indice < partes.length - 1) {
+    partes[indice] = { ...partes[indice], hastaM: partes[indice + 1].hastaM };
+    partes.splice(indice + 1, 1);
+  } else {
+    const anterior = partes[indice - 1];
+    partes[indice - 1] = { ...partes[indice], desdeM: anterior.desdeM };
+    partes.splice(indice, 1);
+  }
+  return exito<T>({ ...camino, partes });
+}
+
 // ---------------------------------------------------------------- clasificar
 
 export type CambioDeClasificacion = {

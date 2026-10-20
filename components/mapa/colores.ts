@@ -15,6 +15,10 @@ export type ColoresDelMapa = {
   parteMedia: string;
   parteDificil: string;
   parteSinClasificar: string;
+  /** El tramo elegido o el que se está partiendo. */
+  marcaDeParte: string;
+  /** Un corte que ya separa dos partes. */
+  marcaDeCorte: string;
   /** El recorrido de una salida: naranja con sol, claro de noche. */
   lineaDeSalida: string;
   parteX: string;
@@ -58,6 +62,8 @@ const DE_RESPALDO: ColoresDelMapa = {
   parteMedia: "#ffd43b",
   parteDificil: "#ff6262",
   parteSinClasificar: "#8e9aab",
+  marcaDeParte: "#fb923c",
+  marcaDeCorte: "#fdba74",
   lineaDeSalida: "#cbd5e1",
   parteX: "#111827",
   parteXHalo: "#ffffff",
@@ -95,6 +101,8 @@ export function coloresDelMapa(): ColoresDelMapa {
     parteMedia: leer("--parte-media", DE_RESPALDO.parteMedia),
     parteDificil: leer("--parte-dificil", DE_RESPALDO.parteDificil),
     parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
+    marcaDeParte: leer("--marca-de-parte", DE_RESPALDO.marcaDeParte),
+    marcaDeCorte: leer("--marca-de-corte", DE_RESPALDO.marcaDeCorte),
     lineaDeSalida: leer("--linea-de-salida", DE_RESPALDO.lineaDeSalida),
     parteX: leer("--parte-x", DE_RESPALDO.parteX),
     parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
@@ -129,9 +137,8 @@ export function colorDeLasCurvas(sobreLaFoto: boolean, colores: ColoresDelMapa):
 /**
  * Envoltorio de la línea para que se distinga del terreno.
  *
- * Claro sobre la foto y de noche, cuando el fondo es oscuro. Oscuro en el
- * mapa simple de día, cuando el fondo es claro. En las líneas con rayitas
- * sigue el trazo, para no tapar el color.
+ * Claro y continuo sobre la foto y de noche. En el mapa simple de día no
+ * se usa: el fondo ya es claro y el Camino se ve con su color solo.
  */
 export function colorDelEnvoltorio(
   claro: boolean,

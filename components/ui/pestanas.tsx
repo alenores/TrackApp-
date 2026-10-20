@@ -14,6 +14,7 @@ export function Pestanas<Valor extends string | number>({
   elegida,
   alElegir,
   chica = false,
+  deshabilitadas = false,
 }: {
   /** El nombre de la fila, para quien no ve. */
   etiqueta: string;
@@ -21,24 +22,27 @@ export function Pestanas<Valor extends string | number>({
   elegida: Valor;
   alElegir: (valor: Valor) => void;
   chica?: boolean;
+  /** Ninguna queda elegida y no se pueden tocar. */
+  deshabilitadas?: boolean;
 }) {
   return (
     <div role="tablist" aria-label={etiqueta} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-borde-fuerte">
       {opciones.map((opcion) => {
-        const esLaElegida = opcion.valor === elegida;
+        const esLaElegida = !deshabilitadas && opcion.valor === elegida;
         return (
           <button
             key={opcion.valor}
             type="button"
             role="tab"
             aria-selected={esLaElegida}
-            onClick={() => alElegir(opcion.valor)}
+            disabled={deshabilitadas}
+            onClick={() => { if (!deshabilitadas) alElegir(opcion.valor); }}
             className={[
               "shrink-0 whitespace-nowrap border-b-[3px] text-base",
               chica ? "px-3 py-2" : "px-4 py-2.5",
-              esLaElegida
-                ? "border-acento-borde font-semibold text-texto"
-                : "border-transparent text-texto-suave hover:text-texto",
+              deshabilitadas ? "cursor-not-allowed border-transparent text-texto-suave opacity-50" : "",
+              !deshabilitadas && esLaElegida ? "border-acento-borde font-semibold text-texto" : "",
+              !deshabilitadas && !esLaElegida ? "border-transparent text-texto-suave hover:text-texto" : "",
             ].join(" ")}
           >
             {opcion.texto}

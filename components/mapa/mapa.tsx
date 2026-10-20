@@ -189,7 +189,17 @@ type MapaProps = {
   alMoverVerticeDeCamino?: (indice: number, lon: number, lat: number) => void;
   alTocarVerticeDeCamino?: (indice: number) => void;
   /** Extremos elegidos en el editor de partes. */
-  extremosDeParte?: { inicio: number[] | null; final: number[] | null };
+  extremosDeParte?: {
+    inicio: number[] | null;
+    final: number[] | null;
+    corte?: number[] | null;
+    metrosInicio?: number | null;
+    metrosFinal?: number | null;
+  };
+  /** Cortes que ya separan partes, mientras se está partiendo. */
+  cortesMarcados?: { coordenada: number[]; metros: number }[] | null;
+  /** Uno de esos cortes, elegido como inicio o final. No se dibuja otro punto. */
+  corteElegido?: number[] | null;
   /** El lugar que se está señalando en el gráfico de alturas. */
   puntoSenalado?: number[] | null;
   /**
@@ -449,6 +459,8 @@ export function Mapa({
   alMoverVerticeDeCamino,
   alTocarVerticeDeCamino,
   extremosDeParte,
+  cortesMarcados = null,
+  corteElegido = null,
   puntoSenalado = null,
   otrosCircuitos = null,
   anotaciones = [],
@@ -824,10 +836,8 @@ export function Mapa({
 
     mapa.on("load", () => {
       const colores = coloresDelMapa();
-      const envoltorio = colorDelEnvoltorio(
-        tipoDeFondoRef.current !== "dibujo" || modoRef.current === "noche",
-        colores,
-      );
+      const conEnvoltorio = tipoDeFondoRef.current !== "dibujo" || modoRef.current === "noche";
+      const envoltorio = colorDelEnvoltorio(conEnvoltorio, colores);
 
       mapa.addSource(FUENTE_RECTANGULOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_RUTA, { type: "geojson", data: VACIO });
@@ -838,7 +848,8 @@ export function Mapa({
       mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
-      mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO });
+      mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO, generateId: true });
+      mapa.addSource("cortes-marcados", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("punto-senalado", { type: "geojson", data: VACIO });
       mapa.addSource("otros-circuitos", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
@@ -922,10 +933,16 @@ export function Mapa({
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
       mapa.addLayer({
+        id: "parte-elegida", type: "line", source: FUENTE_CAMINOS,
+        filter: ["==", ["get", "elegida"], true],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.marcaDeParte, "line-width": 10, "line-opacity": 0.95 },
+      });
+      mapa.addLayer({
         id: `${CAPAS_DE_CAMINOS[0]}-borde`, type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": envoltorio, "line-width": 6, "line-opacity": 0.95 },
+        paint: { "line-color": envoltorio, "line-width": 6, "line-opacity": conEnvoltorio ? 0.95 : 0 },
       });
       mapa.addLayer({
         id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
@@ -949,8 +966,7 @@ export function Mapa({
         mapa.addLayer({
           id: `${capa}-borde`, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": 0.95,
-            ...(guiones ? { "line-dasharray": [...guiones] } : {}) },
+          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": conEnvoltorio ? 0.95 : 0 },
         });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
@@ -976,8 +992,7 @@ export function Mapa({
         const opacidad: maplibregl.ExpressionSpecification = ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1];
         mapa.addLayer({ id: `${capa}-borde`, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 10, "line-opacity": opacidad,
-            ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
+          paint: { "line-color": envoltorio, "line-width": 10, "line-opacity": conEnvoltorio ? opacidad : 0 } });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
           paint: { "line-color": colorDeParte, "line-width": 7, "line-opacity": opacidad,
@@ -1009,8 +1024,7 @@ export function Mapa({
           source: FUENTE_RUTA,
           filter: filtroDeParte,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": 0.95,
-            ...(guiones ? { "line-dasharray": [...guiones] } : {}) },
+          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": conEnvoltorio ? 0.95 : 0 },
         });
         mapa.addLayer({
           id: capa,
@@ -1028,13 +1042,24 @@ export function Mapa({
       }
       agregarCrucesSinPaso(mapa, "ruta-sin-paso-x", "x-sin-paso", colores);
       mapa.addLayer({
+        id: "cortes-marcados",
+        type: "circle",
+        source: "cortes-marcados",
+        paint: {
+          "circle-radius": ["case", ["any", ["boolean", ["feature-state", "encima"], false], ["==", ["get", "elegido"], true]], 11, 7],
+          "circle-color": ["case", ["==", ["get", "elegido"], true], colores.marcaDeParte, colores.marcaDeCorte],
+          "circle-stroke-width": ["case", ["any", ["boolean", ["feature-state", "encima"], false], ["==", ["get", "elegido"], true]], 4, 2],
+          "circle-stroke-color": colores.parteXHalo,
+        },
+      });
+      mapa.addLayer({
         id: "extremos-de-parte-punto",
         type: "circle",
         source: "extremos-de-parte",
         paint: {
-          "circle-radius": 9,
-          "circle-color": colores.rectanguloNuevo,
-          "circle-stroke-width": 3,
+          "circle-radius": ["case", ["boolean", ["feature-state", "encima"], false], 13, 9],
+          "circle-color": colores.marcaDeParte,
+          "circle-stroke-width": ["case", ["boolean", ["feature-state", "encima"], false], 5, 3],
           "circle-stroke-color": colores.parteXHalo,
         },
       });
@@ -1208,21 +1233,30 @@ export function Mapa({
       setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo));
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
-      const envoltorio = colorDelEnvoltorio(tipoDeFondo !== "dibujo" || modo === "noche", colores);
+      const conEnvoltorio = tipoDeFondo !== "dibujo" || modo === "noche";
+      const envoltorio = colorDelEnvoltorio(conEnvoltorio, colores);
+      const opacidadDelBorde = conEnvoltorio ? 0.95 : 0;
+      const opacidadDelCircuito: maplibregl.ExpressionSpecification | number = conEnvoltorio
+        ? ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1]
+        : 0;
       for (const capa of CAPAS_DE_PARTES) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
+        mapa.setPaintProperty(`${capa}-borde`, "line-opacity", opacidadDelBorde);
       }
       mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-color", envoltorio);
+      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-opacity", opacidadDelBorde);
       for (const capa of CAPAS_DE_CAMINOS.slice(1)) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
+        mapa.setPaintProperty(`${capa}-borde`, "line-opacity", opacidadDelBorde);
       }
       mapa.setPaintProperty(CAPAS_DEL_CIRCUITO[0], "line-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-propio-borde", "line-color", colores.circuitoBorde);
       for (const capa of CAPAS_DEL_CIRCUITO.slice(1)) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
+        mapa.setPaintProperty(`${capa}-borde`, "line-opacity", opacidadDelCircuito);
       }
       mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);
@@ -1237,7 +1271,9 @@ export function Mapa({
       mapa.setPaintProperty("vertices-de-camino", "circle-stroke-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-halo-color", colores.parteXHalo);
-      mapa.setPaintProperty("extremos-de-parte-punto", "circle-color", colores.rectanguloNuevo);
+      mapa.setPaintProperty("parte-elegida", "line-color", colores.marcaDeParte);
+      mapa.setPaintProperty("cortes-marcados", "circle-color", ["case", ["==", ["get", "elegido"], true], colores.marcaDeParte, colores.marcaDeCorte]);
+      mapa.setPaintProperty("extremos-de-parte-punto", "circle-color", colores.marcaDeParte);
       mapa.setPaintProperty("extremos-de-parte-punto", "circle-stroke-color", colores.parteXHalo);
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-color", colores.parteX);
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-halo-color", colores.parteXHalo);
@@ -1448,15 +1484,32 @@ export function Mapa({
     cuandoEsteListo(() => ponerDatos(mapa, "extremos-de-parte", {
       type: "FeatureCollection",
       features: ([
-        ["Inicio", extremosDeParte?.inicio],
-        ["Final", extremosDeParte?.final],
-      ] as const).filter(([, punto]) => punto && punto.length >= 2).map(([nombre, punto]) => ({
+        ["Inicio", extremosDeParte?.inicio, extremosDeParte?.metrosInicio],
+        ["Final", extremosDeParte?.final, extremosDeParte?.metrosFinal],
+        ["Desde acá", extremosDeParte?.corte, null],
+      ] as const).filter(([, punto]) => punto && punto.length >= 2).map(([nombre, punto, metros]) => ({
         type: "Feature" as const,
-        properties: { nombre },
+        properties: { nombre, metros: metros ?? null },
         geometry: { type: "Point" as const, coordinates: punto! },
       })),
     }));
   }, [extremosDeParte]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "cortes-marcados", {
+      type: "FeatureCollection",
+      features: (cortesMarcados ?? []).filter((corte) => corte?.coordenada?.length >= 2).map((corte) => ({
+        type: "Feature" as const,
+        properties: {
+          metros: corte.metros,
+          elegido: corteElegido !== null && Math.hypot(corte.coordenada[0] - corteElegido[0], corte.coordenada[1] - corteElegido[1]) < 1e-8,
+        },
+        geometry: { type: "Point" as const, coordinates: corte.coordenada },
+      })),
+    }));
+  }, [cortesMarcados, corteElegido]);
 
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -1762,7 +1815,36 @@ export function Mapa({
       const { x, y } = evento.point;
       return mapa.queryRenderedFeatures([[x - 9, y - 9], [x + 9, y + 9]], { layers: capas })[0] ?? null;
     };
+    let corteEncima: { source: string; id: number } | null = null;
+    const marcarCorte = (evento: maplibregl.MapMouseEvent) => {
+      const capas = ["cortes-marcados", "extremos-de-parte-punto"].filter((capa) => mapa.getLayer(capa));
+      const margen = 14;
+      const encontrados = capas.length > 0
+        ? mapa.queryRenderedFeatures(
+          [[evento.point.x - margen, evento.point.y - margen], [evento.point.x + margen, evento.point.y + margen]],
+          { layers: capas },
+        )
+        : [];
+      const encontrado = encontrados
+        .filter((cada) => cada.geometry.type === "Point" && typeof cada.id === "number")
+        .map((cada) => {
+          const [lon, lat] = cada.geometry.type === "Point" ? cada.geometry.coordinates : [0, 0];
+          const enPantalla = mapa.project([lon, lat]);
+          return { cada, distancia: Math.hypot(enPantalla.x - evento.point.x, enPantalla.y - evento.point.y) };
+        })
+        .filter((cada) => cada.distancia <= margen)
+        .sort((a, b) => a.distancia - b.distancia)[0]?.cada;
+      if (corteEncima) mapa.setFeatureState(corteEncima, { encima: false });
+      if (encontrado && typeof encontrado.id === "number") {
+        corteEncima = { source: encontrado.source, id: encontrado.id };
+        mapa.setFeatureState(corteEncima, { encima: true });
+        return true;
+      }
+      corteEncima = null;
+      return false;
+    };
     const mover = (evento: maplibregl.MapMouseEvent) => {
+      const sobreCorte = marcarCorte(evento);
       const sobrePunto = mapa.getLayer("anotaciones-punto")
         ? mapa.queryRenderedFeatures(evento.point, { layers: ["anotaciones-punto"] }).length > 0
         : false;
@@ -1772,7 +1854,7 @@ export function Mapa({
         ? buscarCamino(evento) : null;
       const sobreCamino = caminoEncontrado !== null;
       mapa.getCanvas().style.cursor = alMarcarPuntoDelCircuito ? "crosshair"
-        : sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
+        : sobreCorte || sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
       if (mostrarActividadesDeCaminoAlPasar && caminoEncontrado) {
         const id = Number(caminoEncontrado.properties?.camino_id);
         const nombre = String(caminoEncontrado.properties?.nombre ?? "Camino");
@@ -1817,7 +1899,30 @@ export function Mapa({
         }
       }
       if (alTocarCamino) {
+        const capasDeCorte = ["cortes-marcados", "extremos-de-parte-punto"].filter((capa) => mapa.getLayer(capa));
+        const margenDelPunto = 14;
+        const cortes = capasDeCorte.length > 0
+          ? mapa.queryRenderedFeatures(
+            [[evento.point.x - margenDelPunto, evento.point.y - margenDelPunto], [evento.point.x + margenDelPunto, evento.point.y + margenDelPunto]],
+            { layers: capasDeCorte },
+          )
+          : [];
+        const corte = cortes
+          .filter((cada) => cada.geometry.type === "Point")
+          .map((cada) => {
+            const [lon, lat] = cada.geometry.type === "Point" ? cada.geometry.coordinates : [0, 0];
+            const enPantalla = mapa.project([lon, lat]);
+            return { cada, distancia: Math.hypot(enPantalla.x - evento.point.x, enPantalla.y - evento.point.y) };
+          })
+          .filter((cada) => cada.distancia <= margenDelPunto)
+          .sort((a, b) => a.distancia - b.distancia)[0]?.cada;
         const parte = buscarCamino(evento);
+        if (corte?.geometry.type === "Point") {
+          const [lon, lat] = corte.geometry.coordinates;
+          alTocarCamino(lon, lat, { ...(parte?.properties ?? {}), metros: corte.properties?.metros });
+          alSenalarZona?.(null);
+          return;
+        }
         if (parte) {
           alTocarCamino(evento.lngLat.lng, evento.lngLat.lat, parte.properties ?? {});
           alSenalarZona?.(null);
@@ -1827,6 +1932,8 @@ export function Mapa({
       if (alSenalarZona) alSenalarZona(buscarZona(evento));
     };
     const salir = () => {
+      if (corteEncima) mapa.setFeatureState(corteEncima, { encima: false });
+      corteEncima = null;
       mapa.getCanvas().style.cursor = "";
       setCaminoBajoCursor(null);
     };

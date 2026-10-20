@@ -14,7 +14,7 @@ Al traer un archivo, la vista previa usaba el mapa propio. Ahí no se dibuja: se
 
 Esa vista previa pasa a mostrar Google, igual que las consultas. La línea queda como vino en el archivo. Corregirla sigue en el editor, con el mapa propio.
 
-Los Caminos y el trazo que se sigue al navegar llevan un envoltorio. Va claro sobre la foto y de noche, y oscuro en el mapa simple de día. En las rayitas sigue el trazo. El gris de noche quedó un poco más marcado para no confundirse con el borde claro.
+Los Caminos y el trazo que se sigue al navegar llevan un envoltorio claro y continuo sobre la foto y de noche. En el mapa simple de día no lleva borde: se ve el color del Camino solo. El gris de noche quedó un poco más marcado para no confundirse con el borde claro.
 
 ### Decisiones tomadas
 
