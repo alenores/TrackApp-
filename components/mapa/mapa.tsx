@@ -1191,6 +1191,8 @@ export function Mapa({
             "tranquera", "tranquera",
             "estacionamiento", "estacionamiento",
             "sitio", "sitio",
+            // La misma carpa que los campings que trae el mapa.
+            "campamento", "camp_site",
             "none"
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],

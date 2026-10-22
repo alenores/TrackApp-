@@ -28,6 +28,9 @@ const ICONO_SI_NO_SE_SABE: IconoPunto = "cruce";
 
 /** Para adivinar el ícono por el nombre: qué palabras nombran cada cosa. */
 const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
+  // Primero: un camping suele llevar el nombre del lugar («Camping La
+  // Cumbrecita») y ese nombre no tiene que ganarle.
+  campamento: ["campamento", "camping", "acampe", "carpa"],
   refugio: ["refugio", "puesto", "rancho", "casa"],
   arroyo: ["arroyo", "rio", "río", "vado"],
   cumbre: ["cumbre", "cerro", "cima", "pico"],

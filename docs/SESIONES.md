@@ -20,8 +20,15 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
   (desde/hasta en km) y esfuerzo, todo en el celular, también sin señal. Cada
   Circuito muestra quién lo creó, en la tarjeta y en el detalle; el dato viaja
   con el paquete del celular. En el celular el «+» flota abajo a la derecha.
-- Participantes sigue como botones: con pocos usuarios alcanza. Con miles,
-  hará falta buscarlos.
+- Corrección de Ale: Participantes no se quedaba como botones, se busca. En
+  la ventana de filtros se escribe el nombre y aparecen los que coinciden con
+  su foto; los elegidos quedan como etiquetas con foto y cruz. Lo mismo en
+  «Creado por» de Circuitos. Busca sobre los usuarios ya traídos.
+- Tipo de punto nuevo: Campamento, con una carpa (el mismo dibujo de los
+  campings del mapa). Se habilitó en la base en la misma tanda y se probó un
+  guardado real con el rol de usuario, deshecho al final. Al traer archivos,
+  «camping», «acampe» o «carpa» lo reconocen, antes que el nombre del lugar
+  («Camping La Cumbrecita» no queda como Cumbre).
 
 ## Sesión 2026-10-22 - Publicar actividades personales y selección de Caminos
 

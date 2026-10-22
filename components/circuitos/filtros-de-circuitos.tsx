@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BuscadorDePersonas } from "@/components/ui/buscador-de-personas";
 import { Campo } from "@/components/ui/campo";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
@@ -108,13 +109,12 @@ function Contenido({ alCerrar, filtros, autores, alAplicar }: Omit<Props, "abier
         />
 
         {autores.length > 0 ? (
-          <Opciones
+          <BuscadorDePersonas
             etiqueta="Creado por"
-            opciones={autores.map((autor) => ({ valor: autor.id, etiqueta: autor.nombre }))}
+            id="filtro-autores"
+            personas={autores}
             elegidas={elegidos.autores}
-            alElegir={(valor) => cambiar({ autores: alternar(elegidos.autores, valor) })}
-            columnas={2}
-            multiple
+            alCambiar={(autores) => cambiar({ autores })}
           />
         ) : null}
 

@@ -23,6 +23,8 @@ export const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
   tranquera: "M4 4v16M20 4v16M4 12h16M4 8l16 8",
   estacionamiento: "M7 20V4h6a4 4 0 0 1 0 8H7",
   sitio: "M12 21s-6-4.5-6-9a6 6 0 0 1 12 0c0 4.5-6 9-6 9zM14 11.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0",
+  // Una carpa con su puerta: el mismo dibujo que los campings del mapa.
+  campamento: "M12 4 3 20h18L12 4ZM12 11l-3 9M12 11l3 9",
 };
 
 /** Un alambrado traído de OpenStreetMap: postes y dos hilos. */

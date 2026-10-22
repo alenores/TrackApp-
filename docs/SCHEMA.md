@@ -220,12 +220,21 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 
 **Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
 fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21) ·
-estacionamiento · sitio (desde 2026-10-15)
+estacionamiento · sitio (desde 2026-10-15) · campamento (desde 2026-10-22)
 
 Los dos últimos se incorporaron a la interfaz el 2026-10-15, pero faltaban en
 la base. Se habilitaron y verificaron en producción el 2026-10-22 mediante
 `20261022121659_habilitar_iconos_estacionamiento_y_sitio`. La verificación
 confirmó que ambos valores son aceptados por `public.icono_punto`.
+
+Campamento se habilitó en la base junto con la interfaz, el 2026-10-22, con
+`habilitar_icono_campamento` (`scripts/supabase-icono-campamento.sql`). Se
+probó guardar un punto de ese tipo con el rol de un usuario logueado, dentro de
+una transacción que se deshizo.
+
+**Tipo de punto nuevo = valor nuevo en `icono_punto`, en la misma tanda.** La
+app no controla el tipo por su cuenta: si la lista de la base no lo tiene, el
+guardado se rechaza.
 
 **La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
 un trazo lleva color y no lleva ícono.

@@ -183,7 +183,8 @@ ofrecería recuperar justo lo que él decidió tirar.
 **Punto**
 Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera,
-estacionamiento, sitio).
+estacionamiento, sitio, campamento). Campamento es una carpa, el mismo
+dibujo que los campings que trae el mapa: es el mismo concepto.
 Puede llevar comentario y foto. Se ubica tocando el mapa propio o pegando la
 coordenada de Google Earth. No pertenece a ningún sector: se carga desde
 **Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las demás

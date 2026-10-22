@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BuscadorDePersonas } from "@/components/ui/buscador-de-personas";
 import { Campo } from "@/components/ui/campo";
 import { BotonDeEmergente, Emergente } from "@/components/ui/emergente";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
@@ -91,14 +92,13 @@ function Contenido({ alCerrar, filtros, perfiles, alAplicar }: Omit<Props, "abie
         />
 
         {perfiles.length > 0 ? (
-          <Opciones
+          <BuscadorDePersonas
             etiqueta="Participantes"
             ayuda="La cargó o fue de compañero."
-            opciones={perfiles.map((perfil) => ({ valor: perfil.id, etiqueta: perfil.nombre }))}
+            id="filtro-participantes"
+            personas={perfiles}
             elegidas={elegidos.participantes}
-            alElegir={(valor) => cambiar({ participantes: alternar(elegidos.participantes, valor) })}
-            columnas={2}
-            multiple
+            alCambiar={(participantes) => cambiar({ participantes })}
           />
         ) : null}
 

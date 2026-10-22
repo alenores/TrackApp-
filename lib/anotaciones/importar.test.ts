@@ -22,6 +22,8 @@ describe("adivinar el ícono por el nombre", () => {
     ["Tranquera de la estancia", "tranquera"],
     ["Estacionamiento del Champaquí", "estacionamiento"],
     ["Sitio del Mortero", "sitio"],
+    ["Camping La Cumbrecita", "campamento"],
+    ["Zona de acampe", "campamento"],
     ["Mirador", "mirador"],
     ["", "cruce"],
     ["Cosa rara", "cruce"],
