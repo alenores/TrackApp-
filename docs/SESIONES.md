@@ -4,6 +4,38 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Igualar el acercamiento al abrir Google Maps
+
+### Estado al inicio
+
+Ale confirmó que el enlace abría el lugar correcto, pero demasiado alejado.
+Se enviaba el mismo número de zoom aunque los motores usan escalas distintas.
+
+### Lo que se hizo
+
+El enlace convierte el zoom sumando un nivel antes de redondearlo y limitarlo
+al máximo admitido por Google. La prueba verifica la igualdad de escala y
+conserva la comprobación del centro, en computadora y celular.
+
+### Decisiones tomadas
+
+Ale aprobó esta conversión. La app usa el zoom actual en cualquier acercamiento.
+El destino sigue siendo Google Maps. No se publica.
+
+### Documentos actualizados
+
+Decisión 072 y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Revisión visual de Ale del acercamiento corregido en el servidor local.
+
+---
+
 ## Sesión 2026-10-22 — Agregar marcas sin perder el lugar
 
 ### Estado al inicio

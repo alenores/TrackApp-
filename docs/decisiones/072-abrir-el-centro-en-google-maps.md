@@ -13,7 +13,11 @@ mapa. El acceso queda junto al título de Marcas en computadora y celular;
 en el celular se puede tocar con el panel de la lista bajado.
 
 El enlace toma el centro real del mapa al terminar cada movimiento y pasa
-también el acercamiento, redondeado al nivel entero que admite Google.
+también el acercamiento equivalente, redondeado al nivel entero que admite Google.
+Se suma un nivel al zoom del mapa propio: su escala base es de 512 píxeles
+y la de Google es de 256. Así, el zoom 14 del mapa propio equivale al 15
+de Google. Corrección aprobada por Ale el 2026-10-22 tras comprobar que el
+centro era correcto pero Google abría demasiado alejado.
 Hasta que el mapa informa su vista, el acceso espera deshabilitado.
 
 El cambio queda local: Ale pidió no subir a producción porque hay varios
@@ -27,6 +31,8 @@ cambios por hacer.
 - El mapa compartido informa centro y acercamiento al terminar de moverse.
 - La distribución compartida tiene cabeceras fuera del mapa en PC y celular.
 - [Documentación de enlaces de Google Maps](https://developers.google.com/maps/documentation/urls/get-started): vista de mapa con `center` y `zoom`.
+- El motor instalado de MapLibre usa una base de 512 píxeles.
+- [Coordenadas de Google Maps](https://developers.google.com/maps/documentation/javascript/coordinates): base de 256 píxeles y escala multiplicada por dos en cada nivel.
 
 ### Inferido
 
