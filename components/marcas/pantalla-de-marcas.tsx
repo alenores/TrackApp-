@@ -180,7 +180,12 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   };
   const cambiarFiltros = (nuevos: FiltrosDeMarcas) => {
     guardarFiltros(nuevos);
-    alCambiarLoElegido(nuevos, destildadasGuardadas);
+    // La actividad cambia lo dibujado, nunca el lugar ni el zoom que se mira.
+    // Repetir la actividad elegida (también «Todas») tampoco reencuadra.
+    const cambiaOtroFiltro = nuevos.origen !== filtros.origen || nuevos.autoria !== filtros.autoria
+      || nuevos.clases.length !== filtros.clases.length
+      || nuevos.clases.some((clase) => !filtros.clases.includes(clase));
+    if (cambiaOtroFiltro) alCambiarLoElegido(nuevos, destildadasGuardadas);
   };
   const cambiarDestildadas = (nuevas: string[]) => {
     guardarDestildadas(nuevas);

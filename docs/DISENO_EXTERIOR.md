@@ -61,7 +61,10 @@ sección Caminos no va la ayuda de colores y líneas. En la lista de Marcas,
 la casilla de cada marca va en verde suave y la de toda la categoría en verde
 lleno, para distinguir tildar una de tildar todas (Ale, 2026-10-15). Esa lista
 se achica a lo que entra en el mapa: al acercarse o moverse, lo que quedó
-afuera deja de listarse (decisión 057). Arriba del panel de Marcas hay
+afuera deja de listarse (decisión 057). En Marcas, el filtro de actividad
+conserva el centro y el zoom del mapa: elegir otra
+actividad, «Todas» o repetir la elegida no lo mueve (decisión 073).
+Arriba del panel de Marcas hay
 tres opciones de líneas: nada, las zonas tildadas, o esas zonas y sus
 sectores (decisión 059). La navegación libre no dibuja sectores. Al marcar
 un punto o un trazo desde la navegación, el mapa que queda arriba se centra

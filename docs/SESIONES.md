@@ -43,6 +43,38 @@ completo con su sesión; la aceptación de ambos tipos sí quedó verificada.
 
 ---
 
+## Sesión 2026-10-22 — Actividades en Marcas sin perder el lugar
+
+### Estado al inicio
+
+Ale confirmó que tocar cualquier actividad en Marcas movía el mapa y cambiaba
+el zoom. La pantalla volvía a encuadrar todas las marcas al cambiar un filtro.
+
+### Lo que se hizo
+
+Cambiar la actividad, elegir «Todas» o repetir la seleccionada deja intacta
+la orden de cámara. Elegir una marca sigue llevando el mapa hasta ella.
+Se agregó una prueba de regresión en PC y celular.
+
+### Decisiones tomadas
+
+Decisión 073, solicitada y confirmada por Ale. El cambio queda local.
+
+### Documentos actualizados
+
+Diseño para exterior y decisión 073.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Revisión visual de Ale. El navegador disponible muestra el aviso de falta
+de conexión. No se publicó.
+
+---
+
 ## Sesión 2026-10-22 — Abrir Google Maps desde Marcas
 
 ### Estado al inicio
