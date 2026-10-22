@@ -15,11 +15,7 @@ programar. Nada de nombres de archivos ni de líneas en las explicaciones.
 **Ante ambigüedad, se pregunta.** Una pregunta corta ahorra medio día. No
 avanzar sobre suposiciones. mientras menos decisiones sin defi ir mejor, por lo cual preguntarle al usuario la cantidad de veces que sea necesario.
 
-**Los datos que hay en la base no son datos.** Las filas que puedan quedar de
-rutas, zonas, sectores o usuarios son restos de la app vieja. **La app arranca
-de cero.** No se toman como ejemplo, no se migran, no se conservan y no se usan
-para deducir nada. Si un agente necesita saber cómo es un dato, mira el esquema,
-no las filas.
+
 
 ---
 

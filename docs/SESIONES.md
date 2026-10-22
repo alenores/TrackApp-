@@ -4,6 +4,43 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Publicación del conjunto completo
+
+### Estado al inicio
+
+Ale pidió subir a producción todos los cambios desarrollados con Codex,
+incluidos los de otros chats. La versión principal reúne las mejoras de Marcas,
+la elección inicial del punto en Google, la conservación de la vista, el
+acercamiento del enlace a Google, los triangulitos y las acciones de la ficha.
+Vercel ya tenía activa esa versión de código; faltaban las últimas reglas.
+
+### Lo que se hizo
+
+Se revisó el conjunto completo contra la versión activa de Vercel y se
+comprobaron los tipos, la calidad del código y las 963 pruebas automáticas.
+Se incluye el cambio local pendiente que retira la regla de tratar todos los
+datos de la base como descartables, además de quitar el boceto obligatorio.
+Se prepara y envía la versión principal completa a producción.
+Los adjuntos temporales de los chats no forman parte de la aplicación.
+
+### Decisiones tomadas
+
+Publicación del conjunto completo, autorizada expresamente por Ale.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Los controles de calidad conservan 16 avisos previos, sin errores.
+
+### Pendientes para la próxima
+
+Revisión visual de Ale con la cuenta iniciada en PC y celular.
+
+---
+
 ## Sesión 2026-10-22 — Quitar el boceto obligatorio
 
 ### Estado al inicio
