@@ -28,6 +28,15 @@ describe("dibujo de Caminos por actividad", () => {
     expect(kayak.features[0].properties).toMatchObject({ paso: "otra_actividad", complejidad: null });
   });
 
+  it("los íconos incluyen todas sus actividades y el secundario no hereda otra clasificación", () => {
+    const dibujo = dibujarCaminos([camino], "kayak", true);
+    expect(dibujo.features[0].properties).toMatchObject({
+      icono_actividades: "actividades-trekking-mountain_bike", paso: "otra_actividad", complejidad: null,
+    });
+    expect(dibujarCaminos([camino], "trekking", true).features[0].properties)
+      .toMatchObject({ paso: "transitable", complejidad: "facil" });
+  });
+
   it("en la navegación muestra el Camino si comparte alguna actividad prendida", () => {
     const todas = dibujarCaminosVisibles([camino], ["trekking", "correr", "mountain_bike", "kayak", "canyoning"]);
     expect(actividadParaMostrar(camino.actividades, ["mountain_bike", "trekking"])).toBe("trekking");

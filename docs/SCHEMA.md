@@ -21,7 +21,8 @@ lectura filtra `eliminado_en is null`**, salvo que el caso pida ver lo borrado.
 | `nombre` | text | |
 | `avatar_url` | text | |
 | `portada_url` | text | la portada, recortada 2:1 al subirla |
-| `actividades` | actividad_ruta[] | lo que practica: ninguna, una o varias. Por defecto vacía (migración `correr_y_actividades_del_perfil`, 2026-10-04) |
+| `actividades` | actividad_ruta[] | Lo que practica. Al editar se exige una o varias; los perfiles antiguos o recién creados pueden estar pendientes de configurar. |
+| `actividad_principal` | actividad_ruta, nullable | Debe pertenecer a `actividades`. Los perfiles anteriores con actividades reciben la primera guardada. Migración `actividad_principal_del_perfil`, 2026-10-22. |
 | `categoria` | categoria_usuario | `administrador` · `premium` · `normal`. Por defecto `normal` |
 
 **Permisos:** todos ven todos los perfiles. Cada uno edita el suyo. El

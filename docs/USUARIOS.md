@@ -68,3 +68,7 @@ desde el arranque evita la migración dolorosa del día en que aparezca el prime
 usuario que no es amigo de Ale.
 
 Es el mismo patrón que ya funciona en Vías de Escalada Córdoba.
+
+## Actividades personales (2026-10-22)
+
+En Perfiles cada usuario guarda una o varias actividades con una principal. Con una sola se asigna esa misma; con varias debe indicarla. Consultas y Marcas se abren con esa principal solamente y ordenan las actividades propias encima de las otras disponibles. Los cambios de selección del mapa no se guardan. Los perfiles anteriores con actividades usan la primera guardada, autorizado por Ale. Quienes no tienen actividades aún no reciben una inventada.

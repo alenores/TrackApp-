@@ -77,6 +77,10 @@
   --marca-de-corte: #fdba74;
   /* El recorrido de una salida. De noche queda claro, igual que sin clasificar. */
   --linea-de-salida: #cbd5e1;
+  --camino-secundario: #525252;
+  --camino-secundario-borde: #ffffff;
+  --camino-secundario-ancho: 3;
+  --camino-secundario-borde-ancho: 5;
   --parte-x: #111827;
   --parte-x-halo: #ffffff;
   /* Lo dibujado solo para un Circuito no usa los colores de dificultad. */
@@ -194,6 +198,10 @@
   --marca-de-corte: #fb923c;
   /* Naranja del recorrido de una salida con sol. Sobre blanco da más de 4,5:1. */
   --linea-de-salida: #c2410c;
+  --camino-secundario: #525252;
+  --camino-secundario-borde: #ffffff;
+  --camino-secundario-ancho: 3;
+  --camino-secundario-borde-ancho: 5;
   --parte-x: #111827;
   --parte-x-halo: #ffffff;
   --circuito-propio: #000000;

@@ -102,8 +102,9 @@ export type Perfil = {
   nombre: string | null;
   avatarUrl: string | null;
   portadaUrl: string | null;
-  /** Lo que practica: ninguna, una o varias. Se elige al editar el perfil. */
+  /** Lo que practica. Los perfiles antiguos pueden estar pendientes de configurar. */
   actividades: ActividadRuta[];
+  actividadPrincipal: ActividadRuta | null;
   categoria: CategoriaUsuario;
   creadoEn: string;
   actualizadoEn: string;

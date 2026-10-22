@@ -4,6 +4,54 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 - Publicar actividades personales y selección de Caminos
+
+### Estado al inicio
+Ale confirmó el desarrollo local y pidió subirlo a producción.
+### Lo que se hizo
+Se prepara la publicación conjunta de las actividades del perfil, la selección múltiple de Consultas y Marcas, los Caminos secundarios neutros y los íconos de actividades. La migración de actividad principal ya está aplicada y verificada. Se comprobaron nuevamente tipos y lint sin errores y las 976 pruebas pasaron. Ale confirmó explícitamente el destino público alenores/TrackApp- y la actualización de producción. Se envía la versión comprobada al repositorio y se verifica el resultado del despliegue en Vercel.
+### Decisiones tomadas
+Publicación en producción autorizada expresamente por Ale.
+### Documentos actualizados
+Registro de sesión.
+### Deuda o inconsistencias detectadas
+La revisión visual con sesión iniciada queda pendiente por el bloqueo del entorno local informado anteriormente.
+### Pendientes para la próxima
+Revisar el resultado con la cuenta iniciada en PC y celular.
+
+
+## Sesión 2026-10-22 - Actividades personales como inicio de los mapas
+
+### Estado al inicio
+El perfil guardaba actividades pero no una principal. Consultas y Marcas comenzaban sin selección.
+### Lo que se hizo
+Se incorporó actividad_principal al perfil, validada contra sus actividades. Se guarda junto con ellas y se impide anunciar éxito si no se actualizó ningún perfil. El armazón entrega la configuración ya leída; los mapas no hacen consultas adicionales. Los selectores separan actividades propias de las otras. La elección del mapa sigue siendo temporal. Validación: tipos sin errores, lint sin errores (avisos previos), 974 pruebas generales más 2 nuevas de interacción aprobadas. En la base se verificaron escritura y lectura de la principal, rechazo de una principal ajena y aislamiento entre perfiles usando el rol autenticado; transacción revertida al terminar.
+### Decisiones tomadas
+Una o varias actividades por usuario. Al abrir cada consulta se elige solo la principal del perfil. Para perfiles anteriores con actividades se usa la primera guardada, confirmado por Ale.
+### Documentos actualizados
+Decisión 076, esquema, usuarios y diseño exterior; decisión 075 marcada como sustituida parcialmente.
+### Deuda o inconsistencias detectadas
+La revisión visual y el guardado completo desde navegador están bloqueados: Next no arranca por EPERM al resolver C:/Users/Usuario, incluso en la copia de verificación. La regla anterior de Consultas en AGENTS continúa pendiente de alineación: documento protegido. Los avisos de seguridad de funciones preexistentes no fueron introducidos por esta migración.
+### Pendientes para la próxima
+Revisión visual, prueba con sesión de usuario y publicación cuando se autorice.
+
+
+## Sesión 2026-10-22 - Cada consulta empieza sin actividades
+
+### Estado al inicio
+La selección múltiple en desarrollo recuperaba preferencias anteriores.
+### Lo que se hizo
+Se retiraron la persistencia y la migración de elecciones previas. Se permite selección vacía y se muestra cómo elegir actividades. Se verificó que una nueva consulta no recupera la selección anterior.
+### Decisiones tomadas
+Consultas y Marcas empiezan de cero, sin actividad automática; decisión expresa de Ale.
+### Documentos actualizados
+Diseño exterior y decisión 075.
+### Deuda o inconsistencias detectadas
+La revisión visual del conjunto anterior sigue pendiente. La regla antigua de Consultas en AGENTS debe alinearse con la decisión 075; el entorno impide editar ese documento protegido.
+### Pendientes para la próxima
+Completar la revisión visual y la publicación cuando corresponda.
+
+
 ## Sesión 2026-10-22 — Publicación del conjunto completo
 
 ### Estado al inicio

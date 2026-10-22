@@ -13,6 +13,7 @@ type PerfilesViewProps = {
   portadaUrl?: string | null;
   /** Lo que practica quien usa la app. */
   actividades: ActividadRuta[];
+  actividadPrincipal: ActividadRuta | null;
   perfiles: Perfil[];
   /** Cuando la lista quedó corta, se dice. Nunca se muestra incompleta callado. */
   avisoDeListaIncompleta?: string | null;
@@ -26,6 +27,7 @@ export function PantallaDePerfiles({
   avatarUrl,
   portadaUrl,
   actividades,
+  actividadPrincipal,
   perfiles,
   avisoDeListaIncompleta = null,
 }: PerfilesViewProps) {
@@ -50,6 +52,7 @@ export function PantallaDePerfiles({
         avatarUrl={avatarUrl}
         portadaUrl={portadaUrl}
         actividades={actividades}
+        actividadPrincipal={actividadPrincipal}
       />
 
       {avisoDeListaIncompleta ? (

@@ -31,6 +31,10 @@ export type ColoresDelMapa = {
   rectanguloExistente: string;
   /** La zona: referencia, no promesa. Va en gris y con línea de puntos. */
   rectanguloZona: string;
+  caminoSecundario: string;
+  caminoSecundarioBorde: string;
+  caminoSecundarioAncho: number;
+  caminoSecundarioBordeAncho: number;
   /** El sector con el mapa ya en el celular. */
   rectanguloBajado: string;
   /** El sector al que le falta el mapa. */
@@ -74,6 +78,10 @@ const DE_RESPALDO: ColoresDelMapa = {
   rectanguloNuevo: "#67e8f9",
   rectanguloExistente: "#52b788",
   rectanguloZona: "#8795ab",
+  caminoSecundario: "#525252",
+  caminoSecundarioBorde: "#ffffff",
+  caminoSecundarioAncho: 3,
+  caminoSecundarioBordeAncho: 5,
   rectanguloBajado: "#059669",
   rectanguloSinBajar: "#b45309",
   contorno: "#1e293b",
@@ -112,6 +120,10 @@ export function coloresDelMapa(): ColoresDelMapa {
     anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
     rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),
     rectanguloExistente: leer("--mapa-linea", DE_RESPALDO.rectanguloExistente),
+    caminoSecundario: leer("--camino-secundario", DE_RESPALDO.caminoSecundario),
+    caminoSecundarioBorde: leer("--camino-secundario-borde", DE_RESPALDO.caminoSecundarioBorde),
+    caminoSecundarioAncho: Number(leer("--camino-secundario-ancho", String(DE_RESPALDO.caminoSecundarioAncho))),
+    caminoSecundarioBordeAncho: Number(leer("--camino-secundario-borde-ancho", String(DE_RESPALDO.caminoSecundarioBordeAncho))),
     rectanguloZona: leer("--borde-fuerte", DE_RESPALDO.rectanguloZona),
     rectanguloBajado: leer("--verde-borde", DE_RESPALDO.rectanguloBajado),
     rectanguloSinBajar: leer("--ambar-borde", DE_RESPALDO.rectanguloSinBajar),

@@ -23,6 +23,8 @@ export default async function AppLayout({
       miPerfilId={user.id}
       soyAdministrador={miPerfil?.categoria === "administrador"}
       miCategoria={miPerfil?.categoria ?? "normal"}
+      misActividades={miPerfil?.actividades ?? []}
+      miActividadPrincipal={miPerfil?.actividadPrincipal ?? null}
       userName={nombreParaMostrar(user)}
       userEmail={user.email ?? ""}
       userAvatarUrl={userAvatarUrl}

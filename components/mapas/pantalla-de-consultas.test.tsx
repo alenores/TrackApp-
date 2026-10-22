@@ -22,6 +22,7 @@ vi.mock("@/hooks/use-caminos-guardados", () => ({
 }));
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/marcas/mapa-de-marcas", () => ({ MapaDeMarcas: () => <div /> }));
+vi.mock("@/components/armazon/quien-soy", () => ({ useQuienSoy: () => ({ miPerfilId: "yo", miCategoria: "normal", misActividades: ["trekking"], miActividadPrincipal: "trekking" }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ back: () => {}, push: () => {} }) }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

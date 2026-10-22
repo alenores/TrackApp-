@@ -21,7 +21,7 @@ import { ListaYMapa } from "@/components/ui/lista-y-mapa";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDialogos } from "@/components/ui/dialogos";
 import type { AccionDelMenu } from "@/components/ui/menu-de-acciones";
-import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
+import { useSeleccionDelMapa } from "@/hooks/use-seleccion-del-mapa";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
@@ -116,8 +116,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const [vistaActual, setVistaActual] = useState<VistaDelMapa | null>(null);
   const [viaje, setViaje] = useState(0);
   const [lineas, setLineas] = useState<VistaDeLineas>("zonas");
-  const [actividadPrincipal] = useActividadPrincipal();
-  const [filtros, guardarFiltros] = usePreferencia<FiltrosDeMarcas>("filtros-de-marcas", SIN_FILTROS, leerFiltrosDeMarcas);
+  const [seleccion, elegirSeleccion] = useSeleccionDelMapa();
+  const [filtrosGuardados, guardarFiltros] = usePreferencia<FiltrosDeMarcas>("filtros-de-marcas", SIN_FILTROS, leerFiltrosDeMarcas);
+  const filtros = useMemo(() => ({ ...filtrosGuardados, actividad: null, actividades: seleccion.visibles }), [filtrosGuardados, seleccion.visibles]);
   const [destildadasGuardadas, guardarDestildadas] = usePreferencia<string[]>("marcas-destildadas", [], leerDestildadas);
   const destildadas = useMemo(() => new Set(destildadasGuardadas), [destildadasGuardadas]);
   const puedeAgregar = puedeSumarAlMapa(categoria);
@@ -155,8 +156,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     () => lasDelMapa(marcas, filtrosQueSeAplican(filtros), miPerfilId, destildadas),
     [marcas, filtros, miPerfilId, destildadas],
   );
-  // La actividad del filtro manda en el mapa; sin filtro, la principal de siempre.
-  const actividad = filtros.actividad ?? actividadPrincipal;
+  // La actividad principal se elige en esta consulta.
+  const actividad = seleccion.principal;
 
   const dibujo = useMemo(() => {
     const ids = { camino: new Set<number>(), detalle: new Set<number>(), zona: new Set<number>() };
@@ -183,7 +184,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     setEncuadre(encuadreDe(lasDelMapa(marcas, filtrosQueSeAplican(nuevosFiltros), miPerfilId, new Set(nuevasDestildadas))));
   };
   const cambiarFiltros = (nuevos: FiltrosDeMarcas) => {
-    guardarFiltros(nuevos);
+    guardarFiltros({ clases: nuevos.clases, actividad: null, autoria: nuevos.autoria, origen: nuevos.origen });
     // La actividad cambia lo dibujado, nunca el lugar ni el zoom que se mira.
     // Repetir la actividad elegida (también «Todas») tampoco reencuadra.
     const cambiaOtroFiltro = nuevos.origen !== filtros.origen || nuevos.autoria !== filtros.autoria
@@ -326,6 +327,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             zonas={porId.zonas}
             sectoresPorZona={cantidades}
             filtros={filtros}
+            seleccion={seleccion}
+            alCambiarSeleccion={elegirSeleccion}
             alCambiarFiltros={cambiarFiltros}
             miPerfilId={miPerfilId}
             destildadas={destildadas}

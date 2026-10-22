@@ -23,13 +23,15 @@ import { useSubirRegistros } from "@/hooks/use-subir-registros";
 import { useRegistros } from "@/hooks/use-registros";
 import { cuantosPendientesQuedan } from "@/lib/anotaciones/en-pantalla";
 import { anotarMiPerfil } from "@/lib/cuenta/mi-perfil-en-el-celular";
-import type { CategoriaUsuario } from "@/types/database";
+import type { ActividadRuta, CategoriaUsuario } from "@/types/database";
 
 type AppShellProps = {
   /** El id de quien usa la app. Se guarda en el celular para usarlo sin señal. */
   miPerfilId: string;
   soyAdministrador: boolean;
   miCategoria: CategoriaUsuario;
+  misActividades: ActividadRuta[];
+  miActividadPrincipal: ActividadRuta | null;
   userName: string;
   userEmail: string;
   userAvatarUrl?: string | null;
@@ -40,6 +42,8 @@ export function Armazon({
   miPerfilId,
   soyAdministrador,
   miCategoria,
+  misActividades,
+  miActividadPrincipal,
   userName,
   userEmail,
   userAvatarUrl,
@@ -54,7 +58,7 @@ export function Armazon({
   // Las salidas registradas navegando que todavía no subieron, en curso o no.
   const salidasSinSubir = useRegistros().length;
 
-  const quienSoy = useMemo(() => ({ miPerfilId, miCategoria }), [miPerfilId, miCategoria]);
+  const quienSoy = useMemo(() => ({ miPerfilId, miCategoria, misActividades, miActividadPrincipal }), [miPerfilId, miCategoria, misActividades, miActividadPrincipal]);
 
   // Quién sos, guardado para la navegación, que no le pregunta a la base.
   useEffect(() => {

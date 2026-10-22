@@ -15,6 +15,7 @@ import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
 import { PortadaDePerfil } from "@/components/perfil/portada-de-perfil";
 import { Opciones, type Opcion } from "@/components/ui/opciones";
+import { principalDelPerfil, revisarActividadesDelPerfil } from "@/lib/perfiles/actividades";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
 
@@ -26,6 +27,7 @@ type PerfilFormProps = {
   portadaUrl?: string | null;
   /** Lo que practica. */
   actividades: ActividadRuta[];
+  actividadPrincipal: ActividadRuta | null;
 };
 
 const OPCIONES_DE_ACTIVIDAD: Opcion<ActividadRuta>[] = ACTIVIDADES_RUTA.map((tipo) => {
@@ -44,8 +46,10 @@ export function FormularioDePerfil({
   avatarUrl,
   portadaUrl,
   actividades,
+  actividadPrincipal,
 }: PerfilFormProps) {
   const [actividadesElegidas, setActividadesElegidas] = useState<ActividadRuta[]>(actividades);
+  const [principalElegida, setPrincipalElegida] = useState<ActividadRuta | null>(() => principalDelPerfil(actividades, actividadPrincipal));
   const router = useRouter();
   const foto = useFoto("avatar", FORMAS_DE_RECORTE.avatar);
   const fotoPortada = useFoto("portada", FORMAS_DE_RECORTE.portada);
@@ -78,6 +82,7 @@ export function FormularioDePerfil({
     setNombre(initialNombre || displayNombre);
     setEmailValue(email);
     setActividadesElegidas(actividades);
+    setPrincipalElegida(principalDelPerfil(actividades, actividadPrincipal));
     clearAvatarSelection();
     setError(null);
     setMessage(null);
@@ -95,37 +100,44 @@ export function FormularioDePerfil({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const problema = revisarActividadesDelPerfil(actividadesElegidas, principalElegida);
+    if (problema) { setError(problema); return; }
     setLoading(true);
     setError(null);
     setMessage(null);
 
-    const result = await editarPerfil({
-      nombre,
-      email: emailValue,
-      avatarFile: foto.archivo,
-      portadaFile: fotoPortada.archivo,
-      actividades: actividadesElegidas,
-    });
+    try {
+      const result = await editarPerfil({
+        nombre,
+        email: emailValue,
+        avatarFile: foto.archivo,
+        portadaFile: fotoPortada.archivo,
+        actividades: actividadesElegidas,
+        actividadPrincipal: principalElegida,
+      });
 
-    if (!result.success) {
-      setError(result.error);
+      if (!result.success) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      clearAvatarSelection();
+      setEditing(false);
       setLoading(false);
-      return;
-    }
 
-    clearAvatarSelection();
-    setEditing(false);
-    setLoading(false);
+      if (result.emailConfirmationRequired) {
+        setMessage(
+          "Perfil actualizado. Revisá tu email para confirmar el cambio de dirección.",
+        );
+      } else {
+        setMessage("Perfil actualizado.");
+      }
 
-    if (result.emailConfirmationRequired) {
-      setMessage(
-        "Perfil actualizado. Revisá tu email para confirmar el cambio de dirección.",
-      );
-    } else {
-      setMessage("Perfil actualizado.");
-    }
-
-    router.refresh();
+      router.refresh();
+    } catch (causa) {
+      setError(`No se pudo guardar tu perfil: ${causa instanceof Error ? causa.message : String(causa)}. Volvé a intentar.`);
+    } finally { setLoading(false); }
   };
 
   const viewNombre = initialNombre || displayNombre;
@@ -142,6 +154,8 @@ export function FormularioDePerfil({
         {editing ? <BotonCerrar etiqueta="Cerrar edición" onClick={cancelEditing} /> : <MenuDeAcciones etiqueta="Opciones del perfil"
           acciones={[{ etiqueta: "Editar", alElegir: startEditing }]} />}
       </div>
+
+      {!editing && principalDelPerfil(actividades, actividadPrincipal) ? <p className="px-4 pb-4 text-sm text-texto-suave">Actividad principal: {mostrarActividad(principalDelPerfil(actividades, actividadPrincipal)!).etiqueta}</p> : null}
 
       {/* Formulario de edición */}
       <div className="px-4 sm:px-5">
@@ -196,20 +210,22 @@ export function FormularioDePerfil({
 
             <Opciones
               etiqueta="Qué practicás"
-              ayuda="Podés elegir varias, una o ninguna. Se ven en tu perfil."
+              ayuda="Elegí una o varias. Tu actividad principal viene seleccionada al abrir los mapas."
               opciones={OPCIONES_DE_ACTIVIDAD}
               elegidas={actividadesElegidas}
-              alElegir={(valor) =>
-                setActividadesElegidas((actuales) =>
-                  actuales.includes(valor)
-                    ? actuales.filter((cada) => cada !== valor)
-                    : [...actuales, valor],
-                )
-              }
+              alElegir={(valor) => {
+                const nuevas = actividadesElegidas.includes(valor) ? actividadesElegidas.filter((cada) => cada !== valor) : [...actividadesElegidas, valor];
+                setActividadesElegidas(nuevas);
+                setPrincipalElegida(nuevas.length === 1 ? nuevas[0] : actividadesElegidas.length > 1 && principalElegida && nuevas.includes(principalElegida) ? principalElegida : null);
+              }}
               columnas={2}
               multiple
             />
 
+            {actividadesElegidas.length > 1 ? <Opciones etiqueta="Actividad principal" ayuda="Elegí cuál querés ver al entrar a Consultas y Marcas."
+              opciones={OPCIONES_DE_ACTIVIDAD.filter((cada) => actividadesElegidas.includes(cada.valor))}
+              elegidas={principalElegida ? [principalElegida] : []} alElegir={setPrincipalElegida} columnas={2} /> : null}
+            {error ? <p role="alert" className="text-sm text-rojo-texto">{error}</p> : null}
             <Boton type="submit" anchoCompleto disabled={loading}>
               {loading ? "Guardando…" : "Guardar cambios"}
             </Boton>

@@ -1,9 +1,10 @@
 "use client";
 
+import { comparteActividad } from "@/lib/caminos/seleccion-del-mapa";
 import { useMemo, useState } from "react";
 import { PantallaDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
-import { SelectorDeActividadPrincipal } from "@/components/caminos/selector-de-actividad-principal";
+import { SelectorDeActividadesDelMapa } from "@/components/caminos/selector-de-actividades-del-mapa";
 import { ListaYMapa } from "@/components/ui/lista-y-mapa";
 import { RenglonDeCapa } from "@/components/ui/renglon-de-capa";
 import { CLASE_DE_TITULO_DE_SECCION } from "@/components/ui/opciones";
@@ -12,7 +13,7 @@ import { LineasDelTerritorio } from "@/components/mapas/lineas-del-territorio";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { queEs } from "@/components/anotaciones/icono-de-anotacion";
 import { IconoDeClase } from "@/components/marcas/icono-de-clase";
-import { useActividadPrincipal } from "@/hooks/use-actividad-principal";
+import { useSeleccionDelMapa } from "@/hooks/use-seleccion-del-mapa";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { usePreferencia } from "@/hooks/use-preferencia";
 import { sectoresPorZona } from "@/lib/mapas/general";
@@ -60,7 +61,8 @@ export function PantallaDeConsultas() {
 }
 
 function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incompleto: string | null }) {
-  const [actividad, elegirActividad] = useActividadPrincipal();
+  const [seleccion, elegirSeleccion] = useSeleccionDelMapa();
+  const actividad = seleccion.principal;
   const [capas, guardarCapas] = usePreferencia<CapaDeConsultas[]>("capas-de-consultas", TODAS_LAS_CAPAS, leerCapasDeConsultas);
   const [panelArriba, setPanelArriba] = useState(false);
   const [texto, setTexto] = useState("");
@@ -140,7 +142,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
                 icono={ICONOS_DE_LA_CAPA[capa.valor].map((grupo) => <IconoDeClase key={grupo} grupo={grupo} />)}
                 prendida={ver(capa.valor)} alAlternar={() => alternar(capa.valor)}>
                 {capa.valor === "caminos" && ver("caminos") ? (
-                  <SelectorDeActividadPrincipal forma="insignias" actividad={actividad} alCambiar={elegirActividad} />
+                  <SelectorDeActividadesDelMapa seleccion={seleccion} alCambiar={elegirSeleccion} />
                 ) : capa.valor === "zonas" && ver("zonas") ? (
                   zonas.length === 0 ? (
                     <p className="text-sm text-texto-suave">Todavía no hay zonas dibujadas en Córdoba.</p>
@@ -159,7 +161,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
             sectores={paquete?.sectores ?? []}
             lineas={lineas}
             anotaciones={ver("detalles") ? anotaciones : []}
-            caminos={ver("caminos") ? caminos : []}
+            caminos={ver("caminos") ? caminos.filter((camino) => comparteActividad(camino.actividades, seleccion.visibles)) : []}
             actividad={actividad}
             sectoresPorZona={cantidades}
             encuadre={encuadre}
