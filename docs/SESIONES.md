@@ -19,6 +19,9 @@ Con aprobación de Ale, se aplicó en producción la migración
 ya preparado en `scripts/supabase-iconos-estacionamiento-y-sitio.sql`.
 Una consulta posterior confirmó que la base acepta ambos valores y que
 los catorce tipos están habilitados. La migración quedó registrada.
+Ale confirmó desde su celular que pudo guardar puntos de ambos tipos:
+primero Estacionamiento y después Sitio. La prueba corresponde al tipo de
+punto, independientemente de la ubicación elegida.
 
 ### Decisiones tomadas
 
@@ -28,7 +31,7 @@ Antes de dar por terminado un tipo nuevo, comprobar que la base real lo acepta.
 ### Documentos actualizados
 
 Esquema de la base y este registro. Queda resuelto el pendiente del 2026-10-15
-de habilitar ambos tipos; la prueba desde el celular sigue pendiente.
+de habilitar ambos tipos y probar su guardado desde el celular.
 
 ### Deuda o inconsistencias detectadas
 
@@ -38,8 +41,8 @@ La revisión de seguridad posterior conserva los avisos previos a este cambio.
 
 ### Pendientes para la próxima
 
-Ale debe confirmar el guardado desde su celular. No se reprodujo el flujo
-completo con su sesión; la aceptación de ambos tipos sí quedó verificada.
+Ninguno de este arreglo: la base acepta ambos tipos y Ale confirmó que
+los dos se guardan correctamente desde su celular.
 
 ---
 
