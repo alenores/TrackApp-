@@ -37,7 +37,7 @@ export function prepararCircuitosParaElCelular(
     const ultimaVersion = caminos.filter((camino) => vinculados.has(camino.id))
       .map((camino) => camino.actualizadoEn)
       .reduce((ultima, fecha) => fecha > ultima ? fecha : ultima, circuito.actualizadoEn);
-    const ficha: CircuitoSinDibujo = { id: circuito.id, nombre: circuito.nombre,
+    const ficha: CircuitoSinDibujo = { id: circuito.id, nombre: circuito.nombre, autor: circuito.autor,
       actividad: circuito.actividad, actualizadoEn: ultimaVersion,
       rectangulo: puntos.length ? rectanguloQueAbarca(puntos) : null,
       datos: circuito.datos,

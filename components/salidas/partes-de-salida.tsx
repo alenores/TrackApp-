@@ -1,5 +1,6 @@
 "use client";
 
+import { olvidarLasSalidas } from "@/hooks/use-salidas-de-la-apertura";
 import { Avatar } from "@/components/ui/avatar";
 import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
 import { useDialogos } from "@/components/ui/dialogos";
@@ -297,8 +298,8 @@ export function BotonDeOpcionesDeSalida({
     try {
       const resultado = await borrarSalida(salidaId);
       if (!resultado.ok) { await avisar({ titulo: "No se borró la salida", mensaje: resultado.error }); return; }
+      olvidarLasSalidas();
       router.replace("/salidas");
-      router.refresh();
     } catch (error) {
       await avisar({ titulo: "No se borró la salida",
         mensaje: `${error instanceof Error ? error.message : String(error)}. Probá de nuevo con señal.` });

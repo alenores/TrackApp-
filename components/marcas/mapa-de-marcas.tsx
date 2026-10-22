@@ -29,7 +29,7 @@ type Propiedades = {
   /** Los Caminos que se ven, ya con su línea. */
   caminos?: CaminoGuardado[];
   /** Decide qué clasificación de los Caminos se destaca. */
-  actividad: ActividadRuta;
+  actividad: ActividadRuta | null;
   sectoresPorZona: Record<number, number>;
   /** A qué encuadrar. Sin esto, Córdoba entera. */
   encuadre?: Rectangulo | null;
@@ -98,7 +98,7 @@ export function MapaDeMarcas({
   const [puntoSenalado, setPuntoSenalado] = useState<number[] | null>(null);
   const zonaIdRef = useRef<number | null>(null);
   const rectangulos = useMemo(() => rectangulosDeLineas(zonas, sectores, lineas), [zonas, sectores, lineas]);
-  const dibujo = useMemo(() => dibujarCaminos(caminos, actividad), [caminos, actividad]);
+  const dibujo = useMemo(() => dibujarCaminos(caminos, actividad, true), [caminos, actividad]);
   const elegido = caminos.find((camino) => camino.id === caminoTocado?.id) ?? null;
   const zonaElegida = zonas.find((zona) => zona.id === zonaId) ?? null;
   const guardarZona = useCallback((id: number | null) => {
@@ -147,11 +147,12 @@ export function MapaDeMarcas({
         }
       }}
       alSenalarZona={guardarZona}
-      fichaSobreElMapa={alElegirPunto ? null : elegido && caminoTocado ? (
+      fichaSobreElMapa={alElegirPunto ? null : elegido && caminoTocado && actividad ? (
         <FichaDeCamino
           camino={elegido}
           indice={caminoTocado.indice}
           actividad={actividad}
+          soloActividadPrincipal
           alSenalarPunto={setPuntoSenalado}
           alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
           alEditar={alEditarCamino && puedeEditarCamino?.(elegido.perfilId)

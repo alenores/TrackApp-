@@ -15,8 +15,9 @@ import {
 } from "@/types/database";
 
 /**
- * La emergente para filtrar la lista de salidas: por título, qué hicieron,
- * esfuerzo, quién fue y entre qué fechas.
+ * La emergente para filtrar la lista de salidas: por actividad, esfuerzo,
+ * participantes y entre qué fechas. El título se busca aparte, arriba de la
+ * lista, y estos filtros no lo tocan.
  *
  * Solo arma los filtros: aplicarlos lo hace la pantalla, cambiando la
  * dirección, y la búsqueda la resuelve la base.
@@ -63,7 +64,7 @@ function Contenido({ alCerrar, filtros, perfiles, alAplicar }: Omit<Props, "abie
       titulo="Filtrar salidas"
       acciones={
         <>
-          <BotonDeEmergente onClick={() => setElegidos(SIN_FILTROS)}>Limpiar</BotonDeEmergente>
+          <BotonDeEmergente onClick={() => setElegidos({ ...SIN_FILTROS, titulo: elegidos.titulo })}>Limpiar</BotonDeEmergente>
           <BotonDeEmergente variante="principal" onClick={() => alAplicar(elegidos)}>
             Ver salidas
           </BotonDeEmergente>
@@ -71,18 +72,8 @@ function Contenido({ alCerrar, filtros, perfiles, alAplicar }: Omit<Props, "abie
       }
     >
       <div className="space-y-5">
-        <Campo
-          label="Título"
-          id="filtro-titulo"
-          type="search"
-          value={elegidos.titulo}
-          onChange={(evento) => cambiar({ titulo: evento.target.value })}
-          placeholder="Champaquí"
-          maxLength={120}
-        />
-
         <Opciones
-          etiqueta="Qué hicieron"
+          etiqueta="Actividad"
           opciones={OPCIONES_DE_ACTIVIDAD}
           elegidas={elegidos.actividades}
           alElegir={(valor) => cambiar({ actividades: alternar(elegidos.actividades, valor) })}
@@ -101,7 +92,7 @@ function Contenido({ alCerrar, filtros, perfiles, alAplicar }: Omit<Props, "abie
 
         {perfiles.length > 0 ? (
           <Opciones
-            etiqueta="Quién fue"
+            etiqueta="Participantes"
             ayuda="La cargó o fue de compañero."
             opciones={perfiles.map((perfil) => ({ valor: perfil.id, etiqueta: perfil.nombre }))}
             elegidas={elegidos.participantes}

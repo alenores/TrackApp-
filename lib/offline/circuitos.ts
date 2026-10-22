@@ -1,5 +1,5 @@
 import type { FeatureCollection, LineString, Position } from "geojson";
-import type { Rectangulo, ActividadRuta } from "@/types/database";
+import type { Rectangulo, ActividadRuta, PerfilBreve } from "@/types/database";
 import type { ResumenDelCircuito } from "@/lib/circuitos/resumen";
 import type { AlturasDelCircuito } from "@/lib/circuitos/alturas";
 import type { DatosDelCircuito } from "@/lib/circuitos/datos";
@@ -9,6 +9,8 @@ import { ESTANTES, escribirEnElDeposito, leerDelDeposito } from "@/lib/offline/d
 export type CircuitoSinDibujo = {
   id: number;
   nombre: string;
+  /** Quién lo creó. Puede faltar en un paquete armado antes de que se guardara. */
+  autor?: PerfilBreve | null;
   actividad: ActividadRuta;
   actualizadoEn: string;
   rectangulo: Rectangulo | null;

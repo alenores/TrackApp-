@@ -169,13 +169,20 @@ describe("Marcas: líneas de zonas y sectores", () => {
       await tocarGrupo("Caminos");
       for (const actividad of ["Todas", "Trekking", "Correr", "Mountain bike", "Kayak", "Canyoning", "Todas"]) {
         for (let vez = 0; vez < 2; vez++) {
-          await act(async () => radio(contenedor, actividad).click());
+          const casilla = [...contenedor.querySelectorAll<HTMLButtonElement>('[role="checkbox"]')]
+            .find((cada) => cada.textContent === actividad)!;
+          const estabaElegida = casilla.getAttribute("aria-checked") === "true";
+          await act(async () => casilla.click());
           expect(ordenDeCamara.encuadre).toBe(encuadreElegido);
           expect(ordenDeCamara.viaje).toBe(viajeElegido);
           expect(ordenDeCamara.dondeEstaba).toBeNull();
-          expect(radio(contenedor, actividad).getAttribute("aria-checked")).toBe("true");
+          expect(casilla.getAttribute("aria-checked")).toBe(String(actividad === "Todas" || !estabaElegida));
         }
       }
+      await act(async () => radio(contenedor, "Trekking").click());
+      expect(radio(contenedor, "Trekking").getAttribute("aria-checked")).toBe("true");
+      expect(ordenDeCamara.encuadre).toBe(encuadreElegido);
+      expect(ordenDeCamara.viaje).toBe(viajeElegido);
       if (!ancha) await tocarGrupo("Zonas");
       const volverAMostrarZona = [...contenedor.querySelectorAll<HTMLButtonElement>('button[title="Mostrar en el mapa"]')]
         .find((cada) => cada.textContent?.includes("Gigantes Este"));

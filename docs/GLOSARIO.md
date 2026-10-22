@@ -392,7 +392,18 @@ Era el mapa chico para cambiar de sector dentro de «Circuitos en el mapa».
 Ahí el sector se elige por su nombre.
 
 **Filtro de rutas** — *retirado con Rutas (decisión 049)*
-Achicaba la lista de rutas. La lista de Circuitos todavía no tiene filtro.
+Achicaba la lista de rutas. Lo reemplaza el filtro de Circuitos.
+
+**Filtro de Circuitos**
+Lo que achica la lista de Circuitos. El nombre se busca arriba de la lista,
+mientras se escribe («Buscar Circuito»); a su derecha, el ícono de filtrar
+abre el resto: actividad, creado por, largo (desde y hasta, en km) y
+esfuerzo. Se resuelve en el celular, también sin señal. Un Circuito sin largo
+medido queda afuera si se filtra por largo.
+
+**Creado por**
+Quién creó un Circuito: su foto y su nombre, en la tarjeta de la lista y en
+el detalle. Viaja con lo guardado en el celular.
 
 **Circulitos de técnica**
 Cómo se dibuja la dificultad técnica: cinco circulitos, y cada uno vale 2
@@ -501,10 +512,13 @@ entremezclada con los datos. En la ficha va limpia, solo con el título y el dí
 Sin foto, lo mismo va sobre un fondo oscuro.
 
 **Filtro de salidas**
-Lo que achica la lista de salidas por título, qué hicieron, esfuerzo, quién fue
-(la cargó o fue de compañero) y entre qué fechas. Lo resuelve la base, así vale
-para todas las salidas. Los filtros puestos quedan arriba como pastillas, cada
-una con su cruz.
+Lo que achica la lista de salidas. El título se busca arriba de la lista,
+mientras se escribe («Buscar salida»); a su derecha, el ícono de filtrar abre
+el resto: actividad, esfuerzo, participantes (la cargó o fue de compañero) y
+entre qué fechas. Lo resuelve el celular sobre todas las salidas, que se
+traen una sola vez por apertura: buscar o filtrar no le pregunta a la base. Los
+filtros puestos, salvo el título, quedan arriba como pastillas, cada una con
+su cruz.
 
 **Línea de la salida**
 El dibujo del camino que hizo la salida, sobre la portada: chico, fino y en un

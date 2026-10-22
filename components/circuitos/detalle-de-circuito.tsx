@@ -36,6 +36,7 @@ import type { ParteDibujada } from "@/lib/circuitos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { CorreccionDeCamino } from "@/lib/circuitos/actualizar";
 import { ACTIVIDADES_RUTA } from "@/types/database";
+import { AutorDeCircuito } from "@/components/circuitos/autor-de-circuito";
 
 type Completo = { circuito: CircuitoGuardado; caminos: CaminoGuardado[]; correcciones: CorreccionDeCamino[] };
 
@@ -177,6 +178,7 @@ export function DetalleDeCircuito({ id, miPerfilId, esAdministrador, alVolver, a
       <BotonVolver alVolver={alVolver} />
       <h1 className="min-w-0 flex-1 text-2xl font-bold leading-tight text-texto">{ficha?.nombre ?? "Circuito"}</h1>
     </div>
+    <AutorDeCircuito autor={ficha?.autor} />
     {cargando && (haySenal || fichaGuardada) ? <Tarjeta><p role="status" className="text-base text-texto">Abriendo el Circuito…</p></Tarjeta> : null}
     {!haySenal && !fichaGuardada ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">Este Circuito no está guardado en el celular. Abrí la app con señal en casa para descargarlo.</p></Tarjeta> : null}
     {aviso ? <Tarjeta franja="ambar"><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}

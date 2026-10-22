@@ -6,18 +6,20 @@ import { dibujoDeLasPartes } from "@/lib/caminos/partes";
 /** Datos de presentación: las clasificaciones guardadas nunca se modifican al cambiar la actividad principal. */
 export function dibujarCaminos(
   caminos: readonly CaminoGuardado[],
-  actividadPrincipal: ActividadRuta,
+  actividadPrincipal: ActividadRuta | null,
+  conIconos = false,
 ): FeatureCollection<LineString> {
   return {
     type: "FeatureCollection",
     features: caminos.flatMap((camino) => dibujoDeLasPartes(camino).map(({ parte, coordenadas }, indice) => {
-      const clasificacion = parte.porActividad[actividadPrincipal];
+      const clasificacion = actividadPrincipal !== null && camino.actividades.includes(actividadPrincipal) ? parte.porActividad[actividadPrincipal] : undefined;
       return {
         type: "Feature" as const,
         properties: {
           camino_id: camino.id,
           parte_indice: indice,
           nombre: camino.nombre,
+          ...(conIconos ? { icono_actividades: `actividades-${ACTIVIDADES_RUTA.filter((cada) => camino.actividades.includes(cada)).join("-")}` } : {}),
           paso: clasificacion?.paso ?? "otra_actividad",
           complejidad: clasificacion?.complejidad ?? null,
         },

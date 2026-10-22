@@ -7,6 +7,7 @@ import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { ICONO_DE_EDITAR, ICONO_DE_ELIMINAR } from "@/components/ui/iconos";
 import { GraficoDeAlturas, type TramoDelGrafico } from "@/components/ui/grafico-de-alturas";
 import { nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
+import { InsigniasDeActividad } from "@/components/rutas/insignias-de-actividad";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { perfilDeLinea } from "@/lib/alturas/perfil";
 import { textoDeAltura, textoDeDistancia } from "@/lib/alturas/grafico";
@@ -23,6 +24,7 @@ type Propiedades = {
   /** Para que el mapa marque el lugar que se señala en el gráfico. */
   alSenalarPunto?: (punto: Position | null) => void;
   enNavegacion?: boolean;
+  soloActividadPrincipal?: boolean;
   /** En Marcas, abre la misma pantalla de editar que los tres puntos. */
   alEditar?: () => void;
   /** En Marcas, la misma eliminación que los tres puntos, con confirmación. */
@@ -34,7 +36,7 @@ type Propiedades = {
  * navegar un Circuito: el encabezado dice de qué pantalla se trata y cada
  * dato va aparte, con su nombre arriba y el valor abajo.
  */
-export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPunto, enNavegacion = false, alEditar, alEliminar }: Propiedades) {
+export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPunto, enNavegacion = false, soloActividadPrincipal = false, alEditar, alEliminar }: Propiedades) {
   const parte = camino.partes[indice];
   // Si el Camino no es de la actividad elegida, los colores son los de su primera actividad.
   const actividadDelGrafico = camino.actividades.includes(actividad) ? actividad : camino.actividades[0];
@@ -51,6 +53,15 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
   }), [camino.partes, actividadDelGrafico]);
 
   if (!parte) return null;
+  if (soloActividadPrincipal && !camino.actividades.includes(actividad)) {
+    return <Emergente abierto alCerrar={alCerrar} titulo="Consulta Camino" ancho="amplio" alCostado>
+      <div className="space-y-3">
+        <p className="text-base font-semibold text-texto">{camino.nombre}</p>
+        <InsigniasDeActividad actividades={camino.actividades} tamano="mediano" />
+        <p className="text-base text-texto-suave">Se muestra como referencia. No está indicado para {mostrarActividad(actividad).etiqueta}.</p>
+      </div>
+    </Emergente>;
+  }
   const texto = enNavegacion ? "text-lg" : "text-base";
 
   return (
@@ -90,7 +101,7 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
 
       <dl className="mt-4 divide-y divide-borde">
         <Dato nombre="Parte" texto={texto}>{indice + 1} de {camino.partes.length}</Dato>
-        {camino.actividades.map((cada) => {
+        {(soloActividadPrincipal ? [actividad] : camino.actividades).map((cada) => {
           const datos = parte.porActividad[cada];
           if (!datos) return null;
           return (

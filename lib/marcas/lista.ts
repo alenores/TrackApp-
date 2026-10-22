@@ -48,6 +48,7 @@ export type FiltrosDeMarcas = {
   clases: ClaseDeMarca[];
   /** Solo los Caminos que tienen esta actividad. `null`: todos. */
   actividad: ActividadRuta | null;
+  actividades?: ActividadRuta[];
   autoria: Autoria;
   /** Solo puntos y trazos: los que dibujó la gente o los de OpenStreetMap. */
   origen: Origen;
@@ -74,6 +75,7 @@ export function filtrosQueSeAplican(filtros: FiltrosDeMarcas): FiltrosDeMarcas {
   return {
     clases: TODAS_LAS_CLASES,
     actividad: filtros.actividad,
+    ...(filtros.actividades ? { actividades: filtros.actividades } : {}),
     autoria: FILTRO_DE_AUTOR_A_LA_VISTA ? filtros.autoria : "todas",
     origen: filtros.origen,
   };
@@ -128,7 +130,8 @@ export function armarLaLista(caminos: CaminoSinLinea[], detalles: Anotacion[], z
 export function pasaLosFiltros(marca: MarcaDeLaLista, filtros: FiltrosDeMarcas, miPerfilId: string | null): boolean {
   if (marca.grupo === "zona") return true;
   if (!filtros.clases.includes(marca.grupo)) return false;
-  if (filtros.actividad && marca.grupo === "camino" && !marca.actividades?.includes(filtros.actividad)) return false;
+  if (filtros.actividades && marca.grupo === "camino" && !marca.actividades?.some((cada) => filtros.actividades!.includes(cada))) return false;
+  if (!filtros.actividades && filtros.actividad && marca.grupo === "camino" && !marca.actividades?.includes(filtros.actividad)) return false;
   if (marca.grupo !== "camino" && filtros.origen !== "todos" && marca.fija !== (filtros.origen === "openstreetmap")) return false;
   if (filtros.autoria === "mias") return miPerfilId !== null && marca.autorId === miPerfilId;
   if (filtros.autoria === "de_otros") return miPerfilId === null || marca.autorId !== miPerfilId;

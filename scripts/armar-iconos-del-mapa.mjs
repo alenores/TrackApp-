@@ -35,6 +35,19 @@ const MODOS = ["light", "dark"];
 const LADO = 19;
 const HUECO = 2;
 
+// Las mismas identidades que las insignias de la app. Todas las combinaciones
+// se generan en casa, sin imágenes externas ni dibujos duplicados.
+const actividades = JSON.parse(await readFile(join(process.cwd(), "lib/rutas/catalogo-de-actividades.json"), "utf8"));
+const variables = await readFile(join(process.cwd(), "app/globals.css"), "utf8");
+const color = (nombre) => variables.match(new RegExp(`--${nombre}:\\s*(#[a-fA-F0-9]+)`))[1];
+const GRUPOS = Array.from({ length: (1 << actividades.length) - 1 }, (_, indice) => {
+  const elegidas = actividades.filter((_, bit) => (indice + 1) & (1 << bit));
+  const ancho = 24 * elegidas.length + 8;
+  const trazos = elegidas.map((cada, posicion) => `<g transform="translate(${4 + posicion * 24},4)"><path d="${cada.trazo}" fill="none" stroke="${color("parte-x")}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></g>`).join("");
+  return { nombre: `actividades-${elegidas.map((cada) => cada.tipo).join("-")}`, ancho,
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="32"><rect x="1" y="1" width="${ancho - 2}" height="30" rx="6" fill="${color("parte-x-halo")}" stroke="${color("parte-x")}" stroke-width="2"/>${trazos}</svg>` };
+});
+
 /** Cuánto más grande es la hoja de alta densidad. */
 const AL_DOBLE = 2;
 
@@ -107,8 +120,17 @@ async function sumarPropios(modo, escala) {
   }
 
   const anchoNecesario = hueco + PROPIOS.length * (lado + hueco);
-  const anchoFinal = Math.max(ancho, anchoNecesario);
-  const altoFinal = filaEnY + lado + hueco;
+  const filaActividades = filaEnY + lado + hueco;
+  let xActividad = hueco;
+  for (const grupo of GRUPOS) {
+    const anchoGrupo = grupo.ancho * escala;
+    const altoGrupo = 32 * escala;
+    pegados.push({ input: await sharp(Buffer.from(grupo.svg)).resize(anchoGrupo, altoGrupo).png().toBuffer(), left: xActividad, top: filaActividades });
+    receta[grupo.nombre] = { x: xActividad, y: filaActividades, width: anchoGrupo, height: altoGrupo, pixelRatio: escala };
+    xActividad += anchoGrupo + hueco;
+  }
+  const anchoFinal = Math.max(ancho, anchoNecesario, xActividad);
+  const altoFinal = filaActividades + 32 * escala + hueco;
 
   await sharp({
     create: { width: anchoFinal, height: altoFinal, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },

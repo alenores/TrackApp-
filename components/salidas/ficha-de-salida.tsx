@@ -20,6 +20,10 @@ import {
   PortadaDeSalida,
 } from "@/components/salidas/partes-de-salida";
 import { useHaySenal } from "@/hooks/use-hay-senal";
+import { olvidarLasSalidas, useSalidasDeLaApertura } from "@/hooks/use-salidas-de-la-apertura";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
+import { Boton } from "@/components/ui/boton";
+import { Esqueleto } from "@/components/ui/esqueleto";
 import type { Salida } from "@/types/database";
 
 /**
@@ -63,8 +67,8 @@ export function FichaDeSalida({ salida, miPerfilId }: Props) {
         await avisar({ titulo: "No se borró la salida", mensaje: resultado.error });
         return;
       }
+      olvidarLasSalidas();
       router.replace("/salidas");
-      router.refresh();
     } catch (error) {
       setEliminando(false);
       await avisar({
@@ -218,4 +222,38 @@ export function SalidaQueNoSeVe({ mensaje = null }: { mensaje?: string | null })
       </Tarjeta>
     </div>
   );
+}
+/**
+ * La ficha, armada con la lista que ya llegó al celular: abrir una salida no
+ * le vuelve a preguntar a la base (decisión 054). Si se entra directo, sin
+ * pasar por la lista, la lista se trae una vez y sirve para todas.
+ */
+export function FichaDeSalidaDeLaApertura({ id }: { id: number }) {
+  const { miPerfilId } = useQuienSoy();
+  const haySenal = useHaySenal();
+  const datos = useSalidasDeLaApertura();
+
+  if (datos.estado === "cargando") {
+    return haySenal ? (
+      <div className="space-y-3">
+        <BotonVolver destinoSiNoHayVuelta="/salidas" etiqueta="Volver a las salidas" />
+        <p role="status" className="text-base text-texto-suave">Trayendo la salida…</p>
+        <Esqueleto className="h-56 w-full rounded-2xl" />
+      </div>
+    ) : (
+      <SalidaQueNoSeVe mensaje="Sin señal. Salidas funciona solo con internet: esperá a tener señal para ver esta salida." />
+    );
+  }
+  if (datos.estado === "fallo") {
+    return (
+      <div className="space-y-3">
+        <SalidaQueNoSeVe mensaje={`No se pudo traer la salida: ${datos.motivo}. Tocá «Volver a intentar».`} />
+        <Boton variante="secundario" onClick={datos.reintentar}>
+          Volver a intentar
+        </Boton>
+      </div>
+    );
+  }
+  const salida = datos.salidas.find((cada) => cada.id === id);
+  return salida ? <FichaDeSalida salida={salida} miPerfilId={miPerfilId} /> : <SalidaQueNoSeVe />;
 }

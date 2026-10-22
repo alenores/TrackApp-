@@ -26,6 +26,7 @@ export default async function PerfilesPage() {
       avatarUrl={miPerfil?.avatarUrl ?? null}
       portadaUrl={miPerfil?.portadaUrl ?? null}
       actividades={miPerfil?.actividades ?? []}
+      actividadPrincipal={miPerfil?.actividadPrincipal ?? null}
       perfiles={perfiles.filas}
       avisoDeListaIncompleta={perfiles.completa ? null : perfiles.motivo}
     />

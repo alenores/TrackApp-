@@ -1,5 +1,6 @@
 "use client";
 
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useMemo, useState } from "react";
 import { leerCaminos } from "@/app/actions/caminos";
 import { cambiarCircuito, cambiarDatosDelCircuito, crearCircuitoNuevo } from "@/app/actions/circuitos";
@@ -47,7 +48,8 @@ export function EditorDeCircuito({ original = null, edicion = null, alVolver, al
 
   useEffect(() => {
     let vigente = true;
-    void leerCaminos().then((resultado) => {
+    // Una vez por apertura: guardar olvida lo pedido y lo trae fresco.
+    void unaVezPorApertura("caminos-para-circuitos", leerCaminos).then((resultado) => {
       if (!vigente) return;
       if (resultado.ok) {
         setCaminos(resultado.datos.caminos);

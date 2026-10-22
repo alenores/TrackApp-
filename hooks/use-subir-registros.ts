@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { olvidarLoDeEstaApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { useRegistros } from "@/hooks/use-registros";
 import { esLaPantallaDeNavegar } from "@/lib/actualizacion/version-nueva";
@@ -55,6 +56,8 @@ export function useSubirRegistros(miPerfilId: string | null): void {
             await anotarComoSubio(registro.codigo, { ultimoError: problema });
           } else {
             await sacarElRegistro(registro.codigo);
+            // Hay una salida nueva: la lista de esta apertura ya no está al día.
+            olvidarLoDeEstaApertura();
           }
         }
       } catch {

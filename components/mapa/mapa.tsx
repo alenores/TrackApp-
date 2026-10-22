@@ -992,13 +992,13 @@ export function Mapa({
         id: `${CAPAS_DE_CAMINOS[0]}-borde`, type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": envoltorio, "line-width": 6, "line-opacity": conEnvoltorio ? 0.95 : 0 },
+        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": colores.caminoSecundarioBordeAncho, "line-opacity": 1 },
       });
       mapa.addLayer({
         id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.rectanguloZona, "line-width": 4, "line-opacity": 1 },
+        paint: { "line-color": colores.caminoSecundario, "line-width": colores.caminoSecundarioAncho, "line-opacity": 1 },
       });
       for (const [paso, capa, guiones] of [
         ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5]],
@@ -1021,6 +1021,14 @@ export function Mapa({
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
       }
+      mapa.addLayer({
+        id: "actividades-de-caminos", type: "symbol", source: FUENTE_CAMINOS, minzoom: 13,
+        filter: ["has", "icono_actividades"],
+        layout: { "symbol-placement": "line", "symbol-spacing": 320,
+          "icon-image": ["get", "icono_actividades"], "icon-size": 0.75,
+          "icon-rotation-alignment": "viewport", "icon-allow-overlap": false,
+          "icon-padding": 12 },
+      });
       agregarCrucesSinPaso(mapa, "camino-sin-paso-x", "x-sin-paso-caminos", colores);
       agregarTriangulosAPie(mapa, "camino-a-pie-triangulo", "triangulos-a-pie-caminos", colores);
       mapa.addLayer({ id: "otros-circuitos", type: "line", source: "otros-circuitos",
@@ -1297,8 +1305,8 @@ export function Mapa({
         mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
         mapa.setPaintProperty(`${capa}-borde`, "line-opacity", opacidadDelBorde);
       }
-      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-color", envoltorio);
-      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-opacity", opacidadDelBorde);
+      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-color", colores.caminoSecundarioBorde);
+      mapa.setPaintProperty(`${CAPAS_DE_CAMINOS[0]}-borde`, "line-opacity", 1);
       for (const capa of CAPAS_DE_CAMINOS.slice(1)) {
         mapa.setPaintProperty(capa, "line-color", colorDeParte);
         mapa.setPaintProperty(`${capa}-borde`, "line-color", envoltorio);
@@ -1319,7 +1327,7 @@ export function Mapa({
       mapa.setPaintProperty("circuito-final-conservado", "circle-stroke-color", colores.circuitoBorde);
       mapa.setPaintProperty("circuito-final-conservado-nombre", "text-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-final-conservado-nombre", "text-halo-color", colores.circuitoBorde);
-      mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.rectanguloZona);
+      mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.caminoSecundario);
       mapa.setPaintProperty("camino-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("camino-a-pie-triangulo", "icon-color", colores.parteX);

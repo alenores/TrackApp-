@@ -44,3 +44,19 @@ ninguno la segunda.
 El ajuste que guarda las pantallas en memoria está marcado como experimental
 por el framework. Si fallara, vuelve a pedir al servidor como antes: no rompe
 nada ni deja nada en blanco.
+
+## Ampliación del 2026-10-22 (Ale)
+
+Buscar, filtrar o tocar cualquier botón no le pregunta a la base: los datos
+cambian cada semana o cada mes, no a cada rato.
+
+- **Salidas** se trae entera una sola vez por apertura, junto con los usuarios.
+  La lista, la ficha, cargar y editar, el calendario, el buscador y los filtros
+  leen de ahí. Buscar y filtrar cambian la dirección sin pedirle nada al
+  servidor.
+- El archivo GPS de una salida se baja una vez: el gráfico de alturas y el mapa
+  en grande usan el mismo.
+- Los editores de Camino y de Circuito leen una vez; abrir editar desde los tres
+  puntos usa el mismo pedido que el detalle del Circuito.
+- Guardar o borrar olvida lo pedido, como siempre: lo nuevo llega fresco.
+

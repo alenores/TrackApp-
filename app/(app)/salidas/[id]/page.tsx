@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
 import { MarcaDeAppLista } from "@/components/armazon/marca-de-app-lista";
-import { FichaDeSalida, SalidaQueNoSeVe } from "@/components/salidas/ficha-de-salida";
-import { traerUsuario } from "@/lib/cuenta/sesion";
-import { mensajeDeFalla, traerSalida } from "@/lib/salidas/datos";
+import { FichaDeSalidaDeLaApertura } from "@/components/salidas/ficha-de-salida";
 
 export const metadata: Metadata = { title: "Salida" };
-export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
-/** La ficha de una salida. Solo con internet, como todo el módulo. */
+/**
+ * La ficha de una salida. Solo con internet, como todo el módulo. Se arma con
+ * la lista que ya llegó al celular: abrirla no le pregunta a la base.
+ */
 export default async function SalidaPage({ params }: Props) {
   const { id } = await params;
-  const [usuario, resultado] = await Promise.all([traerUsuario(), traerSalida(Number(id))]);
-
   return (
     <>
       <MarcaDeAppLista />
-      {resultado.ok ? (
-        <FichaDeSalida salida={resultado.salida} miPerfilId={usuario?.id ?? null} />
-      ) : (
-        <SalidaQueNoSeVe mensaje={resultado.noExiste ? null : mensajeDeFalla(resultado.motivo)} />
-      )}
+      <FichaDeSalidaDeLaApertura id={Number(id)} />
     </>
   );
 }

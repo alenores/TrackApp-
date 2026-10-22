@@ -21,8 +21,22 @@ const CLASE_FLOTANTE =
 /**
  * El «+» que lleva a cargar algo nuevo. Cargar escribe en la base: sin señal
  * el botón no sirve para nada, así que no está.
+ *
+ * Va a otra pantalla (`href`) o hace algo en la misma (`alTocar`).
+ * `soloCelular` lo deja solo en pantallas chicas; en la computadora el «+» va
+ * en su lugar de siempre.
  */
-export function BotonFlotanteDeAgregar({ href, etiqueta }: { href: string; etiqueta: string }) {
+export function BotonFlotanteDeAgregar({
+  href,
+  alTocar,
+  etiqueta,
+  soloCelular = false,
+}: {
+  href?: string;
+  alTocar?: () => void;
+  etiqueta: string;
+  soloCelular?: boolean;
+}) {
   // El portal necesita el `document`, que recién existe en el navegador.
   const yaEstaVivo = useYaEnElNavegador();
   const haySenal = useHaySenal();
@@ -32,8 +46,9 @@ export function BotonFlotanteDeAgregar({ href, etiqueta }: { href: string; etiqu
   return createPortal(
     <BotonAgregar
       href={href}
+      alTocar={alTocar}
       etiqueta={etiqueta}
-      className={CLASE_FLOTANTE}
+      className={`${CLASE_FLOTANTE} ${soloCelular ? "lg:hidden" : ""}`}
       style={{ zIndex: NIVEL_DE_LOS_BOTONES_FLOTANTES }}
     />,
     document.body,

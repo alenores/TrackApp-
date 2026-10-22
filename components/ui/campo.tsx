@@ -16,6 +16,8 @@ type PropiedadesDeCampo = InputHTMLAttributes<HTMLInputElement> & {
   ayuda?: string;
   /** `true` para el asterisco rojo de dato obligatorio. */
   obligatorio?: boolean;
+  /** `true` cuando el campo se explica solo: el rótulo queda para el lector de pantalla. */
+  etiquetaOculta?: boolean;
 };
 
 export function Campo({
@@ -23,6 +25,7 @@ export function Campo({
   error,
   ayuda,
   obligatorio = false,
+  etiquetaOculta = false,
   id,
   type,
   className = "",
@@ -36,7 +39,7 @@ export function Campo({
     <div className="space-y-2">
       <label
         htmlFor={inputId}
-        className="block text-sm font-medium text-texto-suave"
+        className={etiquetaOculta ? "sr-only" : "block text-sm font-medium text-texto-suave"}
       >
         {label}
         {obligatorio ? <MarcaDeObligatorio /> : null}

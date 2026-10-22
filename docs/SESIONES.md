@@ -4,6 +4,73 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Buscar y filtrar sin volver a la base
+
+- Salidas: el buscador por título va arriba de la lista («Buscar salida») y
+  achica mientras se escribe. A su derecha, el ícono de filtrar abre actividad,
+  esfuerzo, participantes y fechas. «Qué hicieron» pasó a «Actividad» y «Quién
+  fue» a «Participantes». El calendario quedó solo, arriba a la derecha.
+- Decisión de Ale (ampliación de la 054): buscar, filtrar o tocar un botón no
+  le pregunta a la base. Salidas se trae entera una vez por apertura, con los
+  usuarios; lista, ficha, cargar, editar y calendario leen de ahí. El archivo
+  GPS se baja una vez. Los editores de Camino y de Circuito, y editar desde los
+  tres puntos, también leen una vez. Comprobado en la app: escribir, filtrar,
+  abrir una salida y volver no hicieron pedidos.
+- Circuitos: buscador por nombre, filtro por actividad, creado por, largo
+  (desde/hasta en km) y esfuerzo, todo en el celular, también sin señal. Cada
+  Circuito muestra quién lo creó, en la tarjeta y en el detalle; el dato viaja
+  con el paquete del celular. En el celular el «+» flota abajo a la derecha.
+- Participantes sigue como botones: con pocos usuarios alcanza. Con miles,
+  hará falta buscarlos.
+
+## Sesión 2026-10-22 - Publicar actividades personales y selección de Caminos
+
+### Estado al inicio
+Ale confirmó el desarrollo local y pidió subirlo a producción.
+### Lo que se hizo
+Se prepara la publicación conjunta de las actividades del perfil, la selección múltiple de Consultas y Marcas, los Caminos secundarios neutros y los íconos de actividades. La migración de actividad principal ya está aplicada y verificada. Se comprobaron nuevamente tipos y lint sin errores y las 976 pruebas pasaron. Ale confirmó explícitamente el destino público alenores/TrackApp- y la actualización de producción. Versión publicada: 424f7b108ebee50fa658916f0fc48cbf0a037ca4. Vercel confirmó READY en producción, despliegue dpl_EpTzwTJLSgpQJx6JJGjzgYVJYf9L; dominio track-app-hazel.vercel.app. Compilación y comprobación de precarga sin errores. La subida se realizó mediante el conector de GitHub porque la terminal no tiene salida a internet. La referencia local de Git sigue en 5f7f610: el entorno permite leer .git pero no escribirlo; los cambios locales de Salidas y sus piezas compartidas no forman parte de esta publicación.
+### Decisiones tomadas
+Publicación en producción autorizada expresamente por Ale.
+### Documentos actualizados
+Registro de sesión.
+### Deuda o inconsistencias detectadas
+La revisión visual con sesión iniciada queda pendiente por el bloqueo del entorno local informado anteriormente.
+### Pendientes para la próxima
+Revisar el resultado con la cuenta iniciada en PC y celular.
+
+
+## Sesión 2026-10-22 - Actividades personales como inicio de los mapas
+
+### Estado al inicio
+El perfil guardaba actividades pero no una principal. Consultas y Marcas comenzaban sin selección.
+### Lo que se hizo
+Se incorporó actividad_principal al perfil, validada contra sus actividades. Se guarda junto con ellas y se impide anunciar éxito si no se actualizó ningún perfil. El armazón entrega la configuración ya leída; los mapas no hacen consultas adicionales. Los selectores separan actividades propias de las otras. La elección del mapa sigue siendo temporal. Validación: tipos sin errores, lint sin errores (avisos previos), 974 pruebas generales más 2 nuevas de interacción aprobadas. En la base se verificaron escritura y lectura de la principal, rechazo de una principal ajena y aislamiento entre perfiles usando el rol autenticado; transacción revertida al terminar.
+### Decisiones tomadas
+Una o varias actividades por usuario. Al abrir cada consulta se elige solo la principal del perfil. Para perfiles anteriores con actividades se usa la primera guardada, confirmado por Ale.
+### Documentos actualizados
+Decisión 076, esquema, usuarios y diseño exterior; decisión 075 marcada como sustituida parcialmente.
+### Deuda o inconsistencias detectadas
+La revisión visual y el guardado completo desde navegador están bloqueados: Next no arranca por EPERM al resolver C:/Users/Usuario, incluso en la copia de verificación. La regla anterior de Consultas en AGENTS continúa pendiente de alineación: documento protegido. Los avisos de seguridad de funciones preexistentes no fueron introducidos por esta migración.
+### Pendientes para la próxima
+Revisión visual, prueba con sesión de usuario y publicación cuando se autorice.
+
+
+## Sesión 2026-10-22 - Cada consulta empieza sin actividades
+
+### Estado al inicio
+La selección múltiple en desarrollo recuperaba preferencias anteriores.
+### Lo que se hizo
+Se retiraron la persistencia y la migración de elecciones previas. Se permite selección vacía y se muestra cómo elegir actividades. Se verificó que una nueva consulta no recupera la selección anterior.
+### Decisiones tomadas
+Consultas y Marcas empiezan de cero, sin actividad automática; decisión expresa de Ale.
+### Documentos actualizados
+Diseño exterior y decisión 075.
+### Deuda o inconsistencias detectadas
+La revisión visual del conjunto anterior sigue pendiente. La regla antigua de Consultas en AGENTS debe alinearse con la decisión 075; el entorno impide editar ese documento protegido.
+### Pendientes para la próxima
+Completar la revisión visual y la publicación cuando corresponda.
+
+
 ## Sesión 2026-10-22 — Publicación del conjunto completo
 
 ### Estado al inicio

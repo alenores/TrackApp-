@@ -1,5 +1,5 @@
 import type { Position } from "geojson";
-import { ACTIVIDADES_RUTA, NIVELES_ESFUERZO, type ActividadRuta, type NivelEsfuerzo } from "@/types/database";
+import { ACTIVIDADES_RUTA, NIVELES_ESFUERZO, type ActividadRuta, type NivelEsfuerzo, type PerfilBreve } from "@/types/database";
 import { esCoordenadaValida, largoDeLinea, ubicarEnLinea } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { dibujarCircuito, toqueLibre, toqueSobreCamino,
@@ -8,7 +8,7 @@ import { exito, falla, type Resultado } from "@/lib/datos/resultado";
 import { leerAlturasPropias, type AlturasDeParte } from "@/lib/circuitos/alturas";
 
 export const COLUMNAS_DE_CIRCUITO =
-  "id, perfil_id, nombre, actividad, puntos, partes, caminos_base, tecnica, nivel_esfuerzo, que_llevar, complicaciones, comentario, alturas_propias, creado_en, actualizado_en, eliminado_en";
+  "id, perfil_id, nombre, actividad, puntos, partes, caminos_base, tecnica, nivel_esfuerzo, que_llevar, complicaciones, comentario, alturas_propias, creado_en, actualizado_en, eliminado_en, autor:perfiles!circuitos_perfil_id_fkey(id, nombre, avatar_url)";
 
 /** Lo que se carga a mano en un Circuito (decisión 049). Todo puede quedar sin cargar. */
 export type DatosDelCircuito = {
@@ -29,6 +29,8 @@ export const LARGO_MAXIMO_DE_LOS_TEXTOS = 2000;
 export type CircuitoGuardado = {
   id: number;
   perfilId: string;
+  /** Quién lo creó, con su nombre y su foto; `null` si su perfil ya no está. */
+  autor: PerfilBreve | null;
   nombre: string;
   actividad: ActividadRuta;
   puntos: ToqueDelCircuito[];
@@ -163,6 +165,16 @@ export function datosParaLaBase(datos: DatosDelCircuito) {
 }
 
 /** Datos que llegaron de la base: no se dibujan si están incompletos. */
+/** Quién creó el Circuito, como lo trae la base junto con la fila. */
+function leerAutor(valor: unknown): PerfilBreve | null {
+  if (!objeto(valor) || typeof valor.id !== "string") return null;
+  return {
+    id: valor.id,
+    nombre: typeof valor.nombre === "string" && valor.nombre.trim() ? valor.nombre.trim() : "Sin nombre",
+    avatarUrl: typeof valor.avatar_url === "string" ? valor.avatar_url : null,
+  };
+}
+
 export function leerFilaDeCircuito(valor: unknown): Resultado<CircuitoGuardado> {
   if (!objeto(valor)) return falla("La base devolvió un Circuito incompleto. Volvé a abrirlo.");
   const id = Number(valor.id);
@@ -194,7 +206,7 @@ export function leerFilaDeCircuito(valor: unknown): Resultado<CircuitoGuardado> 
   if (!datos.ok) return falla(`Los datos del Circuito «${valor.nombre}» están guardados con un error: ${datos.error} Avisale al administrador.`);
   const alturasPropias = leerAlturasPropias(valor.alturas_propias, partes.length);
   if (alturasPropias === undefined) return falla(`Las alturas del Circuito «${valor.nombre}» están guardadas con un error. Avisale al administrador.`);
-  return exito({ id, perfilId: valor.perfil_id, nombre: valor.nombre,
+  return exito({ id, perfilId: valor.perfil_id, autor: leerAutor(valor.autor), nombre: valor.nombre,
     actividad: valor.actividad, puntos: valor.puntos as ToqueDelCircuito[],
     partes: valor.partes as ParteDibujada[], caminosBase: valor.caminos_base as CaminoParaCircuito[],
     datos: datos.datos, alturasPropias,

@@ -13,6 +13,9 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import { FORMAS_DE_RECORTE } from "@/components/fotos/recorte-de-foto";
 import { useFoto } from "@/hooks/use-foto";
+import { olvidarLasSalidas, useSalidasDeLaApertura } from "@/hooks/use-salidas-de-la-apertura";
+import { useQuienSoy } from "@/components/armazon/quien-soy";
+import { SalidaQueNoSeVe } from "@/components/salidas/ficha-de-salida";
 import { useHaySenal } from "@/hooks/use-hay-senal";
 import { mostrarEsfuerzo } from "@/lib/rutas/actividades";
 import { FORMATOS_ACEPTADOS, leerArchivoDeRuta } from "@/lib/rutas/archivo";
@@ -36,7 +39,7 @@ import {
   NIVELES_ESFUERZO,
   type ActividadRuta,
   type NivelEsfuerzo,
-  type Perfil,
+  type PerfilBreve,
   type Salida,
 } from "@/types/database";
 
@@ -58,7 +61,7 @@ type Props = {
   /** La salida a editar. Sin ella, se carga una nueva. */
   salida?: Salida;
   /** Los demás usuarios, para elegir con quién fuiste. */
-  perfiles: Perfil[];
+  perfiles: PerfilBreve[];
   avisoDeListaIncompleta: string | null;
 };
 
@@ -219,13 +222,13 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
       });
     }
 
+    // Lo pedido en esta apertura ya no está al día: la próxima pantalla lo trae fresco.
+    olvidarLasSalidas();
     if (editando) {
       // Volver vuelve a la pantalla de antes, y se rearma con lo nuevo.
       router.back();
-      router.refresh();
     } else {
       router.replace("/salidas");
-      router.refresh();
     }
   };
 
@@ -390,7 +393,7 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
             ayuda="Elegí a los que tienen cuenta en TrackApp."
             opciones={perfiles.map((perfil) => ({
               valor: perfil.id,
-              etiqueta: perfil.nombre?.trim() || "Sin nombre",
+              etiqueta: perfil.nombre,
             }))}
             elegidas={companeros}
             alElegir={(valor) => setCompaneros((actuales) => alternar(actuales, valor))}
@@ -462,5 +465,47 @@ export function FormularioDeSalida({ salida, perfiles, avisoDeListaIncompleta }:
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Cargar o editar una salida con lo que ya llegó al celular: la salida y los
+ * usuarios se pidieron una sola vez en esta apertura (decisión 054). Sin `id`
+ * es una salida nueva.
+ */
+export function FormularioDeSalidaDeLaApertura({ id }: { id?: number }) {
+  const { miPerfilId } = useQuienSoy();
+  const haySenal = useHaySenal();
+  const datos = useSalidasDeLaApertura();
+
+  if (datos.estado === "cargando") {
+    return haySenal ? (
+      <p role="status" className="text-base text-texto-suave">Trayendo los datos…</p>
+    ) : (
+      <SalidaQueNoSeVe mensaje="Sin señal. Salidas funciona solo con internet: esperá a tener señal para cargar o editar." />
+    );
+  }
+  if (datos.estado === "fallo") {
+    return (
+      <div className="space-y-3">
+        <SalidaQueNoSeVe mensaje={`No se pudieron traer los datos: ${datos.motivo}. Tocá «Volver a intentar».`} />
+        <Boton variante="secundario" onClick={datos.reintentar}>
+          Volver a intentar
+        </Boton>
+      </div>
+    );
+  }
+
+  const losDemas = datos.participantes.filter((perfil) => perfil.id !== miPerfilId);
+  if (id === undefined) {
+    return <FormularioDeSalida perfiles={losDemas} avisoDeListaIncompleta={datos.faltanParticipantes} />;
+  }
+  const salida = datos.salidas.find((cada) => cada.id === id);
+  if (!salida) return <SalidaQueNoSeVe />;
+  if (salida.perfil.id !== miPerfilId) {
+    return <SalidaQueNoSeVe mensaje="Esta salida la cargó otra persona: solo ella la puede editar." />;
+  }
+  return (
+    <FormularioDeSalida salida={salida} perfiles={losDemas} avisoDeListaIncompleta={datos.faltanParticipantes} />
   );
 }

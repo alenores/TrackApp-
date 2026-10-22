@@ -13,7 +13,8 @@ import {
   traducirErrorDeLaCuenta,
 } from "@/lib/datos/resultado";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
-import { ACTIVIDADES_RUTA, type ActividadRuta } from "@/types/database";
+import { revisarActividadesDelPerfil } from "@/lib/perfiles/actividades";
+import { type ActividadRuta } from "@/types/database";
 
 /**
  * Guardar los datos de la cuenta.
@@ -38,12 +39,16 @@ export async function editarPerfil(input: {
   portadaFile?: File | null;
   /** Lo que practica. Sin esto, no se toca lo que ya tenía. */
   actividades?: ActividadRuta[];
+  actividadPrincipal?: ActividadRuta | null;
 }): Promise<ResultadoDeEditarPerfil> {
   const nombre = input.nombre.trim();
   const email = input.email.trim().toLowerCase();
-  const actividades = input.actividades
-    ? [...new Set(input.actividades)].filter((cada) => ACTIVIDADES_RUTA.includes(cada))
-    : undefined;
+  if (input.actividades !== undefined) {
+    const problema = revisarActividadesDelPerfil(input.actividades, input.actividadPrincipal);
+    if (problema) return { success: false, error: problema };
+  }
+  const actividades = input.actividades ? [...new Set(input.actividades)] : undefined;
+  const actividadPrincipal = actividades?.length === 1 ? actividades[0] : input.actividadPrincipal;
 
   if (!nombre) {
     return { success: false, error: "Escribí tu nombre: no puede quedar vacío." };
@@ -155,16 +160,18 @@ export async function editarPerfil(input: {
     portadaUrl = `${publicUrl}?v=${Date.now()}`;
   }
 
-  const { error: errorDelPerfil } = await supabase
+  const { data: perfilGuardado, error: errorDelPerfil } = await supabase
     .from("perfiles")
     .update({
       nombre,
-      ...(actividades ? { actividades } : {}),
+      ...(actividades ? { actividades, actividad_principal: actividadPrincipal } : {}),
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       ...(portadaUrl ? { portada_url: portadaUrl } : {}),
     })
     .eq("id", usuario.id)
-    .is("eliminado_en", null);
+    .is("eliminado_en", null)
+    .select("id")
+    .maybeSingle();
 
   if (errorDelPerfil) {
     return {
@@ -174,6 +181,8 @@ export async function editarPerfil(input: {
         : traducirErrorDeBase(errorDelPerfil.message),
     };
   }
+
+  if (!perfilGuardado) return { success: false, error: "Tu perfil no se pudo actualizar: ya no está disponible o no tenés permiso. Volvé a entrar y probá de nuevo." };
 
   revalidatePath("/", "layout");
   revalidatePath("/perfiles");

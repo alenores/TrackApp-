@@ -1,25 +1,28 @@
 import { mostrarActividad, mostrarEsfuerzo } from "@/lib/rutas/actividades";
 import { diaEnPalabras } from "@/lib/fechas";
+import { sinTildes } from "@/lib/marcas/buscar-en-consultas";
 import {
   ACTIVIDADES_RUTA,
   NIVELES_ESFUERZO,
   type ActividadRuta,
   type NivelEsfuerzo,
+  type Salida,
 } from "@/types/database";
 
 /**
  * Los filtros de la lista de salidas, sin nada de pantalla ni de base.
  *
  * Viajan en la dirección de la pantalla (`/salidas?actividad=…`): así se
- * comparten, sobreviven a recargar y los resuelve la base, que es la que tiene
- * todas las salidas y no solo las de la página que se ve.
+ * comparten y sobreviven a recargar. Los resuelve el celular, sobre todas las
+ * salidas que se trajeron una sola vez al entrar: buscar o filtrar no le
+ * vuelve a preguntar a la base (decisión 054).
  *
  * Dentro de un mismo filtro alcanza con que coincida una opción; entre filtros
  * distintos tienen que cumplirse todos.
  */
 
 export type FiltrosDeSalidas = {
-  /** Parte del título, sin importar mayúsculas. */
+  /** Parte del título, sin importar mayúsculas ni tildes. */
   titulo: string;
   actividades: ActividadRuta[];
   esfuerzos: NivelEsfuerzo[];
@@ -162,10 +165,52 @@ export function filtrosPuestos(
   return puestos;
 }
 
-/**
- * El título para buscarlo en la base: `%` y `_` son comodines allá, y quien
- * escribe «50%» busca eso, no «50 y cualquier cosa».
- */
-export function tituloParaBuscar(titulo: string): string {
-  return titulo.trim().replace(/[\\%_]/g, (letra) => `\\${letra}`);
+/** Las salidas que cumplen con todos los filtros, en el orden en que llegaron. */
+export function filtrarSalidas(salidas: Salida[], filtros: FiltrosDeSalidas): Salida[] {
+  const titulo = sinTildes(filtros.titulo);
+  return salidas.filter((salida) => {
+    if (titulo && !sinTildes(salida.titulo).includes(titulo)) return false;
+    if (
+      filtros.actividades.length &&
+      !salida.actividades.some((actividad) => filtros.actividades.includes(actividad))
+    ) {
+      return false;
+    }
+    if (
+      filtros.esfuerzos.length &&
+      (!salida.nivelEsfuerzo || !filtros.esfuerzos.includes(salida.nivelEsfuerzo))
+    ) {
+      return false;
+    }
+    if (
+      filtros.participantes.length &&
+      ![salida.perfil, ...salida.companeros].some((perfil) => filtros.participantes.includes(perfil.id))
+    ) {
+      return false;
+    }
+    if (filtros.desde && salida.fecha < filtros.desde) return false;
+    if (filtros.hasta && salida.fecha > filtros.hasta) return false;
+    return true;
+  });
+}
+
+export const SALIDAS_POR_PAGINA = 20;
+
+/** La página que pidió el usuario, o la primera si lo que llegó no se entiende. */
+export function leerPagina(valor: string | string[] | undefined): number {
+  const numero = Number(Array.isArray(valor) ? valor[0] : valor);
+  return Number.isInteger(numero) && numero >= 1 ? numero : 1;
+}
+
+/** Un pedazo de la lista, para no dibujar cientos de portadas de una. */
+export function paginaDeSalidas(
+  salidas: Salida[],
+  pagina: number,
+): { salidas: Salida[]; pagina: number; hayMas: boolean } {
+  const desde = (pagina - 1) * SALIDAS_POR_PAGINA;
+  return {
+    salidas: salidas.slice(desde, desde + SALIDAS_POR_PAGINA),
+    pagina,
+    hayMas: salidas.length > desde + SALIDAS_POR_PAGINA,
+  };
 }

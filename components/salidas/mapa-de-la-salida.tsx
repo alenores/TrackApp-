@@ -1,5 +1,6 @@
 "use client";
 
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
@@ -14,6 +15,15 @@ import { dibujarLinea, lineaComoColeccion, marcarRecorridoDeSalida, rectanguloDe
 import { perfilDeLaSalida } from "@/lib/salidas/perfil";
 import type { PuntoDelPerfil } from "@/lib/alturas/perfil";
 import type { Salida } from "@/types/database";
+
+
+/**
+ * El archivo GPS se baja una sola vez por apertura: el gráfico de alturas y
+ * el mapa en grande usan el mismo, y volver a la ficha no lo baja de nuevo.
+ */
+function traerLaLineaUnaVez(direccion: string): Promise<LineaCompleta> {
+  return unaVezPorApertura(`archivo-gps-${direccion}`, () => traerLaLineaCompleta(direccion));
+}
 
 /**
  * La línea de la salida en un mapa de verdad, tapando la ficha entera.
@@ -135,7 +145,7 @@ export function MapaDeLaSalida({
   useEffect(() => {
     if (!abierto || completa || !salida.archivoUrl) return;
     let vigente = true;
-    void traerLaLineaCompleta(salida.archivoUrl).then((resultado) => {
+    void traerLaLineaUnaVez(salida.archivoUrl).then((resultado) => {
       if (vigente) setCompleta(resultado);
     });
     return () => {
@@ -223,7 +233,7 @@ export function AlturasDeLaSalida({ salida }: { salida: Salida }) {
   useEffect(() => {
     if (!salida.archivoUrl) return;
     let vigente = true;
-    void traerLaLineaCompleta(salida.archivoUrl).then((resultado) => {
+    void traerLaLineaUnaVez(salida.archivoUrl).then((resultado) => {
       if (!vigente) return;
       if (!resultado.ok) {
         setMotivo(resultado.motivo);

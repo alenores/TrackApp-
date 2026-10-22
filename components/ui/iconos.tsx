@@ -12,6 +12,9 @@
 /** Marcas: lo dibujado sobre el mapa. Un lápiz. */
 export const ICONO_DE_MARCAS = <path d="M4 20l1-4L16 5l3 3L8 19l-4 1ZM14 7l3 3" />;
 
+/** Filtrar una lista con más detalle: tres barras con sus perillas. */
+export const ICONO_DE_FILTRAR = <path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4" />;
+
 /** Google Maps: un alfiler con la G, distinto del ícono de Punto. */
 export const ICONO_DE_GOOGLE_MAPS = <>
   <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />

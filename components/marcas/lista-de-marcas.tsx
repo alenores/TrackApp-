@@ -5,10 +5,10 @@ import { deDondeSalio, IconoDeAnotacion, queEs } from "@/components/anotaciones/
 import { Casilla } from "@/components/ui/casilla";
 import { MenuDeAcciones, type AccionDelMenu } from "@/components/ui/menu-de-acciones";
 import { Opciones } from "@/components/ui/opciones";
-import { Pastilla } from "@/components/ui/pastilla";
-import { InsigniaDeActividad } from "@/components/rutas/insignias-de-actividad";
+import { SelectorDeActividadesDelMapa } from "@/components/caminos/selector-de-actividades-del-mapa";
+import type { SeleccionDelMapa } from "@/lib/caminos/seleccion-del-mapa";
 import { Tarjeta } from "@/components/ui/tarjeta";
-import { ACTIVIDADES, mostrarActividad } from "@/lib/rutas/actividades";
+import { mostrarActividad } from "@/lib/rutas/actividades";
 import { NOMBRE_DE_LA_CLASE, type ClaseDeMarca } from "@/lib/marcas/clases";
 import {
   agrupar,
@@ -41,6 +41,8 @@ type Propiedades = {
   zonas: Map<number, Zona>;
   sectoresPorZona: Record<number, number>;
   filtros: FiltrosDeMarcas;
+  seleccion: SeleccionDelMapa;
+  alCambiarSeleccion: (seleccion: SeleccionDelMapa) => void;
   alCambiarFiltros: (filtros: FiltrosDeMarcas) => void;
   miPerfilId: string | null;
   destildadas: ReadonlySet<string>;
@@ -120,20 +122,7 @@ export function ListaDeMarcas(propiedades: Propiedades) {
     if (grupo !== "camino") return propiedades.adentroDelGrupo?.[grupo] ?? null;
     return (
       <div className="space-y-3">
-        <div role="radiogroup" aria-label="Actividad de los Caminos" className="space-y-1.5">
-          <p className="text-sm font-medium text-texto-suave">Actividad</p>
-          <div className="flex flex-wrap gap-1.5">
-            <Pastilla rol="radio" etiqueta="Todas" prendida={filtros.actividad === null}
-              alTocar={() => alCambiarFiltros({ ...filtros, actividad: null })} />
-            {ACTIVIDADES.map((actividad) => (
-              <button key={actividad.tipo} type="button" role="radio" aria-checked={filtros.actividad === actividad.tipo}
-                onClick={() => alCambiarFiltros({ ...filtros, actividad: actividad.tipo })}
-                className="inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento-borde">
-                <InsigniaDeActividad tipo={actividad.tipo} tamano="mediano" apagada={filtros.actividad !== actividad.tipo} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <SelectorDeActividadesDelMapa seleccion={propiedades.seleccion} alCambiar={propiedades.alCambiarSeleccion} />
         {propiedades.adentroDelGrupo?.camino ?? null}
       </div>
     );

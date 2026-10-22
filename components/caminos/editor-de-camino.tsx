@@ -1,5 +1,6 @@
 "use client";
 
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useMemo, useState } from "react";
 import {
   cambiarActividadesDelCamino, cambiarDatosDeParteDelCamino, cambiarNombreDelCamino,
@@ -63,7 +64,8 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
 
   useEffect(() => {
     let vigente = true;
-    void leerCamino(id).then((resultado) => {
+    // Una vez por apertura: guardar olvida lo pedido y lo trae fresco.
+    void unaVezPorApertura(`camino-${id}`, () => leerCamino(id)).then((resultado) => {
       if (!vigente) return;
       if (resultado.ok) {
         setCamino(resultado.datos);

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import type { CategoriaUsuario } from "@/types/database";
+import type { ActividadRuta, CategoriaUsuario } from "@/types/database";
 
 /**
  * Quién usa la app y qué tipo de usuario es, **averiguado una sola vez, al
@@ -18,6 +18,8 @@ import type { CategoriaUsuario } from "@/types/database";
 export type QuienSoy = {
   miPerfilId: string;
   miCategoria: CategoriaUsuario;
+  misActividades: ActividadRuta[];
+  miActividadPrincipal: ActividadRuta | null;
 };
 
 const ContextoDeQuienSoy = createContext<QuienSoy | null>(null);

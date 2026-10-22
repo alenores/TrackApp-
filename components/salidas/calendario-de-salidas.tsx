@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { diasConSalidas } from "@/app/actions/salidas";
+import { useMemo, useState } from "react";
 import { BotonRedondo } from "@/components/ui/boton-redondo";
 import { Emergente } from "@/components/ui/emergente";
 import { hoyEnCordoba } from "@/lib/salidas/reglas";
@@ -14,16 +13,21 @@ import {
   semanasDelMes,
   type Mes,
 } from "@/lib/salidas/calendario";
+import type { Salida } from "@/types/database";
 
 /**
  * El calendario de salidas: un mes por vez, con una marca en los días que
  * hubo salidas. Lo dibuja la app, no el sistema del celular. Tocar un día
- * marcado muestra las salidas de ese día.
+ * marcado muestra las salidas de ese día. Los días salen de la lista que ya
+ * llegó al celular: cambiar de mes no le pregunta a la base.
  */
 
 type Props = {
   abierto: boolean;
   alCerrar: () => void;
+  /** Todas las salidas que llegaron; `null` mientras se traen. */
+  salidas: Salida[] | null;
+  motivoDeFalla: string | null;
   /** El mes con que abre: el del filtro puesto, o el de hoy. */
   diaInicial: string | null;
   diaElegido: string | null;
@@ -35,40 +39,25 @@ type Marcas =
   | { estado: "listo"; dias: Set<string> }
   | { estado: "fallo"; motivo: string };
 
-export function CalendarioDeSalidas({ abierto, alCerrar, diaInicial, diaElegido, alElegirDia }: Props) {
+export function CalendarioDeSalidas({
+  abierto,
+  alCerrar,
+  salidas,
+  motivoDeFalla,
+  diaInicial,
+  diaElegido,
+  alElegirDia,
+}: Props) {
   const [mes, setMes] = useState<Mes>(() => mesDe(diaInicial ?? hoyEnCordoba()));
-  const [intento, setIntento] = useState(0);
-  // Lo último que llegó, con el mes al que corresponde. Mientras no coincide
-  // con el que se mira, se está buscando.
-  const [llegado, setLlegado] = useState<{ clave: string; marcas: Marcas } | null>(null);
-  const clave = `${mes.anio}-${mes.mes}-${intento}`;
-  const marcas: Marcas = llegado?.clave === clave ? llegado.marcas : { estado: "cargando" };
-
-  useEffect(() => {
-    if (!abierto) return;
-    let vigente = true;
+  const marcas: Marcas = useMemo(() => {
+    if (motivoDeFalla) return { estado: "fallo", motivo: motivoDeFalla };
+    if (!salidas) return { estado: "cargando" };
     const { desde, hasta } = limitesDelMes(mes);
-    void diasConSalidas(desde, hasta)
-      .then((resultado) => {
-        if (!vigente) return;
-        setLlegado({
-          clave,
-          marcas: resultado.ok
-            ? { estado: "listo", dias: new Set(resultado.datos) }
-            : { estado: "fallo", motivo: resultado.error },
-        });
-      })
-      .catch((causa) => {
-        if (!vigente) return;
-        setLlegado({
-          clave,
-          marcas: { estado: "fallo", motivo: causa instanceof Error ? causa.message : String(causa) },
-        });
-      });
-    return () => {
-      vigente = false;
+    return {
+      estado: "listo",
+      dias: new Set(salidas.map((salida) => salida.fecha).filter((dia) => dia >= desde && dia <= hasta)),
     };
-  }, [abierto, mes, clave]);
+  }, [salidas, motivoDeFalla, mes]);
 
   const hoy = hoyEnCordoba();
 
@@ -126,20 +115,12 @@ export function CalendarioDeSalidas({ abierto, alCerrar, diaInicial, diaElegido,
         </div>
 
         {marcas.estado === "cargando" ? (
-          <p role="status" className="text-sm text-texto-suave">Buscando los días con salidas…</p>
+          <p role="status" className="text-sm text-texto-suave">Trayendo las salidas…</p>
         ) : marcas.estado === "fallo" ? (
-          <div role="alert" className="space-y-2">
-            <p className="text-sm leading-6 text-rojo-texto">
-              No se pudieron marcar los días: {marcas.motivo}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIntento((cuantos) => cuantos + 1)}
-              className="text-sm font-semibold text-texto underline"
-            >
-              Volver a intentar
-            </button>
-          </div>
+          <p role="alert" className="text-sm leading-6 text-rojo-texto">
+            No se pudieron marcar los días: {marcas.motivo}. Cerrá el calendario y tocá «Volver a
+            intentar» en la lista.
+          </p>
         ) : marcas.dias.size === 0 ? (
           <p className="text-sm text-texto-suave">Este mes no hubo salidas.</p>
         ) : (

@@ -4,16 +4,19 @@ import { revalidatePath } from "next/cache";
 import { traerUsuario } from "@/lib/cuenta/sesion";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
 import { exito, falla, traducirErrorDeBase, type Resultado } from "@/lib/datos/resultado";
-import { traerDiasConSalidas } from "@/lib/salidas/datos";
+import { traerTodasLasSalidas } from "@/lib/salidas/datos";
+import type { PerfilBreve, Salida } from "@/types/database";
+import { traerTodosLosPerfiles } from "@/lib/perfiles/datos";
+import { NOMBRE_SI_NO_TIENE } from "@/lib/salidas/fila";
 
-/** Los días con salidas de un mes, para el calendario de la lista. */
-export async function diasConSalidas(desde: string, hasta: string): Promise<Resultado<string[]>> {
-  const esFecha = /^\d{4}-\d{2}-\d{2}$/;
-  if (!esFecha.test(desde) || !esFecha.test(hasta)) {
-    return falla("Las fechas del calendario no se entienden. Cerralo y volvé a abrirlo.");
-  }
-  const resultado = await traerDiasConSalidas(desde, hasta);
-  return resultado.ok ? exito(resultado.dias) : falla(resultado.motivo);
+/**
+ * Todas las salidas, para la lista y las fichas. La pantalla la pide una sola
+ * vez por apertura (`unaVezPorApertura`): buscar, filtrar o abrir una ficha no
+ * vuelven a preguntar.
+ */
+export async function leerSalidas(): Promise<Resultado<Salida[]>> {
+  const resultado = await traerTodasLasSalidas();
+  return resultado.ok ? exito(resultado.salidas) : falla(resultado.motivo);
 }
 
 /**
@@ -50,4 +53,22 @@ export async function borrarSalida(salidaId: number): Promise<Resultado> {
 
   revalidatePath("/salidas");
   return exito();
+}
+
+/**
+ * Los usuarios, para filtrar la lista por participantes y nombrar los filtros
+ * puestos. Una sola vez por apertura, como la lista.
+ */
+export async function leerParticipantes(): Promise<Resultado<PerfilBreve[]>> {
+  const perfiles = await traerTodosLosPerfiles();
+  if (!perfiles.completa) {
+    return falla(`No se pudo traer la lista de usuarios: ${traducirErrorDeBase(perfiles.motivo)}`);
+  }
+  return exito(
+    perfiles.filas.map((perfil) => ({
+      id: perfil.id,
+      nombre: perfil.nombre?.trim() || NOMBRE_SI_NO_TIENE,
+      avatarUrl: perfil.avatarUrl,
+    })),
+  );
 }
