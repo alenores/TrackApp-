@@ -4,6 +4,38 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Abrir Google Maps desde Marcas
+
+### Estado al inicio
+
+Ale quería comparar en Google Maps el territorio que miraba en Marcas,
+con un ícono fuera del mapa y sin mostrar coordenadas.
+
+### Lo que se hizo
+
+Se agregó el acceso junto al título de Marcas en PC y celular. El enlace
+se actualiza con el centro real al mover el mapa y abre otra pestaña con
+esa zona; también pasa el acercamiento redondeado. Se comprueba el enlace
+con dos centros distintos, en las dos distribuciones de pantalla.
+
+### Decisiones tomadas
+
+Decisión 072, aprobada por Ale. Mantener todos los cambios locales.
+
+### Documentos actualizados
+
+Diseño para exterior, glosario y decisión 072.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Revisión visual de Ale y prueba desde su celular. No se publicó.
+
+---
+
 ## Sesión 2026-10-20 — Google al traer un archivo
 
 ### Estado al inicio

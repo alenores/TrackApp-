@@ -42,6 +42,8 @@ type Propiedades = {
   viaje?: number;
   /** Cada vez que el mapa queda quieto, el pedazo que se está viendo. */
   alMirar?: (vista: Rectangulo) => void;
+  /** El centro y acercamiento actuales, para abrir la misma zona en otro mapa. */
+  alMoverVista?: (vista: VistaDelMapa) => void;
   /** `true` dentro de la lista y mapa, que le da todo su lugar. */
   llenarElLugar?: boolean;
   /**
@@ -76,6 +78,7 @@ export function MapaDeMarcas({
   dondeEstaba = null,
   viaje = 0,
   alMirar,
+  alMoverVista,
   llenarElLugar = false,
   avisoSinNada = null,
 }: Propiedades) {
@@ -116,6 +119,7 @@ export function MapaDeMarcas({
       vista={dondeEstaba}
       viaje={viaje}
       alMirar={alMirar}
+      alMoverVista={alMoverVista}
       rectangulos={rectangulos}
       anotaciones={anotaciones}
       caminos={dibujo}

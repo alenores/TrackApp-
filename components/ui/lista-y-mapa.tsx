@@ -63,12 +63,14 @@ type Propiedades = {
   avisos?: ReactNode;
   /** Lo que va en el encabezado del panel, a la derecha del título: el «+» de agregar. */
   accionDelEncabezado?: ReactNode;
+  /** Acceso siempre visible fuera del mapa: junto al título en PC y celular. */
+  accionDePantalla?: ReactNode;
 };
 
 /** Cuánto hay que deslizar hacia arriba el panel asomado para que suba. */
 const DESLIZAR_PARA_SUBIR = 24;
 
-export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, mapa, abierto, alCambiarAbierto, panelCorto = false, pie, pantallaCompletaEnCelular, destinoSiNoHayVuelta = "/", avisos, accionDelEncabezado }: Propiedades) {
+export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, mapa, abierto, alCambiarAbierto, panelCorto = false, pie, pantallaCompletaEnCelular, destinoSiNoHayVuelta = "/", avisos, accionDelEncabezado, accionDePantalla }: Propiedades) {
   const ancha = usePantallaAncha();
   const [lugarAlCostado, setLugarAlCostado] = useState<HTMLElement | null>(null);
   const router = useRouter();
@@ -200,6 +202,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
         <section aria-label={tituloDelPanel} className="panel-que-sube relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-panel-borde bg-panel">
           <div className="cabeza-de-panel flex shrink-0 items-center gap-3 border-b border-borde px-4 py-2">
             <h2 className="min-h-10 min-w-0 flex-1 content-center truncate text-base font-bold text-texto">{tituloDelPanel}</h2>
+            {accionDePantalla}
             {accionDelEncabezado}
           </div>
           {cabezaDelPanel ? <div className="shrink-0 border-b border-borde px-4 py-3">{cabezaDelPanel}</div> : null}
@@ -223,6 +226,7 @@ export function ListaYMapa({ tituloDelPanel, resumen, panel, cabezaDelPanel, map
         <div className="flex shrink-0 items-center gap-2">
           <BotonVolver alVolver={volverDeVerdad} />
           <h1 className="min-w-0 flex-1 truncate text-xl font-bold uppercase text-texto">{pantallaCompletaEnCelular}</h1>
+          {accionDePantalla}
         </div>
       ) : null}
       {avisos ? <div className="shrink-0 space-y-2">{avisos}</div> : null}

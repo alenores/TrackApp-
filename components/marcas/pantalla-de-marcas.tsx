@@ -14,6 +14,7 @@ import { DibujarCamino } from "@/components/marcas/dibujar-camino";
 import { TraerCaminosDeAfuera } from "@/components/caminos/traer-caminos-de-afuera";
 import { EditorDeCamino } from "@/components/caminos/editor-de-camino";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
+import { EnlaceAGoogleMaps } from "@/components/ui/enlace-a-google-maps";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { ListaYMapa } from "@/components/ui/lista-y-mapa";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -108,6 +109,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const [encuadre, setEncuadre] = useState<Rectangulo | null>(null);
   const [pedazo, setPedazo] = useState<Rectangulo | null>(null);
   const [dondeEstaba, setDondeEstaba] = useState<VistaDelMapa | null>(null);
+  const [vistaActual, setVistaActual] = useState<VistaDelMapa | null>(null);
   const [viaje, setViaje] = useState(0);
   const [lineas, setLineas] = useState<VistaDeLineas>("zonas");
   const [actividadPrincipal] = useActividadPrincipal();
@@ -279,6 +281,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
       <ListaYMapa
         tituloDelPanel="Marcas"
         pantallaCompletaEnCelular="Marcas" destinoSiNoHayVuelta="/mapas"
+        accionDePantalla={<EnlaceAGoogleMaps vista={vistaActual} />}
         accionDelEncabezado={puedeAgregar ? <BotonAgregar etiqueta="Agregar una marca" alTocar={() => { setPanelArriba(false); setEligiendo("como"); }} /> : null}
         avisos={mensaje || (cargandoCaminos && caminosSinLinea.length > 0) || errorDeCaminos || incompleto ? <>
           {mensaje ? (
@@ -327,6 +330,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             dondeEstaba={dondeEstaba}
             viaje={viaje}
             alMirar={guardarPedazo}
+            alMoverVista={setVistaActual}
             avisoSinNada={enElMapa.length === 0
               ? marcas.length === 0
                 ? "Todavía no hay marcas en el mapa."

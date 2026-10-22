@@ -13,6 +13,11 @@
 
 ## Mapas y offline
 
+**Google Maps**
+El servicio externo de Google. En Marcas, su ícono junto al título abre
+la zona que se está mirando en otra pestaña, usando el centro actual del
+mapa. Las coordenadas no se muestran. Ver decisión 072.
+
 **Mapa de Google**
 Imagen satelital que se mira con conexión en las fichas y mapas de consulta.
 Muestra Caminos, Circuitos, zonas, sectores y marcas que TrackApp ya tiene.

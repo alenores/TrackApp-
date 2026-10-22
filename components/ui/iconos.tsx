@@ -12,6 +12,12 @@
 /** Marcas: lo dibujado sobre el mapa. Un lápiz. */
 export const ICONO_DE_MARCAS = <path d="M4 20l1-4L16 5l3 3L8 19l-4 1ZM14 7l3 3" />;
 
+/** Google Maps: un alfiler con la G, distinto del ícono de Punto. */
+export const ICONO_DE_GOOGLE_MAPS = <>
+  <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+  <path d="M14.5 7.5A3.5 3.5 0 1 0 15 12V10h-3" />
+</>;
+
 /** Editar algo que ya está: un lápiz sobre una línea. No es el de Marcas. */
 export const ICONO_DE_EDITAR = <>
   <path d="M4 20h10" />

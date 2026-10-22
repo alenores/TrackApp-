@@ -35,6 +35,11 @@ Navegación libre.
 
 ### Nombres de los mapas
 
+En Marcas hay un acceso a Google Maps junto al título, fuera del mapa,
+tanto en computadora como en celular. Abre la zona que se está mirando
+en otra pestaña; las coordenadas se usan por dentro y no se muestran
+(Ale, 2026-10-22, decisión 072).
+
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
 la pantalla que muestra los mapas guardados en el celular. «Mapas» tiene cuatro
 entradas en el menú, sin pestañas adentro: Consultas, Marcas, Zonas y
