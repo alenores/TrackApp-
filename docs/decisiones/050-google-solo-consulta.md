@@ -9,13 +9,20 @@ para dibujar o corregir zonas, sectores, Caminos, Circuitos y anotaciones usan
 el mapa propio en vivo. También lo usan las vistas de zonas y sectores. El mapa
 general de Mapas, el detalle de Circuitos y el mapa de Salidas muestran Google
 debajo de los datos que TrackApp ya conoce. No se crean ni modifican coordenadas
-sobre Google. Si Google falla, se informa el motivo y no se muestra otro fondo.
+sobre Google, salvo la elección inicial de un punto en Marcas aprobada en la
+decisión 074. Si Google falla, se informa el motivo y no se muestra otro fondo.
 
 El 2026-10-20 Ale sumó una excepción acotada: al traer un archivo de afuera, la
 vista previa usa Google. Ahí solo se mira si cada línea o punto, con las
 coordenadas que ya trae el archivo, se suma como Camino, como trazo o se omite.
 No se mueve la línea ni se marcan puntos. La corrección posterior sigue en el
 editor, con el mapa propio.
+
+El 2026-10-22 Ale aprobó otra excepción acotada: en Marcas, después de elegir
+agregar un punto, se toca su ubicación sobre Google. El formulario abre sobre
+el mapa propio con esa coordenada ya cargada y conserva el centro y el zoom
+exactos del momento del toque. Los Caminos y trazos se siguen dibujando sobre
+el mapa propio. Ver decisión 074.
 
 La clave de Map Tiles API vive en el servidor. Cada consulta abre una sesión
 temporal; imágenes y créditos del área visible pasan por un puente que exige

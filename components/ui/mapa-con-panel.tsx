@@ -19,6 +19,7 @@ export function MapaConPanel({
   debajoDelMapa,
   panel,
   panelPrimero = false,
+  panelPrimeroEnComputadora = panelPrimero,
 }: {
   /** El mapa, con `llenarElAltoEnLaComputadora`. */
   mapa: ReactNode;
@@ -29,16 +30,18 @@ export function MapaConPanel({
   panel: ReactNode;
   /** `true` para el panel a la izquierda (y arriba en el celular). */
   panelPrimero?: boolean;
+  /** Datos a la izquierda en PC, sin cambiar el orden del celular. */
+  panelPrimeroEnComputadora?: boolean;
 }) {
   const columnaDelMapa = (
-    <div className="space-y-2 lg:flex lg:min-h-0 lg:flex-col lg:gap-2 lg:space-y-0">
+    <div className={`space-y-2 lg:flex lg:min-h-0 lg:flex-col lg:gap-2 lg:space-y-0 ${panelPrimeroEnComputadora ? "lg:order-2" : ""}`}>
       {arribaDelMapa ? <div className="lg:shrink-0">{arribaDelMapa}</div> : null}
       <div className="lg:min-h-64 lg:flex-1">{mapa}</div>
       {debajoDelMapa ? <div className="space-y-2 lg:shrink-0">{debajoDelMapa}</div> : null}
     </div>
   );
   const columnaDelPanel = (
-    <div className="lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">{panel}</div>
+    <div className={`lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain ${panelPrimeroEnComputadora ? "lg:order-1" : ""}`}>{panel}</div>
   );
 
   return (
@@ -46,7 +49,7 @@ export function MapaConPanel({
       data-pantalla-fija
       className={[
         "grid gap-3 lg:grid-rows-[minmax(0,1fr)]",
-        panelPrimero
+        panelPrimeroEnComputadora
           ? "lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)]"
           : "lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]",
       ].join(" ")}

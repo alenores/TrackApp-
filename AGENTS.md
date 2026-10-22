@@ -117,7 +117,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 ### Mapa
 
-- **Google satelital solo para consulta con señal.** Muestra los datos propios ya guardados. También muestra, al traer un archivo, las líneas y puntos tal como vinieron, para decidir si se suman; ahí no se mueven ni se marcan puntos nuevos. Jamás se usa para dibujar, corregir o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisión 050.
+- **Google satelital para consulta con señal.** Muestra los datos propios ya guardados. También muestra, al traer un archivo, las líneas y puntos tal como vinieron, para decidir si se suman; ahí no se mueven ni se marcan puntos nuevos. **Única excepción para marcar: en Marcas, al agregar un punto, se toca su ubicación inicial sobre Google antes de abrir el formulario.** El editor recibe esa coordenada, el centro y el zoom exactos; continúa sobre el mapa propio. Fuera de esa elección inicial, Google no se usa para dibujar, corregir o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisiones 050 y 074; Ale, 2026-10-22.
 
 - **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
   clasifican ni delimitan marcas ni Circuitos. Un Camino no
@@ -180,6 +180,7 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   celular la lista es un panel que sube desde abajo, con los gestos de Vías de
   Escalada (bajar desde la lista solo si ya está arriba del todo), «Ver mapa» y
   el botón físico de atrás. Sin deslizar de costado.
+- **En PC, al agregar, traer o editar marcas, los datos van a la izquierda y el mapa a la derecha.** Al abrir Punto, Trazo o Camino nuevo desde Marcas se conservan el centro y el zoom que se estaban mirando. Decisión 074; Ale, 2026-10-22.
 - **Tranqueras y alambrados los trae OpenStreetMap solos al crear una zona** y
   quedan fijos: no se corrigen, no se borran, no se vuelven a buscar. Zonas y
   sectores no cargan marcas, y borrarlos no borra marcas.

@@ -277,6 +277,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
       {aviso && !camino ? cartelDeAviso : null}
       {camino ? (
         <MapaConPanel
+          panelPrimeroEnComputadora
           mapa={
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
               extremosDeParte={marcaDeLaParte}

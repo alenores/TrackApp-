@@ -55,6 +55,23 @@ async function completarUnPunto() {
 }
 
 describe("marcar puntos", () => {
+  it("recibe el punto elegido antes del formulario sin reencuadrar ni volver a pedir otro toque", async () => {
+    await act(async () => anotar.empezarUnPunto({ lon: -64.812345678, lat: -31.412345678 }));
+    expect(anotar.lectura).toMatchObject({ clase: "leida", lon: -64.812345678, lat: -31.412345678 });
+    expect(anotar.marcando).toBe(false);
+    expect(anotar.enfoque).toBeNull();
+    expect(anotar.enElMapa.at(-1)?.geometria).toEqual({ type: "Point", coordinates: [-64.812345678, -31.412345678] });
+    expect(dobles.crear).not.toHaveBeenCalled();
+    await act(async () => anotar.setIcono("sitio"));
+    await act(async () => { await anotar.guardar(); });
+    expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({
+      geometria: { type: "Point", coordinates: [-64.812345678, -31.412345678] },
+    }));
+    await act(async () => anotar.empezarUnPunto());
+    expect(anotar.coordenada).toBe("");
+    expect(anotar.marcando).toBe(true);
+  });
+
   it("pegando la coordenada: muestra el lugar correcto, guarda sin sector y deja todo listo para el siguiente", async () => {
     await completarUnPunto();
     const previa = anotar.enElMapa[0];

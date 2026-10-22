@@ -44,6 +44,8 @@ type Propiedades = {
   alMirar?: (vista: Rectangulo) => void;
   /** El centro y acercamiento actuales, para abrir la misma zona en otro mapa. */
   alMoverVista?: (vista: VistaDelMapa) => void;
+  /** Excepción de Marcas: elegir sobre Google la ubicación inicial de un punto. */
+  alElegirPunto?: (lon: number, lat: number, vista: VistaDelMapa) => void;
   /** `true` dentro de la lista y mapa, que le da todo su lugar. */
   llenarElLugar?: boolean;
   /**
@@ -79,6 +81,7 @@ export function MapaDeMarcas({
   viaje = 0,
   alMirar,
   alMoverVista,
+  alElegirPunto,
   llenarElLugar = false,
   avisoSinNada = null,
 }: Propiedades) {
@@ -120,6 +123,9 @@ export function MapaDeMarcas({
       viaje={viaje}
       alMirar={alMirar}
       alMoverVista={alMoverVista}
+      marcandoPunto={Boolean(alElegirPunto)}
+      alMarcarPunto={alElegirPunto}
+      mostrarFichaAnotacion={!alElegirPunto}
       rectangulos={rectangulos}
       anotaciones={anotaciones}
       caminos={dibujo}
@@ -133,7 +139,7 @@ export function MapaDeMarcas({
         }
       }}
       alSenalarZona={guardarZona}
-      fichaSobreElMapa={elegido && caminoTocado ? (
+      fichaSobreElMapa={alElegirPunto ? null : elegido && caminoTocado ? (
         <FichaDeCamino
           camino={elegido}
           indice={caminoTocado.indice}

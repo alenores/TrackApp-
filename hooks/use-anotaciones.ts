@@ -175,12 +175,14 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     foto.quitar();
   }
 
-  function empezarUnPunto() {
+  function empezarUnPunto(puntoInicial?: { lon: number; lat: number }) {
     if (ocupado.current) return;
     limpiar();
     setMensaje(null);
     setBorrador({ tipo: "punto", icono: null });
-    setMarcando(true);
+    // El punto elegido antes del formulario ya está ubicado. No se reencuadra.
+    if (puntoInicial) setCoordenadaEscrita(`${puntoInicial.lat}, ${puntoInicial.lon}`);
+    setMarcando(!puntoInicial);
   }
 
   function empezarUnTrazo() {

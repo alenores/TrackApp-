@@ -4,27 +4,45 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
 import type { Anotacion, Sector, Zona } from "@/types/database";
-import type { RectanguloEnElMapa } from "@/lib/mapas/rectangulos";
+import type { ComponentProps } from "react";
+import type { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
+
+let mapa: ComponentProps<typeof CargadorDeMapa>;
 
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/mapa/cargador-de-mapa", () => ({
-  CargadorDeMapa: ({ rectangulos, anotaciones, alSenalarZona, fichaSobreElMapa, alturaExtendida }: {
-    rectangulos: RectanguloEnElMapa[];
-    anotaciones: Anotacion[];
-    alSenalarZona: (id: number | null) => void;
-    fichaSobreElMapa: React.ReactNode;
-    alturaExtendida: boolean;
-  }) => (
+  CargadorDeMapa: (propiedades: ComponentProps<typeof CargadorDeMapa>) => {
+    mapa = propiedades;
+    const { rectangulos = [], anotaciones = [], alSenalarZona, fichaSobreElMapa, alturaExtendida } = propiedades;
+    return (
     <div data-clases={rectangulos.map((cada) => cada.clase).join(",")} data-puntos={anotaciones.length} data-altura-extendida={alturaExtendida}>
-      <button onClick={() => alSenalarZona(1)}>Señalar zona</button>
+      <button onClick={() => alSenalarZona?.(1)}>Señalar zona</button>
       {fichaSobreElMapa}
     </div>
-  ),
+    );
+  },
 }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("mapa de las marcas", () => {
+  it("elige un punto sobre Google sin abrir fichas y conserva la vista exacta del toque", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    const elegir = vi.fn();
+    const vista = { lon: -64.8, lat: -31.4, zoom: 15.7 };
+    try {
+      await act(async () => raiz.render(<MapaDeMarcas zonas={[]} anotaciones={[]} actividad="trekking"
+        sectoresPorZona={{}} alElegirPunto={elegir} />));
+      expect(mapa.consultaGoogle).toBe(true);
+      expect(mapa.marcandoPunto).toBe(true);
+      expect(mapa.mostrarFichaAnotacion).toBe(false);
+      expect(mapa.fichaSobreElMapa).toBeNull();
+      await act(async () => mapa.alMarcarPunto?.(-64.82, -31.42, vista));
+      expect(elegir).toHaveBeenCalledWith(-64.82, -31.42, vista);
+    } finally { act(() => raiz.unmount()); }
+  });
+
   it("muestra solo perímetros de zona, todos los puntos y la ficha que abre su detalle", async () => {
     const zona = {
       id: 1,

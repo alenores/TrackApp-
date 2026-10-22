@@ -14,6 +14,7 @@ import { DibujarCamino } from "@/components/marcas/dibujar-camino";
 import { TraerCaminosDeAfuera } from "@/components/caminos/traer-caminos-de-afuera";
 import { EditorDeCamino } from "@/components/caminos/editor-de-camino";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
+import { Boton } from "@/components/ui/boton";
 import { EnlaceAGoogleMaps } from "@/components/ui/enlace-a-google-maps";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { ListaYMapa } from "@/components/ui/lista-y-mapa";
@@ -73,8 +74,8 @@ import { useQuienSoy } from "@/components/armazon/quien-soy";
 type Vista =
   | { clase: "lista" }
   | { clase: "traer" }
-  | { clase: "dibujar-camino" }
-  | { clase: "detalle"; que: QueEditar }
+  | { clase: "dibujar-camino"; lugar: VistaDelMapa | null }
+  | { clase: "detalle"; que: QueEditar; lugar?: VistaDelMapa | null }
   | { clase: "editar-camino"; id: number };
 
 const LISTA: Vista = { clase: "lista" };
@@ -105,6 +106,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const ancha = usePantallaAncha();
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [eligiendo, setEligiendo] = useState<"nada" | "como" | "que">("nada");
+  const [eligiendoPunto, setEligiendoPunto] = useState(false);
+  const cancelarEleccion = useCallback(() => setEligiendoPunto(false), []);
+  useCerrarConAtras(eligiendoPunto, cancelarEleccion);
   const [panelArriba, setPanelArriba] = useState(false);
   const [encuadre, setEncuadre] = useState<Rectangulo | null>(null);
   const [pedazo, setPedazo] = useState<Rectangulo | null>(null);
@@ -192,7 +196,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     alCambiarLoElegido(filtros, nuevas);
   };
   const alCambiarPanel = (arriba: boolean) => {
-    if (!arriba) {
+    if (!arriba && !eligiendoPunto) {
       setDondeEstaba(null);
       setEncuadre(encuadreDe(enElMapa));
     }
@@ -211,13 +215,14 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     // «Guardado» no se anuncia: el cartel de arriba obligaba a apretar Cerrar.
     // Sí se dice cuando algo no quedó bien.
     setMensaje(nuevoMensaje && esUnProblema(nuevoMensaje) ? nuevoMensaje : null);
-    if (lugar) {
-      setDondeEstaba(lugar);
+    const conservar = lugar ?? vistaActual;
+    if (conservar) {
+      setDondeEstaba(conservar);
       setEncuadre(null);
     } else {
       setDondeEstaba(null);
     }
-  }, [setVista]);
+  }, [setVista, vistaActual]);
   // Adentro de agregar o editar, el atrás del celular vuelve a la lista.
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
   useCerrarConAtras(vista.clase !== "lista" && vista.clase !== "dibujar-camino", alAtras);
@@ -274,21 +279,28 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   };
 
   if (vista.clase === "traer") return <TraerCaminosDeAfuera alVolver={() => volverALista(null)} />;
-  if (vista.clase === "dibujar-camino") return <DibujarCamino alVolver={volverALista} />;
-  if (vista.clase === "detalle") return <EditorDeDetalle que={vista.que} alVolver={volverALista} />;
+  if (vista.clase === "dibujar-camino") return <DibujarCamino alVolver={volverALista} vistaInicial={vista.lugar} />;
+  if (vista.clase === "detalle") return <EditorDeDetalle que={vista.que} alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "editar-camino") return <EditorDeCamino id={vista.id} alVolver={() => volverALista(null)} />;
 
   const cuantas = enElMapa.filter((marca) => marca.grupo !== "zona").length;
   const zonasEnElMapa = enElMapa.length - cuantas;
+  const indicacionDelPunto = (
+    <Tarjeta className="space-y-3">
+      <p role="status" className="text-base text-texto">Tocá el mapa donde querés agregar el punto.</p>
+      <Boton variante="secundario" onClick={cancelarEleccion}>Cancelar</Boton>
+    </Tarjeta>
+  );
 
   return (
     <div className="space-y-3">
       <ListaYMapa
-        tituloDelPanel="Marcas"
+        tituloDelPanel={eligiendoPunto ? "Punto nuevo" : "Marcas"}
         pantallaCompletaEnCelular="Marcas" destinoSiNoHayVuelta="/mapas"
         accionDePantalla={<EnlaceAGoogleMaps vista={vistaActual} />}
-        accionDelEncabezado={puedeAgregar ? <BotonAgregar etiqueta="Agregar una marca" alTocar={() => { setPanelArriba(false); setEligiendo("como"); }} /> : null}
-        avisos={mensaje || (cargandoCaminos && caminosSinLinea.length > 0) || errorDeCaminos || incompleto ? <>
+        accionDelEncabezado={puedeAgregar && !eligiendoPunto ? <BotonAgregar etiqueta="Agregar una marca" disabled={!vistaActual} alTocar={() => { setPanelArriba(false); setEligiendo("como"); }} /> : null}
+        avisos={(!ancha && eligiendoPunto && !panelArriba) || mensaje || (cargandoCaminos && caminosSinLinea.length > 0) || errorDeCaminos || incompleto ? <>
+          {!ancha && eligiendoPunto && !panelArriba ? indicacionDelPunto : null}
           {mensaje ? (
             <Tarjeta franja="ambar" className="flex items-start gap-3">
               <p role="alert" className="flex-1 text-base text-texto">{mensaje}</p>
@@ -302,8 +314,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
         resumen={`${cuantas} ${cuantas === 1 ? "marca" : "marcas"} en el mapa${zonasEnElMapa > 0 ? ` · ${zonasEnElMapa} ${zonasEnElMapa === 1 ? "zona" : "zonas"}` : ""}`}
         abierto={panelArriba}
         alCambiarAbierto={alCambiarPanel}
-        cabezaDelPanel={<LineasDelTerritorio valor={lineas} alElegir={setLineas} />}
-        panel={
+        cabezaDelPanel={eligiendoPunto ? null : <LineasDelTerritorio valor={lineas} alElegir={setLineas} />}
+        panel={eligiendoPunto ? indicacionDelPunto : (
           <ListaDeMarcas
             marcas={marcasEnLaLista}
             nadaEnEstaVista={pedazo !== null && marcas.length > 0 && marcasEnLaLista.length === 0}
@@ -320,7 +332,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             alMostrar={mostrar}
             accionesDe={accionesDe}
           />
-        }
+        )}
         mapa={
           <MapaDeMarcas
             llenarElLugar
@@ -336,7 +348,13 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             viaje={viaje}
             alMirar={guardarPedazo}
             alMoverVista={setVistaActual}
-            avisoSinNada={enElMapa.length === 0
+            alElegirPunto={eligiendoPunto ? (lon, lat, lugar) => {
+              setEligiendoPunto(false);
+              setPanelArriba(false);
+              setVistaActual(lugar);
+              setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto", puntoInicial: { lon, lat } }, lugar });
+            } : undefined}
+            avisoSinNada={!eligiendoPunto && enElMapa.length === 0
               ? marcas.length === 0
                 ? "Todavía no hay marcas en el mapa."
                 : "No hay nada tildado para ver. Abrí la lista y tildá lo que quieras mirar."
@@ -358,11 +376,11 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
         ) : eligiendo === "que" ? (
           <div className="space-y-2">
             <OpcionDeEmergente icono={<IconoDeClase grupo="camino" />} titulo="Camino" detalle="Por dónde se puede pasar. Después cargás el nombre y las actividades."
-              alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino" }); }} />
+              alTocar={() => { setEligiendo("nada"); setVista({ clase: "dibujar-camino", lugar: vistaActual }); }} />
             <OpcionDeEmergente icono={<IconoDeClase grupo="punto" />} titulo="Punto" detalle="Un lugar: refugio, estacionamiento, sitio, tranquera…"
-              alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto" } }); }} />
+              alTocar={() => { setEligiendo("nada"); setEligiendoPunto(true); setPanelArriba(false); }} />
             <OpcionDeEmergente icono={<IconoDeClase grupo="trazo" />} titulo="Trazo" detalle="Una línea para mirar: un río, una huella, un alambrado que falta."
-              alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" } }); }} />
+              alTocar={() => { setEligiendo("nada"); setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "trazo" }, lugar: vistaActual }); }} />
             <BotonDeEmergente onClick={() => setEligiendo("como")}>Volver</BotonDeEmergente>
           </div>
         ) : null}

@@ -328,8 +328,8 @@ type MapaProps = {
    * refugio, en la computadora.
    */
   marcandoPunto?: boolean;
-  /** Se llama con el lugar tocado. */
-  alMarcarPunto?: (lon: number, lat: number) => void;
+  /** Se llama con el lugar tocado y la vista exacta de ese momento. */
+  alMarcarPunto?: (lon: number, lat: number, vista: VistaDelMapa) => void;
   /** Se llama con el número de la anotación que el usuario tocó. */
   alTocarAnotacion?: (anotacionId: number) => void;
   /** Se llama al tocar una parte de una ruta. También sirve para elegirla al editar. */
@@ -1762,7 +1762,10 @@ export function Mapa({
     mapa.getCanvas().style.cursor = "crosshair";
 
     const tocar = (evento: { lngLat: maplibregl.LngLat }) => {
-      alMarcarPunto(evento.lngLat.lng, evento.lngLat.lat);
+      const centro = mapa.getCenter();
+      alMarcarPunto(evento.lngLat.lng, evento.lngLat.lat, {
+        lon: centro.lng, lat: centro.lat, zoom: mapa.getZoom(),
+      });
     };
 
     mapa.on("click", tocar);

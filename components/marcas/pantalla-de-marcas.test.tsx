@@ -4,10 +4,17 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { PantallaDeMarcas } from "@/components/marcas/pantalla-de-marcas";
 import type { VistaDelMapa } from "@/lib/mapas/vista";
-import { ACTIVIDADES_RUTA, type Rectangulo } from "@/types/database";
+import { ACTIVIDADES_RUTA, type Rectangulo, type CategoriaUsuario } from "@/types/database";
+import type { ComponentProps } from "react";
+import type { MapaDeMarcas } from "@/components/marcas/mapa-de-marcas";
+import type { EditorDeDetalle } from "@/components/marcas/editor-de-detalle";
 
 let moverVista: ((vista: VistaDelMapa) => void) | undefined;
 let ordenDeCamara: { encuadre?: Rectangulo | null; dondeEstaba?: VistaDelMapa | null; viaje?: number };
+let categoria: CategoriaUsuario = "normal";
+let elegirPunto: ComponentProps<typeof MapaDeMarcas>["alElegirPunto"];
+let editor: ComponentProps<typeof EditorDeDetalle> | undefined;
+function leerEditor() { return editor; }
 
 vi.mock("@/hooks/use-hay-senal", () => ({ useHaySenal: () => true }));
 vi.mock("@/hooks/use-datos-de-la-app", () => ({
@@ -27,23 +34,31 @@ vi.mock("@/hooks/use-caminos-guardados", () => ({
 }));
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
 vi.mock("@/components/armazon/quien-soy", () => ({
-  useQuienSoy: () => ({ miCategoria: "normal", miPerfilId: "yo" }),
+  useQuienSoy: () => ({ miCategoria: categoria, miPerfilId: "yo" }),
 }));
 vi.mock("@/components/ui/dialogos", () => ({
   useDialogos: () => ({ confirmar: async () => false, avisar: async () => {} }),
 }));
 vi.mock("@/components/marcas/mapa-de-marcas", () => ({
-  MapaDeMarcas: ({ lineas, sectores, alMoverVista, encuadre, dondeEstaba, viaje }: {
+  MapaDeMarcas: ({ lineas, sectores, alMoverVista, encuadre, dondeEstaba, viaje, alElegirPunto }: {
     lineas?: string;
     sectores?: unknown[];
     alMoverVista?: (vista: VistaDelMapa) => void;
     encuadre?: Rectangulo | null;
     dondeEstaba?: VistaDelMapa | null;
     viaje?: number;
+    alElegirPunto?: ComponentProps<typeof MapaDeMarcas>["alElegirPunto"];
   }) => {
     moverVista = alMoverVista;
+    elegirPunto = alElegirPunto;
     ordenDeCamara = { encuadre, dondeEstaba, viaje };
     return <div data-lineas={lineas} data-sectores={sectores?.length ?? 0} />;
+  },
+}));
+vi.mock("@/components/marcas/editor-de-detalle", () => ({
+  EditorDeDetalle: (propiedades: ComponentProps<typeof EditorDeDetalle>) => {
+    editor = propiedades;
+    return <div data-editor />;
   },
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ back: () => {}, push: () => {}, refresh: () => {} }) }));
@@ -66,6 +81,60 @@ function radio(contenedor: HTMLElement, texto: string): HTMLButtonElement {
 }
 
 describe("Marcas: líneas de zonas y sectores", () => {
+  it.each([true, false])("elige el punto en Google y pasa coordenada y cámara al editor; vuelve al mismo lugar (pantalla ancha: %s)", async (ancha) => {
+    categoria = "administrador";
+    editor = undefined;
+    const consulta = vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
+      matches: ancha, media, onchange: null,
+      addListener: () => {}, removeListener: () => {},
+      addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => true,
+    }));
+    const contenedor = document.createElement("div");
+    document.body.append(contenedor);
+    const raiz = createRoot(contenedor);
+    const tocar = async (texto: string) => {
+      const boton = [...document.querySelectorAll<HTMLButtonElement>("button")]
+        .find((cada) => cada.textContent?.startsWith(texto));
+      if (!boton) throw new Error(`No está ${texto}`);
+      await act(async () => boton.click());
+    };
+    try {
+      await act(async () => raiz.render(<PantallaDeMarcas />));
+      const antes = { lat: -31.4, lon: -64.8, zoom: 14.3 };
+      await act(async () => moverVista?.(antes));
+      if (!ancha) await act(async () => contenedor.querySelector<HTMLElement>('[aria-label="Abrir marcas"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+      await act(async () => contenedor.querySelector<HTMLButtonElement>('[aria-label="Agregar una marca"]')!.click());
+      await tocar("A mano");
+      await tocar("Punto");
+      expect(editor).toBeUndefined();
+      expect(elegirPunto).toBeTypeOf("function");
+      expect(ordenDeCamara.encuadre).toBeNull();
+      expect(contenedor.textContent).toContain("Tocá el mapa donde querés agregar el punto.");
+      await tocar("Cancelar");
+      expect(elegirPunto).toBeUndefined();
+      // Cancelar no mueve el mapa. Se puede empezar de nuevo en el mismo lugar.
+      if (!ancha) await act(async () => contenedor.querySelector<HTMLElement>('[aria-label="Abrir marcas"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+      await act(async () => contenedor.querySelector<HTMLButtonElement>('[aria-label="Agregar una marca"]')!.click());
+      await tocar("A mano");
+      await tocar("Punto");
+      const alTocar = { lat: -31.401, lon: -64.801, zoom: 15.7 };
+      await act(async () => elegirPunto?.(-64.812345678, -31.412345678, alTocar));
+      expect(leerEditor()?.que).toEqual({ clase: "nuevo", tipo: "punto", puntoInicial: { lon: -64.812345678, lat: -31.412345678 } });
+      expect(leerEditor()?.vistaInicial).toEqual(alTocar);
+      expect(contenedor.querySelector("[data-editor]")).not.toBeNull();
+      await act(async () => editor?.alVolver(null, alTocar));
+      expect(ordenDeCamara.dondeEstaba).toEqual(alTocar);
+      expect(ordenDeCamara.encuadre).toBeNull();
+    } finally {
+      act(() => raiz.unmount());
+      contenedor.remove();
+      consulta.mockRestore();
+      categoria = "normal";
+    }
+  });
+
   it.each([true, false])("cambiar o repetir cualquier actividad conserva la cámara; elegir una marca sigue viajando (pantalla ancha: %s)", async (ancha) => {
     const consulta = vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
       matches: ancha, media, onchange: null,
@@ -142,7 +211,8 @@ describe("Marcas: líneas de zonas y sectores", () => {
         expect(direccion.hostname).toBe("www.google.com");
         expect(direccion.searchParams.get("map_action")).toBe("map");
         expect(direccion.searchParams.get("center")).toBe(`${vista.lat},${vista.lon}`);
-        expect(direccion.searchParams.get("zoom")).toBe(String(Math.round(vista.zoom)));
+        // La escala debe coincidir aunque los dos motores numeren distinto el zoom.
+        expect(256 * 2 ** Number(direccion.searchParams.get("zoom"))).toBe(512 * 2 ** Math.round(vista.zoom));
         expect(enlace.target).toBe("_blank");
         expect(enlace.rel).toContain("noopener");
         expect(enlace.parentElement?.contains(contenedor.querySelector("[data-lineas]"))).toBe(false);

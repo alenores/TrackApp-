@@ -12,21 +12,28 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { useAnotaciones } from "@/hooks/use-anotaciones";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
 import { queEs } from "@/components/anotaciones/icono-de-anotacion";
+import type { VistaDelMapa } from "@/lib/mapas/vista";
 
 /**
  * Marcar un punto o dibujar un trazo, o cambiar uno que ya está, desde
- * Marcas. Se dibuja **sobre el mapa propio**, nunca sobre Google (decisión
- * 050).
+ * Marcas. El editor usa el mapa propio; un punto nuevo puede llegar ya
+ * ubicado desde Google (excepción de la decisión 074).
  *
  * Al guardar, cerrar o borrar vuelve a la lista con lo que pasó.
  */
 
-export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo" } | { clase: "existente"; id: number };
+export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo"; puntoInicial?: { lon: number; lat: number } } | { clase: "existente"; id: number };
 
-export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (mensaje: string | null) => void }) {
+export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
+  que: QueEditar;
+  alVolver: (mensaje: string | null, lugar?: VistaDelMapa | null) => void;
+  vistaInicial?: VistaDelMapa | null;
+}) {
   const anotar = useAnotaciones({ clase: "cordoba" });
   const marcar = useAlMarcar();
   const esNuevo = que.clase === "nuevo";
+  const dondeEstaba = useRef(vistaInicial);
+  const vistaConservada = esNuevo && !marcar.vista && !anotar.enfoque ? vistaInicial : null;
   const enfoqueAnterior = useRef(anotar.enfoque);
   const mostrarLugar = marcar.mostrar;
   const empezo = useRef(false);
@@ -50,7 +57,7 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
       return;
     }
     if (que.clase === "existente") anotar.abrir(que.id);
-    else if (que.tipo === "punto") anotar.empezarUnPunto();
+    else if (que.tipo === "punto") anotar.empezarUnPunto(que.puntoInicial);
     else anotar.empezarUnTrazo();
   }, [datosListos, que, anotar, alVolver]);
 
@@ -60,7 +67,7 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
       huboFormulario.current = true;
       return;
     }
-    if (huboFormulario.current && !anotar.guardando) alVolver(anotar.mensaje);
+    if (huboFormulario.current && !anotar.guardando) alVolver(anotar.mensaje, dondeEstaba.current);
   }, [anotar.borrador, anotar.guardando, anotar.mensaje, alVolver]);
 
   const borrador = anotar.borrador;
@@ -78,7 +85,7 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
 
   return (
     <div className="space-y-3">
-      <EncabezadoDeMapas titulo="Marcas" subtitulo={titulo} alVolver={() => alVolver(null)} volverDeshabilitado={anotar.guardando} />
+      <EncabezadoDeMapas titulo="Marcas" subtitulo={titulo} alVolver={() => alVolver(null, dondeEstaba.current)} volverDeshabilitado={anotar.guardando} />
       {anotar.estado === "abriendo" ? (
         <Tarjeta><p role="status" className="text-base text-texto-suave">Abriendo las marcas…</p></Tarjeta>
       ) : anotar.estado === "sin_datos" ? (
@@ -87,11 +94,14 @@ export function EditorDeDetalle({ que, alVolver }: { que: QueEditar; alVolver: (
         </Tarjeta>
       ) : (
         <MapaConPanel
+          panelPrimeroEnComputadora
           mapa={
             <CargadorDeMapa
               enVivo
               llenarElAltoEnLaComputadora
-              encuadre={(esNuevo ? marcar.vista : null) ?? anotar.enfoque ?? CORDOBA_COMPLETA}
+              vista={vistaConservada}
+              encuadre={vistaConservada ? null : (esNuevo ? marcar.vista : null) ?? anotar.enfoque ?? CORDOBA_COMPLETA}
+              alMoverVista={(vista) => { dondeEstaba.current = vista; }}
               viaje={esNuevo ? marcar.viaje : 0}
               rectangulos={esNuevo ? marcar.rectangulos : []}
               anotaciones={anotar.enElMapa}

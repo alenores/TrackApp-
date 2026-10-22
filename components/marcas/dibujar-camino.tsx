@@ -36,8 +36,9 @@ import type { ActividadRuta } from "@/types/database";
 
 const PUNTOS_MINIMOS = 2;
 
-export function DibujarCamino({ alVolver }: {
+export function DibujarCamino({ alVolver, vistaInicial = null }: {
   alVolver: (mensaje: string | null, dondeEstaba?: VistaDelMapa | null) => void;
+  vistaInicial?: VistaDelMapa | null;
 }) {
   const { confirmar } = useDialogos();
   const marcar = useAlMarcar();
@@ -51,7 +52,7 @@ export function DibujarCamino({ alVolver }: {
   // Traba inmediata: dos toques no crean dos Caminos.
   const ocupado = useRef(false);
   // El lugar que se está mirando, para que al guardar el mapa no vuelva a Córdoba.
-  const dondeEstaba = useRef<VistaDelMapa | null>(null);
+  const dondeEstaba = useRef<VistaDelMapa | null>(vistaInicial);
 
   const linea = useMemo<FeatureCollection<LineString> | null>(() => puntos.length < PUNTOS_MINIMOS ? null : {
     type: "FeatureCollection",
@@ -66,7 +67,7 @@ export function DibujarCamino({ alVolver }: {
       const seguro = await confirmar(SALIR_SIN_GUARDAR);
       if (!seguro) return;
     }
-    alVolver(null);
+    alVolver(null, dondeEstaba.current);
   };
 
   // El atrás del celular pregunta lo mismo que el botón de volver: lo
@@ -106,11 +107,13 @@ export function DibujarCamino({ alVolver }: {
       <EncabezadoDeMapas titulo="Marcas" subtitulo="Camino nuevo" alVolver={() => void volver()} volverDeshabilitado={guardando} />
 
       <MapaConPanel
+        panelPrimeroEnComputadora
         mapa={
           <CargadorDeMapa
             enVivo
             llenarElAltoEnLaComputadora
-            encuadre={marcar.vista ?? CORDOBA_COMPLETA}
+            vista={marcar.vista ? null : vistaInicial}
+            encuadre={marcar.vista ?? (vistaInicial ? null : CORDOBA_COMPLETA)}
             viaje={marcar.viaje}
             encuadrarSoloAlAbrir
             rectangulos={marcar.rectangulos}

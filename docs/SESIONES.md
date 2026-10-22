@@ -4,6 +4,41 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Agregar marcas sin perder el lugar
+
+### Estado al inicio
+
+Al agregar una marca se invertían mapa y datos en PC, y los editores abrían
+sin el centro ni el zoom del mapa de Marcas. Un punto nuevo no tenía coordenada.
+
+### Lo que se hizo
+
+Al elegir Punto, se toca primero su ubicación sobre Google. El formulario
+recibe la coordenada y la cámara exacta y continúa sobre el mapa propio.
+Trazo y Camino nuevo también reciben la vista de Marcas. Los formularios,
+la importación y la edición mantienen datos a la izquierda en PC, conservando
+el orden del celular. Se agregaron pruebas para la coordenada, la cámara,
+la cancelación y el regreso a la lista.
+
+### Decisiones tomadas
+
+Decisión 074: excepción acotada para elegir un punto sobre Google. Ale aprobó
+el boceto y pidió implementar sin más bocetos. No se publica.
+
+### Documentos actualizados
+
+Reglas de agentes, diseño para exterior, decisiones 050 y 074, y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Revisión visual en PC y celular con la cuenta de Ale.
+
+---
+
 ## Sesión 2026-10-22 — Habilitar Sitio y Estacionamiento en la base
 
 ### Estado al inicio

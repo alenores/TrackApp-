@@ -187,6 +187,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
       {aviso ? <Tarjeta franja={aviso.startsWith("Se sumaron") ? undefined : "ambar"}><p role="alert" className="text-base text-texto">{aviso}</p></Tarjeta> : null}
       {datos && vistaPrevia ? (
         <MapaConPanel
+          panelPrimeroEnComputadora
           arribaDelMapa={<p className="text-base text-texto">{elementoEnVista ? `Vista previa: ${elementoEnVista.tipo === "linea" ? datos.lineas[elementoEnVista.indice]?.nombreSugerido : datos.puntos[elementoEnVista.indice]?.nombreSugerido}. Las demás líneas se ven más tenues.` : "Vista previa del archivo completo. Elegí «Ver en el mapa» para destacar una línea o un punto."}</p>}
           mapa={
             <CargadorDeMapa key={`${nombreDelArchivo}-${elementoEnVista?.tipo ?? "todo"}-${elementoEnVista?.indice ?? 0}`}

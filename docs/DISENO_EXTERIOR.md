@@ -40,6 +40,12 @@ tanto en computadora como en celular. Abre la zona que se está mirando
 en otra pestaña; las coordenadas se usan por dentro y no se muestran
 (Ale, 2026-10-22, decisión 072).
 
+Al agregar un punto desde Marcas, primero se toca su ubicación sobre Google;
+el formulario abre sobre el mapa propio con esa coordenada y la misma vista.
+Punto, Trazo y Camino nuevo conservan el centro y el zoom al abrirse desde
+Marcas. En PC, agregar, traer y editar marcas mantienen los datos a la izquierda
+y el mapa a la derecha; el orden del celular se conserva (decisión 074).
+
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
 la pantalla que muestra los mapas guardados en el celular. «Mapas» tiene cuatro
 entradas en el menú, sin pestañas adentro: Consultas, Marcas, Zonas y
