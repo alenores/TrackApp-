@@ -1,6 +1,5 @@
 "use client";
 
-import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
@@ -9,21 +8,13 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { useYaEnElNavegador } from "@/hooks/use-del-navegador";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
-import { traerLaLineaCompleta, type LineaCompleta } from "@/lib/salidas/archivo";
+import { traerLaLineaUnaVez, type LineaCompleta } from "@/lib/salidas/archivo";
 import { GraficoDeAlturas } from "@/components/ui/grafico-de-alturas";
 import { dibujarLinea, lineaComoColeccion, marcarRecorridoDeSalida, rectanguloDeLaLinea } from "@/lib/salidas/linea";
 import { perfilDeLaSalida } from "@/lib/salidas/perfil";
 import type { PuntoDelPerfil } from "@/lib/alturas/perfil";
 import type { Salida } from "@/types/database";
 
-
-/**
- * El archivo GPS se baja una sola vez por apertura: el gráfico de alturas y
- * el mapa en grande usan el mismo, y volver a la ficha no lo baja de nuevo.
- */
-function traerLaLineaUnaVez(direccion: string): Promise<LineaCompleta> {
-  return unaVezPorApertura(`archivo-gps-${direccion}`, () => traerLaLineaCompleta(direccion));
-}
 
 /**
  * La línea de la salida en un mapa de verdad, tapando la ficha entera.

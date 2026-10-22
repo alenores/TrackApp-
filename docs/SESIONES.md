@@ -4,6 +4,21 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Caminos desde una salida
+
+- Módulo nuevo (decisión 077): Marcas → «+» → «Desde una salida». La línea
+  del GPS de una salida se abre como borrador; la app marca en verde lo que va
+  sobre Caminos existentes (pasillo de 20 m) y dibuja esos Caminos encima,
+  finos, para ver las dos líneas. El usuario corta, descarta, corrige puntos y
+  elige qué partes son Caminos nuevos; propone pegar puntas a un Camino vecino.
+- Antes de diseñar se probó con datos reales: la salida Challenger contra
+  «Tramo Challenger» coincide dos veces (ida y vuelta) con pasillos de 15 a
+  40 m; con 10 m se cortaba en pedazos.
+- El mapa compartido suma una capa para dibujar Caminos por encima de otra
+  línea. La bajada del archivo GPS de una salida quedó compartida (una vez por
+  apertura).
+- No se guardó ningún Camino de prueba en la base: falta que Ale guarde uno.
+
 ## Sesión 2026-10-22 — Buscar y filtrar sin volver a la base
 
 - Salidas: el buscador por título va arriba de la lista («Buscar salida») y

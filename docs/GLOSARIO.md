@@ -201,6 +201,20 @@ Sumar marcas desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX), en
 vez de dibujarlas. Cada línea se decide como Camino, trazo u omitir; cada
 punto se suma o no. Con vista previa antes de guardar. Ver decisión 052.
 
+**Desde una salida**
+La tercera forma de agregar en Marcas: la línea del GPS de una salida se abre
+como **borrador del GPS** para ver qué Caminos pisó y crear Caminos nuevos con
+lo que no coincide. Ver decisión 077.
+
+**Borrador del GPS**
+La línea del archivo GPS de una salida mientras se la revisa en «Desde una
+salida»: se corta en partes, se corrige y se descarta. En verde, lo que va
+sobre un Camino existente; nada se guarda hasta tocar Guardar.
+
+**Pasillo**
+La franja de 20 m a cada lado de un Camino. Si el GPS va dentro de ella un
+buen trecho, se propone que fue por ese Camino.
+
 **Tranquera**
 El portón de un alambrado: marca por dónde se pasa. Es un **punto** con ícono
 de tranquera. Si la trajo OpenStreetMap sola al crear una zona, queda fija: no

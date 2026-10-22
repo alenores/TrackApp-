@@ -251,6 +251,12 @@ type MapaProps = {
    * del que se navega, así nunca se confunden con él.
    */
   otrosCircuitos?: FeatureCollection | null;
+  /**
+   * Caminos que ya existen, finos y **por encima** de los demás, para
+   * compararlos con otra línea sin que esa línea los tape (Caminos desde una
+   * salida: el GPS va debajo y el Camino se sigue viendo).
+   */
+  caminosEncima?: FeatureCollection | null;
   /** Los puntos y trazos dibujados sobre el territorio. */
   anotaciones?: Anotacion[];
   /** Dónde está el usuario, si el GPS está andando. */
@@ -507,6 +513,7 @@ export function Mapa({
   corteElegido = null,
   puntoSenalado = null,
   otrosCircuitos = null,
+  caminosEncima = null,
   anotaciones = [],
   miPosicion = null,
   encuadre = null,
@@ -902,6 +909,7 @@ export function Mapa({
       mapa.addSource("cortes-marcados", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("punto-senalado", { type: "geojson", data: VACIO });
       mapa.addSource("otros-circuitos", { type: "geojson", data: VACIO });
+      mapa.addSource("caminos-encima", { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_ANOTACIONES, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_POSICION, { type: "geojson", data: VACIO });
       mapa.addSource("punto-de-ajuste", { type: "geojson", data: VACIO });
@@ -1066,6 +1074,12 @@ export function Mapa({
         layout: { "text-field": "Fin marcado", "text-font": ["Noto Sans Regular"],
           "text-size": 15, "text-offset": [0, 1.6], "text-allow-overlap": true },
         paint: { "text-color": colores.circuitoPropio, "text-halo-color": colores.circuitoBorde, "text-halo-width": 2 } });
+      mapa.addLayer({ id: "caminos-encima-borde", type: "line", source: "caminos-encima",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": colores.caminoSecundarioBordeAncho } });
+      mapa.addLayer({ id: "caminos-encima", type: "line", source: "caminos-encima",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.caminoSecundario, "line-width": colores.caminoSecundarioAncho } });
       mapa.addLayer({
         id: "vertices-de-camino", type: "circle", source: "vertices-de-camino",
         paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
@@ -1347,6 +1361,8 @@ export function Mapa({
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-color", colores.parteX);
       mapa.setPaintProperty("extremos-de-parte-nombre", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("otros-circuitos", "line-color", colores.circuitoPropio);
+      mapa.setPaintProperty("caminos-encima-borde", "line-color", colores.caminoSecundarioBorde);
+      mapa.setPaintProperty("caminos-encima", "line-color", colores.caminoSecundario);
       mapa.setPaintProperty("punto-senalado", "circle-color", colores.parteX);
       mapa.setPaintProperty("punto-senalado", "circle-stroke-color", colores.parteXHalo);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
@@ -1597,6 +1613,12 @@ export function Mapa({
     if (!mapa) return;
     cuandoEsteListo(() => ponerDatos(mapa, "otros-circuitos", otrosCircuitos ?? VACIO));
   }, [otrosCircuitos]);
+
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => ponerDatos(mapa, "caminos-encima", caminosEncima ?? VACIO));
+  }, [caminosEncima]);
 
   // Los puntos y trazos.
   useEffect(() => {

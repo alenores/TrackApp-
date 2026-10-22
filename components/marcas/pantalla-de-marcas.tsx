@@ -12,6 +12,7 @@ import { ListaDeMarcas } from "@/components/marcas/lista-de-marcas";
 import { EditorDeDetalle, type QueEditar } from "@/components/marcas/editor-de-detalle";
 import { DibujarCamino } from "@/components/marcas/dibujar-camino";
 import { TraerCaminosDeAfuera } from "@/components/caminos/traer-caminos-de-afuera";
+import { CaminosDesdeUnaSalida } from "@/components/caminos/caminos-desde-una-salida";
 import { EditorDeCamino } from "@/components/caminos/editor-de-camino";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
 import { Boton } from "@/components/ui/boton";
@@ -74,6 +75,7 @@ import { useQuienSoy } from "@/components/armazon/quien-soy";
 type Vista =
   | { clase: "lista" }
   | { clase: "traer" }
+  | { clase: "desde-salida" }
   | { clase: "dibujar-camino"; lugar: VistaDelMapa | null }
   | { clase: "detalle"; que: QueEditar; lugar?: VistaDelMapa | null }
   | { clase: "editar-camino"; id: number };
@@ -282,6 +284,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   };
 
   if (vista.clase === "traer") return <TraerCaminosDeAfuera alVolver={() => volverALista(null)} />;
+  if (vista.clase === "desde-salida") return <CaminosDesdeUnaSalida alVolver={() => volverALista(null)} />;
   if (vista.clase === "dibujar-camino") return <DibujarCamino alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "detalle") return <EditorDeDetalle que={vista.que} alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "editar-camino") return <EditorDeCamino id={vista.id} alVolver={() => volverALista(null)} />;
@@ -380,6 +383,8 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
               alTocar={() => setEligiendo("que")} />
             <OpcionDeEmergente titulo="Traer de afuera" detalle="Desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX)."
               alTocar={() => { setEligiendo("nada"); setVista({ clase: "traer" }); }} />
+            <OpcionDeEmergente titulo="Desde una salida" detalle="La línea del GPS de una salida, para ver qué Caminos pisó y sumar los nuevos."
+              alTocar={() => { setEligiendo("nada"); setVista({ clase: "desde-salida" }); }} />
           </div>
         ) : eligiendo === "que" ? (
           <div className="space-y-2">

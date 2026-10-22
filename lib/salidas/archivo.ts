@@ -1,4 +1,5 @@
 import type { FeatureCollection } from "geojson";
+import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { leerArchivoDeRuta } from "@/lib/rutas/archivo";
 import type { Rectangulo } from "@/types/database";
 
@@ -102,4 +103,12 @@ export async function traerLaLineaCompleta(direccion: string): Promise<LineaComp
     geometria: lectura.recorrido.geometria,
     rectangulo: lectura.recorrido.rectangulo,
   };
+}
+
+/**
+ * El archivo GPS se baja una sola vez por apertura: el gráfico de alturas, el
+ * mapa en grande y los Caminos desde una salida usan el mismo.
+ */
+export function traerLaLineaUnaVez(direccion: string): Promise<LineaCompleta> {
+  return unaVezPorApertura(`archivo-gps-${direccion}`, () => traerLaLineaCompleta(direccion));
 }
