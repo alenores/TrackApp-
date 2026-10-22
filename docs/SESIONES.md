@@ -4,6 +4,34 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Quitar el boceto obligatorio
+
+### Estado al inicio
+
+Las reglas exigían un boceto aprobado antes de implementar cualquier cambio visual.
+
+### Lo que se hizo
+
+Se quitó esa obligación de las reglas del proyecto.
+
+### Decisiones tomadas
+
+Ale indicó que los bocetos previos ya no son necesarios como requisito de trabajo.
+
+### Documentos actualizados
+
+Reglas de agentes y este registro.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Ninguno por este cambio de reglas.
+
+---
+
 ## Sesión 2026-10-22 — Igualar el acercamiento al abrir Google Maps
 
 ### Estado al inicio
