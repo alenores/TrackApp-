@@ -246,15 +246,20 @@ export function datosDeParte(propiedades: Record<string, unknown> | null): Datos
   };
 }
 
-/** Al menos una X por parte cerrada, incluso si mide pocos metros. */
-export function puntosSinPaso(geometria: FeatureCollection): FeatureCollection {
+/**
+ * Marcas repartidas sobre una parte: al menos una, aunque mida pocos metros.
+ * Sin paso va más espaciada (la X se lee de lejos). A pie va más seguida,
+ * porque el triangulito es chico y si no la línea parece transitable.
+ */
+export function puntosDeMarca(geometria: FeatureCollection, paso: "sin_paso" | "a_pie"): FeatureCollection {
+  const cadaMetros = paso === "sin_paso" ? 200 : 90;
   const features: Feature[] = [];
   for (const feature of geometria.features) {
-    if (feature.geometry?.type !== "LineString" || feature.properties?.paso !== "sin_paso") continue;
+    if (feature.geometry?.type !== "LineString" || feature.properties?.paso !== paso) continue;
     const puntos = feature.geometry.coordinates;
     const longitud = largo(puntos);
     if (longitud <= 0) continue;
-    const cantidad = Math.max(1, Math.ceil(longitud / 200));
+    const cantidad = Math.max(1, Math.ceil(longitud / cadaMetros));
     for (let i = 0; i < cantidad; i += 1) {
       features.push({
         type: "Feature",
@@ -264,4 +269,14 @@ export function puntosSinPaso(geometria: FeatureCollection): FeatureCollection {
     }
   }
   return { type: "FeatureCollection", features };
+}
+
+/** Al menos una X por parte cerrada, incluso si mide pocos metros. */
+export function puntosSinPaso(geometria: FeatureCollection): FeatureCollection {
+  return puntosDeMarca(geometria, "sin_paso");
+}
+
+/** Triangulitos de «a pie con equipo», más juntos que las X. */
+export function puntosAPie(geometria: FeatureCollection): FeatureCollection {
+  return puntosDeMarca(geometria, "a_pie");
 }

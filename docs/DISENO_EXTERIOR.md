@@ -92,7 +92,8 @@ PC, el cursor cambia a una mano al pasar por encima.
 Cada parte combina dos señales independientes: el **color** expresa su
 complejidad local (verde, amarillo, rojo o gris si todavía no se clasificó),
 y la **forma de la línea** expresa cómo se pasa. Por explorar va entrecortada,
-transitable va continua, a pie con equipo va punteada, y sin paso conserva su
+transitable va continua, a pie con equipo va continua con triangulitos chicos
+(parecidos a las X, pero más pequeños), y sin paso conserva su
 línea con X negras. Esas X se achican al alejarse, como el resto de las
 marcas: de lejos no se amontonan en una mancha. Una X no vuelve roja la línea
 por sí sola. Al tocar un Camino —en Consultas, en la navegación libre y al

@@ -50,8 +50,38 @@ const COLOR: Record<EstiloDeTramo, string> = {
 
 function trazoDe(paso: CondicionDePaso | null | undefined): string | undefined {
   if (paso === "por_explorar") return "8 6";
-  if (paso === "a_pie") return "2 6";
   return undefined;
+}
+
+/** Un triangulito chico cada tanto, sobre la línea de a pie con equipo. */
+function triangulosSobre(
+  puntos: PuntoDelPerfil[],
+  x: (distanciaM: number) => number,
+  y: (alturaM: number) => number,
+): { cx: number; cy: number }[] {
+  const cada = 36;
+  const marcas: { cx: number; cy: number }[] = [];
+  let recorrido = 0;
+  let proximo = cada / 2;
+  for (let i = 1; i < puntos.length; i += 1) {
+    const ax = x(puntos[i - 1].distanciaM);
+    const ay = y(puntos[i - 1].alturaM);
+    const bx = x(puntos[i].distanciaM);
+    const by = y(puntos[i].alturaM);
+    const largo = Math.hypot(bx - ax, by - ay);
+    if (largo < 0.5) continue;
+    while (proximo <= recorrido + largo) {
+      const t = (proximo - recorrido) / largo;
+      marcas.push({ cx: ax + (bx - ax) * t, cy: ay + (by - ay) * t });
+      proximo += cada;
+    }
+    recorrido += largo;
+  }
+  if (marcas.length === 0 && puntos.length >= 2) {
+    const medio = puntos[Math.floor(puntos.length / 2)];
+    marcas.push({ cx: x(medio.distanciaM), cy: y(medio.alturaM) });
+  }
+  return marcas;
 }
 
 export function GraficoDeAlturas({ perfil, tramos, aquiM = null, alSenalar, enNavegacion = false, descripcion }: Propiedades) {
@@ -174,6 +204,16 @@ export function GraficoDeAlturas({ perfil, tramos, aquiM = null, alSenalar, enNa
                   strokeLinejoin="round"
                   strokeDasharray={trazoDe(tramo.paso)}
                 />
+                {tramo.paso === "a_pie" ? triangulosSobre(puntos, x, y).map((marca) => (
+                  <polygon
+                    key={`tri${marca.cx}-${marca.cy}`}
+                    points={`${marca.cx},${marca.cy - 5} ${marca.cx + 3.2},${marca.cy + 2.4} ${marca.cx - 3.2},${marca.cy + 2.4}`}
+                    fill="var(--parte-x)"
+                    stroke="var(--parte-x-halo)"
+                    strokeWidth={1.5}
+                    strokeLinejoin="round"
+                  />
+                )) : null}
                 {tramo.paso === "sin_paso" ? puntos.filter((_, i) => i % Math.max(1, Math.round(puntos.length / 3)) === 0).map((punto) => (
                   <text
                     key={`x${punto.distanciaM}`}

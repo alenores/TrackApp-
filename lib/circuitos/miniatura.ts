@@ -27,6 +27,8 @@ export type TrazoDeMiniatura = {
   paso: CondicionDePaso | null;
   /** El medio del tramo, si es sin paso: ahí va la cruz. */
   cruz: [number, number] | null;
+  /** El medio del tramo, si es a pie con equipo: ahí va el triangulito. */
+  triangulo: [number, number] | null;
 };
 
 const PASOS: readonly CondicionDePaso[] = ["por_explorar", "transitable", "a_pie", "sin_paso"];
@@ -110,6 +112,7 @@ export function dibujarMiniatura(
       estilo: segmento.estilo,
       paso: segmento.paso,
       cruz: segmento.paso === "sin_paso" ? cruz : null,
+      triangulo: segmento.paso === "a_pie" ? cruz : null,
     }];
   });
   if (trazos.length === 0) return null;

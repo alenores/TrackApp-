@@ -43,7 +43,7 @@ import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { accionDeLaCamara, type VistaDelMapa } from "@/lib/mapas/vista";
 import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
-import { puntosSinPaso } from "@/lib/rutas/partes";
+import { puntosAPie, puntosSinPaso } from "@/lib/rutas/partes";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import { LugarAlCostado } from "@/components/ui/emergente";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
@@ -80,10 +80,29 @@ const FUENTE_RECTANGULOS = "rectangulos";
 const VACIO: FeatureCollection = { type: "FeatureCollection", features: [] };
 
 /**
- * Las X de «sin paso» siguen el acercamiento, como los íconos de los puntos.
- * De lejos se achican y las que se pisan no se dibujan: si no, a tamaño fijo
- * se amontonan y la línea parece una mancha negra.
+ * Las X de «sin paso» y los triangulitos de «a pie con equipo» siguen el
+ * acercamiento, como los íconos de los puntos. De lejos se achican y las que
+ * se pisan no se dibujan: si no, a tamaño fijo se amontonan.
  */
+/** Un triangulito chico, pintable de día y de noche. */
+function imagenDelTriangulo(): ImageData {
+  const lado = 32;
+  const lienzo = document.createElement("canvas");
+  lienzo.width = lado;
+  lienzo.height = lado;
+  const ctx = lienzo.getContext("2d");
+  if (!ctx) throw new Error("El mapa no pudo preparar el triangulito de a pie con equipo.");
+  ctx.clearRect(0, 0, lado, lado);
+  ctx.fillStyle = "#000000";
+  ctx.beginPath();
+  ctx.moveTo(lado / 2, 3);
+  ctx.lineTo(lado - 4, lado - 4);
+  ctx.lineTo(4, lado - 4);
+  ctx.closePath();
+  ctx.fill();
+  return ctx.getImageData(0, 0, lado, lado);
+}
+
 function agregarCrucesSinPaso(
   mapa: maplibregl.Map,
   id: string,
@@ -105,6 +124,31 @@ function agregarCrucesSinPaso(
       "text-color": colores.parteX,
       "text-halo-color": colores.parteXHalo,
       "text-halo-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 11, 1, 16, 2],
+    },
+  });
+}
+
+/** Los triangulitos de «a pie con equipo»: misma idea que las X, más chicos. */
+function agregarTriangulosAPie(
+  mapa: maplibregl.Map,
+  id: string,
+  source: string,
+  colores: Pick<ColoresDelMapa, "parteX" | "parteXHalo">,
+) {
+  mapa.addLayer({
+    id,
+    type: "symbol",
+    source,
+    layout: {
+      "icon-image": "triangulo-a-pie",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0, 9, 0.16, 12, 0.26, 15, 0.36],
+      "icon-allow-overlap": false,
+      "icon-padding": 1,
+    },
+    paint: {
+      "icon-color": colores.parteX,
+      "icon-halo-color": colores.parteXHalo,
+      "icon-halo-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 12, 0.6, 15, 1],
     },
   });
 }
@@ -844,10 +888,16 @@ export function Mapa({
       mapa.addSource(FUENTE_CAMINOS, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_CIRCUITO, { type: "geojson", data: VACIO });
       mapa.addSource(FUENTE_FINAL_CONSERVADO, { type: "geojson", data: VACIO });
+      if (!mapa.hasImage("triangulo-a-pie")) {
+        mapa.addImage("triangulo-a-pie", imagenDelTriangulo(), { sdf: true });
+      }
       mapa.addSource("x-sin-paso-circuito", { type: "geojson", data: VACIO });
+      mapa.addSource("triangulos-a-pie-circuito", { type: "geojson", data: VACIO });
       mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
+      mapa.addSource("triangulos-a-pie-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
+      mapa.addSource("triangulos-a-pie", { type: "geojson", data: VACIO });
       mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("cortes-marcados", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("punto-senalado", { type: "geojson", data: VACIO });
@@ -953,7 +1003,7 @@ export function Mapa({
       for (const [paso, capa, guiones] of [
         ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5]],
         ["transitable", CAPAS_DE_CAMINOS[2], null],
-        ["a_pie", CAPAS_DE_CAMINOS[3], [0.45, 1.5]],
+        ["a_pie", CAPAS_DE_CAMINOS[3], null],
         ["sin_paso", CAPAS_DE_CAMINOS[4], null],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["==", ["get", "paso"], paso];
@@ -972,6 +1022,7 @@ export function Mapa({
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
       }
       agregarCrucesSinPaso(mapa, "camino-sin-paso-x", "x-sin-paso-caminos", colores);
+      agregarTriangulosAPie(mapa, "camino-a-pie-triangulo", "triangulos-a-pie-caminos", colores);
       mapa.addLayer({ id: "otros-circuitos", type: "line", source: "otros-circuitos",
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.circuitoPropio, "line-width": 4, "line-opacity": 0.55 } });
@@ -985,7 +1036,7 @@ export function Mapa({
       for (const [paso, capa, guiones] of [
         ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5]],
         ["transitable", CAPAS_DEL_CIRCUITO[2], null],
-        ["a_pie", CAPAS_DEL_CIRCUITO[3], [0.45, 1.5]],
+        ["a_pie", CAPAS_DEL_CIRCUITO[3], null],
         ["sin_paso", CAPAS_DEL_CIRCUITO[4], null],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["all", ["==", ["get", "clase"], "camino"], ["==", ["get", "paso"], paso]];
@@ -999,6 +1050,7 @@ export function Mapa({
             ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
       }
       agregarCrucesSinPaso(mapa, "circuito-sin-paso-x", "x-sin-paso-circuito", colores);
+      agregarTriangulosAPie(mapa, "circuito-a-pie-triangulo", "triangulos-a-pie-circuito", colores);
       mapa.addLayer({ id: "circuito-final-conservado", type: "circle", source: FUENTE_FINAL_CONSERVADO,
         paint: { "circle-color": colores.circuitoPropio, "circle-radius": 7,
           "circle-stroke-color": colores.circuitoBorde, "circle-stroke-width": 3 } });
@@ -1014,7 +1066,7 @@ export function Mapa({
       for (const [paso, capa, guiones] of [
         ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5]],
         ["transitable", CAPAS_DE_PARTES[1], null],
-        ["a_pie", CAPAS_DE_PARTES[2], [0.45, 1.5]],
+        ["a_pie", CAPAS_DE_PARTES[2], null],
         ["sin_paso", CAPAS_DE_PARTES[3], null],
       ] as const) {
         const filtroDeParte: maplibregl.FilterSpecification = ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso];
@@ -1041,6 +1093,7 @@ export function Mapa({
         });
       }
       agregarCrucesSinPaso(mapa, "ruta-sin-paso-x", "x-sin-paso", colores);
+      agregarTriangulosAPie(mapa, "ruta-a-pie-triangulo", "triangulos-a-pie", colores);
       mapa.addLayer({
         id: "cortes-marcados",
         type: "circle",
@@ -1260,6 +1313,8 @@ export function Mapa({
       }
       mapa.setPaintProperty("circuito-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("circuito-a-pie-triangulo", "icon-color", colores.parteX);
+      mapa.setPaintProperty("circuito-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("circuito-final-conservado", "circle-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-final-conservado", "circle-stroke-color", colores.circuitoBorde);
       mapa.setPaintProperty("circuito-final-conservado-nombre", "text-color", colores.circuitoPropio);
@@ -1267,10 +1322,14 @@ export function Mapa({
       mapa.setPaintProperty(CAPAS_DE_CAMINOS[0], "line-color", colores.rectanguloZona);
       mapa.setPaintProperty("camino-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("camino-a-pie-triangulo", "icon-color", colores.parteX);
+      mapa.setPaintProperty("camino-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("vertices-de-camino", "circle-color", colores.rectanguloNuevo);
       mapa.setPaintProperty("vertices-de-camino", "circle-stroke-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("ruta-a-pie-triangulo", "icon-color", colores.parteX);
+      mapa.setPaintProperty("ruta-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("parte-elegida", "line-color", colores.marcaDeParte);
       mapa.setPaintProperty("cortes-marcados", "circle-color", ["case", ["==", ["get", "elegido"], true], colores.marcaDeParte, colores.marcaDeCorte]);
       mapa.setPaintProperty("extremos-de-parte-punto", "circle-color", colores.marcaDeParte);
@@ -1361,6 +1420,7 @@ export function Mapa({
       if (!vigente) return;
       ponerDatos(mapa, FUENTE_RUTA, recorrido ?? VACIO);
       ponerDatos(mapa, "x-sin-paso", recorrido ? puntosSinPaso(recorrido) : VACIO);
+      ponerDatos(mapa, "triangulos-a-pie", recorrido ? puntosAPie(recorrido) : VACIO);
 
       // `viaje` se anima aunque el mapa ya se haya encuadrado al abrir: si no,
       // buscar un lugar en un Camino nuevo no movería la vista.
@@ -1408,6 +1468,7 @@ export function Mapa({
     cuandoEsteListo(() => {
       ponerDatos(mapa, FUENTE_CAMINOS, caminos ?? VACIO);
       ponerDatos(mapa, "x-sin-paso-caminos", caminos ? puntosSinPaso(caminos) : VACIO);
+      ponerDatos(mapa, "triangulos-a-pie-caminos", caminos ? puntosAPie(caminos) : VACIO);
     });
   }, [caminos]);
 
@@ -1417,6 +1478,7 @@ export function Mapa({
     cuandoEsteListo(() => {
       ponerDatos(mapa, FUENTE_CIRCUITO, circuito ?? VACIO);
       ponerDatos(mapa, "x-sin-paso-circuito", circuito ? puntosSinPaso(circuito) : VACIO);
+      ponerDatos(mapa, "triangulos-a-pie-circuito", circuito ? puntosAPie(circuito) : VACIO);
     });
   }, [circuito]);
 

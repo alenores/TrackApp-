@@ -40,7 +40,16 @@ export function MuestraDeComplejidad({ complejidad }: { complejidad: Complejidad
 /** El dibujo de la línea de una condición de paso, como se ve en el mapa. */
 export function MuestraDeLinea({ paso }: { paso: PasoDeParte }) {
   if (paso === "sin_paso") return <span aria-hidden className="w-6 shrink-0 text-center leading-none">×</span>;
-  const rayas = paso === "por_explorar" ? "4 3" : paso === "a_pie" ? "1 3" : undefined;
+  if (paso === "a_pie") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 8" className="h-2 w-6 shrink-0" fill="currentColor">
+        <polygon points="3,7 5.2,1.5 7.4,7" />
+        <polygon points="9.8,7 12,1.5 14.2,7" />
+        <polygon points="16.6,7 18.8,1.5 21,7" />
+      </svg>
+    );
+  }
+  const rayas = paso === "por_explorar" ? "4 3" : undefined;
   return (
     <svg aria-hidden viewBox="0 0 24 4" className="h-1 w-6 shrink-0" fill="none">
       <line x1="1" y1="2" x2="23" y2="2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={rayas} />
@@ -81,7 +90,7 @@ export function ReferenciaDePartes({ navegando = false, conPartesPropias = false
         <span className="font-semibold">Línea:</span>
         <span>┄ Por explorar</span>
         <span>━ Transitable</span>
-        <span>··· A pie con equipo</span>
+        <span className="inline-flex items-center gap-1"><MuestraDeLinea paso="a_pie" /> A pie con equipo</span>
         <span>× Sin paso</span>
       </div>
     </div>

@@ -177,6 +177,62 @@ Revisión visual de Ale y prueba desde su celular. No se publicó.
 
 ---
 
+## Sesión 2026-10-21 — Lápiz en la ficha del Camino
+
+### Estado al inicio
+
+En Marcas, para editar un Camino había que volver a la lista, abrir los tres puntos y elegir Editar.
+
+### Lo que se hizo
+
+Abajo de la ficha del Camino hay un lápiz y, al lado, un tachito. El lápiz abre la misma pantalla de editar. El tachito pide confirmación y elimina el Camino igual que en los tres puntos. Solo lo ve quien puede cambiar ese Camino.
+
+### Decisiones tomadas
+
+Ale, 2026-10-21. Decisión 071.
+
+### Documentos actualizados
+
+Decisión 071.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Probarlo en el celular.
+
+---
+
+## Sesión 2026-10-21 — Triangulitos en a pie con equipo
+
+### Estado al inicio
+
+«A pie con equipo» se dibujaba con puntitos. De lejos se confundía con «por explorar».
+
+### Lo que se hizo
+
+Esa condición pasa a una línea continua con triangulitos chicos, del mismo estilo que las X de «sin paso». El cambio está en el mapa, en el botón de la condición, en el gráfico de alturas y en la forma del Circuito vista desde arriba.
+
+### Decisiones tomadas
+
+Ale, 2026-10-21: triangulitos muy chicos en lugar de la línea cortada. Decisión 070.
+
+### Documentos actualizados
+
+Decisión 070, glosario y diseño para exterior.
+
+### Deuda o inconsistencias detectadas
+
+Ninguna nueva.
+
+### Pendientes para la próxima
+
+Mirarlo en el celular, de día y de noche, de cerca y de lejos.
+
+---
+
 ## Sesión 2026-10-20 — Google al traer un archivo
 
 ### Estado al inicio

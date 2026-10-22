@@ -8,12 +8,8 @@
 
 ## Antes de tocar nada
 
-**El código que ya existe no es ejemplo de nada.** TrackApp se escribió como
-ejercicio de aprendizaje y no cumple estas reglas. No lo copies como referencia
-ni lo tomes como decisión tomada. Si una pantalla vieja hace algo que este
-archivo prohíbe, está mal la pantalla, no la regla.
 
-**Alejandro (el ususrio y dueño de este producto) no lee ni entiende código en profundidad.** Todo lo que se explique tiene que entenderse sin saber
+**Alejandro (el usuario y dueño de este producto) no lee ni entiende código en profundidad.** Todo lo que se explique tiene que entenderse sin saber
 programar. Nada de nombres de archivos ni de líneas en las explicaciones.
 
 **Ante ambigüedad, se pregunta.** Una pregunta corta ahorra medio día. No

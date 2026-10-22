@@ -36,7 +36,6 @@ const COLOR: Record<EstiloDeTramo, string> = {
 
 function guionesDe(paso: CondicionDePaso | null): string | undefined {
   if (paso === "por_explorar") return "8 6";
-  if (paso === "a_pie") return "2 6";
   return undefined;
 }
 
@@ -59,6 +58,15 @@ function Miniatura({ segmentos, aqui }: { segmentos: SegmentoDeMiniatura[]; aqui
               strokeLinejoin="round"
               strokeDasharray={guionesDe(trazo.paso)}
             />
+            {trazo.triangulo ? (
+              <polygon
+                points={`${trazo.triangulo[0]},${trazo.triangulo[1] - 7} ${trazo.triangulo[0] + 4.5},${trazo.triangulo[1] + 2} ${trazo.triangulo[0] - 4.5},${trazo.triangulo[1] + 2}`}
+                fill="var(--parte-x)"
+                stroke="var(--parte-x-halo)"
+                strokeWidth={2}
+                strokeLinejoin="round"
+              />
+            ) : null}
             {trazo.cruz ? (
               <text
                 x={trazo.cruz[0]}

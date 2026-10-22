@@ -53,6 +53,11 @@ type Propiedades = {
    * y mudo hace pensar que se rompió.
    */
   avisoSinNada?: string | null;
+  /** Si este Camino se puede editar, abre la pantalla de editar. */
+  alEditarCamino?: (id: number) => void;
+  /** La misma eliminación de la lista. Devuelve si de verdad se eliminó. */
+  alEliminarCamino?: (camino: CaminoGuardado) => Promise<boolean>;
+  puedeEditarCamino?: (autorId: string) => boolean;
 };
 
 const SIN_CAMINOS: CaminoGuardado[] = [];
@@ -84,6 +89,9 @@ export function MapaDeMarcas({
   alElegirPunto,
   llenarElLugar = false,
   avisoSinNada = null,
+  alEditarCamino,
+  alEliminarCamino,
+  puedeEditarCamino,
 }: Propiedades) {
   const [zonaId, setZonaId] = useState<number | null>(null);
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
@@ -146,6 +154,19 @@ export function MapaDeMarcas({
           actividad={actividad}
           alSenalarPunto={setPuntoSenalado}
           alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
+          alEditar={alEditarCamino && puedeEditarCamino?.(elegido.perfilId)
+            ? () => alEditarCamino(elegido.id)
+            : undefined}
+          alEliminar={alEliminarCamino && puedeEditarCamino?.(elegido.perfilId)
+            ? () => {
+              void alEliminarCamino(elegido).then((eliminado) => {
+                if (eliminado) {
+                  setCaminoTocado(null);
+                  setPuntoSenalado(null);
+                }
+              });
+            }
+            : undefined}
         />
       ) : zonaElegida ? (
         <div data-ficha-zona className="relative">

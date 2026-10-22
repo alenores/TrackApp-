@@ -3,6 +3,8 @@
 import { useMemo, type ReactNode } from "react";
 import type { Position } from "geojson";
 import { Emergente } from "@/components/ui/emergente";
+import { BotonRedondo } from "@/components/ui/boton-redondo";
+import { ICONO_DE_EDITAR, ICONO_DE_ELIMINAR } from "@/components/ui/iconos";
 import { GraficoDeAlturas, type TramoDelGrafico } from "@/components/ui/grafico-de-alturas";
 import { nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { mostrarActividad } from "@/lib/rutas/actividades";
@@ -21,6 +23,10 @@ type Propiedades = {
   /** Para que el mapa marque el lugar que se señala en el gráfico. */
   alSenalarPunto?: (punto: Position | null) => void;
   enNavegacion?: boolean;
+  /** En Marcas, abre la misma pantalla de editar que los tres puntos. */
+  alEditar?: () => void;
+  /** En Marcas, la misma eliminación que los tres puntos, con confirmación. */
+  alEliminar?: () => void;
 };
 
 /**
@@ -28,7 +34,7 @@ type Propiedades = {
  * navegar un Circuito: el encabezado dice de qué pantalla se trata y cada
  * dato va aparte, con su nombre arriba y el valor abajo.
  */
-export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPunto, enNavegacion = false }: Propiedades) {
+export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPunto, enNavegacion = false, alEditar, alEliminar }: Propiedades) {
   const parte = camino.partes[indice];
   // Si el Camino no es de la actividad elegida, los colores son los de su primera actividad.
   const actividadDelGrafico = camino.actividades.includes(actividad) ? actividad : camino.actividades[0];
@@ -100,6 +106,14 @@ export function FichaDeCamino({ camino, indice, alCerrar, actividad, alSenalarPu
           </Dato>
         ) : null}
       </dl>
+      {alEditar || alEliminar ? (
+        <div className="mt-4 flex items-center gap-2">
+          {alEditar ? <BotonRedondo etiqueta="Editar" onClick={alEditar}>{ICONO_DE_EDITAR}</BotonRedondo> : null}
+          {alEliminar ? (
+            <BotonRedondo etiqueta="Eliminar" variante="destructivo" onClick={alEliminar}>{ICONO_DE_ELIMINAR}</BotonRedondo>
+          ) : null}
+        </div>
+      ) : null}
     </Emergente>
   );
 }

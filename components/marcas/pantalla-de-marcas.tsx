@@ -227,19 +227,21 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
   useCerrarConAtras(vista.clase !== "lista" && vista.clase !== "dibujar-camino", alAtras);
 
-  const eliminarCamino = async (camino: { id: number; nombre: string; actualizadoEn: string }) => {
+  const eliminarCamino = async (camino: { id: number; nombre: string; actualizadoEn: string }): Promise<boolean> => {
     const seguro = await confirmar({ titulo: `¿Eliminar «${camino.nombre}»?`,
       mensaje: "Deja de verse en el mapa de todos. No se puede deshacer desde la app.",
       textoDeAceptar: "Eliminar el Camino", destructivo: true });
-    if (!seguro) return;
+    if (!seguro) return false;
     try {
       const resultado = await retirarCamino(camino.id, camino.actualizadoEn);
-      if (!resultado.ok) { await avisar({ titulo: "No se eliminó el Camino", mensaje: resultado.error }); return; }
+      if (!resultado.ok) { await avisar({ titulo: "No se eliminó el Camino", mensaje: resultado.error }); return false; }
       await ponerAlDiaDespuesDeGuardar();
       router.refresh();
+      return true;
     } catch (error) {
       await avisar({ titulo: "No se eliminó el Camino",
         mensaje: `${error instanceof Error ? error.message : String(error)}. Revisá la señal y probá de nuevo.` });
+      return false;
     }
   };
 
@@ -354,6 +356,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
               setVistaActual(lugar);
               setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto", puntoInicial: { lon, lat } }, lugar });
             } : undefined}
+            alEditarCamino={(id) => setVista({ clase: "editar-camino", id })}
+            alEliminarCamino={eliminarCamino}
+            puedeEditarCamino={(autorId) => puedeCambiarDelMapa(categoria, miPerfilId, autorId)}
             avisoSinNada={!eligiendoPunto && enElMapa.length === 0
               ? marcas.length === 0
                 ? "Todavía no hay marcas en el mapa."

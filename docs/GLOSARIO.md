@@ -342,8 +342,8 @@ partes de cada **Camino**.
 
 **Condición de paso**
 Lo que se sabe sobre atravesar una parte: **por explorar** (línea entrecortada),
-**transitable** en la actividad (línea continua), **a pie con equipo** (línea de
-puntos) o **sin paso** (línea visible con X). En una ruta solo de bicicleta o
+**transitable** en la actividad (línea continua), **a pie con equipo** (línea
+continua con triangulitos chicos) o **sin paso** (línea visible con X). En una ruta solo de bicicleta o
 solo de kayak, la pantalla usa esos nombres concretos.
 
 **Complejidad de una parte**
