@@ -221,6 +221,11 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21) ·
 estacionamiento · sitio (desde 2026-10-15)
 
+Los dos últimos se incorporaron a la interfaz el 2026-10-15, pero faltaban en
+la base. Se habilitaron y verificaron en producción el 2026-10-22 mediante
+`20261022121659_habilitar_iconos_estacionamiento_y_sitio`. La verificación
+confirmó que ambos valores son aceptados por `public.icono_punto`.
+
 **La base obliga a que sean coherentes:** un punto lleva ícono y no lleva color;
 un trazo lleva color y no lleva ícono.
 

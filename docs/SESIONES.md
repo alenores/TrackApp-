@@ -4,6 +4,45 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-22 — Habilitar Sitio y Estacionamiento en la base
+
+### Estado al inicio
+
+Ale mostró el rechazo al guardar un punto de tipo Sitio. Los registros de la
+base confirmaron el rechazo de `sitio`; el catálogo tenía doce tipos y faltaban
+tanto `sitio` como `estacionamiento`, aunque la interfaz ya ofrecía ambos.
+
+### Lo que se hizo
+
+Con aprobación de Ale, se aplicó en producción la migración
+`20261022121659_habilitar_iconos_estacionamiento_y_sitio`, usando el cambio
+ya preparado en `scripts/supabase-iconos-estacionamiento-y-sitio.sql`.
+Una consulta posterior confirmó que la base acepta ambos valores y que
+los catorce tipos están habilitados. La migración quedó registrada.
+
+### Decisiones tomadas
+
+Se habilitaron los dos tipos que faltaban, sin modificar la aplicación.
+Antes de dar por terminado un tipo nuevo, comprobar que la base real lo acepta.
+
+### Documentos actualizados
+
+Esquema de la base y este registro. Queda resuelto el pendiente del 2026-10-15
+de habilitar ambos tipos; la prueba desde el celular sigue pendiente.
+
+### Deuda o inconsistencias detectadas
+
+El esquema documentaba ambos tipos antes de estar habilitados en producción.
+Se aclararon las fechas de incorporación a la interfaz y a la base.
+La revisión de seguridad posterior conserva los avisos previos a este cambio.
+
+### Pendientes para la próxima
+
+Ale debe confirmar el guardado desde su celular. No se reprodujo el flujo
+completo con su sesión; la aceptación de ambos tipos sí quedó verificada.
+
+---
+
 ## Sesión 2026-10-22 — Abrir Google Maps desde Marcas
 
 ### Estado al inicio
