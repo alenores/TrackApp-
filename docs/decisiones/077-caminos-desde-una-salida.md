@@ -38,6 +38,13 @@ Reglas:
   explorar y se clasifican después en su ficha, como al traer de afuera. Su
   largo y sus alturas salen del relieve al guardar (decisión 049).
 
+**Un Camino a la vez** (Ale, 2026-10-22). Al tocar «Crear Camino», esa parte se
+vuelve la tarjeta de un Camino nuevo: título «Camino nuevo», nombre,
+actividades propias de ese Camino, pegar puntas, y abajo Cancelar (siempre
+pide confirmación) y Guardar, que guarda solo ese Camino. Mientras tanto las
+demás partes no ofrecen crear otro y las herramientas trabajan sobre esa parte;
+cortarla deja el Camino con el primer pedazo y el resto como otra parte.
+
 Fuera por ahora: vincular la salida con los Caminos que pisó y procesar las
 salidas ya cargadas de forma masiva.
 

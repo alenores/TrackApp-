@@ -7,9 +7,11 @@ import { ACTIVIDADES } from "@/lib/rutas/actividades";
 import { ACTIVIDADES_RUTA } from "@/types/database";
 import { alternarActividadDelMapa, type SeleccionDelMapa } from "@/lib/caminos/seleccion-del-mapa";
 
-export function SelectorDeActividadesDelMapa({ seleccion, alCambiar }: {
+export function SelectorDeActividadesDelMapa({ seleccion, alCambiar, ocultos = 0 }: {
   seleccion: SeleccionDelMapa;
   alCambiar: (seleccion: SeleccionDelMapa) => void;
+  /** Caminos que no se ven porque ninguna de sus actividades está prendida. */
+  ocultos?: number;
 }) {
   const { misActividades = [] } = useQuienSoy();
   const grupos = [{ titulo: "Tus actividades", actividades: ACTIVIDADES.filter((cada) => misActividades.includes(cada.tipo)) },
@@ -40,6 +42,9 @@ export function SelectorDeActividadesDelMapa({ seleccion, alCambiar }: {
             alTocar={() => alCambiar({ ...seleccion, principal: cada.tipo })} />)}
       </div>
     </div>}
+    {ocultos > 0 && seleccion.visibles.length > 0 ? <p role="status" className="text-sm font-medium text-ambar-texto">
+      {ocultos === 1 ? "1 Camino de otras actividades no se muestra." : `${ocultos} Caminos de otras actividades no se muestran.`} Prendé su actividad para verlo{ocultos === 1 ? "" : "s"}.
+    </p> : null}
     {seleccion.visibles.length === 0 ? <p className="text-sm text-texto-suave">Elegí una o varias actividades, o Todas, para ver los Caminos.</p> : <p className="text-sm text-texto-suave">Los colores y la condición de paso corresponden a la actividad principal. Los demás Caminos se ven en gris.</p>}
   </div>;
 }

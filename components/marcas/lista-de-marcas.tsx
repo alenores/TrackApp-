@@ -6,6 +6,7 @@ import { Casilla } from "@/components/ui/casilla";
 import { MenuDeAcciones, type AccionDelMenu } from "@/components/ui/menu-de-acciones";
 import { Opciones } from "@/components/ui/opciones";
 import { SelectorDeActividadesDelMapa } from "@/components/caminos/selector-de-actividades-del-mapa";
+import { comparteActividad } from "@/lib/caminos/seleccion-del-mapa";
 import type { SeleccionDelMapa } from "@/lib/caminos/seleccion-del-mapa";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { mostrarActividad } from "@/lib/rutas/actividades";
@@ -119,14 +120,11 @@ export function ListaDeMarcas(propiedades: Propiedades) {
         </div>
       );
     }
-    if (grupo !== "camino") return propiedades.adentroDelGrupo?.[grupo] ?? null;
-    return (
-      <div className="space-y-3">
-        <SelectorDeActividadesDelMapa seleccion={propiedades.seleccion} alCambiar={propiedades.alCambiarSeleccion} />
-        {propiedades.adentroDelGrupo?.camino ?? null}
-      </div>
-    );
+    return propiedades.adentroDelGrupo?.[grupo] ?? null;
   };
+  // Los Caminos que la actividad elegida deja afuera: se dicen, no se esconden callados.
+  const caminosOcultos = marcas.filter((marca) => marca.grupo === "camino"
+    && !comparteActividad(marca.actividades ?? [], propiedades.seleccion.visibles)).length;
 
   return (
     <div className="space-y-4">
@@ -168,6 +166,13 @@ export function ListaDeMarcas(propiedades: Propiedades) {
                       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                   </button>
                 </div>
+                {/* Qué actividades se están mirando: siempre a la vista, abierta o cerrada la tarjeta. */}
+                {grupo.grupo === "camino" ? (
+                  <div className="border-t border-borde px-3 py-3">
+                    <SelectorDeActividadesDelMapa seleccion={propiedades.seleccion} alCambiar={propiedades.alCambiarSeleccion}
+                      ocultos={caminosOcultos} />
+                  </div>
+                ) : null}
                 {plegado ? null : (
                   <>
                     {adentroDe(grupo.grupo) ? (

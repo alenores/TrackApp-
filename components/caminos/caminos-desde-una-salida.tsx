@@ -8,7 +8,9 @@ import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { ElegirActividades } from "@/components/rutas/elegir-actividades";
 import { Boton } from "@/components/ui/boton";
 import { BuscadorDeTitulo } from "@/components/ui/buscador-de-titulo";
+import { Campo } from "@/components/ui/campo";
 import { Casilla } from "@/components/ui/casilla";
+import { IconoDeClase } from "@/components/marcas/icono-de-clase";
 import { useDialogos } from "@/components/ui/dialogos";
 import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Opciones } from "@/components/ui/opciones";
@@ -26,6 +28,7 @@ import {
   proponerPartes,
   puntaCercana,
   type CaminoParaComparar,
+  type PuntaCercana,
 } from "@/lib/caminos/desde-salida";
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
@@ -41,22 +44,22 @@ import type { ActividadRuta, Salida } from "@/types/database";
  * Caminos desde una salida (decisión 077): la línea del GPS de una salida, de
  * cualquier usuario, como **borrador**. La app marca por dónde va sobre
  * Caminos que ya existen; el usuario corta, corrige y descarta, y elige qué
- * partes nuevas se guardan como Caminos. **La app propone, el usuario
- * decide**: nada se guarda hasta tocar Guardar, y un Camino que ya existe
- * nunca se toca desde acá.
+ * partes nuevas se guardan como Caminos, **de a uno**: la parte elegida se
+ * vuelve la tarjeta de un Camino nuevo, con su nombre, sus actividades y su
+ * Guardar. **La app propone, el usuario decide**: nada se guarda hasta tocar
+ * Guardar, y un Camino que ya existe nunca se toca desde acá.
  *
  * Es una forma más de agregar en Marcas, como «Traer de afuera»: solo la ven
  * quienes pueden crear Caminos. Se hace en la computadora y con señal.
  */
 
-type Destino = "pendiente" | "camino" | "descartada";
+type Destino = "pendiente" | "descartada";
 type Pieza = {
   clave: number;
   coordenadas: Position[];
   destino: Destino;
+  /** El nombre con que quedó guardada como Camino. */
   nombre: string;
-  pegarInicio: boolean;
-  pegarFinal: boolean;
   /** El Camino que quedó guardado con esta parte. */
   guardadoComo: number | null;
 };
@@ -64,7 +67,7 @@ type Herramienta = "elegir" | "cortar" | "mover" | "agregar" | "quitar";
 
 let proximaClave = 1;
 function piezaNueva(coordenadas: Position[]): Pieza {
-  return { clave: proximaClave++, coordenadas, destino: "pendiente", nombre: "", pegarInicio: false, pegarFinal: false, guardadoComo: null };
+  return { clave: proximaClave++, coordenadas, destino: "pendiente", nombre: "", guardadoComo: null };
 }
 
 function km(metros: number): string {
@@ -135,6 +138,15 @@ function armarPiezas(lineas: Position[][], caminos: CaminoParaComparar[]): Pieza
   return lineas.flatMap((linea) => proponerPartes(achicarLinea(linea), caminos).map((parte) => piezaNueva(parte.coordenadas)));
 }
 
+/** El Camino que se está creando con una parte. Hay uno solo a la vez. */
+type Creacion = {
+  clave: number;
+  nombre: string;
+  actividades: ActividadRuta[];
+  pegarInicio: boolean;
+  pegarFinal: boolean;
+};
+
 function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: () => void }) {
   const { confirmar } = useDialogos();
   const [carga, setCarga] = useState<Carga>({ estado: "cargando" });
@@ -142,9 +154,10 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
   const [piezas, setPiezas] = useState<Pieza[]>([]);
   const [caminos, setCaminos] = useState<CaminoParaComparar[]>([]);
   const [elegida, setElegida] = useState<number | null>(null);
+  const [creacion, setCreacion] = useState<Creacion | null>(null);
   const [herramienta, setHerramienta] = useState<Herramienta>("elegir");
-  const [actividades, setActividades] = useState<ActividadRuta[]>([]);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [avisoDelCamino, setAvisoDelCamino] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [tocado, setTocado] = useState(false);
 
@@ -181,15 +194,18 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
     largo: largoDeParte(pieza.coordenadas),
   }])), [piezas, caminos]);
 
-  const lineaParaGuardar = (pieza: Pieza): Position[] => {
+  const lineaDe = (pieza: Pieza): Position[] => {
+    if (creacion?.clave !== pieza.clave) return pieza.coordenadas;
     const datos = analisis.get(pieza.clave);
     let linea = pieza.coordenadas;
-    if (pieza.pegarInicio && datos?.inicio) linea = pegarPunta(linea, "inicio", datos.inicio.coordenada);
-    if (pieza.pegarFinal && datos?.final) linea = pegarPunta(linea, "final", datos.final.coordenada);
+    if (creacion.pegarInicio && datos?.inicio) linea = pegarPunta(linea, "inicio", datos.inicio.coordenada);
+    if (creacion.pegarFinal && datos?.final) linea = pegarPunta(linea, "final", datos.final.coordenada);
     return linea;
   };
 
-  const elegidaPieza = piezas.find((pieza) => pieza.clave === elegida) ?? null;
+  // Mientras se crea un Camino, las herramientas trabajan sobre esa parte y nada más.
+  const enUso = creacion?.clave ?? elegida;
+  const piezaEnUso = piezas.find((pieza) => pieza.clave === enUso) ?? null;
   const editandoLinea = herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar";
 
   // El borrador: verde donde va sobre un Camino, con el color de la línea de las salidas donde es nuevo.
@@ -202,13 +218,13 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
         properties: {
           borrador: pieza.clave, paso: "transitable",
           ...(sobre ? { complejidad: "facil" } : { complejidad: null, lineaDeSalida: true }),
-          elegida: pieza.clave === elegida,
+          elegida: pieza.clave === enUso,
         },
-        geometry: { type: "LineString" as const, coordinates: lineaParaGuardar(pieza) },
+        geometry: { type: "LineString" as const, coordinates: lineaDe(pieza) },
       };
     }),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [piezas, analisis, elegida]);
+  }), [piezas, analisis, enUso, creacion]);
 
   // Los Caminos que ya existen van encima, finos: así se ven los dos.
   const caminosExistentes = useMemo((): FeatureCollection<LineString> => ({
@@ -228,23 +244,38 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
     setPiezas((actuales) => actuales.map((pieza) => pieza.clave === clave ? { ...pieza, ...cambio } : pieza));
     setTocado(true);
   };
+  const cambiarCreacion = (cambio: Partial<Creacion>) => {
+    setCreacion((actual) => actual ? { ...actual, ...cambio } : actual);
+    setAvisoDelCamino(null);
+  };
 
   const tocarElMapa = (lon: number, lat: number, propiedades: Record<string, unknown>) => {
     const clave = Number(propiedades.borrador);
     if (!Number.isInteger(clave)) return;
     const pieza = piezas.find((cada) => cada.clave === clave);
     if (!pieza || pieza.guardadoComo !== null) return;
+    // Creando un Camino, las otras partes no se tocan.
+    if (creacion && clave !== creacion.clave) {
+      setAviso("Estás creando un Camino: terminalo con Guardar o cancelalo para trabajar con otra parte.");
+      return;
+    }
     if (herramienta === "cortar") {
       const corte = cortarLinea(pieza.coordenadas, lon, lat);
       if (!corte.ok) { setAviso(corte.error); return; }
       const [antes, despues] = corte.datos.map(piezaNueva);
       setPiezas((actuales) => actuales.flatMap((cada) => cada.clave === clave ? [antes, despues] : [cada]));
-      setElegida(null);
+      if (creacion) {
+        // El Camino sigue con el primer pedazo; el resto queda como otra parte.
+        setCreacion({ ...creacion, clave: antes.clave, pegarFinal: false });
+        setAviso("Se cortó: el Camino que estás creando sigue con el primer pedazo y el resto quedó como otra parte.");
+      } else {
+        setElegida(null);
+        setAviso("Se cortó la parte en dos. Revisá qué hacer con cada una.");
+      }
       setTocado(true);
-      setAviso("Se cortó la parte en dos. Revisá qué hacer con cada una.");
       return;
     }
-    if (herramienta === "agregar" && clave === elegida) {
+    if (herramienta === "agregar" && clave === enUso) {
       const resultado = agregarPuntoEnLinea(pieza.coordenadas, lon, lat);
       if (!resultado.ok) { setAviso(resultado.error); return; }
       cambiarPieza(clave, { coordenadas: resultado.datos });
@@ -256,24 +287,44 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
   };
 
   const quitarPunto = (indice: number) => {
-    if (!elegidaPieza) return;
-    const resultado = quitarPuntoDeLinea(elegidaPieza.coordenadas, indice);
+    if (!piezaEnUso) return;
+    const resultado = quitarPuntoDeLinea(piezaEnUso.coordenadas, indice);
     if (!resultado.ok) { setAviso(resultado.error); return; }
-    cambiarPieza(elegidaPieza.clave, { coordenadas: resultado.datos });
+    cambiarPieza(piezaEnUso.clave, { coordenadas: resultado.datos });
   };
 
   const moverPunto = (indice: number, lon: number, lat: number) => {
-    if (!elegidaPieza) return;
-    cambiarPieza(elegidaPieza.clave, {
-      coordenadas: elegidaPieza.coordenadas.map((punto, i) => i === indice ? [lon, lat] : [punto[0], punto[1]]),
+    if (!piezaEnUso) return;
+    cambiarPieza(piezaEnUso.clave, {
+      coordenadas: piezaEnUso.coordenadas.map((punto, i) => i === indice ? [lon, lat] : [punto[0], punto[1]]),
     });
   };
 
+  const empezarCamino = (pieza: Pieza) => {
+    setCreacion({ clave: pieza.clave, nombre: "", actividades: [], pegarInicio: false, pegarFinal: false });
+    setElegida(pieza.clave);
+    setAviso(null);
+    setAvisoDelCamino(null);
+    setTocado(true);
+  };
+
+  const cancelarCamino = async () => {
+    if (!creacion) return;
+    if (!(await confirmar({
+      titulo: "¿Cancelar este Camino?",
+      mensaje: "Se pierden el nombre, las actividades y las puntas pegadas. La parte vuelve a quedar como estaba.",
+      textoDeAceptar: "Cancelar el Camino",
+      textoDeCancelar: "Seguir creándolo",
+      destructivo: true,
+    }))) return;
+    setCreacion(null);
+    setAvisoDelCamino(null);
+  };
+
   const volver = async () => {
-    const pendientesDeGuardar = piezas.some((pieza) => pieza.destino === "camino" && pieza.guardadoComo === null);
-    if ((tocado || pendientesDeGuardar) && !(await confirmar({
+    if ((tocado || creacion) && !(await confirmar({
       titulo: "¿Salir sin guardar?",
-      mensaje: "Los cortes, las correcciones y lo que marcaste como Camino se pierden. Los Caminos ya guardados quedan.",
+      mensaje: "Los cortes, las correcciones y el Camino que estás creando se pierden. Los Caminos ya guardados quedan.",
       textoDeAceptar: "Salir sin guardar",
       destructivo: true,
     }))) return;
@@ -284,52 +335,52 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
     if (carga.estado !== "listo") return;
     if (!(await confirmar({
       titulo: "¿Volver al GPS como vino?",
-      mensaje: "Se pierden los cortes, las correcciones y lo que marcaste. Los Caminos ya guardados quedan.",
+      mensaje: "Se pierden los cortes, las correcciones y el Camino que estás creando. Los Caminos ya guardados quedan.",
       textoDeAceptar: "Volver al GPS original",
       destructivo: true,
     }))) return;
     setPiezas(armarPiezas(carga.original, caminos));
     setElegida(null);
+    setCreacion(null);
     setHerramienta("elegir");
     setTocado(false);
     setAviso(null);
+    setAvisoDelCamino(null);
   };
 
-  const paraGuardar = piezas.filter((pieza) => pieza.destino === "camino" && pieza.guardadoComo === null);
-  const sinNombre = paraGuardar.filter((pieza) => !pieza.nombre.trim()).length;
-  const repetidas = paraGuardar.filter((pieza) => analisis.get(pieza.clave)?.va).length;
-  const puedeGuardar = paraGuardar.length > 0 && sinNombre === 0 && repetidas === 0 && actividades.length > 0 && !guardando;
-
-  const guardar = async () => {
-    if (!puedeGuardar) return;
+  const guardarCamino = async () => {
+    const pieza = piezas.find((cada) => cada.clave === creacion?.clave);
+    if (!creacion || !pieza || guardando) return;
+    const nombre = creacion.nombre.trim();
+    if (!nombre) { setAvisoDelCamino("Escribí el nombre del Camino."); return; }
+    if (creacion.actividades.length === 0) { setAvisoDelCamino("Elegí al menos una actividad."); return; }
+    if (analisis.get(pieza.clave)?.va) {
+      setAvisoDelCamino("Así como está, esta parte va sobre un Camino que ya existe y sería un Camino repetido. Cortala para separar lo nuevo.");
+      return;
+    }
     setGuardando(true);
-    setAviso(null);
-    let guardados = 0;
-    let problema: string | null = null;
+    setAvisoDelCamino(null);
     try {
-      for (const pieza of paraGuardar) {
-        const resultado = await crearCaminoNuevo({
-          nombre: pieza.nombre.trim(),
-          descripcion: `Desde la salida «${salida.titulo}» del ${diaEnPalabras(salida.fecha)}.`,
-          actividades,
-          coordenadas: lineaParaGuardar(pieza),
-        });
-        if (!resultado.ok) { problema = `«${pieza.nombre.trim()}» no quedó guardado: ${resultado.error}`; break; }
-        guardados += 1;
-        const nuevo = resultado.datos;
-        setPiezas((actuales) => actuales.map((cada) => cada.clave === pieza.clave ? { ...cada, guardadoComo: nuevo.id } : cada));
-        // Desde ahora el Camino nuevo también cuenta para comparar.
-        setCaminos((actuales) => [...actuales, { id: nuevo.id, nombre: nuevo.nombre, coordenadas: nuevo.coordenadas }]);
-      }
-      if (guardados > 0) {
-        const puesta = await ponerAlDiaDespuesDeGuardar();
-        if (puesta.clase === "fallo") {
-          problema = `${problema ? `${problema} ` : ""}Lo guardado no aparece todavía en este celular: ${puesta.motivo}. Volvé a poner la app al día con conexión.`;
-        }
-      }
-      setAviso(problema ?? (guardados === 1 ? "Se guardó 1 Camino nuevo." : `Se guardaron ${guardados} Caminos nuevos.`));
+      const resultado = await crearCaminoNuevo({
+        nombre,
+        descripcion: `Desde la salida «${salida.titulo}» del ${diaEnPalabras(salida.fecha)}.`,
+        actividades: creacion.actividades,
+        coordenadas: lineaDe(pieza),
+      });
+      if (!resultado.ok) { setAvisoDelCamino(`No se guardó el Camino: ${resultado.error}`); return; }
+      const nuevo = resultado.datos;
+      setPiezas((actuales) => actuales.map((cada) => cada.clave === pieza.clave
+        ? { ...cada, coordenadas: lineaDe(pieza), nombre, guardadoComo: nuevo.id } : cada));
+      // Desde ahora el Camino nuevo también cuenta para comparar.
+      setCaminos((actuales) => [...actuales, { id: nuevo.id, nombre: nuevo.nombre, coordenadas: nuevo.coordenadas }]);
+      setCreacion(null);
+      setElegida(null);
+      const puesta = await ponerAlDiaDespuesDeGuardar();
+      setAviso(puesta.clase === "fallo"
+        ? `Se guardó «${nombre}», pero no aparece todavía en este celular: ${puesta.motivo}. Volvé a poner la app al día con conexión.`
+        : null);
     } catch (causa) {
-      setAviso(`Se interrumpió el guardado: ${causa instanceof Error ? causa.message : String(causa)}. Lo ya guardado no se repite si tocás Guardar de nuevo.`);
+      setAvisoDelCamino(`Se interrumpió el guardado: ${causa instanceof Error ? causa.message : String(causa)}. Fijate en Marcas si quedó guardado antes de volver a tocar Guardar.`);
     } finally {
       setGuardando(false);
     }
@@ -337,10 +388,10 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
 
   const ayudaDeHerramienta: Record<Herramienta, string> = {
     elegir: "Tocá una parte en el mapa o en la lista para elegirla.",
-    cortar: "Tocá la línea donde la querés cortar.",
-    mover: "Elegí una parte y arrastrá sus puntos hasta su lugar.",
-    agregar: "Elegí una parte y tocá su línea entre dos puntos.",
-    quitar: "Elegí una parte y tocá el punto que querés quitar.",
+    cortar: creacion ? "Tocá la línea del Camino que estás creando donde la querés cortar." : "Tocá la línea donde la querés cortar.",
+    mover: creacion ? "Arrastrá los puntos del Camino que estás creando." : "Elegí una parte y arrastrá sus puntos hasta su lugar.",
+    agregar: creacion ? "Tocá la línea del Camino que estás creando, entre dos puntos." : "Elegí una parte y tocá su línea entre dos puntos.",
+    quitar: creacion ? "Tocá el punto del Camino que estás creando que querés quitar." : "Elegí una parte y tocá el punto que querés quitar.",
   };
 
   return (
@@ -360,7 +411,7 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
               caminosEncima={caminosExistentes}
               alTocarCamino={tocarElMapa}
-              verticesDeCamino={editandoLinea && elegidaPieza && elegidaPieza.guardadoComo === null ? elegidaPieza.coordenadas : null}
+              verticesDeCamino={editandoLinea && piezaEnUso && piezaEnUso.guardadoComo === null ? piezaEnUso.coordenadas : null}
               alTocarVerticeDeCamino={herramienta === "quitar" ? quitarPunto : undefined}
               alMoverVerticeDeCamino={herramienta === "mover" ? moverPunto : undefined} />
           }
@@ -382,28 +433,40 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
                     { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
                   ]} />
                 <p className="text-base text-texto-suave">{ayudaDeHerramienta[herramienta]}</p>
-                {aviso && !aviso.startsWith("Se guard") ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
+                {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
               </Tarjeta>
 
               <h3 className="text-lg font-bold text-texto">Partes ({piezas.length})</h3>
               {piezas.map((pieza, indice) => {
                 const datos = analisis.get(pieza.clave);
-                const esElegida = pieza.clave === elegida;
+                const largo = km(datos?.largo ?? 0);
+                if (creacion?.clave === pieza.clave) {
+                  return (
+                    <TarjetaDelCaminoNuevo key={pieza.clave} numero={indice + 1} largo={largo} creacion={creacion}
+                      inicio={datos?.inicio ?? null} final={datos?.final ?? null} vaSobre={datos?.va?.sobre.nombre ?? null}
+                      guardando={guardando} aviso={avisoDelCamino} alCambiar={cambiarCreacion}
+                      alCancelar={() => void cancelarCamino()} alGuardar={() => void guardarCamino()} />
+                  );
+                }
+                const esElegida = pieza.clave === elegida && !creacion;
                 const bloqueada = guardando || pieza.guardadoComo !== null;
                 return (
-                  <Tarjeta key={pieza.clave} franja={esElegida ? "verde" : undefined} className="space-y-3">
+                  <Tarjeta key={pieza.clave} className={`space-y-3 ${esElegida ? "ring-2 ring-acento-borde" : ""}`}>
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-base font-semibold text-texto">Parte {indice + 1} · {km(datos?.largo ?? 0)}</p>
-                      {!esElegida && pieza.destino !== "descartada" ? (
+                      <p className="text-base font-semibold text-texto">
+                        Parte {indice + 1} · {largo}{esElegida ? " · elegida" : ""}
+                      </p>
+                      {!esElegida && !creacion && pieza.destino !== "descartada" && pieza.guardadoComo === null ? (
                         <Boton variante="secundario" onClick={() => setElegida(pieza.clave)}>Elegir</Boton>
                       ) : null}
                     </div>
                     {pieza.guardadoComo !== null ? (
-                      <p className="text-base text-verde-texto">Guardada como el Camino «{pieza.nombre.trim()}».</p>
+                      <p className="text-base text-verde-texto">Guardada como el Camino «{pieza.nombre}».</p>
                     ) : pieza.destino === "descartada" ? (
                       <>
                         <p className="text-base text-texto-suave">Descartada: no se guarda y no se ve en el mapa.</p>
-                        <Boton variante="secundario" disabled={guardando} onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
+                        <Boton variante="secundario" disabled={guardando || Boolean(creacion)}
+                          onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
                       </>
                     ) : datos?.va ? (
                       <>
@@ -411,73 +474,91 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
                           Va sobre «{datos.va.sobre.nombre}» ({Math.round(datos.va.proporcion * 100)} % de esta parte).
                           Ese Camino ya existe y no se toca.
                         </p>
-                        {pieza.destino === "camino" ? (
-                          <p role="alert" className="text-base text-ambar-texto">
-                            Así como está, sería un Camino repetido. Cortala para separar lo nuevo, o descartala.
-                          </p>
-                        ) : null}
-                        <Boton variante="secundario" disabled={bloqueada} onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
+                        <Boton variante="secundario" disabled={bloqueada || Boolean(creacion)}
+                          onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
                       </>
                     ) : (
                       <>
                         <p className="text-base text-texto">No coincide con ningún Camino.</p>
-                        <div className="flex flex-wrap gap-2">
-                          <Boton variante={pieza.destino === "camino" ? "principal" : "secundario"} aria-pressed={pieza.destino === "camino"}
-                            disabled={bloqueada} onClick={() => cambiarPieza(pieza.clave, { destino: pieza.destino === "camino" ? "pendiente" : "camino" })}>
-                            Crear Camino
-                          </Boton>
-                          <Boton variante="secundario" disabled={bloqueada} onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
-                        </div>
-                        {pieza.destino === "camino" ? (
-                          <div className="space-y-2">
-                            <label className="block text-base text-texto">Nombre del Camino
-                              <input className="mt-1 block w-full rounded-xl border border-borde-fuerte bg-fondo p-2 text-texto" value={pieza.nombre}
-                                maxLength={120} disabled={bloqueada} onChange={(evento) => cambiarPieza(pieza.clave, { nombre: evento.target.value })} />
-                            </label>
-                            {(["inicio", "final"] as const).map((extremo) => {
-                              const cercana = extremo === "inicio" ? datos?.inicio : datos?.final;
-                              if (!cercana) return null;
-                              const campo = extremo === "inicio" ? "pegarInicio" : "pegarFinal";
-                              return (
-                                <div key={extremo} className="flex items-center gap-1">
-                                  <Casilla tildada={pieza[campo]} etiqueta={`Pegar la punta ${extremo === "inicio" ? "inicial" : "final"} a «${cercana.camino.nombre}»`}
-                                    alTocar={() => cambiarPieza(pieza.clave, { [campo]: !pieza[campo] })} />
-                                  <span className="text-base text-texto">
-                                    Pegar la punta {extremo === "inicio" ? "inicial" : "final"} a «{cercana.camino.nombre}» (está a {Math.round(cercana.distanciaM)} m)
-                                  </span>
-                                </div>
-                              );
-                            })}
+                        {creacion ? (
+                          <p className="text-base text-texto-suave">Para usar esta parte, terminá o cancelá el Camino que estás creando.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            <Boton variante="secundario" disabled={bloqueada} onClick={() => empezarCamino(pieza)}>Crear Camino</Boton>
+                            <Boton variante="secundario" disabled={bloqueada}
+                              onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
                           </div>
-                        ) : null}
+                        )}
                       </>
                     )}
                   </Tarjeta>
                 );
               })}
 
-              <Tarjeta className="space-y-3">
-                <ElegirActividades etiqueta="Actividades de los Caminos nuevos" modo="varias" obligatorio
-                  elegidas={actividades} deshabilitado={guardando}
-                  alTocar={(actividad) => setActividades((actuales) => actuales.includes(actividad)
-                    ? actuales.filter((cada) => cada !== actividad) : [...actuales, actividad])} />
+              <Tarjeta className="space-y-2">
                 <p className="text-base text-texto-suave">
-                  Cada Camino nuevo empieza por explorar. La condición y la complejidad se cargan después, en su ficha.
+                  Si te perdiste entre cortes y correcciones, podés volver a empezar con la línea del GPS como vino.
                 </p>
-                {paraGuardar.length === 0 ? <p className="text-base text-texto-suave">Marcá al menos una parte con «Crear Camino».</p> : null}
-                {sinNombre > 0 ? <p className="text-base text-ambar-texto">Falta el nombre de {sinNombre === 1 ? "un Camino" : `${sinNombre} Caminos`}.</p> : null}
-                {repetidas > 0 ? <p className="text-base text-ambar-texto">Hay partes marcadas que van sobre un Camino existente. Cortalas o descartalas.</p> : null}
-                {paraGuardar.length > 0 && actividades.length === 0 ? <p className="text-base text-ambar-texto">Elegí al menos una actividad.</p> : null}
-                <div className="flex flex-wrap justify-between gap-2 border-t border-borde pt-3">
-                  <Boton variante="secundario" disabled={guardando} onClick={() => void empezarDeNuevo()}>Volver al GPS original</Boton>
-                  <Boton disabled={!puedeGuardar} onClick={() => void guardar()}>{guardando ? "Guardando…" : "Guardar"}</Boton>
-                </div>
-                {aviso && aviso.startsWith("Se guard") ? <p role="status" className="text-base text-verde-texto">{aviso}</p> : null}
+                <Boton variante="secundario" disabled={guardando} onClick={() => void empezarDeNuevo()}>Volver al GPS original</Boton>
               </Tarjeta>
             </div>
           }
         />
       ) : null}
     </div>
+  );
+}
+
+/**
+ * La parte convertida en un Camino que se está creando: se nota a simple vista,
+ * con su título, y tiene todo lo del Camino adentro. Guardar guarda solo este.
+ */
+function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre, guardando, aviso, alCambiar, alCancelar, alGuardar }: {
+  numero: number;
+  largo: string;
+  creacion: Creacion;
+  inicio: PuntaCercana | null;
+  final: PuntaCercana | null;
+  vaSobre: string | null;
+  guardando: boolean;
+  aviso: string | null;
+  alCambiar: (cambio: Partial<Creacion>) => void;
+  alCancelar: () => void;
+  alGuardar: () => void;
+}) {
+  return (
+    <Tarjeta franja="verde" className="space-y-4">
+      <div className="space-y-1">
+        <h3 className="flex items-center gap-2 text-xl font-bold text-texto"><IconoDeClase grupo="camino" />Camino nuevo</h3>
+        <p className="text-base text-texto-suave">Desde la parte {numero} · {largo}. Las herramientas trabajan sobre esta parte.</p>
+      </div>
+      {vaSobre ? (
+        <p role="alert" className="text-base text-ambar-texto">
+          Así como está, va sobre «{vaSobre}»: sería un Camino repetido. Cortala para separar lo nuevo.
+        </p>
+      ) : null}
+      <Campo label="Nombre del Camino" obligatorio value={creacion.nombre} maxLength={120} disabled={guardando}
+        onChange={(evento) => alCambiar({ nombre: evento.target.value })} />
+      <ElegirActividades etiqueta="Actividades" modo="varias" obligatorio elegidas={creacion.actividades} deshabilitado={guardando}
+        alTocar={(actividad) => alCambiar({ actividades: creacion.actividades.includes(actividad)
+          ? creacion.actividades.filter((cada) => cada !== actividad) : [...creacion.actividades, actividad] })} />
+      {inicio || final ? (
+        <div className="space-y-1">
+          {([["inicio", inicio, "pegarInicio", "inicial"], ["final", final, "pegarFinal", "final"]] as const).map(([extremo, cercana, campo, palabra]) => cercana ? (
+            <div key={extremo} className="flex items-center gap-1">
+              <Casilla tildada={creacion[campo]} etiqueta={`Pegar la punta ${palabra} a «${cercana.camino.nombre}»`}
+                alTocar={() => alCambiar({ [campo]: !creacion[campo] })} />
+              <span className="text-base text-texto">Pegar la punta {palabra} a «{cercana.camino.nombre}» (está a {Math.round(cercana.distanciaM)} m)</span>
+            </div>
+          ) : null)}
+        </div>
+      ) : null}
+      <p className="text-base text-texto-suave">Empieza por explorar. La condición y la complejidad se cargan después, en su ficha.</p>
+      {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
+      <div className="flex flex-wrap justify-between gap-2 border-t border-borde pt-3">
+        <Boton variante="secundario" disabled={guardando} onClick={alCancelar}>Cancelar</Boton>
+        <Boton disabled={guardando} onClick={alGuardar}>{guardando ? "Guardando…" : "Guardar"}</Boton>
+      </div>
+    </Tarjeta>
   );
 }

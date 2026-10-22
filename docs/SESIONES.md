@@ -17,7 +17,15 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 - El mapa compartido suma una capa para dibujar Caminos por encima de otra
   línea. La bajada del archivo GPS de una salida quedó compartida (una vez por
   apertura).
-- No se guardó ningún Camino de prueba en la base: falta que Ale guarde uno.
+- Corrección de Ale: crear un Camino no se distinguía de editar el GPS. Ahora
+  la parte se vuelve la tarjeta «Camino nuevo» con nombre, actividades propias,
+  puntas, Cancelar (con confirmación) y Guardar; uno a la vez.
+- Ale guardó «Cuesta del Perro - Refugio CAC» y no lo veía en Marcas: quedó
+  bien guardado, pero solo con Trekking, y Marcas abre con su actividad
+  principal (Mountain bike), así que queda oculto hasta elegir Trekking.
+- Pedido de Ale: en Marcas las actividades de Caminos quedan siempre a la vista,
+  también con la tarjeta cerrada. En Marcas y Consultas, si la actividad deja
+  Caminos afuera, se avisa: «1 Camino de otras actividades no se muestra».
 
 ## Sesión 2026-10-22 — Buscar y filtrar sin volver a la base
 

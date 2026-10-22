@@ -142,7 +142,8 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
                 icono={ICONOS_DE_LA_CAPA[capa.valor].map((grupo) => <IconoDeClase key={grupo} grupo={grupo} />)}
                 prendida={ver(capa.valor)} alAlternar={() => alternar(capa.valor)}>
                 {capa.valor === "caminos" && ver("caminos") ? (
-                  <SelectorDeActividadesDelMapa seleccion={seleccion} alCambiar={elegirSeleccion} />
+                  <SelectorDeActividadesDelMapa seleccion={seleccion} alCambiar={elegirSeleccion}
+                    ocultos={caminosSinLinea.filter((camino) => !comparteActividad(camino.actividades ?? [], seleccion.visibles)).length} />
                 ) : capa.valor === "zonas" && ver("zonas") ? (
                   zonas.length === 0 ? (
                     <p className="text-sm text-texto-suave">Todavía no hay zonas dibujadas en Córdoba.</p>
