@@ -61,7 +61,8 @@ export type IconoPunto =
   | "tranquera"
   | "estacionamiento"
   | "sitio"
-  | "campamento";
+  | "campamento"
+  | "casa";
 
 export const ICONOS_PUNTO: IconoPunto[] = [
   "refugio",
@@ -79,6 +80,7 @@ export const ICONOS_PUNTO: IconoPunto[] = [
   "estacionamiento",
   "sitio",
   "campamento",
+  "casa",
 ];
 
 // ---------------------------------------------------------------- geometría
@@ -192,6 +194,12 @@ export type Anotacion = {
   icono: IconoPunto | null;
   /** Solo cuando `tipo` es `trazo`. */
   color: string | null;
+  /**
+   * Solo en puntos: el ícono se ve con contorno rojo. Es un aviso y nada más:
+   * no cambia Caminos, Circuitos ni trazos. Se pone y se saca con señal, desde
+   * Mapas, nunca navegando (decisión 078).
+   */
+  atencion: boolean;
   comentario: string | null;
   /**
    * La foto del lugar, cuando la hay.

@@ -210,6 +210,7 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 | `icono` | icono_punto | solo si es punto |
 | `color` | text | solo si es trazo |
 | `comentario` | text | texto libre, para las dos formas |
+| `atencion` | boolean | obligatorio, por defecto `false`. Contorno rojo del punto (decisión 078). Solo puntos que no vienen de OpenStreetMap: lo exige `anotaciones_atencion_solo_en_puntos_propios` |
 | `geometria` | jsonb | el punto o la línea, obligatorio |
 | `foto_url` | text | la foto grande, hasta 2 MB. Se ve con internet |
 | `foto_chica_url` | text | la foto chica, la que baja al celular y se ve en el cerro |
@@ -220,7 +221,8 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 
 **Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
 fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21) ·
-estacionamiento · sitio (desde 2026-10-15) · campamento (desde 2026-10-22)
+estacionamiento · sitio (desde 2026-10-15) · campamento (desde 2026-10-22) ·
+casa (desde 2026-10-24)
 
 Los dos últimos se incorporaron a la interfaz el 2026-10-15, pero faltaban en
 la base. Se habilitaron y verificaron en producción el 2026-10-22 mediante
@@ -231,6 +233,13 @@ Campamento se habilitó en la base junto con la interfaz, el 2026-10-22, con
 `habilitar_icono_campamento` (`scripts/supabase-icono-campamento.sql`). Se
 probó guardar un punto de ese tipo con el rol de un usuario logueado, dentro de
 una transacción que se deshizo.
+
+Casa y la columna `atencion` se habilitaron el 2026-10-24 con `casa_y_atencion`
+(`scripts/supabase-casa-y-atencion.sql`). La tabla da permisos por columna:
+`atencion` recibió `INSERT` y `UPDATE` para `authenticated` en la misma tanda.
+Se probó con el rol del administrador, en una transacción que se deshizo:
+crear una casa con Atención, sacársela, y que una tranquera de OpenStreetMap
+con Atención se rechace.
 
 **Tipo de punto nuevo = valor nuevo en `icono_punto`, en la misma tanda.** La
 app no controla el tipo por su cuenta: si la lista de la base no lo tiene, el

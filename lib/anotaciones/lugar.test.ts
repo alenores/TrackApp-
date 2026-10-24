@@ -24,6 +24,7 @@ function anotacion(
     origen: "navegacion",
     icono: geometria.type === "Point" ? "cruce" : null,
     color: geometria.type === "Point" ? null : "#000000",
+    atencion: false,
     comentario: null,
     fotoUrl: null,
     fotoChicaUrl: null,

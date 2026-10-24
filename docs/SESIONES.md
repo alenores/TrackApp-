@@ -4,6 +4,19 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-24 — Casa y Atención en los puntos
+
+- Tipo de punto nuevo, Casa, con chimenea y ventana para no confundirse con el
+  refugio (decisión 078). Al traer de afuera, «casa» y «vivienda» se reconocen
+  como Casa; «Refugio Casa Vieja» sigue siendo refugio.
+- Marca nueva en los puntos, Atención: contorno rojo del ícono en todos los
+  mapas y en las listas, y «Atención» en la ficha. Se pone al crear o editar en
+  Mapas, con señal; navegando no aparece y una edición sin señal no la toca.
+  Administrador en todos los puntos, Premium en los suyos. No afecta nada más.
+- Base: valor `casa`, columna `atencion` con su permiso por columna (sin él la
+  base rechazaba el guardado) y una regla que impide Atención en lo de
+  OpenStreetMap. Probado con el rol del administrador y deshecho.
+
 ## Sesión 2026-10-22 — Caminos desde una salida
 
 - Módulo nuevo (decisión 077): Marcas → «+» → «Desde una salida». La línea

@@ -107,6 +107,13 @@ export function FichaDeAnotacion({
           </div>
         ) : null}
 
+        {anotacion?.atencion ? (
+          // El mismo rojo del contorno en el mapa. El motivo va en la descripción.
+          <p className="rounded-xl border-2 border-rojo px-3 py-2 text-lg font-semibold text-texto">
+            Atención
+          </p>
+        ) : null}
+
         {anotacion?.subida ? (
           <p
             role="status"

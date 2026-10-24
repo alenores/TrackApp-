@@ -40,6 +40,21 @@ const HUECO = 2;
 const actividades = JSON.parse(await readFile(join(process.cwd(), "lib/rutas/catalogo-de-actividades.json"), "utf8"));
 const variables = await readFile(join(process.cwd(), "app/globals.css"), "utf8");
 const color = (nombre) => variables.match(new RegExp(`--${nombre}:\\s*(#[a-fA-F0-9]+)`))[1];
+/** El mismo color, pero del modo pedido: `light` es el modo sol y `dark`, el de noche. */
+const MODO_SOL = variables.indexOf(':root[data-modo="sol"]');
+const colorDelModo = (nombre, modo) => {
+  const bloque = modo === "light" ? variables.slice(MODO_SOL) : variables.slice(0, MODO_SOL);
+  return bloque.match(new RegExp(`--${nombre}:\\s*(#[a-fA-F0-9]+)`))[1];
+};
+
+/**
+ * El marco rojo de un punto con Atención (decisión 078). Es más grande que los
+ * íconos (19) y va debajo, así que el rojo asoma alrededor del dibujo. El rojo
+ * es el único de la app, el de cada modo.
+ */
+const LADO_DEL_MARCO = 25;
+const marcoDeAtencion = (modo) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${LADO_DEL_MARCO}" height="${LADO_DEL_MARCO}"><rect x="1.5" y="1.5" width="${LADO_DEL_MARCO - 3}" height="${LADO_DEL_MARCO - 3}" rx="5" fill="none" stroke="${colorDelModo("rojo", modo)}" stroke-width="3"/></svg>`;
 const GRUPOS = Array.from({ length: (1 << actividades.length) - 1 }, (_, indice) => {
   const elegidas = actividades.filter((_, bit) => (indice + 1) & (1 << bit));
   const ancho = 24 * elegidas.length + 8;
@@ -70,6 +85,8 @@ const PROPIOS = [
   { nombre: "tranquera", dibujo: "tranquera", paleta: "natural" },
   { nombre: "estacionamiento", dibujo: "estacionamiento", paleta: "natural" },
   { nombre: "sitio", dibujo: "sitio", paleta: "natural" },
+  // Chimenea y ventana: no se confunde con la puerta del refugio.
+  { nombre: "casa", dibujo: "casa", paleta: "natural" },
 ];
 
 /** Medidos sobre los íconos de Protomaps de cada familia, píxel por píxel. */
@@ -129,6 +146,10 @@ async function sumarPropios(modo, escala) {
     receta[grupo.nombre] = { x: xActividad, y: filaActividades, width: anchoGrupo, height: altoGrupo, pixelRatio: escala };
     xActividad += anchoGrupo + hueco;
   }
+  const ladoDelMarco = LADO_DEL_MARCO * escala;
+  pegados.push({ input: await sharp(Buffer.from(marcoDeAtencion(modo))).resize(ladoDelMarco, ladoDelMarco).png().toBuffer(), left: xActividad, top: filaActividades });
+  receta["marco-de-atencion"] = { x: xActividad, y: filaActividades, width: ladoDelMarco, height: ladoDelMarco, pixelRatio: escala };
+  xActividad += ladoDelMarco + hueco;
   const anchoFinal = Math.max(ancho, anchoNecesario, xActividad);
   const altoFinal = filaActividades + 32 * escala + hueco;
 

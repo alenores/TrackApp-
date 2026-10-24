@@ -87,6 +87,15 @@ describe("marcar puntos", () => {
     expect(anotar.mensaje).toContain("Punto guardado");
   });
 
+  it("Atención arranca apagada y viaja al guardar solo si se tilda", async () => {
+    await completarUnPunto();
+    expect(anotar.borrador).toMatchObject({ tipo: "punto", atencion: false });
+    await act(async () => anotar.setAtencion(true));
+    expect(anotar.enElMapa.at(-1)?.atencion).toBe(true);
+    await act(async () => { await anotar.guardar(); });
+    expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({ tipo: "punto", atencion: true }));
+  });
+
   it("tocando el mapa: escribe la coordenada del toque y deja de marcar", async () => {
     await act(async () => anotar.empezarUnPunto());
     expect(anotar.marcando).toBe(true);
@@ -232,7 +241,7 @@ describe("dibujar trazos", () => {
   it("abre un trazo guardado con su línea y permite volver a dibujarlo", async () => {
     dobles.anotaciones = [{
       id: 40, sectorId: 9, perfilId: "p", deAdministrador: true, tipo: "trazo", origen: "manual",
-      icono: null, color: "#f59e0b", comentario: "Huella", fotoUrl: null, fotoChicaUrl: null,
+      icono: null, color: "#f59e0b", atencion: false, comentario: "Huella", fotoUrl: null, fotoChicaUrl: null,
       geometria: { type: "LineString", coordinates: [[-64.6, -31.6], [-64.5, -31.5]] },
       marcadaEn: "", precisionGpsMetros: null, creadoEn: "", actualizadoEn: "",
     }];

@@ -36,6 +36,7 @@ function anotacion(id: number, sectorId: number | null, fotoChicaUrl: string | n
     origen: "manual",
     icono: "cruce",
     color: null,
+    atencion: false,
     comentario: null,
     fotoUrl: fotoChicaUrl ? fotoChicaUrl.replace("chica", "grande") : null,
     fotoChicaUrl,

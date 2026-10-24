@@ -29,6 +29,7 @@ const anotacion = {
   origen: "manual",
   icono: "refugio",
   color: null,
+  atencion: false,
   comentario: "Agua a la sombra",
   fotoUrl: "https://fotos.test/refugio.webp",
   fotoChicaUrl: "https://fotos.test/refugio-chica.webp",
@@ -61,6 +62,21 @@ describe("ficha de anotación en mapas", () => {
       expect(contenedor.querySelector("img")?.getAttribute("src")).toBe("https://fotos.test/refugio.webp");
     } finally {
       desmontar();
+    }
+  });
+
+  it("dice Atención solo en los puntos que la tienen", () => {
+    const sin = montar();
+    try {
+      expect(sin.contenedor.textContent).not.toContain("Atención");
+    } finally {
+      sin.desmontar();
+    }
+    const con = montar({ anotacion: { ...anotacion, atencion: true } });
+    try {
+      expect(con.contenedor.textContent).toContain("Atención");
+    } finally {
+      con.desmontar();
     }
   });
 
