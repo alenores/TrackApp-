@@ -483,6 +483,8 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
           .filter(Boolean)
           .join(" · "),
         ...(anotacion.icono ? { icono: anotacion.icono } : {}),
+        // El marco rojo de Atención: un aviso y nada más (decisión 078).
+        atencion: anotacion.atencion,
       },
       geometry: anotacion.geometria,
     })),
@@ -1182,6 +1184,25 @@ export function Mapa({
         },
       });
 
+      // Debajo del ícono y más grande que él: el rojo asoma alrededor del
+      // dibujo. Crece con el zoom en la misma proporción que el ícono. Nunca
+      // se esconde por chocar con otro: un aviso no desaparece antes que un dato.
+      mapa.addLayer({
+        id: "anotaciones-punto-atencion",
+        type: "symbol",
+        source: FUENTE_ANOTACIONES,
+        filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "atencion"], true]],
+        layout: {
+          "icon-image": "marco-de-atencion",
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+        paint: {
+          "icon-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.1, 7, 0.25, 9, 0.6, 11, 1],
+        },
+      });
+
       mapa.addLayer({
         id: "anotaciones-punto-icono",
         type: "symbol",
@@ -1207,6 +1228,7 @@ export function Mapa({
             "sitio", "sitio",
             // La misma carpa que los campings que trae el mapa.
             "campamento", "camp_site",
+            "casa", "casa",
             "none"
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],

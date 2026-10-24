@@ -112,6 +112,7 @@ export function aplicarPendientes(
       origen: "navegacion",
       icono: null,
       color: null,
+      atencion: false,
       comentario: null,
       fotoUrl: null,
       fotoChicaUrl: pendiente.fotos ? direccionDeLaFotoPendiente(pendiente.codigo) : null,

@@ -31,7 +31,9 @@ const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
   // Primero: un camping suele llevar el nombre del lugar («Camping La
   // Cumbrecita») y ese nombre no tiene que ganarle.
   campamento: ["campamento", "camping", "acampe", "carpa"],
-  refugio: ["refugio", "puesto", "rancho", "casa"],
+  refugio: ["refugio", "puesto", "rancho"],
+  // Después de refugio: «Refugio Casa Vieja» sigue siendo un refugio.
+  casa: ["casa", "vivienda"],
   arroyo: ["arroyo", "rio", "río", "vado"],
   cumbre: ["cumbre", "cerro", "cima", "pico"],
   puente: ["puente", "pasarela"],

@@ -25,6 +25,8 @@ export const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
   sitio: "M12 21s-6-4.5-6-9a6 6 0 0 1 12 0c0 4.5-6 9-6 9zM14 11.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0",
   // Una carpa con su puerta: el mismo dibujo que los campings del mapa.
   campamento: "M12 4 3 20h18L12 4ZM12 11l-3 9M12 11l3 9",
+  // Con chimenea y ventana, para no confundirla con el refugio, que lleva puerta.
+  casa: "M3 12l9-8 9 8M5 10v10h14V10M16 7V3h2v6M10 13h4v4h-4z",
 };
 
 /** Un alambrado traído de OpenStreetMap: postes y dos hilos. */
@@ -63,7 +65,11 @@ export function IconoDeAnotacion({ anotacion }: { anotacion: Anotacion }) {
     anotacion.tipo === "trazo" ? TRAZO_DE_ALAMBRADO : TRAZOS_DEL_ICONO[anotacion.icono ?? "cruce"];
 
   return (
-    <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-verde-fondo text-verde-texto">
+    <span
+      aria-hidden
+      // Atención: el mismo contorno rojo que en el mapa (decisión 078).
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-verde-fondo text-verde-texto ${anotacion.atencion ? "ring-2 ring-rojo" : ""}`}
+    >
       <svg
         viewBox="0 0 24 24"
         fill="none"

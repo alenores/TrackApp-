@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { CamposDeAnotacion } from "@/components/anotaciones/campos-de-anotacion";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
+import { Casilla } from "@/components/ui/casilla";
 import { useDialogos } from "@/components/ui/dialogos";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { PUNTOS_MINIMOS_DE_UN_TRAZO, type useAnotaciones } from "@/hooks/use-anotaciones";
@@ -141,6 +142,19 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
             alQuitarFotoActual={() => anotar.setQuitarLaFoto(true)}
             guardando={anotar.guardando}
           />
+
+          {borrador.tipo === "punto" ? (
+            // Solo acá, en Mapas y con señal: navegando no se cambia (decisión 078).
+            <Tarjeta className="flex items-center gap-3">
+              <Casilla tildada={borrador.atencion} etiqueta="Atención" alTocar={() => anotar.setAtencion(!borrador.atencion)} />
+              <div className="min-w-0">
+                <p className="text-base font-semibold text-texto">Atención</p>
+                <p className="text-sm text-texto-suave">
+                  El ícono se ve con contorno rojo en todos los mapas. Contá el motivo en la descripción.
+                </p>
+              </div>
+            </Tarjeta>
+          ) : null}
 
           {anotar.error ? (
             <p role="alert" className="rounded-xl bg-rojo-fondo px-3 py-2 text-base leading-6 text-rojo-texto">

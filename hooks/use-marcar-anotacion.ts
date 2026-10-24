@@ -347,6 +347,8 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       perfilId: "",
       deAdministrador: false,
       origen: "navegacion" as const,
+      // Navegando no se pone ni se saca Atención (decisión 078).
+      atencion: false,
       comentario: borrador.comentario,
       fotoUrl: null,
       fotoChicaUrl: null,

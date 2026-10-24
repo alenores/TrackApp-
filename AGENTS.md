@@ -179,6 +179,11 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
   comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
+- **Un punto puede llevar Atención: contorno rojo del ícono**, «mirá esto», no
+  «prohibido» ni «peligro»; el motivo va en la descripción. Se pone y se saca
+  con señal desde Mapas, nunca navegando; Administrador en todos, Premium en
+  los suyos; nunca en lo de OpenStreetMap. No afecta Caminos, Circuitos ni
+  trazos. Decisión 078; Ale, 2026-10-24.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un

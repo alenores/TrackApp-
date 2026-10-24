@@ -36,7 +36,7 @@ export type LugarDeAnotaciones = { clase: "cordoba" } | { clase: "sector"; secto
 
 /** Lo que se está armando en el formulario. `null` es formulario cerrado. */
 export type Borrador =
-  | { tipo: "punto"; icono: IconoPunto | null }
+  | { tipo: "punto"; icono: IconoPunto | null; atencion: boolean }
   | { tipo: "trazo"; color: ColorDeTrazo | null; puntos: [number, number][] };
 
 /** Con menos que esto no hay línea: lo exige también la base. */
@@ -136,7 +136,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     };
     if (borrador.tipo === "punto") {
       if (!geometria) return null;
-      return { ...base, tipo: "punto", icono: borrador.icono, color: null, geometria };
+      return { ...base, tipo: "punto", icono: borrador.icono, atencion: borrador.atencion, color: null, geometria };
     }
     if (borrador.puntos.length === 0) return null;
     const color = borrador.color ? TRAZO[borrador.color].color : null;
@@ -146,6 +146,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
         ...base,
         tipo: "punto",
         icono: null,
+        atencion: false,
         color,
         geometria: { type: "Point", coordinates: borrador.puntos[0] },
       };
@@ -154,6 +155,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
       ...base,
       tipo: "trazo",
       icono: null,
+      atencion: false,
       color,
       geometria: { type: "LineString", coordinates: borrador.puntos },
     };
@@ -179,7 +181,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     if (ocupado.current) return;
     limpiar();
     setMensaje(null);
-    setBorrador({ tipo: "punto", icono: null });
+    setBorrador({ tipo: "punto", icono: null, atencion: false });
     // El punto elegido antes del formulario ya está ubicado. No se reencuadra.
     if (puntoInicial) setCoordenadaEscrita(`${puntoInicial.lat}, ${puntoInicial.lon}`);
     setMarcando(!puntoInicial);
@@ -204,7 +206,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     setComentario(anotacion.comentario ?? "");
     if (anotacion.geometria.type === "Point") {
       const [lon, lat] = anotacion.geometria.coordinates;
-      setBorrador({ tipo: "punto", icono: anotacion.icono });
+      setBorrador({ tipo: "punto", icono: anotacion.icono, atencion: anotacion.atencion });
       setCoordenadaEscrita(`${lat}, ${lon}`);
       setEnfoque(enfoqueDe(lat, lon));
     } else {
@@ -241,6 +243,12 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
   function setIcono(icono: IconoPunto) {
     setError(null);
     if (borrador?.tipo === "punto") setBorrador({ ...borrador, icono });
+  }
+
+  /** Atención: el contorno rojo del punto. Se guarda con «Guardar», como lo demás. */
+  function setAtencion(atencion: boolean) {
+    setError(null);
+    if (borrador?.tipo === "punto") setBorrador({ ...borrador, atencion });
   }
 
   function setColor(color: ColorDeTrazo) {
@@ -308,6 +316,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
         sectorId: seleccionado?.sectorId ?? sector?.id ?? null,
         tipo: borrador.tipo,
         icono: borrador.tipo === "punto" ? borrador.icono : null,
+        atencion: borrador.tipo === "punto" ? borrador.atencion : false,
         color: borrador.tipo === "trazo" && borrador.color ? TRAZO[borrador.color].color : null,
         comentario: comentario.trim() || null,
         geometria,
@@ -398,6 +407,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     comentario,
     setComentario,
     setIcono,
+    setAtencion,
     setColor,
     foto,
     quitarLaFoto,

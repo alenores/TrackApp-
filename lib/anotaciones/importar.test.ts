@@ -24,6 +24,8 @@ describe("adivinar el ícono por el nombre", () => {
     ["Sitio del Mortero", "sitio"],
     ["Camping La Cumbrecita", "campamento"],
     ["Zona de acampe", "campamento"],
+    ["Casa de los Ortiz", "casa"],
+    ["Refugio Casa Vieja", "refugio"],
     ["Mirador", "mirador"],
     ["", "cruce"],
     ["Cosa rara", "cruce"],

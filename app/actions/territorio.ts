@@ -398,6 +398,11 @@ export type DatosDeAnotacion = {
   icono: IconoPunto | null;
   /** Obligatorio cuando el tipo es `trazo`. */
   color: string | null;
+  /**
+   * Solo en puntos: el contorno rojo (decisión 078). Sin el dato, la base
+   * deja el que tenía: lo que se trae de afuera no lo toca.
+   */
+  atencion?: boolean;
   comentario: string | null;
   geometria: Point | LineString;
   /** La foto nueva, cuando el usuario eligió una. */
@@ -450,6 +455,7 @@ export async function crearAnotacion(
       origen: "manual",
       tipo: datos.tipo,
       icono: datos.tipo === "punto" ? datos.icono : null,
+      atencion: datos.tipo === "punto" && datos.atencion === true,
       color: datos.tipo === "trazo" ? datos.color : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,
@@ -592,6 +598,7 @@ export async function editarAnotacion(
     .update({
       tipo: datos.tipo,
       icono: datos.tipo === "punto" ? datos.icono : null,
+      ...(datos.atencion === undefined ? {} : { atencion: datos.tipo === "punto" && datos.atencion }),
       color: datos.tipo === "trazo" ? datos.color : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,

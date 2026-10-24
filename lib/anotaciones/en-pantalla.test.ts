@@ -20,6 +20,7 @@ function bajada(id: number): Anotacion {
     origen: "manual",
     icono: "refugio",
     color: null,
+    atencion: false,
     comentario: "de la base",
     fotoUrl: null,
     fotoChicaUrl: null,

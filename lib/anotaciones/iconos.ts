@@ -24,4 +24,5 @@ export const COMO_SE_LLAMA: Record<IconoPunto, string> = {
   estacionamiento: "Estacionamiento",
   sitio: "Sitio",
   campamento: "Campamento",
+  casa: "Casa",
 };

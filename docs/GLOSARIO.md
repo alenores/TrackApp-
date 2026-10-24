@@ -183,12 +183,20 @@ ofrecería recuperar justo lo que él decidió tirar.
 **Punto**
 Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera,
-estacionamiento, sitio, campamento). Campamento es una carpa, el mismo
-dibujo que los campings que trae el mapa: es el mismo concepto.
+estacionamiento, sitio, campamento, casa). Campamento es una carpa, el mismo
+dibujo que los campings que trae el mapa: es el mismo concepto. Casa lleva
+chimenea y ventana, para no confundirse con el refugio.
+Puede llevar **Atención**.
 Puede llevar comentario y foto. Se ubica tocando el mapa propio o pegando la
 coordenada de Google Earth. No pertenece a ningún sector: se carga desde
 **Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las demás
 marcas, aunque no se haya bajado ningún mapa. Ver decisiones 027 y 052.
+
+**Atención**
+Marca de un punto que dice «mirá esto»: no es «prohibido pasar» ni «peligro».
+El ícono se ve con contorno rojo en todos los mapas y la ficha dice «Atención»;
+el motivo va en la descripción. Se pone y se saca con señal desde Mapas, nunca
+navegando. No afecta Caminos, Circuitos ni trazos. Ver decisión 078.
 
 **Trazo**
 Marca de una línea dibujada a mano uniendo varios puntos, con color
