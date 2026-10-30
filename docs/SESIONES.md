@@ -4,6 +4,21 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-30 — Nitidez del satelital sin conexión
+
+- Ale preguntó si el satelital bajado podía verse como Google Earth. Se midió
+  en Los Gigantes: hoy es Sentinel-2 de 10 m y bajar más acercamientos no
+  agrega nada. Esri tiene 0,34 m ahí, pero su licencia no deja guardarla para
+  una app como TrackApp; las pagas se descartan por caras y OpenAerialMap no
+  tiene nada. Sin cambios en la foto.
+- Ale rechazó el aviso en Descargas sobre el detalle de la foto.
+- Prueba de sombreado con la altura de 5 m de IDECOR: mejora a distancia de
+  sector, poco de cerca, con líneas rectas sin explicar. Queda a decisión de Ale.
+- Todo documentado con imágenes en la decisión 079, para no volver a
+  investigarlo. La 007 decía que las curvas saldrían de IDECOR 5 m; salen de
+  Mapterhorn 30 m (013). Se corrigió la 007.
+- Sin cambios de código.
+
 ## Sesión 2026-10-24 — Casa y Atención en los puntos
 
 - Tipo de punto nuevo, Casa, con chimenea y ventana para no confundirse con el
