@@ -161,6 +161,28 @@ volvía a dibujar escalones; de a cuarto de metro, 128 KB. Medio metro: 97 KB.
 - Con prueba automática: baja igual, queda anotado, reintentar lo completa, y
   si sigue fallando lo dice.
 
+### Los pedazos de lejos se arman en el celular (Ale, 2026-10-31)
+
+**Qué pasó en el celular real.** En 4 sectores de 12 × 12 km, 17 a 32 pedazos
+salieron con menos detalle («IDECOR tardó demasiado») y reintentar de a uno
+no lo arreglaba. Eran los pedazos **de lejos**: abarcan mucho terreno y a
+IDECOR le lleva más de 30 s armarlos (medido: 14 a 17 s desde acá, sin carga).
+Como con el sector entero en pantalla el mapa usa justamente esos pedazos, el
+sombreado se veía suave: en el simple se notaba, sobre la foto no.
+
+**Cómo quedó.**
+- A IDECOR solo se le piden los pedazos **de cerca** (unos 5 s cada uno).
+- Los de lejos se arman **en el celular** juntando los de cerca ya bajados
+  (promedio de los puntos), sin salir a internet. Lo que queda afuera del
+  sector sale del relieve de 30 m. Si alguno de cerca quedó con menos detalle,
+  el de lejos lo hereda con el mismo motivo, y «Reintentar sombreado» lo
+  rearma.
+- A IDECOR se le piden **como mucho 3 pedazos a la vez entre todas las
+  descargas**: bajar varios sectores juntos lo saturaba.
+- Verificado en Chrome: abrir y volver a escribir un pedazo no cambia ni un
+  punto. Se guarda en WebP si el navegador lo escribe exacto (175 KB) y si no
+  en PNG (257 KB).
+
 ## Auditoría de fuentes
 
 **Leído en tiempo real (2026-10-30):** código de la foto satelital, del puente

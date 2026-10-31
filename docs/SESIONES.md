@@ -19,8 +19,12 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 - Medido: ≈ 1,3 MB más por sector de 6 × 4 km.
 - Si IDECOR no contesta, el sector baja igual con el sombreado de 30 m, avisa
   con el motivo y ofrece «Reintentar sombreado» (Ale; R33 resuelto).
-- Pendiente: probarlo en la app entera y en un celular al sol (incluido cómo se
-  ve el aviso ámbar); los sectores ya bajados hay que volver a bajarlos.
+- Probado por Ale en el celular: en sectores de 12 × 12 km los pedazos de lejos
+  fallaban siempre (IDECOR tarda más de 30 s) y el sombreado sobre la foto no
+  se notaba. Ahora los de lejos se arman en el celular con los de cerca, y a
+  IDECOR se le piden como mucho 3 a la vez entre todas las descargas.
+- Pendiente: que Ale toque «Reintentar sombreado» en sus sectores y lo mire
+  sobre la foto.
 
 ## Sesión 2026-10-30 — Nitidez del satelital sin conexión
 

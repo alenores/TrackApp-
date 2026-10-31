@@ -77,3 +77,40 @@ describe("el sombreado que llega con menos detalle (decisión 079)", () => {
     expect(sombraGruesa()["sombra/14/5242/9699"]).toBeUndefined();
   });
 });
+
+describe("el sombreado se le pide a Córdoba de a pocos", () => {
+  it("nunca más de 3 a la vez, aunque se bajen varios sectores juntos", async () => {
+    let enCurso = 0;
+    let maximo = 0;
+    vi.stubGlobal("fetch", async () => {
+      enCurso += 1;
+      maximo = Math.max(maximo, enCurso);
+      await new Promise((seguir) => setTimeout(seguir, 5));
+      enCurso -= 1;
+      return { ok: true, status: 200, headers: new Headers(), arrayBuffer: async () => new Uint8Array([1]).buffer } as unknown as Response;
+    });
+    const senal = new AbortController().signal;
+    // Dos descargas a la vez, cada una con varios pedidos.
+    await Promise.all(
+      Array.from({ length: 12 }, (_, i) =>
+        fuenteDelServidor().pedirTesela({ z: 14, x: i, y: 1, capa: "sombra" }, senal),
+      ),
+    );
+    expect(maximo).toBe(3);
+  });
+
+  it("el dibujo y la foto no esperan turno", async () => {
+    let enCurso = 0;
+    let maximo = 0;
+    vi.stubGlobal("fetch", async () => {
+      enCurso += 1;
+      maximo = Math.max(maximo, enCurso);
+      await new Promise((seguir) => setTimeout(seguir, 5));
+      enCurso -= 1;
+      return { ok: true, status: 200, arrayBuffer: async () => new Uint8Array([1]).buffer } as unknown as Response;
+    });
+    const senal = new AbortController().signal;
+    await Promise.all(Array.from({ length: 6 }, (_, i) => fuenteDelServidor().pedirTesela({ z: 14, x: i, y: 1 }, senal)));
+    expect(maximo).toBe(6);
+  });
+});
