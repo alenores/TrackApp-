@@ -5,8 +5,10 @@ import { describe, expect, it } from "vitest";
 import {
   capasDelFondo,
   estiloDelMapa,
+  FOTO_DE_GOOGLE_GUARDADA,
   FUENTE_DE_LA_SOMBRA,
   FUENTE_DEL_FONDO,
+  FUENTE_GOOGLE_GUARDADO,
   FUENTE_SATELITAL,
   iconosDelFondo,
   opcionesDelMapa,
@@ -104,7 +106,7 @@ describe("la receta del fondo", () => {
   it("todas las capas leen de la fuente que la receta declara", () => {
     const estilo = estiloDelMapa("noche");
     const declaradas = Object.keys(estilo.sources);
-    expect(declaradas.sort()).toEqual([FUENTE_DEL_FONDO, FUENTE_SATELITAL, FUENTE_DE_LA_SOMBRA].sort());
+    expect(declaradas.sort()).toEqual([FUENTE_DEL_FONDO, FUENTE_SATELITAL, FUENTE_DE_LA_SOMBRA, FUENTE_GOOGLE_GUARDADO].sort());
 
     for (const tipo of ["dibujo", "satelital"] as const) {
       for (const capa of capasDelFondo("noche", tipo, true, true, true)) {
@@ -138,7 +140,7 @@ describe("el sombreado del terreno", () => {
       expect(sombra).toBeGreaterThan(-1);
       for (const [indice, capa] of capas.entries()) {
         if (capa.type === "symbol") expect(indice).toBeGreaterThan(sombra);
-        if (capa.type === "raster") expect(indice).toBeLessThan(sombra);
+        if (capa.type === "raster" && capa.id !== FOTO_DE_GOOGLE_GUARDADA) expect(indice).toBeLessThan(sombra);
       }
       for (const id of ["earth", "landcover", "water"]) {
         if (lugar(id) !== -1) expect(lugar(id)).toBeLessThan(sombra);
@@ -147,6 +149,24 @@ describe("el sombreado del terreno", () => {
         expect(lugar(id)).toBeGreaterThan(sombra);
       }
     }
+  });
+
+  it("Google guardado va encima del sombreado y debajo de arroyos, senderos y nombres (decisión 080)", () => {
+    for (const tipo of ["dibujo", "satelital"] as const) {
+      const capas = capasDelFondo("sol", tipo, true, true, true);
+      const lugar = (id: string) => capas.findIndex((capa) => capa.id === id);
+      expect(lugar(FOTO_DE_GOOGLE_GUARDADA)).toBeGreaterThan(lugar(SOMBRA_DEL_TERRENO));
+      for (const id of ["water_stream", "senderos"]) expect(lugar(id)).toBeGreaterThan(lugar(FOTO_DE_GOOGLE_GUARDADA));
+      for (const [indice, capa] of capas.entries()) {
+        if (capa.type === "symbol") expect(indice).toBeGreaterThan(lugar(FOTO_DE_GOOGLE_GUARDADA));
+      }
+    }
+  });
+
+  it("Google guardado se lee solo del celular: en vivo no existe", () => {
+    expect(Object.keys(estiloDelMapa("sol", true).sources)).not.toContain(FUENTE_GOOGLE_GUARDADO);
+    const guardado = estiloDelMapa("sol").sources[FUENTE_GOOGLE_GUARDADO] as { tiles: string[] };
+    expect(guardado.tiles.every((direccion) => direccion.startsWith("google-guardado://"))).toBe(true);
   });
 
   it("sin pedirlo no aparece, y se puede sacar al cambiar de fondo", () => {

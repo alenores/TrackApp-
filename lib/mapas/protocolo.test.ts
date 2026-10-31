@@ -97,12 +97,15 @@ describe("registrar el protocolo", () => {
     registrarElMapaGuardado();
     registrarElMapaGuardado();
 
-    // Tres puertas, las tres al celular: el dibujo, la foto satelital y el
-    // sombreado del terreno.
+    // Cinco puertas: el dibujo, la foto satelital, el sombreado y Google
+    // guardado van solo al celular; Google en vivo es la de Consultas, con
+    // señal (decisión 080).
     expect(registrados.has(PROTOCOLO)).toBe(true);
     expect(registrados.has(PROTOCOLO_DE_LA_FOTO)).toBe(true);
     expect(registrados.has(PROTOCOLO_DE_LA_SOMBRA)).toBe(true);
-    expect(registrados.size).toBe(3);
+    expect(registrados.has("google-en-vivo")).toBe(true);
+    expect(registrados.has("google-guardado")).toBe(true);
+    expect(registrados.size).toBe(5);
 
     olvidarElMapaGuardado();
     expect(registrados.size).toBe(0);

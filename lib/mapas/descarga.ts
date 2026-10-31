@@ -5,6 +5,7 @@ import {
   cualesEstanGuardadas,
   guardarTeselas,
 } from "@/lib/mapas/deposito";
+import { borrarTodasLasImagenesDeGoogle } from "@/lib/mapas/google-guardado";
 import { ACERCAMIENTO_DE_LA_SOMBRA_FINA } from "@/lib/mapas/sombra";
 import {
   ACERCAMIENTO_MAXIMO,
@@ -435,6 +436,7 @@ export async function borrarTodosLosMapasDelCelular(): Promise<void> {
   olvidarTodosLosSacados();
   olvidarTodaLaSombraGruesa();
   await borrarTodasLasTeselas();
+  await borrarTodasLasImagenesDeGoogle();
   await borrarTodasLasFotos();
 }
 

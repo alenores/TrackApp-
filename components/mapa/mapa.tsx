@@ -24,7 +24,7 @@ import { BotonCerrar } from "@/components/ui/boton-redondo";
 import type { Modo } from "@/lib/modo";
 import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
-import { registrarElMapaGuardado } from "@/lib/mapas/protocolo";
+import { PROTOCOLO_DE_GOOGLE_EN_VIVO, registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
 import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
@@ -789,7 +789,9 @@ export function Mapa({
       if (!mapa.getSource(FUENTE_GOOGLE)) {
         mapa.addSource(FUENTE_GOOGLE, {
           type: "raster",
-          tiles: [`${window.location.origin}/api/mapa-google/tesela/{z}/{x}/{y}?sesion=${encodeURIComponent(sesionGoogleActiva)}`],
+          // Pasa por el protocolo que, además de mostrarla, la guarda el tiempo
+          // que Google permite (decisión 080).
+          tiles: [`${PROTOCOLO_DE_GOOGLE_EN_VIVO}://{z}/{x}/{y}?sesion=${encodeURIComponent(sesionGoogleActiva)}`],
           tileSize: 256,
           maxzoom: 22,
         });

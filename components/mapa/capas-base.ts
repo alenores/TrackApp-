@@ -1,9 +1,16 @@
 import { layers, namedFlavor } from "@protomaps/basemaps";
-import type { ExpressionSpecification, LayerSpecification, LineLayerSpecification, StyleSpecification } from "maplibre-gl";
+import type {
+  ExpressionSpecification,
+  LayerSpecification,
+  LineLayerSpecification,
+  RasterLayerSpecification,
+  StyleSpecification,
+} from "maplibre-gl";
 import { ajustarParaLaMontana, SENDEROS } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
 import {
+  DIRECCION_DE_GOOGLE_GUARDADO,
   DIRECCION_DE_LA_FOTO_GUARDADA,
   DIRECCION_DE_LA_SOMBRA_GUARDADA,
   DIRECCION_DE_LAS_TESELAS,
@@ -66,6 +73,10 @@ export const FUENTE_DE_LA_SOMBRA = "sombra";
 
 /** La capa que dibuja el sombreado del terreno (decisión 079). */
 export const SOMBRA_DEL_TERRENO = "sombra-del-terreno";
+
+/** Las imágenes de Google que quedaron de mirar Consultas (decisión 080). */
+export const FUENTE_GOOGLE_GUARDADO = "google-guardado";
+export const FOTO_DE_GOOGLE_GUARDADA = "foto-de-google-guardada";
 
 /**
  * Las letras y los íconos del mapa viajan **dentro de la app**.
@@ -154,6 +165,17 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
       ...(enVivo
         ? {}
         : {
+            /*
+              Google guardado: solo lo que quedó de mirar Consultas y mientras
+              Google lo permita. Donde no hay, viene vacío y se ve el mapa bajado.
+            */
+            [FUENTE_GOOGLE_GUARDADO]: {
+              type: "raster" as const,
+              tiles: [DIRECCION_DE_GOOGLE_GUARDADO],
+              tileSize: 256,
+              maxzoom: 22,
+              attribution: "Imagen de Google guardada",
+            },
             [FUENTE_DE_LA_SOMBRA]: {
               type: "raster-dem" as const,
               tiles: [DIRECCION_DE_LA_SOMBRA_GUARDADA],
@@ -242,17 +264,30 @@ function capaDeLaSombra(colores: ColoresDelMapa): LayerSpecification {
 }
 
 /**
+ * La imagen de Google guardada, encima del terreno y del sombreado (la foto de
+ * Google ya trae sus sombras) y debajo de lo que se lee. Lleva el mismo velo
+ * que la foto propia, para que las curvas se recorten encima (decisión 080).
+ */
+function capaDeGoogleGuardado(velo: RasterLayerSpecification["paint"]): LayerSpecification {
+  return { id: FOTO_DE_GOOGLE_GUARDADA, type: "raster", source: FUENTE_GOOGLE_GUARDADO, paint: velo };
+}
+
+/**
  * Mete el sombreado encima del terreno y debajo de lo que se lee.
  *
  * En el dibujo va justo después del agua: el terreno, los parques y el agua
  * quedan abajo; arroyos, senderos, caminos y nombres, arriba. Sobre la foto,
  * justo antes de la primera línea o nombre.
  */
-function conSombraDebajoDeLasLineas(capas: LayerSpecification[], colores: ColoresDelMapa): LayerSpecification[] {
+function conSombraDebajoDeLasLineas(
+  capas: LayerSpecification[],
+  colores: ColoresDelMapa,
+  velo: RasterLayerSpecification["paint"],
+): LayerSpecification[] {
   const agua = capas.findIndex((capa) => capa.type === "fill" && capa.id === "water");
   const primeraEncima = capas.findIndex((capa) => capa.type === "line" || capa.type === "symbol");
   const corte = agua !== -1 ? agua + 1 : primeraEncima === -1 ? capas.length : primeraEncima;
-  return [...capas.slice(0, corte), capaDeLaSombra(colores), ...capas.slice(corte)];
+  return [...capas.slice(0, corte), capaDeLaSombra(colores), capaDeGoogleGuardado(velo), ...capas.slice(corte)];
 }
 
 /**
@@ -288,7 +323,18 @@ export function capasDelFondo(
     colores,
   );
 
-  if (tipo === "dibujo") return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores) : dibujo;
+  /*
+    El velo: la foto baja su contraste para que las curvas de nivel se
+    recorten encima. Sigue al modo: se aclara con sol y se oscurece de
+    noche (decisión 013). Los valores finos quedan para la prueba al sol.
+  */
+  const velo: RasterLayerSpecification["paint"] = !conVelo
+    ? {}
+    : modo === "sol"
+      ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
+      : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 };
+
+  if (tipo === "dibujo") return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores, velo) : dibujo;
   if (tipo === "google") {
     return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE }];
   }
@@ -302,21 +348,12 @@ export function capasDelFondo(
       id: "foto-del-terreno",
       type: "raster",
       source: FUENTE_SATELITAL,
-      /*
-        El velo: la foto baja su contraste para que las curvas de nivel se
-        recorten encima. Sigue al modo: se aclara con sol y se oscurece de
-        noche (decisión 013). Los valores finos quedan para la prueba al sol.
-      */
-      paint: !conVelo
-        ? {}
-        : modo === "sol"
-          ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
-          : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 },
+      paint: velo,
     },
     ...(conLineas ? lineasSobreLaFoto(dibujo, colores) : []),
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];
-  return conSombra ? conSombraDebajoDeLasLineas(conFoto, colores) : conFoto;
+  return conSombra ? conSombraDebajoDeLasLineas(conFoto, colores, velo) : conFoto;
 }
 
 /** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */
@@ -327,6 +364,7 @@ export function todasLasCapasDelFondo(modo: Modo): LayerSpecification[] {
     ...capasDelFondo(modo, "satelital", true, true),
     ...capasDelFondo(modo, "google"),
     capaDeLaSombra(coloresDelMapa()),
+    capaDeGoogleGuardado({}),
   ];
 }
 

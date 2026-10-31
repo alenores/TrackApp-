@@ -720,6 +720,23 @@ prueba automática.
 
 ---
 
+## 🟡 R34 — Google guardado para navegar: riesgo asumido
+
+**Desde el 2026-10-31** las navegaciones dibujan encima del mapa bajado las
+imágenes de Google que quedaron de mirar Consultas, solo mientras Google las
+da por válidas (decisión 080).
+
+**Riesgo.** Las reglas de Google restringen el uso sin conexión y junto a mapas
+que no son de Google. Si lo objeta, puede suspender la clave y Consultas se
+queda sin Google.
+
+**Cómo se cierra.** No se cierra: lo asumió Ale. Si Google avisa o suspende, se
+apaga como dice la decisión 080.
+
+**Detectado:** 2026-10-31. **Estado:** abierto, asumido.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

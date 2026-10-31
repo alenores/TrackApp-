@@ -1,5 +1,11 @@
 import { addProtocol, removeProtocol } from "maplibre-gl";
 import { leerTesela } from "@/lib/mapas/deposito";
+import {
+  borrarImagenesVencidasDeGoogle,
+  grillaDeGoogle,
+  leerImagenDeGoogle,
+  traerImagenDeGoogle,
+} from "@/lib/mapas/google-guardado";
 
 /**
  * Cómo el mapa lee los pedazos que están en el celular.
@@ -43,6 +49,20 @@ export const DIRECCION_DE_LA_FOTO_GUARDADA = `${PROTOCOLO_DE_LA_FOTO}://{z}/{x}/
 export const PROTOCOLO_DE_LA_SOMBRA = "sombra-guardada";
 
 export const DIRECCION_DE_LA_SOMBRA_GUARDADA = `${PROTOCOLO_DE_LA_SOMBRA}://{z}/{x}/{y}`;
+
+/**
+ * Google en Consultas, con señal: trae la imagen y la deja guardada el tiempo
+ * que Google permite (decisión 080).
+ */
+export const PROTOCOLO_DE_GOOGLE_EN_VIVO = "google-en-vivo";
+
+/**
+ * Google guardado, para navegar: **nunca sale a internet**. Donde no hay
+ * imagen, o ya venció, viene vacío y se ve el mapa bajado de abajo.
+ */
+export const PROTOCOLO_DE_GOOGLE_GUARDADO = "google-guardado";
+
+export const DIRECCION_DE_GOOGLE_GUARDADO = `${PROTOCOLO_DE_GOOGLE_GUARDADO}://{z}/{x}/{y}`;
 
 const VACIO = new Uint8Array(0);
 
@@ -107,6 +127,14 @@ export async function servirSombraGuardada(direccion: string): Promise<ArrayBuff
   return comoArrayBuffer(guardada ?? VACIO);
 }
 
+/** Una imagen de Google guardada que todavía vale, o vacío. Nunca sale a internet. */
+export async function servirGoogleGuardado(direccion: string): Promise<ArrayBuffer> {
+  const grilla = grillaDeGoogle(direccion);
+  if (!grilla) return comoArrayBuffer(VACIO);
+  const guardada = await leerImagenDeGoogle(grilla.z, grilla.x, grilla.y);
+  return comoArrayBuffer(guardada ?? VACIO);
+}
+
 let registrado = false;
 
 export function registrarElMapaGuardado(): void {
@@ -120,6 +148,14 @@ export function registrarElMapaGuardado(): void {
   addProtocol(PROTOCOLO_DE_LA_SOMBRA, async ({ url }) => ({
     data: await servirSombraGuardada(url),
   }));
+  addProtocol(PROTOCOLO_DE_GOOGLE_EN_VIVO, async ({ url }, cancelador) => ({
+    data: await traerImagenDeGoogle(url, cancelador.signal),
+  }));
+  addProtocol(PROTOCOLO_DE_GOOGLE_GUARDADO, async ({ url }) => ({
+    data: await servirGoogleGuardado(url),
+  }));
+  // Lo vencido no ocupa lugar: se borra al abrir el mapa.
+  void borrarImagenesVencidasDeGoogle().catch(() => {});
   registrado = true;
 }
 
@@ -128,5 +164,7 @@ export function olvidarElMapaGuardado(): void {
   removeProtocol(PROTOCOLO);
   removeProtocol(PROTOCOLO_DE_LA_FOTO);
   removeProtocol(PROTOCOLO_DE_LA_SOMBRA);
+  removeProtocol(PROTOCOLO_DE_GOOGLE_EN_VIVO);
+  removeProtocol(PROTOCOLO_DE_GOOGLE_GUARDADO);
   registrado = false;
 }
