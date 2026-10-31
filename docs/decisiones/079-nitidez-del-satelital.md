@@ -64,18 +64,40 @@ esa fuente**: «Esri abierto» para guardar en el celular no hay.
     quebradas y arroyos se leen mucho mejor.
   - **De cerca (17) ayuda poco**: marca bloques grandes, pero no se acerca a
     la foto de Esri.
-  - Aparecen **líneas rectas y escalones**: falta averiguar si vienen del dato
-    (altura en metros enteros, uniones del mosaico) o de cómo se armó la prueba.
-- **El sombreado ya se probó y se sacó una vez** (decisión 013), porque no
-  estaba decidido y complicaba el borde del sector. Si se retoma, hay que
-  resolver ese borde.
-- Peso sin medir. Hay que medirlo antes de decidir.
+  - Aparecen **líneas rectas y escalones** en el dato crudo.
+
+### Diagnóstico del sombreado (2026-10-31)
+
+- **Las líneas rectas vienen del dato de IDECOR, no de la prueba.** Se bajó
+  con otras dos formas de conversión y aparecen igual. Ese dato tiene zonas de
+  distinta calidad: en Los Gigantes se ve un corte vertical entre una zona
+  lisa y otra rayada (como dos mosaicos unidos). Además las alturas vienen en
+  metros enteros, lo que agrega escalones en lo plano. Las esquinas vacías
+  del recorte, en cambio, eran un efecto de la prueba.
+- **Se limpian suavizando apenas el dato** (suavizado gaussiano de 1 punto).
+  Más suavizado borra las líneas pero también la ganancia y queda igual que
+  el de 30 m. Ver `079-imagenes/sombreado-cuatro-versiones-z15.jpg` y
+  `sombreado-final-z15.jpg` (hoy · 30 m · 5 m limpio).
+- **Comparación a distancia de sector:**
+  - **30 m** (el dato que la app ya baja): mejora poco; marca valles y
+    laderas grandes. No suma ni un byte.
+  - **5 m limpio:** mejora claramente; se leen filos, quebradas y arroyos.
+  - De cerca (acercamiento 17) ninguno de los dos cambia mucho.
+- **Peso medido:** el dato de 5 m guardado igual que el relieve actual
+  (imagen sin pérdida) pesa **≈ 12 KB por km²**: un sector de 6 × 4 km,
+  **≈ 0,3 MB**. Es liviano.
+- **Cobertura:** el dato de 5 m es solo de la provincia de Córdoba. Fuera de
+  Córdoba habría que usar el de 30 m.
+- **El borde del sector** (lo que hizo sacar el sombreado en septiembre): sin
+  probar en la app. La idea es bajar una franja extra de relieve alrededor del
+  sector para que el borde no se corte; pesa poco.
 
 ## Pendiente
 
-- **Decisión de Ale:** ¿se suma el sombreado de 5 m o queda como está?
-- Si se suma: origen de las líneas rectas, peso real por sector y el borde del
-  sector.
+- **Decisión de Ale:** ¿se suma el sombreado, con el dato de 5 m limpio en
+  Córdoba y el de 30 m afuera?
+- Si se suma: probar el borde del sector en la app y verlo al sol en un
+  celular.
 
 ## Auditoría de fuentes
 
@@ -85,11 +107,11 @@ sesiones; pedazos reales de EOX y Esri en Los Gigantes; datos de la foto de Esri
 en el Mogote; licencias de Esri en sus fichas oficiales
 ([World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9),
 [World Imagery for Export](https://www.arcgis.com/home/item.html?id=226d23f076da478bba4589e7eae95952));
-catálogo de OpenAerialMap; servicio de altura de IDECOR.
+catálogo de OpenAerialMap; servicio de altura de IDECOR (dato crudo y con dos conversiones); pedazos de
+relieve de 30 m de Mapterhorn que usa la app.
 
 **Inferido (no verificado):** términos de Mapbox (de su documentación de uso
 sin conexión, no del contrato); cobertura de la foto de IDECOR (de la decisión
 007); pesos con Esri (pedazos medidos por un sector estimado).
 
-**Pendiente de verificación:** origen de las líneas rectas del sombreado; peso
-real del sombreado de 5 m.
+**Pendiente de verificación:** el borde del sector con sombreado, en la app.

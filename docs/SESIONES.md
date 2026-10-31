@@ -13,7 +13,9 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
   tiene nada. Sin cambios en la foto.
 - Ale rechazó el aviso en Descargas sobre el detalle de la foto.
 - Prueba de sombreado con la altura de 5 m de IDECOR: mejora a distancia de
-  sector, poco de cerca, con líneas rectas sin explicar. Queda a decisión de Ale.
+  sector y poco de cerca. Las líneas rectas vienen del dato de IDECOR y se
+  limpian suavizando apenas; pesa ≈ 0,3 MB por sector. El de 30 m, que ya se
+  baja, mejora poco. Queda a decisión de Ale.
 - Todo documentado con imágenes en la decisión 079, para no volver a
   investigarlo. La 007 decía que las curvas saldrían de IDECOR 5 m; salen de
   Mapterhorn 30 m (013). Se corrigió la 007.
