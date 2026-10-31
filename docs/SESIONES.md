@@ -4,6 +4,41 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-31 — Sombreado del terreno
+
+- Ale decidió sumar el sombreado: «con que mejore un poco, ya es un caso de
+  éxito; no nos comparamos con Google Earth» (decisión 079 y regla en AGENTS).
+- Cada sector baja ahora el sombreado del terreno (acercamientos 12 a 14), en
+  los dos mapas. Lo arma el servidor con la altura de 5 m de IDECOR, completa
+  con la de 30 m, suaviza y guarda de a medio metro. Navegando se lee solo del
+  celular. Va debajo de arroyos, senderos y nombres.
+- El borde del sector quedó limpio sin franja extra: donde falta el pedazo,
+  el mapa no sombrea.
+- Mirándolo con el motor del mapa aparecieron líneas en las uniones y una malla
+  fina: eran cómo se le pedía el dato a IDECOR. Corregidos, con prueba.
+- Medido: ≈ 1,3 MB más por sector de 6 × 4 km.
+- Si IDECOR no contesta, el sector baja igual con el sombreado de 30 m, avisa
+  con el motivo y ofrece «Reintentar sombreado» (Ale; R33 resuelto).
+- Pendiente: probarlo en la app entera y en un celular al sol (incluido cómo se
+  ve el aviso ámbar); los sectores ya bajados hay que volver a bajarlos.
+
+## Sesión 2026-10-30 — Nitidez del satelital sin conexión
+
+- Ale preguntó si el satelital bajado podía verse como Google Earth. Se midió
+  en Los Gigantes: hoy es Sentinel-2 de 10 m y bajar más acercamientos no
+  agrega nada. Esri tiene 0,34 m ahí, pero su licencia no deja guardarla para
+  una app como TrackApp; las pagas se descartan por caras y OpenAerialMap no
+  tiene nada. Sin cambios en la foto.
+- Ale rechazó el aviso en Descargas sobre el detalle de la foto.
+- Prueba de sombreado con la altura de 5 m de IDECOR: mejora a distancia de
+  sector y poco de cerca. Las líneas rectas vienen del dato de IDECOR y se
+  limpian suavizando apenas; pesa ≈ 0,3 MB por sector. El de 30 m, que ya se
+  baja, mejora poco. Queda a decisión de Ale.
+- Todo documentado con imágenes en la decisión 079, para no volver a
+  investigarlo. La 007 decía que las curvas saldrían de IDECOR 5 m; salen de
+  Mapterhorn 30 m (013). Se corrigió la 007.
+- Sin cambios de código.
+
 ## Sesión 2026-10-24 — Casa y Atención en los puntos
 
 - Tipo de punto nuevo, Casa, con chimenea y ventana para no confundirse con el

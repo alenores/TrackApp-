@@ -54,8 +54,11 @@ sin conexión.
 
 **Verificado (2026-09-19).** IDECOR publica un modelo de elevación de 5 metros
 que **cubre toda la sierra**, Champaquí y Achala incluidos, con licencia libre.
-De ahí van a salir las curvas de nivel. Su foto de alta resolución, en cambio,
-cubre localidades y no la sierra: para el satelital lo mejor libre disponible
+Se pensó para las curvas de nivel, pero **las curvas terminaron saliendo de
+Mapterhorn, de 30 metros** (decisión 013). La nitidez del satelital y la
+prueba de sombreado con este dato de 5 m están en la decisión 079.
+
+Su foto de alta resolución, en cambio, cubre localidades y no la sierra: para el satelital lo mejor libre disponible
 son 10 metros por píxel, con lo que se ven bosques, lagos y paredes de roca,
 pero no un sendero ni un refugio.
 

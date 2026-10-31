@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { AvisoDeSombraGruesa } from "@/components/mapa/aviso-de-sombra-gruesa";
 import { Boton } from "@/components/ui/boton";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useHaySenal } from "@/hooks/use-hay-senal";
@@ -30,6 +32,7 @@ export function MapaDelSector({ sector }: PropiedadesDelMapaDelSector) {
   const { mapas, paso, bajar } = useMapaDelSector(sector);
   // Bajar necesita señal: sin señal el botón no aparece, lo que falta se dice igual.
   const haySenal = useHaySenal();
+  const esteSector = useMemo(() => [sector], [sector]);
 
   if (paso.paso === "bajando") {
     const porcentaje = paso.total > 0 ? Math.round((paso.resueltos / paso.total) * 100) : 0;
@@ -109,6 +112,7 @@ export function MapaDelSector({ sector }: PropiedadesDelMapaDelSector) {
         );
       })}
 
+      <AvisoDeSombraGruesa sectores={esteSector} />
     </div>
   );
 }

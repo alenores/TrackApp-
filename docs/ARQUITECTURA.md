@@ -141,6 +141,10 @@ app. **Eso no es una falla, es un modo legítimo:** se ven igual la línea de la
 ruta, el punto del GPS, las anotaciones y los rectángulos, y con eso alcanza
 para ver dónde estás respecto de la línea.
 
+Con cada sector baja también el **sombreado del terreno** (decisión 079): lo
+arma el servidor al bajar, con la altura de 5 m de IDECOR en Córdoba y la de
+30 m afuera, y navegando se lee solo del celular. Donde no está, no se sombrea.
+
 De dónde sale el fondo se decide en **un solo lugar**: ninguna pantalla lo sabe.
 
 **Cómo llega el mapa al celular.** El mapa del mundo vive en un archivo único en

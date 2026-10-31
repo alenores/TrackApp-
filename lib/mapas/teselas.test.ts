@@ -2,17 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   ACERCAMIENTO_DEL_RELIEVE,
   ACERCAMIENTO_MAXIMO,
+  ACERCAMIENTOS_DE_LA_SOMBRA,
   ACERCAMIENTO_MINIMO,
   type Tesela,
   claveDeTesela,
   columnaDeTesela,
   cuantasTeselas,
+  cuantasTeselasDeLaSombra,
   cuantasTeselasDelRelieve,
   filaDeTesela,
   ladoDeLaGrilla,
   teselaDeClave,
   teselasDelRectangulo,
   teselasDeLaFoto,
+  teselasDeLaSombra,
   teselasDelRelieve,
 } from "@/lib/mapas/teselas";
 import type { Rectangulo } from "@/types/database";
@@ -218,7 +221,8 @@ describe("el relieve", () => {
   });
 
   it("un nombre inventado no se toma por relieve", () => {
-    expect(teselaDeClave("sombra/12/1/2")).toBeNull();
+    // «sombra» dejó de ser inventado el 2026-10-31: es el sombreado (decisión 079).
+    expect(teselaDeClave("nieve/12/1/2")).toBeNull();
     expect(teselaDeClave("relieve/12/1")).toBeNull();
   });
 
@@ -258,6 +262,47 @@ describe("la foto satelital", () => {
       [...teselasDelRectangulo(sierra), ...teselasDelRelieve(sierra)].map(claveDeTesela),
     );
     for (const pedazo of teselasDeLaFoto(sierra)) {
+      expect(otros.has(claveDeTesela(pedazo))).toBe(false);
+    }
+  });
+});
+
+describe("el sombreado", () => {
+  const sierra = { latNorte: -31.97, latSur: -32.01, lonOeste: -64.96, lonEste: -64.9 };
+
+  it("sus pedazos se nombran aparte y el nombre va y vuelve", () => {
+    const pedazo: Tesela = { z: 14, x: 5242, y: 9699, capa: "sombra" };
+    expect(claveDeTesela(pedazo)).toBe("sombra/14/5242/9699");
+    expect(teselaDeClave("sombra/14/5242/9699")).toEqual(pedazo);
+  });
+
+  it("baja en sus tres acercamientos y la cuenta coincide con la lista", () => {
+    const pedazos = teselasDeLaSombra(sierra);
+    expect(pedazos.length).toBe(cuantasTeselasDeLaSombra(sierra));
+    expect(new Set(pedazos.map((pedazo) => pedazo.z))).toEqual(new Set(ACERCAMIENTOS_DE_LA_SOMBRA));
+    expect(pedazos.every((pedazo) => pedazo.capa === "sombra")).toBe(true);
+  });
+
+  it("cubre el rectángulo: tiene un pedazo en cada esquina del último acercamiento", () => {
+    const z = ACERCAMIENTOS_DE_LA_SOMBRA[ACERCAMIENTOS_DE_LA_SOMBRA.length - 1];
+    const claves = new Set(teselasDeLaSombra(sierra).map(claveDeTesela));
+    for (const [lat, lon] of [
+      [sierra.latNorte, sierra.lonOeste],
+      [sierra.latSur, sierra.lonEste],
+    ]) {
+      const x = columnaDeTesela(lon, z);
+      const y = filaDeTesela(lat, z);
+      expect(claves.has(`sombra/${z}/${x}/${y}`)).toBe(true);
+    }
+  });
+
+  it("no comparte nombre con el dibujo, el relieve ni la foto", () => {
+    const otros = new Set(
+      [...teselasDelRectangulo(sierra), ...teselasDelRelieve(sierra), ...teselasDeLaFoto(sierra)].map(
+        claveDeTesela,
+      ),
+    );
+    for (const pedazo of teselasDeLaSombra(sierra)) {
       expect(otros.has(claveDeTesela(pedazo))).toBe(false);
     }
   });

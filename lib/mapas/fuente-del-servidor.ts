@@ -1,5 +1,7 @@
 import type { FuenteDeTeselas } from "@/lib/mapas/descarga";
-import type { Tesela } from "@/lib/mapas/teselas";
+import { CABECERA_DE_MENOS_DETALLE } from "@/lib/mapas/sombra";
+import { claveDeTesela, type Tesela } from "@/lib/mapas/teselas";
+import { anotarDetalleDeLaSombra } from "@/lib/offline/sombra-gruesa";
 
 /**
  * De dónde saca el celular los pedazos del mapa: del propio TrackApp.
@@ -41,7 +43,17 @@ export function fuenteDelServidor(): FuenteDeTeselas {
         throw new Error(await motivoDelServidor(respuesta));
       }
 
-      return new Uint8Array(await respuesta.arrayBuffer());
+      const bytes = new Uint8Array(await respuesta.arrayBuffer());
+
+      // El sombreado puede llegar con menos detalle si el servicio de Córdoba
+      // no contestó: llega igual, y queda anotado con el motivo para avisar y
+      // poder reintentar (decisión 079). Si llega completo, se borra la marca.
+      if (capa === "sombra") {
+        const motivo = respuesta.headers?.get(CABECERA_DE_MENOS_DETALLE);
+        anotarDetalleDeLaSombra(claveDeTesela({ z, x, y, capa }), motivo ? decodeURIComponent(motivo) : null);
+      }
+
+      return bytes;
     },
   };
 }

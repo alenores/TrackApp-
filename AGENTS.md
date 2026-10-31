@@ -111,6 +111,13 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 
 - **Google satelital para consulta con señal.** Muestra los datos propios ya guardados. También muestra, al traer un archivo, las líneas y puntos tal como vinieron, para decidir si se suman; ahí no se mueven ni se marcan puntos nuevos. **Única excepción para marcar: en Marcas, al agregar un punto, se toca su ubicación inicial sobre Google antes de abrir el formulario.** El editor recibe esa coordenada, el centro y el zoom exactos; continúa sobre el mapa propio. Fuera de esa elección inicial, Google no se usa para dibujar, corregir o exportar coordenadas. Los editores conservan el fondo propio en vivo. Las dos navegaciones conservan exclusivamente los mapas descargados. La imagen de Google nunca se precarga ni se guarda offline; se muestran sus créditos variables. Decisiones 050 y 074; Ale, 2026-10-22.
 
+- **El satelital sin conexión no compite con Google Earth.** No hay foto más
+  nítida que sea gratis, legal y guardable para la sierra (decisión 079; no
+  volver a investigarlo). **Una mejora chica ya es éxito**: no se frena una
+  mejora por no llegar a Google. Cada sector baja además el **sombreado del
+  terreno** (altura de 5 m de IDECOR en Córdoba, 30 m afuera). Si IDECOR no
+  contesta, el sector baja igual con 30 m, avisa con el motivo y se puede
+  reintentar: no frena. Ale, 2026-10-31.
 - **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
   clasifican ni delimitan marcas ni Circuitos. Un Camino no
   se parte ni se asigna por cruzar uno o muchos de ellos. Antes de salir, se

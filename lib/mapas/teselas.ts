@@ -22,9 +22,9 @@ import type { Rectangulo } from "@/types/database";
  * un pedazo más, con su nombre, en el mismo depósito. La foto satelital, lo
  * mismo: la misma grilla que el dibujo, con otro nombre adelante.
  */
-export type Capa = "relieve" | "satelital";
+export type Capa = "relieve" | "satelital" | "sombra";
 
-const CAPAS: readonly Capa[] = ["relieve", "satelital"];
+const CAPAS: readonly Capa[] = ["relieve", "satelital", "sombra"];
 
 export type Tesela = { z: number; x: number; y: number; capa?: Capa };
 
@@ -56,6 +56,18 @@ export const ACERCAMIENTO_MINIMO = 0;
  * estira este nivel, que para la altura del terreno es exactamente lo mismo.
  */
 export const ACERCAMIENTO_DEL_RELIEVE = 12;
+
+/**
+ * Los acercamientos en que se baja el sombreado del terreno (decisión 079).
+ *
+ * Es la altura del terreno otra vez, pero **mucho más fina**: en Córdoba sale
+ * del dato de 5 m de IDECOR, y en el último acercamiento cada punto del pedazo
+ * son unos cuatro metros. De ahí el mapa dibuja el terreno sombreado, como una
+ * maqueta, debajo de las curvas. Los tres niveles hacen falta porque el mapa
+ * no dibuja sombreado de un nivel que no tiene: con uno solo, alejarse apenas
+ * lo haría desaparecer.
+ */
+export const ACERCAMIENTOS_DE_LA_SOMBRA = [12, 13, 14] as const;
 
 /**
  * El límite del mundo en la proyección del mapa.
@@ -201,4 +213,33 @@ export function teselasDeLaFoto(
     ...tesela,
     capa: "satelital",
   }));
+}
+
+/** Cuántos pedazos de sombreado hacen falta para un rectángulo. */
+export function cuantasTeselasDeLaSombra(rectangulo: Rectangulo): number {
+  let total = 0;
+  for (const z of ACERCAMIENTOS_DE_LA_SOMBRA) {
+    const { desdeX, hastaX, desdeY, hastaY } = bordes(rectangulo, z);
+    total += (hastaX - desdeX + 1) * (hastaY - desdeY + 1);
+  }
+  return total;
+}
+
+/**
+ * Los pedazos del sombreado de un rectángulo, de lejos a cerca.
+ *
+ * Mismo orden que el resto: si la descarga se corta, lo que quedó es la vista
+ * general.
+ */
+export function teselasDeLaSombra(rectangulo: Rectangulo): Tesela[] {
+  const teselas: Tesela[] = [];
+  for (const z of ACERCAMIENTOS_DE_LA_SOMBRA) {
+    const { desdeX, hastaX, desdeY, hastaY } = bordes(rectangulo, z);
+    for (let x = desdeX; x <= hastaX; x += 1) {
+      for (let y = desdeY; y <= hastaY; y += 1) {
+        teselas.push({ z, x, y, capa: "sombra" });
+      }
+    }
+  }
+  return teselas;
 }

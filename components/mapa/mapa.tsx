@@ -192,7 +192,8 @@ function ponerElFondo(
 
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
-    for (const capa of capasDelFondo(modo, tipo, conCurvas, conLineas)) mapa.addLayer(capa, debajoDe);
+    // El sombreado va con las líneas: solo cuando el mapa lee lo guardado.
+    for (const capa of capasDelFondo(modo, tipo, conCurvas, conLineas, conLineas)) mapa.addLayer(capa, debajoDe);
 
     // Las curvas: siempre en el simple; en el satelital, según el botón.
     for (const capa of CAPAS_DE_RELIEVE) {

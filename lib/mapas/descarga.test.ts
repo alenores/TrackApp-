@@ -9,13 +9,18 @@ import {
   type FuenteDeTeselas,
   PESO_APROXIMADO_DE_UN_PEDAZO,
   PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE,
+  PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA,
   pesoAproximadoDelMapa,
+  reintentarElSombreado,
+  sombraGruesaDeLosSectores,
 } from "@/lib/mapas/descarga";
+import { anotarDetalleDeLaSombra } from "@/lib/offline/sombra-gruesa";
 import { cualesEstanGuardadas, leerTesela } from "@/lib/mapas/deposito";
 import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
   teselasDeLaFoto,
+  teselasDeLaSombra,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
@@ -80,11 +85,12 @@ function fuente(comportamiento: Comportamiento = () => new Uint8Array([1, 2, 3])
   return { fuente, pedidas };
 }
 
-/** Todo lo que hace falta para un sector: el dibujo y el relieve. */
+/** Todo lo que hace falta para un sector: el dibujo, el relieve y el sombreado. */
 function cuantosPedazos(unSector: Sector): number {
   return (
     teselasDelRectangulo(unSector.rectangulo).length +
-    teselasDelRelieve(unSector.rectangulo).length
+    teselasDelRelieve(unSector.rectangulo).length +
+    teselasDeLaSombra(unSector.rectangulo).length
   );
 }
 
@@ -381,8 +387,10 @@ describe("el peso que se avisa antes de bajar", () => {
   it("cuenta el relieve, que pesa mucho más por pedazo pero son pocos", () => {
     const soloDibujo = teselasDelRectangulo(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO;
     const relieve = teselasDelRelieve(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE;
-    expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve);
+    const sombra = teselasDeLaSombra(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA;
+    expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve + sombra);
     expect(relieve).toBeGreaterThan(0);
+    expect(sombra).toBeGreaterThan(0);
   });
 });
 
@@ -489,5 +497,78 @@ describe("el mapa satelital", () => {
     expect(
       pesoAproximadoDelMapa(UNO.rectangulo, ACERCAMIENTO_MAXIMO, "satelital"),
     ).toBeGreaterThan(pesoAproximadoDelMapa(UNO.rectangulo));
+  });
+});
+
+describe("el sombreado con menos detalle (decisión 079)", () => {
+  /** Una fuente que marca como hace la del servidor: sombreado grueso o completo. */
+  function fuenteConSombra(gruesa: () => boolean) {
+    const base = fuente();
+    const conMarca: FuenteDeTeselas = {
+      nombre: base.fuente.nombre,
+      async pedirTesela(tesela, senal) {
+        if (tesela.capa === "sombra") {
+          anotarDetalleDeLaSombra(
+            claveDeTesela(tesela),
+            gruesa() ? "el servicio de alturas de Córdoba (IDECOR) no contestó" : null,
+          );
+        }
+        return base.fuente.pedirTesela(tesela, senal);
+      },
+    };
+    return { ...base, fuente: conMarca };
+  }
+
+  it("si Córdoba no contesta, el sector baja igual y queda anotado con el motivo", async () => {
+    const { fuente: laFuente } = fuenteConSombra(() => true);
+    const resultado = await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: laFuente });
+
+    expect(resultado.estado).toBe("listo");
+    expect(mapaDelSector(UNO.id, "simple")).not.toBeNull();
+    const { pedazos, motivo } = sombraGruesaDeLosSectores([UNO]);
+    expect(pedazos.length).toBe(teselasDeLaSombra(UNO.rectangulo).length);
+    expect(motivo).toMatch(/IDECOR/);
+  });
+
+  it("reintentar con Córdoba de vuelta completa el sombreado y borra el aviso", async () => {
+    let gruesa = true;
+    const { fuente: laFuente, pedidas } = fuenteConSombra(() => gruesa);
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: laFuente });
+    pedidas.length = 0;
+
+    gruesa = false;
+    const resultado = await reintentarElSombreado({ sectores: [UNO], fuente: laFuente });
+
+    expect(resultado).toEqual({
+      estado: "listo",
+      mejorados: teselasDeLaSombra(UNO.rectangulo).length,
+      siguen: 0,
+      motivo: null,
+    });
+    // Solo vuelve a pedir el sombreado, no todo el mapa.
+    expect(pedidas.every((clave) => clave.startsWith("sombra/"))).toBe(true);
+    expect(sombraGruesaDeLosSectores([UNO]).pedazos).toEqual([]);
+  });
+
+  it("si Córdoba sigue sin contestar, el sector sigue andando y lo dice", async () => {
+    const { fuente: laFuente } = fuenteConSombra(() => true);
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: laFuente });
+
+    const resultado = await reintentarElSombreado({ sectores: [UNO], fuente: laFuente });
+
+    expect(resultado.estado).toBe("listo");
+    if (resultado.estado === "listo") {
+      expect(resultado.mejorados).toBe(0);
+      expect(resultado.siguen).toBeGreaterThan(0);
+      expect(resultado.motivo).toMatch(/IDECOR/);
+    }
+    expect(mapaDelSector(UNO.id, "simple")).not.toBeNull();
+  });
+
+  it("cerrar sesión se lleva también las marcas de sombreado", async () => {
+    const { fuente: laFuente } = fuenteConSombra(() => true);
+    await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: laFuente });
+    await borrarTodosLosMapasDelCelular();
+    expect(sombraGruesaDeLosSectores([UNO]).pedazos).toEqual([]);
   });
 });
