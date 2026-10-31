@@ -12,6 +12,7 @@ import {
   cuantasTeselasDeLaSombra,
   cuantasTeselasDelRelieve,
   teselasDeLaFoto,
+  teselaDeClave,
   teselasDeLaSombra,
   teselasDelRectangulo,
   teselasDelRelieve,
@@ -24,6 +25,7 @@ import {
   olvidarTodosLosMapas,
   type TipoDeMapa,
 } from "@/lib/offline/mapas";
+import { olvidarTodaLaSombraGruesa, sombraGruesa, type SombraGruesa } from "@/lib/offline/sombra-gruesa";
 import {
   anotarQueLoSacasteVos,
   olvidarElSacado,
@@ -401,8 +403,75 @@ export async function borrarTodosLosMapasDelCelular(): Promise<void> {
   // Los pendientes eran de la cuenta que se va: para la que entre después no
   // significan nada, y aplicarlos le borraría anotaciones que sí son suyas.
   olvidarTodosLosSacados();
+  olvidarTodaLaSombraGruesa();
   await borrarTodasLasTeselas();
   await borrarTodasLasFotos();
+}
+
+/**
+ * Los pedazos de sombreado de estos sectores que quedaron con menos detalle,
+ * y el motivo del primero, para decirlo en pantalla (decisión 079).
+ */
+export function sombraGruesaDeLosSectores(
+  sectores: Sector[],
+  gruesa: SombraGruesa = sombraGruesa(),
+): { pedazos: string[]; motivo: string | null } {
+  const pedazos = new Set<string>();
+  for (const sector of sectores) {
+    for (const tesela of teselasDeLaSombra(sector.rectangulo)) {
+      const clave = claveDeTesela(tesela);
+      if (gruesa[clave]) pedazos.add(clave);
+    }
+  }
+  const lista = [...pedazos];
+  return { pedazos: lista, motivo: lista.length > 0 ? gruesa[lista[0]] : null };
+}
+
+export type ResultadoDeReintentarElSombreado =
+  | { estado: "listo"; mejorados: number; siguen: number; motivo: string | null }
+  | { estado: "cancelada" }
+  | { estado: "fallo"; motivo: string };
+
+/**
+ * Volver a pedir, con señal, solo los pedazos de sombreado que quedaron con
+ * menos detalle (decisión 079).
+ *
+ * El sector ya está bajado y sigue andando mientras tanto: si el servicio de
+ * Córdoba vuelve a fallar, el pedazo sigue con el detalle de 30 m y se dice
+ * por qué. Nunca se pierde lo que había: el pedazo nuevo reemplaza al viejo
+ * recién cuando llegó entero.
+ */
+export async function reintentarElSombreado({
+  sectores,
+  fuente,
+  senal = new AbortController().signal,
+}: {
+  sectores: Sector[];
+  fuente: FuenteDeTeselas;
+  senal?: AbortSignal;
+}): Promise<ResultadoDeReintentarElSombreado> {
+  const { pedazos } = sombraGruesaDeLosSectores(sectores);
+  let mejorados = 0;
+
+  for (const clave of pedazos) {
+    if (senal.aborted) return { estado: "cancelada" };
+    const tesela = teselaDeClave(clave);
+    if (!tesela) continue;
+
+    try {
+      const traida = await pedirConReintentos(fuente, tesela, senal);
+      await guardarTeselas([{ clave, bytes: traida ?? new Uint8Array(0) }]);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return { estado: "cancelada" };
+      return { estado: "fallo", motivo: motivoDe(error, fuente) };
+    }
+
+    // La fuente anota sola si llegó completo o con menos detalle.
+    if (!sombraGruesa()[clave]) mejorados += 1;
+  }
+
+  const quedan = sombraGruesaDeLosSectores(sectores);
+  return { estado: "listo", mejorados, siguen: quedan.pedazos.length, motivo: quedan.motivo };
 }
 
 /**

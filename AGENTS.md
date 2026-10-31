@@ -115,7 +115,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   nítida que sea gratis, legal y guardable para la sierra (decisión 079; no
   volver a investigarlo). **Una mejora chica ya es éxito**: no se frena una
   mejora por no llegar a Google. Cada sector baja además el **sombreado del
-  terreno** (altura de 5 m de IDECOR en Córdoba, 30 m afuera). Ale, 2026-10-31.
+  terreno** (altura de 5 m de IDECOR en Córdoba, 30 m afuera). Si IDECOR no
+  contesta, el sector baja igual con 30 m, avisa con el motivo y se puede
+  reintentar: no frena. Ale, 2026-10-31.
 - **Zonas y sectores solo organizan la cobertura y descarga de mapas.** No
   clasifican ni delimitan marcas ni Circuitos. Un Camino no
   se parte ni se asigna por cruzar uno o muchos de ellos. Antes de salir, se

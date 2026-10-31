@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { AvisoDeSombraGruesa } from "@/components/mapa/aviso-de-sombra-gruesa";
 import { Boton } from "@/components/ui/boton";
 import { mostrarPeso, pesoAproximadoDelMapa } from "@/lib/mapas/descarga";
 import { useBajarEnFila } from "@/hooks/use-bajar-en-fila";
@@ -63,6 +65,7 @@ export function BajarLosMapasQueFaltan({
     sectoresNecesarios.map((cada) => cada.sector).filter((sector) => !tiene(sector, tipo));
   const { bajando, fallo, bajarEstos } = useBajarEnFila();
   const haySenal = useHaySenal();
+  const sectores = useMemo(() => sectoresNecesarios.map((cada) => cada.sector), [sectoresNecesarios]);
 
   // Sin señal no hay nada que bajar: los botones se van. Lo que falta lo sigue
   // diciendo la lista, que es información y esa no se esconde nunca.
@@ -142,6 +145,8 @@ export function BajarLosMapasQueFaltan({
           guardado, así que reintentar tarda menos.
         </p>
       ) : null}
+
+      <AvisoDeSombraGruesa sectores={sectores} />
 
       {haySenal && sectoresNecesarios.length > 1 ? (
         <div className="flex flex-wrap justify-end gap-2">

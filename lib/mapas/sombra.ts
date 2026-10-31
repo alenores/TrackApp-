@@ -23,6 +23,13 @@
  * prueba sola. Lo que trae los datos vive en `sombra-del-servidor.ts`.
  */
 
+/**
+ * La cabecera con la que el servidor avisa que un pedazo salió con menos
+ * detalle, con el motivo adentro. La escribe `app/api/sombra` y la lee
+ * `lib/mapas/fuente-del-servidor.ts`.
+ */
+export const CABECERA_DE_MENOS_DETALLE = "x-sombra-con-menos-detalle";
+
 /** El lado de cada pedazo de sombreado, en puntos. */
 export const LADO_DE_LA_SOMBRA = 512;
 

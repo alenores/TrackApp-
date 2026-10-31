@@ -142,7 +142,24 @@ volvía a dibujar escalones; de a cuarto de metro, 128 KB. Medio metro: 97 KB.
 - **Verlo en un celular real, al sol**, y en la app entera con un usuario: la
   prueba de este día fue con el motor del mapa y pedazos reales, sin entrar a la
   app (este entorno no tiene las claves de la base).
-- **Si IDECOR no contesta, no se puede bajar el sector.** Ver R33 en RIESGOS.
+- ~~Si IDECOR no contesta, no se puede bajar el sector.~~ Resuelto abajo.
+
+### Si el servicio de Córdoba no contesta (Ale, 2026-10-31)
+
+**No frena, pero avisa, y se puede reintentar.**
+
+- El pedazo de sombreado sale igual, con la altura de 30 m. El sector queda
+  bajado y anda.
+- Queda anotado en el celular qué pedazos salieron así y por qué. Esos pedazos
+  no se guardan en ningún lado del camino, así reintentar trae uno nuevo.
+- En Descargas, en la tarjeta del sector, y en los mapas que faltan de cada
+  Circuito aparece un aviso ámbar con el motivo real y, con señal, el botón
+  **Reintentar sombreado**, que vuelve a pedir solo esos pedazos. Sin señal el
+  aviso sigue; lo que no está es el botón.
+- Afuera de Córdoba no es una falla: ahí el sombreado de 30 m es el que
+  corresponde y no se avisa nada.
+- Con prueba automática: baja igual, queda anotado, reintentar lo completa, y
+  si sigue fallando lo dice.
 
 ## Auditoría de fuentes
 

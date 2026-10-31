@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { CABECERA_DE_MENOS_DETALLE } from "@/lib/mapas/sombra";
 import { armarPedazoDeSombra } from "@/lib/mapas/sombra-del-servidor";
 import { ACERCAMIENTOS_DE_LA_SOMBRA, ladoDeLaGrilla } from "@/lib/mapas/teselas";
 import { crearClienteEnElServidor } from "@/lib/supabase/servidor";
@@ -19,6 +20,13 @@ export const runtime = "nodejs";
 
 /** El terreno no cambia: se puede guardar mucho. */
 const CUANTO_GUARDAR = "public, max-age=604800, s-maxage=2592000, immutable";
+
+/**
+ * Un pedazo con menos detalle **no se guarda en ningún lado del camino**: si
+ * quedara guardado, reintentar devolvería otra vez el mismo pedazo pobre.
+ */
+const NO_GUARDAR = "no-store";
+
 
 function numeroDeGrilla(texto: string, tope: number): number | null {
   if (!/^\d+$/.test(texto)) return null;
@@ -83,11 +91,17 @@ export async function GET(
       });
     }
 
-    return new NextResponse(Buffer.from(pedazo), {
+    return new NextResponse(Buffer.from(pedazo.bytes), {
       status: 200,
       headers: {
         "Content-Type": "image/webp",
-        "Cache-Control": CUANTO_GUARDAR,
+        ...(pedazo.conMenosDetalle
+          ? {
+              "Cache-Control": NO_GUARDAR,
+              // Las cabeceras no aceptan tildes: el motivo viaja codificado.
+              [CABECERA_DE_MENOS_DETALLE]: encodeURIComponent(pedazo.conMenosDetalle),
+            }
+          : { "Cache-Control": CUANTO_GUARDAR }),
       },
     });
   } catch (error) {

@@ -133,17 +133,36 @@ async function respaldoDelRelieve(z: number, x: number, y: number) {
   };
 }
 
+export type PedazoDeSombra = {
+  /** La imagen lista para guardar, en WebP sin pérdida. */
+  bytes: Uint8Array;
+  /**
+   * Por qué salió con menos detalle, si salió así: IDECOR falló y se usó solo
+   * la altura de 30 m. Nada si salió completo.
+   */
+  conMenosDetalle: string | null;
+};
+
 /**
- * El pedazo de sombreado listo para guardar, en WebP sin pérdida.
+ * El pedazo de sombreado listo para guardar.
+ *
+ * **Si IDECOR falla, el pedazo sale igual**, con la altura de 30 m, y se dice
+ * por qué: no se frena la descarga de un sector por un detalle, pero tampoco
+ * se calla (decisión de Ale, 2026-10-31). Si falla también el relieve de
+ * 30 m, eso sí es una falla y se avisa.
  *
  * Devuelve **nada** donde no hay altura de ninguna de las dos fuentes (mar
  * abierto): ahí no hay terreno que sombrear.
  */
-export async function armarPedazoDeSombra(z: number, x: number, y: number): Promise<Uint8Array | null> {
-  const [deIdecor, respaldo] = await Promise.all([
-    alturaDeIdecor(z, x, y),
+export async function armarPedazoDeSombra(z: number, x: number, y: number): Promise<PedazoDeSombra | null> {
+  const [deIdecorOFalla, respaldo] = await Promise.all([
+    alturaDeIdecor(z, x, y).catch((error: unknown) =>
+      error instanceof Error && error.message ? error : new Error("el servicio de alturas de Córdoba (IDECOR) no contestó"),
+    ),
     respaldoDelRelieve(z, x, y),
   ]);
+  const conMenosDetalle = deIdecorOFalla instanceof Error ? deIdecorOFalla.message : null;
+  const deIdecor = deIdecorOFalla instanceof Error ? null : deIdecorOFalla;
 
   const grilla = deIdecor ?? grillaVacia();
   const sinAltura = completarConRespaldo(grilla, respaldo);
@@ -157,5 +176,5 @@ export async function armarPedazoDeSombra(z: number, x: number, y: number): Prom
     .webp({ lossless: true })
     .toBuffer();
 
-  return new Uint8Array(imagen);
+  return { bytes: new Uint8Array(imagen), conMenosDetalle };
 }
