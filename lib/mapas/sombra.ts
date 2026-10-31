@@ -304,3 +304,50 @@ export function aTerrarium(grilla: GrillaDeAlturas, paso = PASO_DE_ALTURA): Uint
   }
   return puntos;
 }
+
+/** El acercamiento del que salen todos los pedazos de sombreado de más lejos. */
+export const ACERCAMIENTO_DE_LA_SOMBRA_FINA = 14;
+
+/**
+ * Arma un pedazo de lejos juntando los de cerca que lo componen (Ale,
+ * 2026-10-31).
+ *
+ * Pedirle a Córdoba un pedazo de lejos de una sola vez tarda más de lo que el
+ * servidor espera: abarca mucho terreno. Los de cerca, en cambio, contesta en
+ * unos segundos. Así que el de lejos se arma en el celular con los de cerca
+ * que ya bajó: cada punto es el promedio de los puntos de cerca que caen
+ * adentro.
+ *
+ * `hijos` va por filas, de arriba a la izquierda, `porLado` × `porLado`. Un
+ * hijo que falta (queda afuera del sector) se completa con el respaldo.
+ */
+export function juntarDeCerca(
+  hijos: (GrillaDeAlturas | null)[],
+  porLado: number,
+  respaldo: (columna: number, fila: number) => number,
+): GrillaDeAlturas {
+  const lado = LADO_DE_LA_SOMBRA;
+  const porHijo = lado / porLado;
+  const alturas = new Float32Array(lado * lado);
+
+  for (let fila = 0; fila < lado; fila += 1) {
+    for (let columna = 0; columna < lado; columna += 1) {
+      const hijo = hijos[Math.floor(fila / porHijo) * porLado + Math.floor(columna / porHijo)];
+      if (!hijo) {
+        alturas[fila * lado + columna] = respaldo(columna, fila);
+        continue;
+      }
+      const x0 = (columna % porHijo) * porLado;
+      const y0 = (fila % porHijo) * porLado;
+      let suma = 0;
+      for (let dy = 0; dy < porLado; dy += 1) {
+        for (let dx = 0; dx < porLado; dx += 1) {
+          suma += hijo.alturas[(y0 + dy) * hijo.ancho + x0 + dx];
+        }
+      }
+      alturas[fila * lado + columna] = suma / (porLado * porLado);
+    }
+  }
+
+  return { ancho: lado, alto: lado, alturas };
+}

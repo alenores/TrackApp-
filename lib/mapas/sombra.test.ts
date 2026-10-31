@@ -5,6 +5,7 @@ import {
   aTerrarium,
   bordesEnMetros,
   completarConRespaldo,
+  juntarDeCerca,
   leerGrillaDeIdecor,
   llevarAlPedazo,
   recortar,
@@ -209,5 +210,32 @@ describe("escribir la altura como imagen", () => {
   it("un punto sin altura se escribe a nivel del mar en vez de romper la imagen", () => {
     const puntos = aTerrarium(grilla(1, 1, () => NaN), 0.5);
     expect(alturaTerrarium(puntos[0], puntos[1], puntos[2])).toBe(0);
+  });
+});
+
+describe("armar un pedazo de lejos con los de cerca", () => {
+  it("cada punto es el promedio de los puntos de cerca que caen adentro", () => {
+    // Cuatro hijos de 512, cada uno parejo a una altura distinta.
+    const hijos = [1000, 1100, 1200, 1300].map((altura) => grilla(512, 512, () => altura));
+    const lejos = juntarDeCerca(hijos, 2, () => NaN);
+    expect(lejos.ancho).toBe(512);
+    expect(lejos.alturas[0]).toBe(1000);
+    expect(lejos.alturas[511]).toBe(1100);
+    expect(lejos.alturas[511 * 512]).toBe(1200);
+    expect(lejos.alturas[511 * 512 + 511]).toBe(1300);
+  });
+
+  it("promedia de verdad: una rampa de cerca da la rampa a la mitad de resolución", () => {
+    const hijo = grilla(512, 512, (c) => c);
+    const lejos = juntarDeCerca([hijo, hijo, hijo, hijo], 2, () => NaN);
+    // Los puntos 0 y 1 de cerca forman el 0 de lejos: (0 + 1) / 2.
+    expect(lejos.alturas[0]).toBe(0.5);
+    expect(lejos.alturas[1]).toBe(2.5);
+  });
+
+  it("donde falta un hijo usa el respaldo", () => {
+    const lejos = juntarDeCerca([grilla(512, 512, () => 1000), null, null, null], 2, () => 777);
+    expect(lejos.alturas[0]).toBe(1000);
+    expect(lejos.alturas[511]).toBe(777);
   });
 });

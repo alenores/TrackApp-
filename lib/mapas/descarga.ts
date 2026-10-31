@@ -5,6 +5,7 @@ import {
   cualesEstanGuardadas,
   guardarTeselas,
 } from "@/lib/mapas/deposito";
+import { ACERCAMIENTO_DE_LA_SOMBRA_FINA } from "@/lib/mapas/sombra";
 import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
@@ -86,7 +87,18 @@ export type FuenteDeTeselas = {
    * tirando, con el motivo real adentro.
    */
   pedirTesela(tesela: Tesela, senal: AbortSignal): Promise<Uint8Array | null>;
+  /**
+   * Arma un pedazo de sombreado de lejos con los de cerca ya guardados, sin
+   * salir a internet (decisión 079). Si la fuente no lo sabe hacer, esos
+   * pedazos se piden como cualquier otro.
+   */
+  armarSombraDeLejos?(tesela: Tesela): Promise<Uint8Array | null>;
 };
+
+/** ¿Es un pedazo de sombreado que se arma en el celular con los de cerca? */
+function esSombraDeLejos(tesela: Tesela, fuente: FuenteDeTeselas): boolean {
+  return Boolean(fuente.armarSombraDeLejos) && tesela.capa === "sombra" && tesela.z < ACERCAMIENTO_DE_LA_SOMBRA_FINA;
+}
 
 export type AvanceDeDescarga = {
   resueltos: number;
@@ -192,7 +204,10 @@ export async function bajarElMapaDelSector({
     };
   }
 
-  const faltan = teselas.filter((tesela) => !yaEstaban.has(claveDeTesela(tesela)));
+  const todasLasQueFaltan = teselas.filter((tesela) => !yaEstaban.has(claveDeTesela(tesela)));
+  // Los de lejos del sombreado se arman al final, con los de cerca ya guardados.
+  const faltan = todasLasQueFaltan.filter((tesela) => !esSombraDeLejos(tesela, fuente));
+  const deLejos = todasLasQueFaltan.filter((tesela) => esSombraDeLejos(tesela, fuente));
 
   let resueltos = yaEstaban.size;
   let bytes = 0;
@@ -247,6 +262,21 @@ export async function bajarElMapaDelSector({
     await grabarLoPendiente();
   } catch (error) {
     fallo ??= error;
+  }
+
+  if (!fallo && !senal.aborted && deLejos.length > 0) {
+    try {
+      for (const tesela of deLejos) {
+        if (senal.aborted) break;
+        const contenido = (await fuente.armarSombraDeLejos!(tesela)) ?? new Uint8Array(0);
+        await guardarTeselas([{ clave: claveDeTesela(tesela), bytes: contenido }]);
+        bytes += contenido.byteLength;
+        resueltos += 1;
+        avisar();
+      }
+    } catch (error) {
+      fallo ??= error;
+    }
   }
 
   if (senal.aborted) return { estado: "cancelada" };
@@ -451,23 +481,45 @@ export async function reintentarElSombreado({
   senal?: AbortSignal;
 }): Promise<ResultadoDeReintentarElSombreado> {
   const { pedazos } = sombraGruesaDeLosSectores(sectores);
+  const teselas = pedazos.flatMap((clave) => teselaDeClave(clave) ?? []);
+  // Primero los de cerca, que se piden; después los de lejos, que se arman
+  // con los de cerca. Un de lejos se rearma si él o alguno de sus de cerca
+  // estaba con menos detalle.
+  const deCerca = teselas.filter((tesela) => !esSombraDeLejos(tesela, fuente));
+  const deLejos = new Map<string, Tesela>();
+  for (const sector of sectores) {
+    for (const tesela of teselasDeLaSombra(sector.rectangulo)) {
+      if (!esSombraDeLejos(tesela, fuente)) continue;
+      const escala = 2 ** (ACERCAMIENTO_DE_LA_SOMBRA_FINA - tesela.z);
+      const tocado =
+        pedazos.includes(claveDeTesela(tesela)) ||
+        deCerca.some(
+          (cerca) => Math.floor(cerca.x / escala) === tesela.x && Math.floor(cerca.y / escala) === tesela.y,
+        );
+      if (tocado) deLejos.set(claveDeTesela(tesela), tesela);
+    }
+  }
   let mejorados = 0;
 
-  for (const clave of pedazos) {
-    if (senal.aborted) return { estado: "cancelada" };
-    const tesela = teselaDeClave(clave);
-    if (!tesela) continue;
-
-    try {
+  try {
+    for (const tesela of deCerca) {
+      if (senal.aborted) return { estado: "cancelada" };
+      const clave = claveDeTesela(tesela);
       const traida = await pedirConReintentos(fuente, tesela, senal);
       await guardarTeselas([{ clave, bytes: traida ?? new Uint8Array(0) }]);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return { estado: "cancelada" };
-      return { estado: "fallo", motivo: motivoDe(error, fuente) };
+      // La fuente anota sola si llegó completo o con menos detalle.
+      if (!sombraGruesa()[clave]) mejorados += 1;
     }
-
-    // La fuente anota sola si llegó completo o con menos detalle.
-    if (!sombraGruesa()[clave]) mejorados += 1;
+    for (const [clave, tesela] of deLejos) {
+      if (senal.aborted) return { estado: "cancelada" };
+      const estabaGruesa = Boolean(sombraGruesa()[clave]);
+      const armada = await fuente.armarSombraDeLejos!(tesela);
+      await guardarTeselas([{ clave, bytes: armada ?? new Uint8Array(0) }]);
+      if (estabaGruesa && !sombraGruesa()[clave]) mejorados += 1;
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") return { estado: "cancelada" };
+    return { estado: "fallo", motivo: motivoDe(error, fuente) };
   }
 
   const quedan = sombraGruesaDeLosSectores(sectores);

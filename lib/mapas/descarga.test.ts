@@ -572,3 +572,25 @@ describe("el sombreado con menos detalle (decisión 079)", () => {
     expect(sombraGruesaDeLosSectores([UNO]).pedazos).toEqual([]);
   });
 });
+
+describe("los pedazos de sombreado de lejos se arman en el celular", () => {
+  it("no se piden: se arman al final, con los de cerca ya guardados", async () => {
+    const base = fuente();
+    const armados: string[] = [];
+    const conArmado: FuenteDeTeselas = {
+      ...base.fuente,
+      async armarSombraDeLejos(tesela) {
+        armados.push(claveDeTesela(tesela));
+        return new Uint8Array([4]);
+      },
+    };
+
+    const resultado = await bajarElMapaDelSector({ sector: UNO, tipo: "simple", fuente: conArmado });
+
+    expect(resultado.estado).toBe("listo");
+    const deLejos = teselasDeLaSombra(UNO.rectangulo).filter((t) => t.z < 14).map(claveDeTesela);
+    expect(armados.sort()).toEqual(deLejos.sort());
+    expect(base.pedidas.some((clave) => deLejos.includes(clave))).toBe(false);
+    for (const clave of deLejos) expect(Array.from((await leerTesela(clave)) ?? [])).toEqual([4]);
+  });
+});
