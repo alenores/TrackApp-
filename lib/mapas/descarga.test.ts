@@ -9,6 +9,7 @@ import {
   type FuenteDeTeselas,
   PESO_APROXIMADO_DE_UN_PEDAZO,
   PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE,
+  PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA,
   pesoAproximadoDelMapa,
 } from "@/lib/mapas/descarga";
 import { cualesEstanGuardadas, leerTesela } from "@/lib/mapas/deposito";
@@ -16,6 +17,7 @@ import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
   teselasDeLaFoto,
+  teselasDeLaSombra,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
@@ -80,11 +82,12 @@ function fuente(comportamiento: Comportamiento = () => new Uint8Array([1, 2, 3])
   return { fuente, pedidas };
 }
 
-/** Todo lo que hace falta para un sector: el dibujo y el relieve. */
+/** Todo lo que hace falta para un sector: el dibujo, el relieve y el sombreado. */
 function cuantosPedazos(unSector: Sector): number {
   return (
     teselasDelRectangulo(unSector.rectangulo).length +
-    teselasDelRelieve(unSector.rectangulo).length
+    teselasDelRelieve(unSector.rectangulo).length +
+    teselasDeLaSombra(unSector.rectangulo).length
   );
 }
 
@@ -381,8 +384,10 @@ describe("el peso que se avisa antes de bajar", () => {
   it("cuenta el relieve, que pesa mucho más por pedazo pero son pocos", () => {
     const soloDibujo = teselasDelRectangulo(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO;
     const relieve = teselasDelRelieve(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE;
-    expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve);
+    const sombra = teselasDeLaSombra(UNO.rectangulo).length * PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA;
+    expect(pesoAproximadoDelMapa(UNO.rectangulo)).toBe(soloDibujo + relieve + sombra);
     expect(relieve).toBeGreaterThan(0);
+    expect(sombra).toBeGreaterThan(0);
   });
 });
 

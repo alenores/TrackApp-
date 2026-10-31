@@ -32,6 +32,18 @@ export const PROTOCOLO_DE_LA_FOTO = "foto-guardada";
 
 export const DIRECCION_DE_LA_FOTO_GUARDADA = `${PROTOCOLO_DE_LA_FOTO}://{z}/{x}/{y}`;
 
+/**
+ * El sombreado del terreno guardado (decisión 079), con el mismo candado.
+ *
+ * Donde no está guardado devuelve vacío, y el mapa entiende «acá no hay
+ * altura»: no sombrea y no da error. Eso también arregla el borde del sector,
+ * que fue lo que hizo sacar el primer sombreado: el mapa no inventa un
+ * barranco contra un pedazo que no existe.
+ */
+export const PROTOCOLO_DE_LA_SOMBRA = "sombra-guardada";
+
+export const DIRECCION_DE_LA_SOMBRA_GUARDADA = `${PROTOCOLO_DE_LA_SOMBRA}://{z}/{x}/{y}`;
+
 const VACIO = new Uint8Array(0);
 
 /**
@@ -86,6 +98,15 @@ export async function servirFotoGuardada(direccion: string): Promise<ArrayBuffer
   return comoArrayBuffer(guardada ?? VACIO);
 }
 
+/** Un pedazo del sombreado guardado. Si no está, vacío; nunca sale a internet. */
+export async function servirSombraGuardada(direccion: string): Promise<ArrayBuffer> {
+  const clave = claveDeLaDireccion(direccion);
+  if (!clave) return comoArrayBuffer(VACIO);
+
+  const guardada = await leerTesela(`sombra/${clave}`);
+  return comoArrayBuffer(guardada ?? VACIO);
+}
+
 let registrado = false;
 
 export function registrarElMapaGuardado(): void {
@@ -96,6 +117,9 @@ export function registrarElMapaGuardado(): void {
   addProtocol(PROTOCOLO_DE_LA_FOTO, async ({ url }) => ({
     data: await servirFotoGuardada(url),
   }));
+  addProtocol(PROTOCOLO_DE_LA_SOMBRA, async ({ url }) => ({
+    data: await servirSombraGuardada(url),
+  }));
   registrado = true;
 }
 
@@ -103,5 +127,6 @@ export function olvidarElMapaGuardado(): void {
   if (!registrado) return;
   removeProtocol(PROTOCOLO);
   removeProtocol(PROTOCOLO_DE_LA_FOTO);
+  removeProtocol(PROTOCOLO_DE_LA_SOMBRA);
   registrado = false;
 }

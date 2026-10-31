@@ -9,8 +9,10 @@ import {
   ACERCAMIENTO_MAXIMO,
   claveDeTesela,
   cuantasTeselas,
+  cuantasTeselasDeLaSombra,
   cuantasTeselasDelRelieve,
   teselasDeLaFoto,
+  teselasDeLaSombra,
   teselasDelRectangulo,
   teselasDelRelieve,
   type Tesela,
@@ -56,6 +58,8 @@ import type { Sector } from "@/types/database";
  * Con el mapa baja también **el relieve del sector**, de donde salen las
  * curvas de nivel: son pedazos más de la misma cuenta, y sin ellos el sector
  * no está completo. Un mapa de montaña sin desnivel no sirve (decisión 013).
+ * Con el relieve baja **el sombreado del terreno** (decisión 079), en los dos
+ * tipos de mapa: también es parte del sector, y si no baja se avisa.
  *
  * El **satelital** es el simple más la foto: baja el mismo dibujo —de ahí
  * salen los nombres y, al navegar, los ríos, arroyos, senderos y huellas que
@@ -157,6 +161,7 @@ export function teselasDelMapa(
   return [
     ...teselasDelRectangulo(rectangulo, acercamientoMaximo),
     ...teselasDelRelieve(rectangulo),
+    ...teselasDeLaSombra(rectangulo),
     ...(tipo === "satelital" ? teselasDeLaFoto(rectangulo, acercamientoMaximo) : []),
   ];
 }
@@ -425,6 +430,12 @@ export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE = 112 * 1024;
  */
 export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO = 14 * 1024;
 
+/**
+ * Un pedazo de sombreado. Medido sobre Los Gigantes el 2026-10-31: 97 KB en
+ * plena sierra, redondeando la altura de a medio metro (decisión 079).
+ */
+export const PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA = 96 * 1024;
+
 export function pesoAproximadoDelMapa(
   rectangulo: Sector["rectangulo"],
   acercamientoMaximo: number = ACERCAMIENTO_MAXIMO,
@@ -434,6 +445,7 @@ export function pesoAproximadoDelMapa(
   return (
     pedazos * PESO_APROXIMADO_DE_UN_PEDAZO +
     cuantasTeselasDelRelieve(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_RELIEVE +
+    cuantasTeselasDeLaSombra(rectangulo) * PESO_APROXIMADO_DE_UN_PEDAZO_DE_SOMBRA +
     (tipo === "satelital" ? pedazos * PESO_APROXIMADO_DE_UN_PEDAZO_DE_FOTO : 0)
   );
 }

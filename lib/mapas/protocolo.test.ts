@@ -19,6 +19,9 @@ import {
   PROTOCOLO_DE_LA_FOTO,
   registrarElMapaGuardado,
   servirFotoGuardada,
+  servirSombraGuardada,
+  DIRECCION_DE_LA_SOMBRA_GUARDADA,
+  PROTOCOLO_DE_LA_SOMBRA,
   servirTeselaGuardada,
 } from "@/lib/mapas/protocolo";
 
@@ -94,10 +97,12 @@ describe("registrar el protocolo", () => {
     registrarElMapaGuardado();
     registrarElMapaGuardado();
 
-    // Dos puertas, las dos al celular: el dibujo y la foto satelital.
+    // Tres puertas, las tres al celular: el dibujo, la foto satelital y el
+    // sombreado del terreno.
     expect(registrados.has(PROTOCOLO)).toBe(true);
     expect(registrados.has(PROTOCOLO_DE_LA_FOTO)).toBe(true);
-    expect(registrados.size).toBe(2);
+    expect(registrados.has(PROTOCOLO_DE_LA_SOMBRA)).toBe(true);
+    expect(registrados.size).toBe(3);
 
     olvidarElMapaGuardado();
     expect(registrados.size).toBe(0);
@@ -152,5 +157,35 @@ describe("la foto satelital guardada", () => {
 
   it("la dirección del estilo usa el mismo protocolo que se registra", () => {
     expect(DIRECCION_DE_LA_FOTO_GUARDADA.startsWith(`${PROTOCOLO_DE_LA_FOTO}://`)).toBe(true);
+  });
+});
+
+describe("el sombreado guardado", () => {
+  it("devuelve el sombreado, no el dibujo ni la foto del mismo lugar", async () => {
+    await guardarTeselas([
+      { clave: "14/5242/9699", bytes: new Uint8Array([1]) },
+      { clave: "satelital/14/5242/9699", bytes: new Uint8Array([2]) },
+      { clave: "sombra/14/5242/9699", bytes: new Uint8Array([7, 7]) },
+    ]);
+
+    const sombra = await servirSombraGuardada("sombra-guardada://14/5242/9699");
+    expect(new Uint8Array(sombra)).toEqual(new Uint8Array([7, 7]));
+  });
+
+  it("NO sale a internet, y donde no está devuelve vacío para que no se sombree", async () => {
+    const red = vi.fn();
+    vi.stubGlobal("fetch", red);
+
+    const sombra = await servirSombraGuardada("sombra-guardada://14/1/1");
+
+    expect(red).not.toHaveBeenCalled();
+    // Vacío: el mapa entiende «acá no hay altura» y no inventa un barranco en
+    // el borde del sector.
+    expect(sombra.byteLength).toBe(0);
+    vi.unstubAllGlobals();
+  });
+
+  it("la dirección del estilo usa el mismo protocolo que se registra", () => {
+    expect(DIRECCION_DE_LA_SOMBRA_GUARDADA.startsWith(`${PROTOCOLO_DE_LA_SOMBRA}://`)).toBe(true);
   });
 });

@@ -5,11 +5,13 @@ import { describe, expect, it } from "vitest";
 import {
   capasDelFondo,
   estiloDelMapa,
+  FUENTE_DE_LA_SOMBRA,
   FUENTE_DEL_FONDO,
   FUENTE_SATELITAL,
   iconosDelFondo,
   opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
+  SOMBRA_DEL_TERRENO,
   todasLasCapasDelFondo,
 } from "@/components/mapa/capas-base";
 import { coloresDelMapa } from "@/components/mapa/colores";
@@ -102,10 +104,10 @@ describe("la receta del fondo", () => {
   it("todas las capas leen de la fuente que la receta declara", () => {
     const estilo = estiloDelMapa("noche");
     const declaradas = Object.keys(estilo.sources);
-    expect(declaradas.sort()).toEqual([FUENTE_DEL_FONDO, FUENTE_SATELITAL].sort());
+    expect(declaradas.sort()).toEqual([FUENTE_DEL_FONDO, FUENTE_SATELITAL, FUENTE_DE_LA_SOMBRA].sort());
 
     for (const tipo of ["dibujo", "satelital"] as const) {
-      for (const capa of capasDelFondo("noche", tipo)) {
+      for (const capa of capasDelFondo("noche", tipo, true, true, true)) {
         const fuente = (capa as { source?: string }).source;
         expect(declaradas).toContain(fuente);
       }
@@ -118,6 +120,38 @@ describe("la receta del fondo", () => {
     const deSol = capasDelFondo("sol").map((capa) => capa.id);
     const deNoche = capasDelFondo("noche").map((capa) => capa.id);
     expect(deSol).toEqual(deNoche);
+  });
+});
+
+describe("el sombreado del terreno", () => {
+  it("se lee solo de lo guardado: en vivo no existe", () => {
+    expect(Object.keys(estiloDelMapa("sol", true).sources)).not.toContain(FUENTE_DE_LA_SOMBRA);
+    const guardada = estiloDelMapa("sol").sources[FUENTE_DE_LA_SOMBRA] as { tiles: string[] };
+    expect(guardada.tiles.every((direccion) => direccion.startsWith("sombra-guardada://"))).toBe(true);
+  });
+
+  it("va encima del terreno y de la foto, y debajo de arroyos, senderos y nombres", () => {
+    for (const tipo of ["dibujo", "satelital"] as const) {
+      const capas = capasDelFondo("sol", tipo, true, true, true);
+      const lugar = (id: string) => capas.findIndex((capa) => capa.id === id);
+      const sombra = lugar(SOMBRA_DEL_TERRENO);
+      expect(sombra).toBeGreaterThan(-1);
+      for (const [indice, capa] of capas.entries()) {
+        if (capa.type === "symbol") expect(indice).toBeGreaterThan(sombra);
+        if (capa.type === "raster") expect(indice).toBeLessThan(sombra);
+      }
+      for (const id of ["earth", "landcover", "water"]) {
+        if (lugar(id) !== -1) expect(lugar(id)).toBeLessThan(sombra);
+      }
+      for (const id of ["water_stream", "water_river", "senderos"]) {
+        expect(lugar(id)).toBeGreaterThan(sombra);
+      }
+    }
+  });
+
+  it("sin pedirlo no aparece, y se puede sacar al cambiar de fondo", () => {
+    expect(capasDelFondo("sol", "satelital").some((capa) => capa.id === SOMBRA_DEL_TERRENO)).toBe(false);
+    expect(todasLasCapasDelFondo("sol").some((capa) => capa.id === SOMBRA_DEL_TERRENO)).toBe(true);
   });
 });
 

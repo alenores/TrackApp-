@@ -699,6 +699,24 @@ Normal que ya no puede subirse. No se marca resuelto hasta comprobarlo.
 
 ---
 
+## 🟡 R33 — Bajar un sector depende de que conteste el servicio de alturas de Córdoba
+
+**Desde el 2026-10-31** cada sector baja también el **sombreado del terreno**
+(decisión 079), armado con la altura de 5 m de IDECOR. Si IDECOR no contesta,
+la descarga del sector se corta con el motivo en pantalla y el sector no queda
+como bajado.
+
+**Riesgo.** Un servicio de la provincia, que TrackApp no controla, puede dejar
+a alguien sin bajar mapas justo antes de salir. Se sabe en casa y con el
+motivo, pero bloquea.
+
+**Cómo se cierra.** Decidir con Ale si, cuando IDECOR no contesta, se baja el
+sombreado con la altura de 30 m y se avisa, en vez de frenar la descarga.
+
+**Detectado:** 2026-10-31, al implementar el sombreado. **Estado:** abierto.
+
+---
+
 ## 🟡 R14 — El motor que hace andar la app sin señal está abandonado
 
 **Qué pasa.** La pieza que le enseña al celular a funcionar sin conexión

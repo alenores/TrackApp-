@@ -5,9 +5,10 @@ import { coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
 import {
   DIRECCION_DE_LA_FOTO_GUARDADA,
+  DIRECCION_DE_LA_SOMBRA_GUARDADA,
   DIRECCION_DE_LAS_TESELAS,
 } from "@/lib/mapas/protocolo";
-import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
+import { ACERCAMIENTO_MAXIMO, ACERCAMIENTOS_DE_LA_SOMBRA } from "@/lib/mapas/teselas";
 import type { Modo } from "@/lib/modo";
 
 /**
@@ -59,6 +60,12 @@ export { QUIEN_HIZO_LA_FOTO };
 
 /** El nombre con el que el mapa conoce a los pedazos guardados. */
 export const FUENTE_DEL_FONDO = "fondo";
+
+/** El nombre con el que el mapa conoce al sombreado del terreno guardado. */
+export const FUENTE_DE_LA_SOMBRA = "sombra";
+
+/** La capa que dibuja el sombreado del terreno (decisión 079). */
+export const SOMBRA_DEL_TERRENO = "sombra-del-terreno";
 
 /**
  * Las letras y los íconos del mapa viajan **dentro de la app**.
@@ -140,6 +147,22 @@ export function estiloDelMapa(modo: Modo, enVivo = false): StyleSpecification {
          */
         maxzoom: ACERCAMIENTO_MAXIMO,
       },
+      /*
+        El sombreado: solo de lo guardado y solo fuera del mapa en vivo. Donde
+        no se bajó, el pedazo viene vacío y no se sombrea nada.
+      */
+      ...(enVivo
+        ? {}
+        : {
+            [FUENTE_DE_LA_SOMBRA]: {
+              type: "raster-dem" as const,
+              tiles: [DIRECCION_DE_LA_SOMBRA_GUARDADA],
+              tileSize: 512,
+              encoding: "terrarium" as const,
+              minzoom: ACERCAMIENTOS_DE_LA_SOMBRA[0],
+              maxzoom: ACERCAMIENTOS_DE_LA_SOMBRA[ACERCAMIENTOS_DE_LA_SOMBRA.length - 1],
+            },
+          }),
     },
     layers: [],
   };
@@ -198,6 +221,41 @@ function lineasSobreLaFoto(capas: LayerSpecification[], colores: ColoresDelMapa)
 }
 
 /**
+ * El terreno sombreado, como una maqueta (decisión 079).
+ *
+ * Va **encima de la foto o del relleno del dibujo y debajo de las líneas y los
+ * nombres**: oscurece las laderas a la sombra sin tapar nada de lo que se lee.
+ * Los colores salen de las variables, distintos con sol y de noche.
+ */
+function capaDeLaSombra(colores: ColoresDelMapa): LayerSpecification {
+  return {
+    id: SOMBRA_DEL_TERRENO,
+    type: "hillshade",
+    source: FUENTE_DE_LA_SOMBRA,
+    paint: {
+      "hillshade-shadow-color": colores.relieveSombra,
+      "hillshade-accent-color": colores.relieveSombra,
+      "hillshade-highlight-color": colores.relieveLuz,
+      "hillshade-exaggeration": 0.5,
+    },
+  };
+}
+
+/**
+ * Mete el sombreado encima del terreno y debajo de lo que se lee.
+ *
+ * En el dibujo va justo después del agua: el terreno, los parques y el agua
+ * quedan abajo; arroyos, senderos, caminos y nombres, arriba. Sobre la foto,
+ * justo antes de la primera línea o nombre.
+ */
+function conSombraDebajoDeLasLineas(capas: LayerSpecification[], colores: ColoresDelMapa): LayerSpecification[] {
+  const agua = capas.findIndex((capa) => capa.type === "fill" && capa.id === "water");
+  const primeraEncima = capas.findIndex((capa) => capa.type === "line" || capa.type === "symbol");
+  const corte = agua !== -1 ? agua + 1 : primeraEncima === -1 ? capas.length : primeraEncima;
+  return [...capas.slice(0, corte), capaDeLaSombra(colores), ...capas.slice(corte)];
+}
+
+/**
  * Las capas que dibujan el mapa, para un modo de color.
  *
  * **Sin la capa de fondo liso** que trae el juego original: ese color taparía
@@ -215,6 +273,11 @@ export function capasDelFondo(
    * Al marcar un rectángulo no: ahí se mira el terreno pelado.
    */
   conLineas = false,
+  /**
+   * El terreno sombreado. Solo cuando el mapa lee lo guardado: en vivo no
+   * existe la fuente del sombreado.
+   */
+  conSombra = false,
 ): LayerSpecification[] {
   const colores = coloresDelMapa();
   const dibujo = ajustarParaLaMontana(
@@ -225,7 +288,7 @@ export function capasDelFondo(
     colores,
   );
 
-  if (tipo === "dibujo") return dibujo;
+  if (tipo === "dibujo") return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores) : dibujo;
   if (tipo === "google") {
     return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE }];
   }
@@ -234,7 +297,7 @@ export function capasDelFondo(
     El relleno del terreno taparía la foto. Los nombres van siempre. Las
     líneas de agua y de paso solo al navegar (decisión 060).
   */
-  return [
+  const conFoto: LayerSpecification[] = [
     {
       id: "foto-del-terreno",
       type: "raster",
@@ -253,6 +316,7 @@ export function capasDelFondo(
     ...(conLineas ? lineasSobreLaFoto(dibujo, colores) : []),
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];
+  return conSombra ? conSombraDebajoDeLasLineas(conFoto, colores) : conFoto;
 }
 
 /** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */
@@ -262,6 +326,7 @@ export function todasLasCapasDelFondo(modo: Modo): LayerSpecification[] {
     ...capasDelFondo(modo, "satelital"),
     ...capasDelFondo(modo, "satelital", true, true),
     ...capasDelFondo(modo, "google"),
+    capaDeLaSombra(coloresDelMapa()),
   ];
 }
 

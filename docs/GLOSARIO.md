@@ -110,6 +110,13 @@ de cada sector, en un solo acercamiento, y de ahí salen las curvas de nivel.
 Sale de un archivo del mundo distinto del mapa (Mapterhorn, con datos de
 Copernicus). Se pide por el mismo tipo de puente y se guarda en el mismo depósito.
 
+**Sombreado del terreno**
+El terreno dibujado como una maqueta: cada ladera más oscura o más clara según
+de dónde le pega la luz. No es una foto: sale de la altura del terreno. Baja
+con cada sector, en los dos mapas, y se dibuja debajo de arroyos, senderos y
+nombres. En Córdoba usa la altura de 5 m de IDECOR, apenas suavizada; afuera,
+el **relieve** de 30 m. Ver decisión 079.
+
 **Alturas de un Camino**
 La altura del terreno cada 25 m a lo largo de la línea, más una en el final.
 Las averigua la app con el **relieve** al guardar el Camino, porque las líneas

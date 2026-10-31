@@ -94,6 +94,9 @@
   --mapa-curva: #f0abfc;
   /* Sobre la foto satelital el violeta no se distingue. Naranja clarito (Ale, 2026-10-15). */
   --mapa-curva-foto: #ffc266;
+  /* El sombreado del terreno (decisión 079): laderas a la sombra y al sol. */
+  --mapa-relieve-sombra: #000000;
+  --mapa-relieve-luz: #94a3b8;
   /* El punto azul: dónde estoy. */
   --gps: #60a5fa;
   /* Los puntos y trazos dibujados sobre el territorio. */
@@ -210,6 +213,9 @@
   --mapa-agua: #1d6f96;
   --mapa-curva: #a21caf;
   --mapa-curva-foto: #ffc266;
+  --mapa-relieve-sombra: #1e293b;
+  /* Con sol la luz va tenue: blanca entera, la sierra parece de plata. */
+  --mapa-relieve-luz: rgba(255, 255, 255, 0.35);
   --gps: #1d4ed8;
   --anotacion: #be185d;
 

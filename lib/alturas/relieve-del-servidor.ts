@@ -18,7 +18,7 @@ const PEDAZOS_QUE_SE_RECUERDAN = 24;
 
 const recordados = new Map<string, PedazoDeRelieve | null>();
 
-async function abrirPedazo(z: number, x: number, y: number): Promise<PedazoDeRelieve | null> {
+export async function abrirPedazo(z: number, x: number, y: number): Promise<PedazoDeRelieve | null> {
   const clave = `${z}/${x}/${y}`;
   if (recordados.has(clave)) {
     const pedazo = recordados.get(clave)!;

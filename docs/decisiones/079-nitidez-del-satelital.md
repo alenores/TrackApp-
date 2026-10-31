@@ -1,6 +1,6 @@
 # 079 — Nitidez del satelital sin conexión
 
-**Fecha:** 2026-10-30 · **Estado:** vigente (el sombreado queda a decisión de Ale)
+**Fecha:** 2026-10-30 · **Estado:** vigente · sombreado implementado el 2026-10-31
 
 > **Leer esto antes de volver a investigar.** Ale preguntó si el satelital
 > descargado podía verse tan nítido como Google Earth. Se investigó con
@@ -88,16 +88,61 @@ esa fuente**: «Esri abierto» para guardar en el celular no hay.
   **≈ 0,3 MB**. Es liviano.
 - **Cobertura:** el dato de 5 m es solo de la provincia de Córdoba. Fuera de
   Córdoba habría que usar el de 30 m.
-- **El borde del sector** (lo que hizo sacar el sombreado en septiembre): sin
-  probar en la app. La idea es bajar una franja extra de relieve alrededor del
-  sector para que el borde no se corte; pesa poco.
 
-## Pendiente
+## Decisión (Ale, 2026-10-31)
 
-- **Decisión de Ale:** ¿se suma el sombreado, con el dato de 5 m limpio en
-  Córdoba y el de 30 m afuera?
-- Si se suma: probar el borde del sector en la app y verlo al sol en un
-  celular.
+**Se suma el sombreado.** El criterio de Ale: *no nos comparamos con Google
+Earth; con que mejore un poco, ya es un caso de éxito.* No se frena una mejora
+por no llegar a Google.
+
+## Cómo quedó (2026-10-31)
+
+- **Baja con cada sector, en los dos mapas** (simple y satelital), en los
+  acercamientos 12, 13 y 14. Es parte del sector: si no baja, la descarga se
+  corta con el motivo y el sector no queda como bajado.
+- **Lo arma el servidor de TrackApp** mientras se baja (`api/sombra`): pide la
+  altura de 5 m a IDECOR, completa donde IDECOR no tiene dato con la de 30 m,
+  suaviza apenas y guarda la altura redondeada de a medio metro.
+- **Navegando se lee solo del celular**, con su propio candado, igual que la
+  foto. No sale a internet.
+- **Se dibuja encima del terreno y de la foto, y debajo de arroyos, senderos,
+  caminos y nombres.** Colores propios para sol y noche; con sol la luz va
+  tenue porque blanca entera la sierra parecía de plata.
+- **El borde del sector quedó resuelto sin franja extra.** Donde no hay
+  sombreado guardado, el mapa entiende «acá no hay altura»: no sombrea y no
+  inventa un barranco contra el pedazo que falta. Verificado con el motor del
+  mapa en Los Gigantes: ver `079-imagenes/motor-del-mapa-borde-y-noche.jpg`.
+
+### Dos defectos encontrados al mirarlo con el motor del mapa, y corregidos
+
+1. **Líneas rectas en cada unión entre pedazos.** IDECOR no devuelve
+   exactamente el cuadrado pedido: lo agranda un poco y deja una franja sin
+   dato en los bordes. Ahora se le pide con margen y se usa el borde que
+   IDECOR informa para ubicar cada punto. Lleva prueba automática.
+2. **Una malla fina encima de todo.** Al achicar su grilla, IDECOR repetía o
+   salteaba una fila cada tantas. Ahora se le pide que mezcle vecinos.
+
+Resultado: `079-imagenes/motor-del-mapa-sin-y-con-sombreado.jpg`.
+
+### Medido en un sector de 6 × 4 km en Los Gigantes
+
+| | |
+|---|---|
+| Pedazos de sombreado | 15 |
+| Peso | **≈ 1,3 MB** (no 0,3 MB como se estimó antes: se guarda más fino y en tres acercamientos) |
+| Tiempo de armado | ≈ 20 s |
+
+Redondear la altura al metro entero pesaba menos (60 KB por pedazo) pero
+volvía a dibujar escalones; de a cuarto de metro, 128 KB. Medio metro: 97 KB.
+
+### Lo que falta
+
+- **Sectores bajados antes del 2026-10-31 no tienen sombreado.** Siguen
+  andando igual; para tenerlo hay que sacarlos en Descargas y volver a bajarlos.
+- **Verlo en un celular real, al sol**, y en la app entera con un usuario: la
+  prueba de este día fue con el motor del mapa y pedazos reales, sin entrar a la
+  app (este entorno no tiene las claves de la base).
+- **Si IDECOR no contesta, no se puede bajar el sector.** Ver R33 en RIESGOS.
 
 ## Auditoría de fuentes
 
@@ -114,4 +159,10 @@ relieve de 30 m de Mapterhorn que usa la app.
 sin conexión, no del contrato); cobertura de la foto de IDECOR (de la decisión
 007); pesos con Esri (pedazos medidos por un sector estimado).
 
-**Pendiente de verificación:** el borde del sector con sombreado, en la app.
+**Leído en tiempo real (2026-10-31):** código del mapa, de la descarga, del
+candado de lo guardado y del motor del mapa (cómo trata un pedazo de altura
+vacío); pedazos de sombreado armados por el código nuevo contra IDECOR y
+Mapterhorn, dibujados con el motor del mapa en un navegador.
+
+**Pendiente de verificación:** el sombreado en la app entera con usuario y en
+un celular real al sol.

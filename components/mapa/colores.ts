@@ -57,6 +57,10 @@ export type ColoresDelMapa = {
   curva: string;
   /** Las mismas curvas sobre la foto satelital: naranja clarito. */
   curvaSobreFoto: string;
+  /** El sombreado del terreno: el lado de las laderas que queda a la sombra. */
+  relieveSombra: string;
+  /** El sombreado del terreno: el lado de las laderas al que le pega la luz. */
+  relieveLuz: string;
 };
 
 /** Por si se pregunta antes de que el navegador tenga las variables listas. */
@@ -90,6 +94,8 @@ const DE_RESPALDO: ColoresDelMapa = {
   agua: "#5fc3e4",
   curva: "#f0abfc",
   curvaSobreFoto: "#ffc266",
+  relieveSombra: "#000000",
+  relieveLuz: "#94a3b8",
 };
 
 function leer(nombre: string, deRespaldo: string): string {
@@ -133,6 +139,8 @@ export function coloresDelMapa(): ColoresDelMapa {
     agua: leer("--mapa-agua", DE_RESPALDO.agua),
     curva: leer("--mapa-curva", DE_RESPALDO.curva),
     curvaSobreFoto: leer("--mapa-curva-foto", DE_RESPALDO.curvaSobreFoto),
+    relieveSombra: leer("--mapa-relieve-sombra", DE_RESPALDO.relieveSombra),
+    relieveLuz: leer("--mapa-relieve-luz", DE_RESPALDO.relieveLuz),
   };
 }
 

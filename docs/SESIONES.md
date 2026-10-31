@@ -4,6 +4,22 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-31 — Sombreado del terreno
+
+- Ale decidió sumar el sombreado: «con que mejore un poco, ya es un caso de
+  éxito; no nos comparamos con Google Earth» (decisión 079 y regla en AGENTS).
+- Cada sector baja ahora el sombreado del terreno (acercamientos 12 a 14), en
+  los dos mapas. Lo arma el servidor con la altura de 5 m de IDECOR, completa
+  con la de 30 m, suaviza y guarda de a medio metro. Navegando se lee solo del
+  celular. Va debajo de arroyos, senderos y nombres.
+- El borde del sector quedó limpio sin franja extra: donde falta el pedazo,
+  el mapa no sombrea.
+- Mirándolo con el motor del mapa aparecieron líneas en las uniones y una malla
+  fina: eran cómo se le pedía el dato a IDECOR. Corregidos, con prueba.
+- Medido: ≈ 1,3 MB más por sector de 6 × 4 km.
+- Pendiente: probarlo en la app entera y en un celular al sol; los sectores ya
+  bajados hay que volver a bajarlos; R33 (si IDECOR no contesta, no se baja).
+
 ## Sesión 2026-10-30 — Nitidez del satelital sin conexión
 
 - Ale preguntó si el satelital bajado podía verse como Google Earth. Se midió
