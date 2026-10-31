@@ -4,6 +4,16 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-10-31 (tarde) — Google guardado mientras vale
+
+- Decisión 080 de Ale, riesgo asumido: lo que se mira de Google en Consultas
+  queda guardado solo el tiempo que Google indica, y las navegaciones lo dibujan
+  encima del mapa bajado mientras vale. Sin avisos ni sorpresas: donde no hay,
+  se ve el mapa de siempre.
+- Con prueba automática: no se guarda más tiempo que el de Google, navegando
+  no sale a internet, y cerrar sesión las borra.
+- Regla de Google en AGENTS ajustada; R34 abierto como riesgo asumido.
+
 ## Sesión 2026-10-31 — Sombreado del terreno
 
 - Ale decidió sumar el sombreado: «con que mejore un poco, ya es un caso de

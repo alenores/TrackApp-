@@ -117,6 +117,11 @@ con cada sector, en los dos mapas, y se dibuja debajo de arroyos, senderos y
 nombres. En Córdoba usa la altura de 5 m de IDECOR, apenas suavizada; afuera,
 el **relieve** de 30 m. Ver decisión 079.
 
+**Google guardado**
+Las imágenes de Google que quedaron en el celular de mirar Consultas con señal.
+Se guardan solo el tiempo que Google indica en cada una, y mientras valen las
+navegaciones las dibujan encima del mapa bajado. Ver decisión 080.
+
 **Sombreado con menos detalle**
 El sombreado que bajó con la altura de 30 m porque el servicio de Córdoba no
 contestó. El sector queda bajado y anda; la app lo avisa con el motivo y ofrece

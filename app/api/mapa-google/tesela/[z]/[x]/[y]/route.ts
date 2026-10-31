@@ -3,6 +3,7 @@ import {
   claveDeGoogle, comprobarAccesoAGoogle, motivoDeGoogle, respuestaDeGoogle,
   sesionValida, SIN_GUARDAR_GOOGLE, sinClaveDeGoogle,
 } from "@/lib/mapas/google-servidor";
+import { CABECERA_DE_GUARDADO_DE_GOOGLE } from "@/lib/mapas/google-guardado";
 
 export const runtime = "nodejs";
 
@@ -29,7 +30,13 @@ export async function GET(pedido: Request, { params }: { params: Promise<{ z: st
     const tipo = respuesta.headers.get("content-type") || "";
     if (!tipo.startsWith("image/")) return respuestaDeGoogle("Google respondió sin una imagen válida. Cambiá al mapa Satelital.", 502);
     return new NextResponse(await respuesta.arrayBuffer(), {
-      headers: { "Content-Type": tipo, "Cache-Control": SIN_GUARDAR_GOOGLE },
+      headers: {
+        "Content-Type": tipo,
+        "Cache-Control": SIN_GUARDAR_GOOGLE,
+        // Cuánto deja Google guardar esta imagen: la app la guarda ese tiempo y
+        // nada más (decisión 080).
+        [CABECERA_DE_GUARDADO_DE_GOOGLE]: respuesta.headers.get("cache-control") ?? "",
+      },
     });
   } catch (error) {
     return respuestaDeGoogle(`No se pudo traer la imagen de Google: ${motivoDeGoogle(error)}. Cambiá al mapa Satelital.`, 502);

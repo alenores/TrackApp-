@@ -148,7 +148,7 @@ const withPWA = withPWAInit({
       options: {},
     },
     {
-      /** Las imágenes de Google son solo de consulta con señal y jamás van al depósito offline. */
+      /** El motor offline no guarda las imágenes de Google: las guarda la app, solo el tiempo que Google indica (decisión 080). */
       urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
         sameOrigin && url.pathname.startsWith("/api/mapa-google/"),
       handler: "NetworkOnly",
