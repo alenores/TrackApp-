@@ -51,6 +51,20 @@ export function opcionesDelMapa({
   return ["google"];
 }
 
+/**
+ * Hasta dónde se puede acercar cada mapa propio (Ale, 2026-11-01).
+ *
+ * Los mapas bajados traen detalle hasta el acercamiento 15. Más cerca el mapa
+ * estira lo último que tiene, y pasado cierto punto la pantalla queda de un
+ * solo color. La foto satelital se deja un paso más; el dibujo, tres, porque
+ * sus líneas y nombres siguen nítidos al agrandarse. Google tiene su propio
+ * tope, según lo que Google tenga en cada zona.
+ */
+export const TOPE_DE_ACERCAMIENTO: Record<Exclude<TipoDeFondo, "google">, number> = {
+  satelital: 16,
+  dibujo: 18,
+};
+
 /** El nombre con el que el mapa conoce a la foto satelital. */
 export const FUENTE_SATELITAL = "satelital";
 export const FUENTE_GOOGLE = "google";

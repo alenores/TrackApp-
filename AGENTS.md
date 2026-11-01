@@ -183,6 +183,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Tranqueras y alambrados los trae OpenStreetMap solos al crear una zona** y
   quedan fijos: no se corrigen, no se borran, no se vuelven a buscar. Zonas y
   sectores no cargan marcas, y borrarlos no borra marcas.
+- **Desde el acercamiento 15, cada punto muestra su descripción debajo del
+  ícono**, corta (unas 40 letras con «…»). Tocar el texto lo esconde hasta salir
+  de ese mapa. Ale, 2026-11-01.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
   comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
@@ -191,6 +194,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   con señal desde Mapas, nunca navegando; Administrador en todos, Premium en
   los suyos; nunca en lo de OpenStreetMap. No afecta Caminos, Circuitos ni
   trazos. Decisión 078; Ale, 2026-10-24.
+- **Cada mapa tiene tope de acercamiento:** satelital propio hasta 16, simple
+  hasta 18; Google, lo que Google tenga en esa zona. Más cerca solo se veía
+  una mancha. Ale, 2026-11-01.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un

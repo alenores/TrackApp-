@@ -4,6 +4,17 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Tope de acercamiento
+
+- Pedido de Ale: la app dejaba acercarse hasta que la pantalla quedaba de un
+  color. Ahora el satelital propio llega hasta 16 y el simple hasta 18 (los
+  mapas bajan detalle hasta 15). Google sigue con su tope por zona. Con prueba.
+- Nota: con el satelital en 16, lo guardado de Google a más acercamiento
+  (decisión 080) no se llega a ver.
+- Pedido de Ale: desde el acercamiento 15 cada punto muestra su descripción
+  corta debajo del ícono; tocarla la esconde hasta salir de ese mapa. Mirado
+  sobre la foto con sol y de noche. Con prueba.
+
 ## Sesión 2026-10-31 (tarde) — Google guardado mientras vale
 
 - Decisión 080 de Ale, riesgo asumido: lo que se mira de Google en Consultas
