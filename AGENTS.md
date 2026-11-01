@@ -183,6 +183,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Tranqueras y alambrados los trae OpenStreetMap solos al crear una zona** y
   quedan fijos: no se corrigen, no se borran, no se vuelven a buscar. Zonas y
   sectores no cargan marcas, y borrarlos no borra marcas.
+- **Desde el acercamiento 15, cada punto muestra su descripción debajo del
+  ícono**, corta (unas 40 letras con «…»). Tocar el texto lo esconde hasta salir
+  de ese mapa. Ale, 2026-11-01.
 - **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
   comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.

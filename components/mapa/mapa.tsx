@@ -27,6 +27,7 @@ import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { PROTOCOLO_DE_GOOGLE_EN_VIVO, registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
+import { DESCRIPCION_DESDE, descripcionCorta } from "@/lib/anotaciones/descripcion-en-el-mapa";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
 import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
 import {
@@ -471,6 +472,20 @@ function limitesDe(rectangulo: Rectangulo): maplibregl.LngLatBoundsLike {
 }
 
 /** Las anotaciones, pasadas a algo que el mapa sepa dibujar. */
+/** La capa con la descripción de los puntos (Ale, 2026-11-01). */
+const DESCRIPCION_DE_PUNTOS = "anotaciones-punto-descripcion";
+
+/** Los puntos con descripción, menos los que el usuario escondió tocándolos. */
+function filtroDeDescripciones(escondidas: number[]): maplibregl.FilterSpecification {
+  return [
+    "all",
+    ["==", ["geometry-type"], "Point"],
+    ["has", "descripcion"],
+    ["!=", ["get", "descripcion"], null],
+    ["!", ["in", ["get", "id"], ["literal", escondidas]]],
+  ];
+}
+
 function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -487,6 +502,8 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
         ...(anotacion.icono ? { icono: anotacion.icono } : {}),
         // El marco rojo de Atención: un aviso y nada más (decisión 078).
         atencion: anotacion.atencion,
+        // Lo que se escribe debajo del ícono al acercarse (Ale, 2026-11-01).
+        descripcion: descripcionCorta(anotacion.comentario),
       },
       geometry: anotacion.geometria,
     })),
@@ -584,6 +601,8 @@ export function Mapa({
   const [caminoBajoCursor, setCaminoBajoCursor] = useState<{ id: number; texto: string; x: number; y: number } | null>(null);
   const [posicionPropia, setPosicionPropia] = useState<PosicionEnElMapa | null>(null);
   const [anotacionTocadaId, setAnotacionTocadaId] = useState<number | null>(null);
+  /** Las descripciones que el usuario escondió. Vuelven al salir de este mapa. */
+  const [descripcionesEscondidas, setDescripcionesEscondidas] = useState<number[]>([]);
   const vigilanciaRef = useRef<number | null>(null);
   
   const primeraVezRef = useRef(true);
@@ -1248,6 +1267,30 @@ export function Mapa({
         },
       });
 
+      // La descripción del punto, debajo del ícono, al acercarse. Tocarla la
+      // esconde hasta salir de este mapa (Ale, 2026-11-01). Si choca con otro
+      // texto, el mapa muestra uno: nunca tapa el ícono.
+      mapa.addLayer({
+        id: DESCRIPCION_DE_PUNTOS,
+        type: "symbol",
+        source: FUENTE_ANOTACIONES,
+        minzoom: DESCRIPCION_DESDE,
+        filter: filtroDeDescripciones([]),
+        layout: {
+          "text-field": ["get", "descripcion"],
+          "text-font": ["Noto Sans Regular"],
+          "text-size": 15,
+          "text-anchor": "top",
+          "text-offset": [0, 1.4],
+          "text-max-width": 12,
+        },
+        paint: {
+          "text-color": colores.texto,
+          "text-halo-color": colores.contorno,
+          "text-halo-width": 2,
+        },
+      });
+
       mapa.addLayer({
         id: "mi-posicion-punto",
         type: "circle",
@@ -1396,6 +1439,8 @@ export function Mapa({
       mapa.setPaintProperty("caminos-encima", "line-color", colores.caminoSecundario);
       mapa.setPaintProperty("punto-senalado", "circle-color", colores.parteX);
       mapa.setPaintProperty("punto-senalado", "circle-stroke-color", colores.parteXHalo);
+      mapa.setPaintProperty(DESCRIPCION_DE_PUNTOS, "text-color", colores.texto);
+      mapa.setPaintProperty(DESCRIPCION_DE_PUNTOS, "text-halo-color", colores.contorno);
       mapa.setPaintProperty("mi-posicion-punto", "circle-color", colores.gps);
       mapa.setPaintProperty(
         "mi-posicion-punto",
@@ -1650,6 +1695,17 @@ export function Mapa({
     if (!mapa) return;
     cuandoEsteListo(() => ponerDatos(mapa, "caminos-encima", caminosEncima ?? VACIO));
   }, [caminosEncima]);
+
+  // Las descripciones escondidas a mano.
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+    cuandoEsteListo(() => {
+      if (mapa.getLayer(DESCRIPCION_DE_PUNTOS)) {
+        mapa.setFilter(DESCRIPCION_DE_PUNTOS, filtroDeDescripciones(descripcionesEscondidas));
+      }
+    });
+  }, [descripcionesEscondidas]);
 
   // Los puntos y trazos.
   useEffect(() => {
@@ -1973,9 +2029,9 @@ export function Mapa({
     };
     const mover = (evento: maplibregl.MapMouseEvent) => {
       const sobreCorte = marcarCorte(evento);
-      const sobrePunto = mapa.getLayer("anotaciones-punto")
-        ? mapa.queryRenderedFeatures(evento.point, { layers: ["anotaciones-punto"] }).length > 0
-        : false;
+      const sobrePunto = ["anotaciones-punto", DESCRIPCION_DE_PUNTOS].some((capa) =>
+        mapa.getLayer(capa) ? mapa.queryRenderedFeatures(evento.point, { layers: [capa] }).length > 0 : false,
+      );
       const sobreZona = alSenalarZona ? buscarZona(evento) !== null : false;
       const sobreRuta = alTocarRuta ? buscarRuta(evento) !== null : false;
       const caminoEncontrado = alTocarCamino || mostrarActividadesDeCaminoAlPasar || alMarcarPuntoDelCircuito
@@ -2009,6 +2065,17 @@ export function Mapa({
         alMarcarPuntoDelCircuito(evento.lngLat.lng, evento.lngLat.lat,
           Number.isInteger(id) && id > 0 ? id : null,
           typeof encontrado?.properties?.actividad_mostrada === "string" ? encontrado.properties.actividad_mostrada : null);
+        return;
+      }
+      // Tocar la descripción de un punto la esconde; tocar el ícono abre la ficha.
+      const descripcion = mapa.getLayer(DESCRIPCION_DE_PUNTOS)
+        ? mapa.queryRenderedFeatures(evento.point, { layers: [DESCRIPCION_DE_PUNTOS] })[0]
+        : undefined;
+      const idDeLaDescripcion = descripcion?.properties?.id;
+      if (typeof idDeLaDescripcion === "number") {
+        setDescripcionesEscondidas((actuales) =>
+          actuales.includes(idDeLaDescripcion) ? actuales : [...actuales, idDeLaDescripcion],
+        );
         return;
       }
       const id = buscarAnotacion(evento);

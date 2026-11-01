@@ -11,6 +11,9 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
   mapas bajan detalle hasta 15). Google sigue con su tope por zona. Con prueba.
 - Nota: con el satelital en 16, lo guardado de Google a más acercamiento
   (decisión 080) no se llega a ver.
+- Pedido de Ale: desde el acercamiento 15 cada punto muestra su descripción
+  corta debajo del ícono; tocarla la esconde hasta salir de ese mapa. Mirado
+  sobre la foto con sol y de noche. Con prueba.
 
 ## Sesión 2026-10-31 (tarde) — Google guardado mientras vale
 
