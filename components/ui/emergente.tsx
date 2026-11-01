@@ -42,6 +42,8 @@ type PropiedadesDeEmergente = {
   abierto: boolean;
   alCerrar: () => void;
   titulo: string;
+  /** Un dibujo chico antes del título, como el ícono de un punto. */
+  iconoDelTitulo?: ReactNode;
   descripcion?: string;
   children?: ReactNode;
   /** Los botones del pie. Van con `BotonDeEmergente`. */
@@ -70,6 +72,7 @@ export function Emergente({
   abierto,
   alCerrar,
   titulo,
+  iconoDelTitulo,
   descripcion,
   children,
   acciones,
@@ -103,6 +106,7 @@ export function Emergente({
       <div role="dialog" aria-label={titulo} className="flex min-h-0 flex-1 flex-col">
         <CabezaDeEmergente
           titulo={titulo}
+          iconoDelTitulo={iconoDelTitulo}
           descripcion={descripcion}
           alCerrar={alCerrar}
           className="cabeza-de-panel flex shrink-0 flex-col border-b border-borde px-4 py-2"
@@ -148,6 +152,7 @@ export function Emergente({
         ) : null}
         <CabezaDeEmergente
           titulo={titulo}
+          iconoDelTitulo={iconoDelTitulo}
           descripcion={descripcion}
           alCerrar={alCerrar}
           className={`flex flex-col border-b border-borde px-4 cabeza-de-panel ${hoja ? "touch-none pb-4 pt-2 sm:touch-auto sm:pt-4" : "py-4"}`}
@@ -178,12 +183,14 @@ export function Emergente({
  */
 function CabezaDeEmergente({
   titulo,
+  iconoDelTitulo,
   descripcion,
   alCerrar,
   className,
   ...resto
 }: {
   titulo: string;
+  iconoDelTitulo?: ReactNode;
   descripcion?: string;
   alCerrar: () => void;
   className: string;
@@ -191,7 +198,10 @@ function CabezaDeEmergente({
   return (
     <div className={className} {...resto}>
       <div className="flex items-center gap-3">
-        <h2 className="flex min-h-10 min-w-0 flex-1 items-center text-base font-bold text-texto">{titulo}</h2>
+        <h2 className="flex min-h-10 min-w-0 flex-1 items-center gap-2 text-base font-bold text-texto">
+          {iconoDelTitulo}
+          {titulo}
+        </h2>
         <BotonCerrar onClick={alCerrar} />
       </div>
       {descripcion ? <p className="mt-1 text-sm text-texto-suave">{descripcion}</p> : null}

@@ -14,6 +14,13 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 - Pedido de Ale: desde el acercamiento 15 cada punto muestra su descripción
   corta debajo del ícono; tocarla la esconde hasta salir de ese mapa. Mirado
   sobre la foto con sol y de noche. Con prueba.
+- Pedido de Ale: la escala del mapa en las dos navegaciones, debajo del
+  selector de tipo de mapa. Siempre un largo redondo. Con prueba.
+- Pedido de Ale: la ficha de un punto lleva en el encabezado el ícono con su
+  nombre, y después descripción, foto, autor (foto y nombre) y fecha
+  día/mes/año. Se sacaron «Tuya», el GPS y el aviso de «sin foto ni
+  comentario». El autor se trae junto con los puntos; los guardados antes no
+  lo tienen hasta que la app se pone al día con señal.
 
 ## Sesión 2026-10-31 (tarde) — Google guardado mientras vale
 

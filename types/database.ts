@@ -223,6 +223,8 @@ export type Anotacion = {
   precisionGpsMetros: number | null;
   creadoEn: string;
   actualizadoEn: string;
+  /** Quién la marcó, con su foto y su nombre. Vacío si todavía no se sabe. */
+  autor?: PerfilBreve | null;
 };
 
 /** Lo mínimo de un usuario para mostrarlo al lado de algo que hizo. */

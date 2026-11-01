@@ -139,6 +139,7 @@ export function PantallaDeMapaLibre() {
             encuadre={encuadre}
             encuadrarSoloAlAbrir
             pantallaCompleta
+            conEscala
             sinCruzArriba
             fondoInicial={fondosDisponibles[0] ?? "dibujo"}
             fondosDisponibles={fondosDisponibles}
