@@ -184,7 +184,7 @@ export function NavegacionDeCircuito({ circuitoId }: { circuitoId: number }) {
             setCaminoTocado({ id, indice });
           }}
           miPosicion={gps.posicion ? { lat: gps.posicion.lat, lon: gps.posicion.lon } : null}
-          encuadre={ficha.rectangulo} pantallaCompleta sinCruzArriba
+          encuadre={ficha.rectangulo} pantallaCompleta conEscala sinCruzArriba
           fondoInicial={fondoInicial && fondosDisponibles.includes(fondoInicial) ? fondoInicial : fondosDisponibles[0] ?? "dibujo"}
           fondosDisponibles={fondosDisponibles}
           forzarCentradoEn={centrarGps}

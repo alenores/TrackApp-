@@ -117,6 +117,10 @@ con cada sector, en los dos mapas, y se dibuja debajo de arroyos, senderos y
 nombres. En Córdoba usa la altura de 5 m de IDECOR, apenas suavizada; afuera,
 el **relieve** de 30 m. Ver decisión 079.
 
+**Escala**
+La regla chica de las navegaciones que dice cuánto mide en el terreno ese
+largo de pantalla («200 m», «1 km»). Cambia sola al acercarse o alejarse.
+
 **Google guardado**
 Las imágenes de Google que quedaron en el celular de mirar Consultas con señal.
 Se guardan solo el tiempo que Google indica en cada una, y mientras valen las

@@ -14,6 +14,8 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 - Pedido de Ale: desde el acercamiento 15 cada punto muestra su descripción
   corta debajo del ícono; tocarla la esconde hasta salir de ese mapa. Mirado
   sobre la foto con sol y de noche. Con prueba.
+- Pedido de Ale: la escala del mapa en las dos navegaciones, debajo del
+  selector de tipo de mapa. Siempre un largo redondo. Con prueba.
 
 ## Sesión 2026-10-31 (tarde) — Google guardado mientras vale
 

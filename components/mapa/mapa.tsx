@@ -27,6 +27,7 @@ import { vibrarAlTocar } from "@/lib/vibracion";
 import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { PROTOCOLO_DE_GOOGLE_EN_VIVO, registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
+import { escalaDelMapa, type Escala } from "@/lib/mapas/escala";
 import { DESCRIPCION_DESDE, descripcionCorta } from "@/lib/anotaciones/descripcion-en-el-mapa";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
 import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
@@ -314,6 +315,11 @@ type MapaProps = {
   /** `true` en la pantalla de navegación, que va a pantalla completa. */
   pantallaCompleta?: boolean;
   /**
+   * La escala del mapa («200 m», «1 km») debajo del selector de tipo de mapa.
+   * Solo en las dos navegaciones (Ale, 2026-11-01).
+   */
+  conEscala?: boolean;
+  /**
    * `true` cuando el mapa es lo principal de la pantalla y hay lugar.
    *
    * En el celular queda igual de alto que siempre; en la computadora se estira
@@ -547,6 +553,7 @@ export function Mapa({
   rectangulos = [],
   referencia = null,
   pantallaCompleta = false,
+  conEscala = false,
   principal = false,
   alturaExtendida = false,
   llenarElLugar = false,
@@ -601,6 +608,8 @@ export function Mapa({
   const [caminoBajoCursor, setCaminoBajoCursor] = useState<{ id: number; texto: string; x: number; y: number } | null>(null);
   const [posicionPropia, setPosicionPropia] = useState<PosicionEnElMapa | null>(null);
   const [anotacionTocadaId, setAnotacionTocadaId] = useState<number | null>(null);
+  /** La regla de la escala, al día con el acercamiento y la latitud del centro. */
+  const [escala, setEscala] = useState<Escala | null>(null);
   /** Las descripciones que el usuario escondió. Vuelven al salir de este mapa. */
   const [descripcionesEscondidas, setDescripcionesEscondidas] = useState<number[]>([]);
   const vigilanciaRef = useRef<number | null>(null);
@@ -1696,6 +1705,18 @@ export function Mapa({
     cuandoEsteListo(() => ponerDatos(mapa, "caminos-encima", caminosEncima ?? VACIO));
   }, [caminosEncima]);
 
+  // La escala se recalcula al mover o acercar el mapa.
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !conEscala) return;
+    const actualizar = () => setEscala(escalaDelMapa(mapa.getCenter().lat, mapa.getZoom()));
+    actualizar();
+    mapa.on("move", actualizar);
+    return () => {
+      mapa.off("move", actualizar);
+    };
+  }, [conEscala]);
+
   // Las descripciones escondidas a mano.
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -2455,7 +2476,7 @@ export function Mapa({
         Satelital (solo los que hay: sin ninguno bajado no aparece), el
         círculo de las curvas al lado, y el «!» si falta un pedazo de mapa.
       */}
-      {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado ? (
+      {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado || (conEscala && escala) ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
             {!consultaGoogle && opcionesDeFondo.length > 0 ? (
@@ -2531,6 +2552,21 @@ export function Mapa({
               <AvisoDeMapaFaltante texto={textoDelAvisoDeMapa?.trim() || "Sin mapa descargado"} />
             ) : null}
           </div>
+
+          {/* La escala: cuánto mide en el terreno el largo de la regla. */}
+          {conEscala && escala ? (
+            <div
+              aria-label={`Escala: ${escala.texto}`}
+              className="flex items-end gap-1.5 rounded-md bg-superficie px-1.5 py-0.5 shadow-[var(--sombra-alta)]"
+            >
+              <span
+                aria-hidden
+                className="h-2 border-x-2 border-b-2 border-texto"
+                style={{ width: `${escala.ancho}px` }}
+              />
+              <span className="text-xs font-semibold leading-4 text-texto">{escala.texto}</span>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
