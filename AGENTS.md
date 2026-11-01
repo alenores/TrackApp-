@@ -191,6 +191,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   con señal desde Mapas, nunca navegando; Administrador en todos, Premium en
   los suyos; nunca en lo de OpenStreetMap. No afecta Caminos, Circuitos ni
   trazos. Decisión 078; Ale, 2026-10-24.
+- **Cada mapa tiene tope de acercamiento:** satelital propio hasta 16, simple
+  hasta 18; Google, lo que Google tenga en esa zona. Más cerca solo se veía
+  una mancha. Ale, 2026-11-01.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un

@@ -7,6 +7,7 @@ import {
   capasDelFondo,
   estiloDelMapa,
   FUENTE_GOOGLE,
+  TOPE_DE_ACERCAMIENTO,
   iconosDelFondo,
   opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
@@ -803,7 +804,12 @@ export function Mapa({
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa) return;
-    if (!sesionGoogleActiva || tipoDeFondo !== "google") {
+    if (tipoDeFondo !== "google") {
+      // Si estaba más cerca que el tope, el mapa se aleja solo hasta el tope.
+      mapa.setMaxZoom(TOPE_DE_ACERCAMIENTO[tipoDeFondo]);
+      return;
+    }
+    if (!sesionGoogleActiva) {
       mapa.setMaxZoom(22);
       return;
     }

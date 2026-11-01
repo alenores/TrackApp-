@@ -14,8 +14,10 @@ import {
   opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
   SOMBRA_DEL_TERRENO,
+  TOPE_DE_ACERCAMIENTO,
   todasLasCapasDelFondo,
 } from "@/components/mapa/capas-base";
+import { ACERCAMIENTO_MAXIMO } from "@/lib/mapas/teselas";
 import { coloresDelMapa } from "@/components/mapa/colores";
 
 /**
@@ -312,5 +314,12 @@ describe("lo que el fondo necesita tener guardado en la app", () => {
         });
       }
     }
+  });
+});
+
+describe("hasta dónde se puede acercar cada mapa (Ale, 2026-11-01)", () => {
+  it("la foto satelital, un paso más que lo bajado; el dibujo, tres", () => {
+    expect(TOPE_DE_ACERCAMIENTO.satelital).toBe(ACERCAMIENTO_MAXIMO + 1);
+    expect(TOPE_DE_ACERCAMIENTO.dibujo).toBe(ACERCAMIENTO_MAXIMO + 3);
   });
 });
