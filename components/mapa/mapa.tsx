@@ -9,6 +9,7 @@ import {
   FUENTE_GOOGLE,
   TOPE_DE_ACERCAMIENTO,
   iconosDelFondo,
+  modoDelMapa,
   opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
   todasLasCapasDelFondo,
@@ -667,7 +668,7 @@ export function Mapa({
 
   /** Lo que se quiso dibujar antes de que el mapa terminara de armarse. */
   const esperandoRef = useRef<Array<() => void>>([]);
-  const { modo } = useModo();
+  const { modo: modoElegido } = useModo();
   const haySenal = useHaySenal();
   /**
    * El modo actual, para el armado del mapa.
@@ -715,6 +716,7 @@ export function Mapa({
   const tipoDeFondo: TipoDeFondo = opcionesDeFondo.includes(tipoElegido)
     ? tipoElegido
     : (opcionesDeFondo[0] ?? "dibujo");
+  const modo = modoDelMapa(modoElegido, tipoDeFondo, enVivo);
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
    * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
@@ -925,7 +927,7 @@ export function Mapa({
     mapa.touchZoomRotate.disableRotation();
 
     mapa.on("load", () => {
-      const colores = coloresDelMapa();
+      const colores = coloresDelMapa(modoRef.current);
       const conEnvoltorio = tipoDeFondoRef.current !== "dibujo" || modoRef.current === "noche";
       const envoltorio = colorDelEnvoltorio(conEnvoltorio, colores);
 
@@ -1386,7 +1388,7 @@ export function Mapa({
 
     const pintar = () => {
       if (!mapa.getLayer(CAPAS_DE_PARTES[0])) return;
-      const colores = coloresDelMapa();
+      const colores = coloresDelMapa(modo);
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
@@ -2407,6 +2409,7 @@ export function Mapa({
     // En grande el costado queda tapado: las fichas van al medio.
     <LugarAlCostado.Provider value={enGrande ? null : lugarAlCostado}>
     <div
+      data-modo={modo}
       style={enGrande ? { zIndex: NIVEL_DEL_MAPA_EN_GRANDE } : undefined}
       className={[
         "flex flex-col overflow-hidden bg-mapa-fondo",
@@ -2595,7 +2598,7 @@ export function Mapa({
       */}
       {pantallaCompleta || enGrande ? (
         <div className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] flex items-center gap-2">
-          <BotonDeModo />
+          {enVivo || tipoDeFondo !== "satelital" ? <BotonDeModo /> : null}
           {mostrarCruz ? (
             <BotonCerrar
               etiqueta="Cerrar el mapa grande"

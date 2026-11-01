@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   capasDelFondo,
   estiloDelMapa,
@@ -11,6 +11,7 @@ import {
   FUENTE_GOOGLE_GUARDADO,
   FUENTE_SATELITAL,
   iconosDelFondo,
+  modoDelMapa,
   opcionesDelMapa,
   QUIEN_HIZO_LA_FOTO,
   SOMBRA_DEL_TERRENO,
@@ -220,7 +221,7 @@ describe("la foto del terreno", () => {
     const sendero = capas.find((capa) => capa.id === "senderos") as { paint: Record<string, unknown> };
     expect(arroyo.paint["line-color"]).toBe(colores.agua);
     expect(huella.paint["line-color"]).toBe(colores.texto);
-    expect(sendero.paint["line-color"]).toBe(colores.sendero);
+    expect(sendero.paint["line-color"]).toBe(colores.texto);
     expect(sendero.paint["line-dasharray"]).toEqual([2, 1.5]);
 
     const primerNombre = capas.findIndex((capa) => capa.type === "symbol");
@@ -259,6 +260,49 @@ describe("la foto del terreno", () => {
 
   it("se dice quién hizo la foto, que su licencia lo exige", () => {
     expect(QUIEN_HIZO_LA_FOTO).toMatch(/EOX/);
+  });
+});
+
+describe("contraste de los pasos y apariencia del satelital", () => {
+  const estilo = document.createElement("style");
+  beforeAll(() => {
+    const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+    estilo.textContent = (css.match(/(?:\:root,\s*)?\[data-modo="(?:noche|sol)"\]\s*\{[^}]*\}/g) ?? []).join("\n");
+    document.head.appendChild(estilo);
+  });
+  afterAll(() => {
+    estilo.remove();
+    document.documentElement.removeAttribute("data-modo");
+  });
+
+  it.each(["sol", "noche"] as const)("el simple en %s usa el color del texto para calles y senderos", (modo) => {
+    const colores = coloresDelMapa(modo);
+    const pasos = capasDelFondo(modo).filter((capa) => capa.type === "line" &&
+      capa["source-layer"] === "roads" && !/casing|rail|runway|taxiway|pier/.test(capa.id));
+    expect(pasos.length).toBeGreaterThan(5);
+    for (const paso of pasos) {
+      expect((paso as { paint: Record<string, unknown> }).paint["line-color"]).toBe(colores.texto);
+    }
+    expect(colores.texto).toBe(modo === "sol" ? "#0f172a" : "#f1f5f9");
+  });
+
+  it("el satelital de navegación siempre usa noche sin cambiar la elección del simple", () => {
+    document.documentElement.setAttribute("data-modo", "sol");
+    const modo = modoDelMapa("sol", "satelital", false);
+    expect(modo).toBe("noche");
+    const capas = capasDelFondo(modo, "satelital", true, true);
+    const colores = coloresDelMapa(modo);
+    expect(colores.texto).toBe("#f1f5f9");
+    expect(coloresDelMapa().texto).toBe("#0f172a");
+    expect(document.documentElement.getAttribute("data-modo")).toBe("sol");
+    expect(document.documentElement.querySelectorAll("div[data-modo]")).toHaveLength(0);
+    const sendero = capas.find((capa) => capa.id === "senderos") as { paint: Record<string, unknown> };
+    expect(sendero.paint["line-color"]).toBe(colores.texto);
+    expect(sendero.paint["line-color"]).not.toBe(colores.curvaSobreFoto);
+    expect(sendero.paint["line-dasharray"]).toEqual([2, 1.5]);
+    expect(modoDelMapa("sol", "dibujo", false)).toBe("sol");
+    expect(modoDelMapa("noche", "dibujo", false)).toBe("noche");
+    expect(modoDelMapa("sol", "satelital", true)).toBe("sol");
   });
 });
 

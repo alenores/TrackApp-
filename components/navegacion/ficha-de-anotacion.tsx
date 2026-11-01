@@ -79,20 +79,6 @@ export function FichaDeAnotacion({
       }
     >
       <div className="space-y-3">
-        {anotacion && alCambiar ? (
-          // Los tres puntos, discretos arriba a la derecha del cuerpo: solo
-          // para quien puede cambiar la marca.
-          <div className="flex justify-end">
-            <MenuDeAcciones
-              etiqueta={`Opciones de ${titulo}`}
-              acciones={[
-                { etiqueta: "Editar", alElegir: () => alCambiar(anotacion) },
-                { etiqueta: "Eliminar", destructiva: true, alElegir: () => alBorrar?.(anotacion) },
-              ]}
-            />
-          </div>
-        ) : null}
-
         {anotacion?.atencion ? (
           // El mismo rojo del contorno en el mapa. El motivo va en la descripción.
           <p className="rounded-xl border-2 border-rojo px-3 py-2 text-lg font-semibold text-texto">
@@ -174,16 +160,32 @@ export function FichaDeAnotacion({
           </p>
         ) : null}
 
-        {/* Quién la marcó, con su foto y su nombre, y cuándo (Ale, 2026-11-01). */}
-        {anotacion && mostrarAutor && (anotacion.autor || marcadaEl) ? (
+        {/* Autor a la izquierda, tres puntos a la derecha; fecha debajo. */}
+        {anotacion && ((mostrarAutor && (anotacion.autor || marcadaEl)) || alCambiar) ? (
           <div className="space-y-1">
-            {anotacion.autor ? (
-              <div className="flex items-center gap-2">
-                <Avatar src={anotacion.autor.avatarUrl} name={anotacion.autor.nombre} size="sm" />
-                <span className="min-w-0 truncate text-base font-medium text-texto">{anotacion.autor.nombre}</span>
-              </div>
+            <div className="flex w-full items-center gap-2">
+              {mostrarAutor && anotacion.autor ? (
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <Avatar src={anotacion.autor.avatarUrl} name={anotacion.autor.nombre} size="sm" />
+                  <span className="min-w-0 truncate text-base font-medium text-texto">{anotacion.autor.nombre}</span>
+                </div>
+              ) : (
+                <div className="min-w-0 flex-1" />
+              )}
+              {alCambiar ? (
+                <MenuDeAcciones
+                  className="ml-auto shrink-0"
+                  etiqueta={`Opciones de ${titulo}`}
+                  acciones={[
+                    { etiqueta: "Editar", alElegir: () => alCambiar(anotacion) },
+                    { etiqueta: "Eliminar", destructiva: true, alElegir: () => alBorrar?.(anotacion) },
+                  ]}
+                />
+              ) : null}
+            </div>
+            {mostrarAutor && marcadaEl ? (
+              <p className="text-base text-texto-suave">{marcadaEl}</p>
             ) : null}
-            {marcadaEl ? <p className="text-base text-texto-suave">{marcadaEl}</p> : null}
           </div>
         ) : null}
       </div>

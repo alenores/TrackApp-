@@ -138,7 +138,8 @@ function capaDeSenderos(fuente: string, colores: ColoresDelMapa): LineLayerSpeci
     filter: ["all", ["!has", "is_tunnel"], ["!has", "is_bridge"], ["==", "kind", "path"]],
     layout: { "line-join": "round" },
     paint: {
-      "line-color": colores.sendero,
+      /* Misma familia que calles y huellas; las rayas marcan que es a pie. */
+      "line-color": colores.texto,
       "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1.2, 14, 2, 16, 3.5],
       /* A rayas: es la marca de siempre de un sendero a pie en cualquier mapa. */
       "line-dasharray": [2, 1.5],
@@ -164,7 +165,7 @@ function capaDeNombresDeSenderos(
       "text-size": 12,
     },
     paint: {
-      "text-color": colores.sendero,
+      "text-color": colores.texto,
       "text-halo-color": colores.contorno,
       "text-halo-width": 1.5,
     },

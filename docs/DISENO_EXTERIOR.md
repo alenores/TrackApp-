@@ -299,3 +299,8 @@ con el celular afuera antes de darlos por definitivos.
 Cada nueva entrada a Consultas o Marcas empieza únicamente con la actividad principal del perfil. Los cambios hechos dentro del mapa son temporales y no modifican el perfil ni se recuperan al volver a entrar. El usuario elige una, varias o Todas; los Caminos ajenos a esa elección se ocultan. La principal determina la clasificación. Los Caminos de otras actividades elegidas se dibujan grises con borde contrastante, sin clasificación ajena, y llevan los íconos de sus actividades.
 
 Las actividades del mapa se separan en dos grupos: Tus actividades arriba, Otras actividades debajo. Ambos permiten seleccionar. El perfil guarda una o varias actividades y una principal; si solo hay una, es la principal. Para perfiles anteriores se toma la primera guardada hasta que se cambie.
+
+
+## Contraste de pasos y satelital de navegación (decisión 081)
+
+En navegación libre y de Circuitos, el satelital usa siempre la apariencia de noche, sin botón de modo. La elección manual se conserva para el mapa simple y el resto de la app: cambiar de fondo no modifica esa preferencia. Los senderos y huellas usan la misma familia de color que calles y rutas, conservando sus rayas. En el simple, los pasos van oscuros sobre fondo claro y claros sobre fondo oscuro. Las curvas conservan su color independiente.

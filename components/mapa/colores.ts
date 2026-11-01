@@ -1,3 +1,5 @@
+import type { Modo } from "@/lib/modo";
+
 /**
  * Los colores con los que el mapa dibuja.
  *
@@ -42,14 +44,11 @@ export type ColoresDelMapa = {
   /** El borde de los puntos, para que se despeguen de lo que tengan debajo. */
   contorno: string;
   /**
-   * Las huellas y calles sobre la foto satelital.
-   *
-   * En el mapa simple esas líneas son casi blancas de día y casi negras de
-   * noche: sobre la foto desaparecen. Acá siguen al texto, oscuras con sol y
-   * claras de noche.
+   * Calles, rutas, huellas y senderos del mapa base: oscuros con sol y claros
+   * de noche. El satelital de navegación usa siempre la paleta de noche.
    */
   texto: string;
-  /** El sendero a pie, distinto del camino de auto. */
+  /** Reservado: las líneas de sendero usan `texto`; las rayas las distinguen. */
   sendero: string;
   /** Arroyos y ríos. */
   agua: string;
@@ -98,50 +97,56 @@ const DE_RESPALDO: ColoresDelMapa = {
   relieveLuz: "#94a3b8",
 };
 
-function leer(nombre: string, deRespaldo: string): string {
-  if (typeof window === "undefined") return deRespaldo;
-
-  const valor = getComputedStyle(document.documentElement)
-    .getPropertyValue(nombre)
-    .trim();
-
-  return valor || deRespaldo;
-}
-
-export function coloresDelMapa(): ColoresDelMapa {
-  return {
-    linea: leer("--mapa-linea", DE_RESPALDO.linea),
-    parteFacil: leer("--parte-facil", DE_RESPALDO.parteFacil),
-    parteMedia: leer("--parte-media", DE_RESPALDO.parteMedia),
-    parteDificil: leer("--parte-dificil", DE_RESPALDO.parteDificil),
-    parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
-    marcaDeParte: leer("--marca-de-parte", DE_RESPALDO.marcaDeParte),
-    marcaDeCorte: leer("--marca-de-corte", DE_RESPALDO.marcaDeCorte),
-    lineaDeSalida: leer("--linea-de-salida", DE_RESPALDO.lineaDeSalida),
-    parteX: leer("--parte-x", DE_RESPALDO.parteX),
-    parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
-    circuitoPropio: leer("--circuito-propio", DE_RESPALDO.circuitoPropio),
-    circuitoBorde: leer("--circuito-borde", DE_RESPALDO.circuitoBorde),
-    gps: leer("--gps", DE_RESPALDO.gps),
-    anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
-    rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),
-    rectanguloExistente: leer("--mapa-linea", DE_RESPALDO.rectanguloExistente),
-    caminoSecundario: leer("--camino-secundario", DE_RESPALDO.caminoSecundario),
-    caminoSecundarioBorde: leer("--camino-secundario-borde", DE_RESPALDO.caminoSecundarioBorde),
-    caminoSecundarioAncho: Number(leer("--camino-secundario-ancho", String(DE_RESPALDO.caminoSecundarioAncho))),
-    caminoSecundarioBordeAncho: Number(leer("--camino-secundario-borde-ancho", String(DE_RESPALDO.caminoSecundarioBordeAncho))),
-    rectanguloZona: leer("--borde-fuerte", DE_RESPALDO.rectanguloZona),
-    rectanguloBajado: leer("--verde-borde", DE_RESPALDO.rectanguloBajado),
-    rectanguloSinBajar: leer("--ambar-borde", DE_RESPALDO.rectanguloSinBajar),
-    contorno: leer("--superficie", DE_RESPALDO.contorno),
-    texto: leer("--texto", DE_RESPALDO.texto),
-    sendero: leer("--mapa-sendero", DE_RESPALDO.sendero),
-    agua: leer("--mapa-agua", DE_RESPALDO.agua),
-    curva: leer("--mapa-curva", DE_RESPALDO.curva),
-    curvaSobreFoto: leer("--mapa-curva-foto", DE_RESPALDO.curvaSobreFoto),
-    relieveSombra: leer("--mapa-relieve-sombra", DE_RESPALDO.relieveSombra),
-    relieveLuz: leer("--mapa-relieve-luz", DE_RESPALDO.relieveLuz),
-  };
+/** Lee una paleta sin cambiar el modo de la app ni la preferencia guardada. */
+export function coloresDelMapa(modo?: Modo): ColoresDelMapa {
+  const muestra = typeof document !== "undefined" && modo ? document.createElement("div") : null;
+  if (muestra && modo) {
+    muestra.hidden = true;
+    muestra.setAttribute("data-modo", modo);
+    document.documentElement.appendChild(muestra);
+  }
+  const estilo = typeof window !== "undefined"
+    ? getComputedStyle(muestra ?? document.documentElement)
+    : null;
+  const leer = (nombre: string, deRespaldo: string): string =>
+    estilo?.getPropertyValue(nombre).trim() || deRespaldo;
+  try {
+    return {
+      linea: leer("--mapa-linea", DE_RESPALDO.linea),
+      parteFacil: leer("--parte-facil", DE_RESPALDO.parteFacil),
+      parteMedia: leer("--parte-media", DE_RESPALDO.parteMedia),
+      parteDificil: leer("--parte-dificil", DE_RESPALDO.parteDificil),
+      parteSinClasificar: leer("--parte-sin-clasificar", DE_RESPALDO.parteSinClasificar),
+      marcaDeParte: leer("--marca-de-parte", DE_RESPALDO.marcaDeParte),
+      marcaDeCorte: leer("--marca-de-corte", DE_RESPALDO.marcaDeCorte),
+      lineaDeSalida: leer("--linea-de-salida", DE_RESPALDO.lineaDeSalida),
+      parteX: leer("--parte-x", DE_RESPALDO.parteX),
+      parteXHalo: leer("--parte-x-halo", DE_RESPALDO.parteXHalo),
+      circuitoPropio: leer("--circuito-propio", DE_RESPALDO.circuitoPropio),
+      circuitoBorde: leer("--circuito-borde", DE_RESPALDO.circuitoBorde),
+      gps: leer("--gps", DE_RESPALDO.gps),
+      anotacion: leer("--anotacion", DE_RESPALDO.anotacion),
+      rectanguloNuevo: leer("--dato", DE_RESPALDO.rectanguloNuevo),
+      rectanguloExistente: leer("--mapa-linea", DE_RESPALDO.rectanguloExistente),
+      caminoSecundario: leer("--camino-secundario", DE_RESPALDO.caminoSecundario),
+      caminoSecundarioBorde: leer("--camino-secundario-borde", DE_RESPALDO.caminoSecundarioBorde),
+      caminoSecundarioAncho: Number(leer("--camino-secundario-ancho", String(DE_RESPALDO.caminoSecundarioAncho))),
+      caminoSecundarioBordeAncho: Number(leer("--camino-secundario-borde-ancho", String(DE_RESPALDO.caminoSecundarioBordeAncho))),
+      rectanguloZona: leer("--borde-fuerte", DE_RESPALDO.rectanguloZona),
+      rectanguloBajado: leer("--verde-borde", DE_RESPALDO.rectanguloBajado),
+      rectanguloSinBajar: leer("--ambar-borde", DE_RESPALDO.rectanguloSinBajar),
+      contorno: leer("--superficie", DE_RESPALDO.contorno),
+      texto: leer("--texto", DE_RESPALDO.texto),
+      sendero: leer("--mapa-sendero", DE_RESPALDO.sendero),
+      agua: leer("--mapa-agua", DE_RESPALDO.agua),
+      curva: leer("--mapa-curva", DE_RESPALDO.curva),
+      curvaSobreFoto: leer("--mapa-curva-foto", DE_RESPALDO.curvaSobreFoto),
+      relieveSombra: leer("--mapa-relieve-sombra", DE_RESPALDO.relieveSombra),
+      relieveLuz: leer("--mapa-relieve-luz", DE_RESPALDO.relieveLuz),
+    };
+  } finally {
+    muestra?.remove();
+  }
 }
 
 /**

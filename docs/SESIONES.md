@@ -4,6 +4,14 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Contraste de pasos y tres puntitos del punto
+
+- Decisión 081: en navegación, el satelital usa siempre apariencia de noche sin
+  botón de modo. Calles, rutas, senderos y huellas usan el color del texto;
+  los senderos conservan la línea intermitente (ya no marrón).
+- En la ficha del punto, los tres puntitos quedan en la misma fila que el autor,
+  a la derecha; la fecha debajo. El GPS de precisión no figura.
+
 ## Sesión 2026-11-01 — Tope de acercamiento
 
 - Pedido de Ale: la app dejaba acercarse hasta que la pantalla quedaba de un

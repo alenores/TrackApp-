@@ -100,4 +100,29 @@ describe("ficha de anotación en mapas", () => {
       desmontar();
     }
   });
+
+  it("pone los tres puntos en la misma fila que el autor", () => {
+    const conAutor = {
+      ...anotacion,
+      autor: { nombre: "Ale", avatarUrl: null },
+    } as AnotacionEnPantalla;
+    const { contenedor, desmontar } = montar({
+      anotacion: conAutor,
+      alCambiar: () => {},
+      alBorrar: () => {},
+    });
+    try {
+      const opciones = contenedor.querySelector('[aria-label="Opciones de Refugio"]');
+      expect(opciones).not.toBeNull();
+      const fila = Array.from(contenedor.querySelectorAll(".flex.w-full")).find((nodo) =>
+        nodo.contains(opciones),
+      );
+      expect(fila?.textContent).toContain("Ale");
+      expect(fila?.textContent).not.toMatch(/\d{2}\/\d{2}\/\d{4}/);
+      expect(contenedor.textContent).toMatch(/\d{2}\/\d{2}\/2026/);
+      expect(contenedor.textContent).not.toContain("GPS");
+    } finally {
+      desmontar();
+    }
+  });
 });

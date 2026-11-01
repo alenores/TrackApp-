@@ -23,7 +23,8 @@
  */
 
 :root,
-:root[data-modo="noche"] {
+:root[data-modo="noche"],
+[data-modo="noche"] {
   --fondo: #0f172a;
   --superficie: #1e293b;
   --superficie-alta: #334155;
@@ -156,7 +157,8 @@
   color-scheme: dark;
 }
 
-:root[data-modo="sol"] {
+:root[data-modo="sol"],
+[data-modo="sol"] {
   --fondo: #f8fafc;
   --superficie: #ffffff;
   --superficie-alta: #e2e8f0;

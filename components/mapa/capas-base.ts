@@ -6,7 +6,7 @@ import type {
   RasterLayerSpecification,
   StyleSpecification,
 } from "maplibre-gl";
-import { ajustarParaLaMontana, SENDEROS } from "@/components/mapa/ajustes-de-montana";
+import { ajustarParaLaMontana, NOMBRES_DE_SENDEROS, SENDEROS } from "@/components/mapa/ajustes-de-montana";
 import { coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { DIRECCION_DE_LA_FOTO, QUIEN_HIZO_LA_FOTO } from "@/lib/mapas/foto-satelital";
 import {
@@ -37,6 +37,11 @@ import type { Modo } from "@/lib/modo";
  */
 
 export type TipoDeFondo = "dibujo" | "satelital" | "google";
+
+/** El satelital descargado tiene una sola apariencia; el simple conserva la elección. */
+export function modoDelMapa(modo: Modo, tipo: TipoDeFondo, enVivo: boolean): Modo {
+  return !enVivo && tipo === "satelital" ? "noche" : modo;
+}
 
 /** La consulta conserva el fondo elegido aunque Google todavía no responda. */
 export function opcionesDelMapa({
@@ -231,9 +236,8 @@ function esLineaParaLaFoto(capa: LayerSpecification): capa is LineLayerSpecifica
 /**
  * Las mismas líneas del mapa simple, preparadas para ir encima de la foto.
  *
- * Ríos, arroyos y senderos conservan su color. Las huellas y las calles no:
- * en el dibujo son casi blancas de día y casi negras de noche, y sobre la
- * foto desaparecen. Van del color del texto, oscuras con sol y claras de noche.
+ * Ríos y arroyos conservan su color. Todos los pasos usan el color del texto;
+ * los senderos conservan sus rayas. Se ajusta el ancho sobre la foto.
  */
 function lineasSobreLaFoto(capas: LayerSpecification[], colores: ColoresDelMapa): LayerSpecification[] {
   return capas.filter(esLineaParaLaFoto).map((capa) => {
@@ -328,7 +332,7 @@ export function capasDelFondo(
    */
   conSombra = false,
 ): LayerSpecification[] {
-  const colores = coloresDelMapa();
+  const colores = coloresDelMapa(modo);
   const dibujo = ajustarParaLaMontana(
     layers(FUENTE_DEL_FONDO, namedFlavor(modo === "sol" ? "light" : "dark"), {
       lang: "es",
@@ -336,6 +340,16 @@ export function capasDelFondo(
     FUENTE_DEL_FONDO,
     colores,
   );
+
+  // Misma familia para todos los pasos; se conservan anchos, bordes y rayas.
+  for (const capa of dibujo) {
+    if (capa.type === "line" && capa["source-layer"] === "roads" && esLineaParaLaFoto(capa)) {
+      capa.paint = { ...capa.paint, "line-color": colores.texto };
+    }
+    if (capa.id === NOMBRES_DE_SENDEROS && capa.type === "symbol") {
+      capa.paint = { ...capa.paint, "text-color": colores.texto };
+    }
+  }
 
   /*
     El velo: la foto baja su contraste para que las curvas de nivel se

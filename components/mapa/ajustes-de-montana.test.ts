@@ -49,7 +49,10 @@ describe("los senderos se dibujan aparte de los caminos", () => {
     expect(senderos.type).toBe("line");
     expect(menciona(senderos.filter, "path")).toBe(true);
     expect((senderos as { paint: Record<string, unknown> }).paint["line-color"]).toBe(
-      colores.sendero,
+      colores.texto,
+    );
+    expect((senderos as { paint: Record<string, unknown> }).paint["line-dasharray"]).toEqual(
+      [2, 1.5],
     );
 
     /* Sacados de la bolsa de «otros caminos»: si no, se dibujan dos veces. */

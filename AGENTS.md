@@ -62,7 +62,8 @@ no es un aviso, es una sorpresa — y en la montaña una sorpresa es un problema
 - **Modo sol = fondo claro, texto oscuro.** Con sol fuerte el modo oscuro se ve
   PEOR: la pantalla no le gana en brillo al sol. No invertir esto.
 - **Modo noche = fondo oscuro, texto claro.**
-- **El cambio es manual y está a un toque desde el mapa.** El automático del
+- **En el satelital de navegación libre y de Circuitos se usa siempre la apariencia de noche y no se muestra el cambio de modo.** En el mapa simple, calles, rutas, senderos y huellas usan el color del texto; los senderos conservan su línea discontinua (decisión 081).
+- **En el mapa simple, el cambio es manual y está a un toque desde el mapa.** El automático del
   sistema va por horario, no por si está pegando el sol. No reemplazar el botón
   por detección automática.
 - Los dos modos se definen con variables de color. **Nunca escribir un color
