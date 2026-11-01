@@ -9,11 +9,11 @@ import type { Anotacion } from "@/types/database";
 
 export type FilaDeAnotacion = Record<string, unknown> & {
   /** La categoría del autor, traída en la misma consulta. */
-  perfiles?: { categoria?: string | null } | null;
+  perfiles?: { categoria?: string | null; nombre?: string | null; avatar_url?: string | null } | null;
 };
 
 /** Qué se pide a la base para armar una anotación completa. */
-export const COLUMNAS_DE_ANOTACION = "*, perfiles(categoria)";
+export const COLUMNAS_DE_ANOTACION = "*, perfiles(categoria, nombre, avatar_url)";
 
 export function leerFilaDeAnotacion(fila: FilaDeAnotacion): Anotacion {
   const creadoEn = String(fila.creado_en);
@@ -25,6 +25,9 @@ export function leerFilaDeAnotacion(fila: FilaDeAnotacion): Anotacion {
       : Number(fila.sector_id),
     perfilId: String(fila.perfil_id),
     deAdministrador: fila.perfiles?.categoria === "administrador",
+    autor: fila.perfiles?.nombre
+      ? { id: String(fila.perfil_id), nombre: fila.perfiles.nombre, avatarUrl: fila.perfiles.avatar_url ?? null }
+      : null,
     tipo: fila.tipo as Anotacion["tipo"],
     origen: (fila.origen as Anotacion["origen"]) ?? "manual",
     icono: (fila.icono as Anotacion["icono"]) ?? null,
@@ -59,6 +62,7 @@ export function completarAnotacionVieja(
     sectorId: null,
     perfilId: "",
     deAdministrador: false,
+    autor: null,
     origen: "manual",
     icono: null,
     color: null,

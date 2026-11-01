@@ -186,8 +186,11 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Desde el acercamiento 15, cada punto muestra su descripción debajo del
   ícono**, corta (unas 40 letras con «…»). Tocar el texto lo esconde hasta salir
   de ese mapa. Ale, 2026-11-01.
-- **En cualquier mapa, tocar un punto abre su ficha con el nombre del ícono, el
-  comentario y la foto disponible.** En PC el cursor muestra una mano sobre los
+- **En cualquier mapa, tocar un punto abre su ficha**: en el encabezado, el
+  ícono con su nombre; después la descripción, la foto, quién lo marcó (foto y
+  nombre, como en Salidas) y la fecha en día/mes/año. Sin GPS ni «Tuya». Si no
+  tiene descripción o foto, simplemente no aparecen, sin aclararlo. Ale,
+  2026-11-01. En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
 - **Un punto puede llevar Atención: contorno rojo del ícono**, «mirá esto», no
   «prohibido» ni «peligro»; el motivo va en la descripción. Se pone y se saca

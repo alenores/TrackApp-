@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { MenuDeAcciones } from "@/components/ui/menu-de-acciones";
+import { Avatar } from "@/components/ui/avatar";
+import { IconoDeAnotacion } from "@/components/anotaciones/icono-de-anotacion";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
@@ -30,21 +32,16 @@ type PropiedadesDeLaFicha = {
   alBorrar?: (anotacion: AnotacionEnPantalla) => void;
 };
 
-function deQuien(anotacion: AnotacionEnPantalla, miPerfilId: string | null): string {
-  if (miPerfilId !== null && anotacion.perfilId === miPerfilId) return "Tuya";
-  return anotacion.deAdministrador ? "Del administrador" : "De otro usuario";
-}
-
+/** La fecha como día, mes y año: 31/10/2026 (Ale, 2026-11-01). */
 function cuando(fecha: string): string | null {
   const momento = new Date(fecha);
   if (Number.isNaN(momento.getTime())) return null;
-  return momento.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+  return momento.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 export function FichaDeAnotacion({
   anotacion,
   alCerrar,
-  miPerfilId,
   mostrarAutor = true,
   fotoRemotaAlFaltar = false,
   alCambiar,
@@ -72,6 +69,7 @@ export function FichaDeAnotacion({
       abierto={anotacion !== null}
       alCerrar={alCerrar}
       titulo={titulo}
+      iconoDelTitulo={anotacion ? <IconoDeAnotacion anotacion={anotacion} /> : undefined}
       ancho="amplio"
       alCostado
       acciones={
@@ -81,29 +79,17 @@ export function FichaDeAnotacion({
       }
     >
       <div className="space-y-3">
-        {anotacion && (mostrarAutor || alCambiar) ? (
+        {anotacion && alCambiar ? (
           // Los tres puntos, discretos arriba a la derecha del cuerpo: solo
           // para quien puede cambiar la marca.
-          <div className="flex items-start gap-2">
-            {mostrarAutor ? (
-              <p className="min-w-0 flex-1 text-base text-texto-suave">
-                {deQuien(anotacion, miPerfilId)}
-                {marcadaEl ? ` · marcada el ${marcadaEl}` : ""}
-                {anotacion.precisionGpsMetros !== null
-                  ? ` · GPS ±${anotacion.precisionGpsMetros} m`
-                  : ""}
-              </p>
-            ) : null}
-            {alCambiar ? (
-              <MenuDeAcciones
-                className="ml-auto shrink-0"
-                etiqueta={`Opciones de ${titulo}`}
-                acciones={[
-                  { etiqueta: "Editar", alElegir: () => alCambiar(anotacion) },
-                  { etiqueta: "Eliminar", destructiva: true, alElegir: () => alBorrar?.(anotacion) },
-                ]}
-              />
-            ) : null}
+          <div className="flex justify-end">
+            <MenuDeAcciones
+              etiqueta={`Opciones de ${titulo}`}
+              acciones={[
+                { etiqueta: "Editar", alElegir: () => alCambiar(anotacion) },
+                { etiqueta: "Eliminar", destructiva: true, alElegir: () => alBorrar?.(anotacion) },
+              ]}
+            />
           </div>
         ) : null}
 
@@ -126,6 +112,11 @@ export function FichaDeAnotacion({
                 : "Este cambio todavía no se subió. Se sube solo cuando tengas señal."}
             {anotacion.subida.motivo ? ` Último intento: ${anotacion.subida.motivo}` : ""}
           </p>
+        ) : null}
+
+        {/* La descripción va primero. Sin descripción, no se dice nada. */}
+        {anotacion?.comentario ? (
+          <p className="text-lg leading-7 text-texto">{anotacion.comentario}</p>
         ) : null}
 
         {foto.paso === "buscando" ? (
@@ -183,12 +174,17 @@ export function FichaDeAnotacion({
           </p>
         ) : null}
 
-        {anotacion?.comentario ? (
-          <p className="text-lg leading-7 text-texto">{anotacion.comentario}</p>
-        ) : foto.paso === "no_tiene" && !tieneSoloLaGrande ? (
-          <p className="text-lg leading-7 text-texto-suave">
-            Esta marca no tiene ni foto ni comentario: marca nomás el lugar.
-          </p>
+        {/* Quién la marcó, con su foto y su nombre, y cuándo (Ale, 2026-11-01). */}
+        {anotacion && mostrarAutor && (anotacion.autor || marcadaEl) ? (
+          <div className="space-y-1">
+            {anotacion.autor ? (
+              <div className="flex items-center gap-2">
+                <Avatar src={anotacion.autor.avatarUrl} name={anotacion.autor.nombre} size="sm" />
+                <span className="min-w-0 truncate text-base font-medium text-texto">{anotacion.autor.nombre}</span>
+              </div>
+            ) : null}
+            {marcadaEl ? <p className="text-base text-texto-suave">{marcadaEl}</p> : null}
+          </div>
         ) : null}
       </div>
     </Emergente>
