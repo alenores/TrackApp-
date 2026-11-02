@@ -194,8 +194,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const encuadreDe = useCallback((lista: MarcaDeLaLista[]): Rectangulo | null =>
     rectanguloDe(lista.flatMap((marca) => coordenadasDe(marca, porId.caminos, porId.detalles, porId.zonas))), [porId]);
 
-  // Prender o apagar se encuadra al instante. Elegir una marca viaja hasta
-  // ella, en la computadora y en el celular.
+  // Cambiar origen, autoría o clases se encuadra a lo que queda visible.
+  // Tildar o destildar (grupo o una marca) solo prende o apaga el dibujo:
+  // el lugar y el zoom se quedan. Elegir «Mostrar en el mapa» viaja hasta ella.
   const alCambiarLoElegido = (nuevosFiltros: FiltrosDeMarcas, nuevasDestildadas: string[]) => {
     if (!ancha) return;
     setDondeEstaba(null);
@@ -212,7 +213,6 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   };
   const cambiarDestildadas = (nuevas: string[]) => {
     guardarDestildadas(nuevas);
-    alCambiarLoElegido(filtros, nuevas);
   };
   const alCambiarPanel = (arriba: boolean) => {
     if (!arriba && !eligiendoPunto) {

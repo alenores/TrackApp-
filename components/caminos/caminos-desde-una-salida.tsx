@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Position } from "geojson";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
-import { BorradorDeLineas, ANCHO_DEL_PASILLO_M, km } from "@/components/caminos/borrador-de-lineas";
+import { BorradorDeLineas, ANCHO_DEL_PASILLO_M, km, type LineaDelBorrador } from "@/components/caminos/borrador-de-lineas";
 import { Boton } from "@/components/ui/boton";
 import { BuscadorDeTitulo } from "@/components/ui/buscador-de-titulo";
 import { Tarjeta } from "@/components/ui/tarjeta";
@@ -75,7 +74,7 @@ function ElegirLaSalida({ alElegir, alVolver }: { alElegir: (salida: Salida) => 
 type CargaDeLinea =
   | { estado: "cargando" }
   | { estado: "fallo"; motivo: string }
-  | { estado: "listo"; lineas: Position[][] };
+  | { estado: "listo"; lineas: LineaDelBorrador[] };
 
 function CargarBorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: () => void }) {
   const [carga, setCarga] = useState<CargaDeLinea>({ estado: "cargando" });
@@ -91,7 +90,9 @@ function CargarBorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolv
           setCarga({ estado: "fallo", motivo: `No se pudo abrir el archivo GPS: ${linea.motivo}.` });
           return;
         }
-        const original = lineasDelRecorrido(linea.geometria).filter((cada) => cada.length >= 2);
+        const original = lineasDelRecorrido(linea.geometria)
+          .filter((cada) => cada.length >= 2)
+          .map((coordenadas): LineaDelBorrador => ({ coordenadas, nombreSugerido: null }));
         if (original.length === 0) {
           setCarga({ estado: "fallo", motivo: "El archivo GPS de esta salida no trae ninguna línea." });
           return;

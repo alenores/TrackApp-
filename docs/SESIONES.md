@@ -4,6 +4,53 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Tilde de Marcas no mueve el mapa
+
+### Estado al inicio
+En Marcas, al tildar o destildar Caminos, puntos o trazos, el mapa saltaba y
+perdía el zoom y el lugar que se estaba mirando.
+
+### Lo que se hizo
+El tilde solo prende o apaga el dibujo. El mapa se queda donde estaba. Elegir
+una marca en la lista sigue viajando hasta ella.
+
+### Decisiones tomadas
+Pedido de Ale, 2026-11-02.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno.
+
+---
+
+## Sesión 2026-11-02 — Nombre de Google Earth al traer
+
+### Estado al inicio
+Al importar un KML el nombre de cada línea no llegaba al crear Camino o trazo.
+
+### Lo que se hizo
+El nombre del archivo se ofrece prellenado al crear Camino o trazo, y se puede
+editar. Los puntos ya lo usaban.
+
+### Decisiones tomadas
+Ninguna nueva.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno.
+
+---
+
 ## Sesión 2026-11-02 — Ícono de actividad redondo en Caminos
 
 ### Estado al inicio

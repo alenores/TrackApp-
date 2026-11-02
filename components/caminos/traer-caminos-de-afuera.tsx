@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Position } from "geojson";
 import { crearAnotacionesEnTanda, type DatosDeAnotacion } from "@/app/actions/territorio";
-import { BorradorDeLineas, ANCHO_DEL_PASILLO_M } from "@/components/caminos/borrador-de-lineas";
+import { BorradorDeLineas, ANCHO_DEL_PASILLO_M, type LineaDelBorrador } from "@/components/caminos/borrador-de-lineas";
 import { Boton } from "@/components/ui/boton";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { IconoDeClase } from "@/components/marcas/icono-de-clase";
@@ -28,7 +27,7 @@ type EleccionDePunto = { destino: DestinoDePunto; icono: IconoPunto };
 
 type ArchivoListo = {
   nombre: string;
-  lineas: Position[][];
+  lineas: LineaDelBorrador[];
   puntos: PuntoLeido[];
   omitidos: Extract<LecturaDeCaminos, { ok: true }>["omitidos"];
 };
@@ -49,7 +48,12 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
         setAviso(resultado.error);
         return;
       }
-      const lineas = resultado.lineas.map((linea) => linea.coordenadas).filter((cada) => cada.length >= 2);
+      const lineas = resultado.lineas
+        .filter((linea) => linea.coordenadas.length >= 2)
+        .map((linea) => ({
+          coordenadas: linea.coordenadas,
+          nombreSugerido: linea.nombreSugerido,
+        }));
       if (lineas.length + resultado.puntos.length === 0) {
         setAviso("No hay líneas ni puntos que se puedan sumar. Elegí otro archivo.");
         return;

@@ -53,19 +53,28 @@ type Pieza = {
   coordenadas: Position[];
   destino: Destino;
   nombre: string;
+  /** Nombre que venía del archivo (Google Earth); se ofrece al crear Camino o trazo. */
+  nombreSugerido: string;
   guardadoComo: number | null;
   /** Trazo ya sumado (solo cuando la pantalla lo permite). */
   guardadoComoTrazo: boolean;
 };
 type Herramienta = "elegir" | "cortar" | "mover" | "agregar" | "quitar";
 
+/** Una línea del borrador, con el nombre que traía el archivo si lo había. */
+export type LineaDelBorrador = {
+  coordenadas: Position[];
+  nombreSugerido?: string | null;
+};
+
 let proximaClave = 1;
-function piezaNueva(coordenadas: Position[]): Pieza {
+function piezaNueva(coordenadas: Position[], nombreSugerido = ""): Pieza {
   return {
     clave: proximaClave++,
     coordenadas,
     destino: "pendiente",
     nombre: "",
+    nombreSugerido,
     guardadoComo: null,
     guardadoComoTrazo: false,
   };
@@ -75,8 +84,12 @@ function km(metros: number): string {
   return `${(metros / 1000).toFixed(metros < 10_000 ? 2 : 1).replace(".", ",")} km`;
 }
 
-function armarPiezas(lineas: Position[][], caminos: CaminoParaComparar[]): Pieza[] {
-  return lineas.flatMap((linea) => proponerPartes(achicarLinea(linea), caminos).map((parte) => piezaNueva(parte.coordenadas)));
+function armarPiezas(lineas: LineaDelBorrador[], caminos: CaminoParaComparar[]): Pieza[] {
+  return lineas.flatMap((linea) => {
+    const sugerido = linea.nombreSugerido?.trim() ?? "";
+    return proponerPartes(achicarLinea(linea.coordenadas), caminos).map((parte) =>
+      piezaNueva(parte.coordenadas, sugerido));
+  });
 }
 
 type Creacion = {
@@ -93,13 +106,14 @@ type Creacion = {
 
 type CreacionDeTrazo = {
   clave: number;
+  nombre: string;
   color: ColorDeTrazo;
 };
 
 type Carga =
   | { estado: "cargando" }
   | { estado: "fallo"; motivo: string }
-  | { estado: "listo"; original: Position[][] };
+  | { estado: "listo"; original: LineaDelBorrador[] };
 
 export function BorradorDeLineas({
   subtitulo,
@@ -126,7 +140,7 @@ export function BorradorDeLineas({
   mensajeEmpezarDeNuevo: string;
   botonEmpezarDeNuevo: string;
   descripcionDelCamino: string;
-  lineas: Position[][];
+  lineas: LineaDelBorrador[];
   alVolver: () => void;
   consultaGoogle?: boolean;
   /** En Traer de afuera: una parte nueva también puede sumarse como trazo. */
@@ -176,7 +190,12 @@ export function BorradorDeLineas({
           setCarga({ estado: "fallo", motivo: `No se pudieron traer los Caminos para comparar: ${lista.error}` });
           return;
         }
-        const original = lineas.filter((cada) => cada.length >= 2);
+        const original = lineas
+          .map((cada) => ({
+            coordenadas: cada.coordenadas,
+            nombreSugerido: cada.nombreSugerido?.trim() || null,
+          }))
+          .filter((cada) => cada.coordenadas.length >= 2);
         if (original.length === 0) {
           setCarga({ estado: "fallo", motivo: "No hay ninguna línea usable para comparar." });
           return;
@@ -260,7 +279,8 @@ export function BorradorDeLineas({
   }), [caminos]);
 
   const encuadreInicial = useMemo(() => carga.estado === "listo"
-    ? rectanguloQueAbarca(carga.original.flat().map((punto): [number, number] => [punto[0], punto[1]]))
+    ? rectanguloQueAbarca(carga.original.flatMap((linea) =>
+      linea.coordenadas.map((punto): [number, number] => [punto[0], punto[1]])))
     : null, [carga]);
   const encuadre = encuadreDeParte ?? encuadreInicial;
 
@@ -302,7 +322,7 @@ export function BorradorDeLineas({
     if (herramienta === "cortar") {
       const corte = cortarLinea(pieza.coordenadas, lon, lat);
       if (!corte.ok) { setAviso(corte.error); return; }
-      const [antes, despues] = corte.datos.map(piezaNueva);
+      const [antes, despues] = corte.datos.map((coords) => piezaNueva(coords, pieza.nombreSugerido));
       setPiezas((actuales) => actuales.flatMap((cada) => cada.clave === clave ? [antes, despues] : [cada]));
       if (creacion) {
         setCreacion({ ...creacion, clave: despues.clave, pegarInicio: false });
@@ -345,7 +365,7 @@ export function BorradorDeLineas({
   const empezarCamino = (pieza: Pieza) => {
     setCreacion({
       clave: pieza.clave,
-      nombre: "",
+      nombre: pieza.nombreSugerido,
       actividades: [],
       paso: condicionInicial,
       complejidad: null,
@@ -371,7 +391,7 @@ export function BorradorDeLineas({
   };
 
   const empezarTrazo = (pieza: Pieza) => {
-    setCreacionDeTrazo({ clave: pieza.clave, color: "huella" });
+    setCreacionDeTrazo({ clave: pieza.clave, nombre: pieza.nombreSugerido, color: "huella" });
     setCreacion(null);
     setElegida(pieza.clave);
     setAviso(null);
@@ -518,12 +538,13 @@ export function BorradorDeLineas({
     setGuardando(true);
     setAvisoDelCamino(null);
     try {
+      const nombreDelTrazo = creacionDeTrazo.nombre.trim();
       const resultado = await crearAnotacionesEnTanda(null, [{
         tipo: "trazo",
         icono: null,
         color: TRAZO[creacionDeTrazo.color].color,
         titulo: null,
-        comentario: null,
+        comentario: nombreDelTrazo || null,
         geometria: { type: "LineString", coordinates: pieza.coordenadas },
       }], "google_earth");
       if (!resultado.ok) {
@@ -531,7 +552,7 @@ export function BorradorDeLineas({
         return;
       }
       setPiezas((actuales) => actuales.map((cada) => cada.clave === pieza.clave
-        ? { ...cada, nombre: TRAZO[creacionDeTrazo.color].nombre, guardadoComoTrazo: true } : cada));
+        ? { ...cada, nombre: nombreDelTrazo || TRAZO[creacionDeTrazo.color].nombre, guardadoComoTrazo: true } : cada));
       setCreacionDeTrazo(null);
       setElegida(null);
       const puesta = await ponerAlDiaDespuesDeGuardar();
@@ -616,9 +637,9 @@ export function BorradorDeLineas({
                 if (creacionDeTrazo?.clave === pieza.clave) {
                   return (
                     <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
-                      <TarjetaDelTrazoNuevo numero={indice + 1} largo={largo} color={creacionDeTrazo.color}
+                      <TarjetaDelTrazoNuevo numero={indice + 1} largo={largo} creacion={creacionDeTrazo}
                         vaSobre={datos?.va?.sobre.nombre ?? null} guardando={guardando} aviso={avisoDelCamino}
-                        alCambiarColor={(color) => { setCreacionDeTrazo({ ...creacionDeTrazo, color }); setAvisoDelCamino(null); }}
+                        alCambiar={(cambio) => { setCreacionDeTrazo({ ...creacionDeTrazo, ...cambio }); setAvisoDelCamino(null); }}
                         alCancelar={() => void cancelarTrazo()} alGuardar={() => void guardarTrazo()} />
                     </div>
                   );
@@ -781,14 +802,14 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
   );
 }
 
-function TarjetaDelTrazoNuevo({ numero, largo, color, vaSobre, guardando, aviso, alCambiarColor, alCancelar, alGuardar }: {
+function TarjetaDelTrazoNuevo({ numero, largo, creacion, vaSobre, guardando, aviso, alCambiar, alCancelar, alGuardar }: {
   numero: number;
   largo: string;
-  color: ColorDeTrazo;
+  creacion: CreacionDeTrazo;
   vaSobre: string | null;
   guardando: boolean;
   aviso: string | null;
-  alCambiarColor: (color: ColorDeTrazo) => void;
+  alCambiar: (cambio: Partial<CreacionDeTrazo>) => void;
   alCancelar: () => void;
   alGuardar: () => void;
 }) {
@@ -803,11 +824,13 @@ function TarjetaDelTrazoNuevo({ numero, largo, color, vaSobre, guardando, aviso,
           Así como está, va sobre «{vaSobre}». Cortala para separar lo nuevo, o cancelá.
         </p>
       ) : null}
+      <Campo label="Nombre" value={creacion.nombre} maxLength={120} disabled={guardando}
+        onChange={(evento) => alCambiar({ nombre: evento.target.value })} />
       <div className="flex flex-wrap gap-2" aria-label="Color del trazo">
         {COLORES_DE_TRAZO.map((cada) => (
-          <Boton key={cada} variante={color === cada ? "principal" : "secundario"}
-            aria-pressed={color === cada} disabled={guardando}
-            onClick={() => alCambiarColor(cada)}>{TRAZO[cada].nombre}</Boton>
+          <Boton key={cada} variante={creacion.color === cada ? "principal" : "secundario"}
+            aria-pressed={creacion.color === cada} disabled={guardando}
+            onClick={() => alCambiar({ color: cada })}>{TRAZO[cada].nombre}</Boton>
         ))}
       </div>
       {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
