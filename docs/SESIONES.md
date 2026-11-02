@@ -4,6 +4,126 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Ícono de actividad redondo en Caminos
+
+### Estado al inicio
+El ícono de actividad sobre el Camino era un cuadrado redondeado, fácil de
+confundir con un punto.
+
+### Lo que se hizo
+Una sola actividad: círculo. Varias: rectángulo con bordes bien redondeados.
+
+### Decisiones tomadas
+Pedido de Ale, 2026-11-02.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Subir el paquete pendiente.
+
+---
+
+## Sesión 2026-11-02 — Soltar elección y enfocar la parte
+
+### Estado al inicio
+Al elegir una parte no se podía volver a ver todos los colores; al elegir desde
+el panel el mapa no viajaba hasta esa parte.
+
+### Lo que se hizo
+Un clic fuera de la línea (sin arrastrar) suelta la elección. Al elegir desde
+el panel, el mapa viaja y enfoca esa parte.
+
+### Decisiones tomadas
+Extiende la 077.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Subir el paquete de cambios del borrador y colores.
+
+---
+
+## Sesión 2026-11-02 — Clasificar al crear desde el borrador
+
+### Estado al inicio
+Al crear un Camino desde archivo o salida no se podía poner condición ni
+complejidad; Descartar no pedía confirmación.
+
+### Lo que se hizo
+Al crear se eligen condición y complejidad ahí: desde archivo, «por explorar»
+viene marcado; desde salida, ninguna condición (hay que elegirla). Complejidad
+sin elegir. Descartar pide confirmación. Tarjeta elegida con borde naranja;
+acciones de las otras deshabilitadas.
+
+### Decisiones tomadas
+Extiende la 077.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Subir colores de íconos + referencia + estos cambios.
+
+---
+
+## Sesión 2026-11-02 — Puntos y trazos de referencia en el borrador
+
+### Estado al inicio
+En Traer de afuera y Desde una salida solo se veían Caminos de referencia.
+
+### Lo que se hizo
+También se ven los puntos y trazos ya marcados, solo de referencia, para
+orientarse al revisar el borrador.
+
+### Decisiones tomadas
+Extiende la 077.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-02 — Colores de los íconos de punto
+
+### Estado al inicio
+Todos los puntos se veían verdes (o rosa de lejos), sin distinguir el tipo.
+
+### Lo que se hizo
+Cada tipo tiene su color: azul (arroyo, fuente, cascada, puente), blanco y
+gris (iglesia, casa, campamento, refugio), marrón (cumbre, tranquera),
+amarillo (estacionamiento). En el mapa, en las listas y en la elección.
+
+### Decisiones tomadas
+Ninguna nueva: pedido de Ale sobre lectura visual.
+
+### Documentos actualizados
+`docs/GLOSARIO.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-02 — Traer de afuera con el mismo borrador
 
 ### Estado al inicio

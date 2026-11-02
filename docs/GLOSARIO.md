@@ -204,9 +204,12 @@ ofrecería recuperar justo lo que él decidió tirar.
 **Punto**
 Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
 puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera,
-estacionamiento, sitio, campamento, casa). Campamento es una carpa, el mismo
-dibujo que los campings que trae el mapa: es el mismo concepto. Casa lleva
-chimenea y ventana, para no confundirse con el refugio.
+estacionamiento, sitio, campamento, casa). El color sale del tipo: azul para
+arroyo, fuente, cascada y puente; blanco y gris para iglesia, casa, campamento
+y refugio; marrón para cumbre y tranquera; amarillo para estacionamiento.
+Campamento es una carpa, el mismo dibujo que los campings que trae el mapa: es
+el mismo concepto. Casa lleva chimenea y ventana, para no confundirse con el
+refugio.
 Puede llevar **Atención**.
 Lleva **título** (lo que se ve en el mapa al acercarse) y **descripción**
 (solo en la ficha), y puede llevar foto. Se ubica tocando el mapa propio o

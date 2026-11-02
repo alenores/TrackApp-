@@ -1,3 +1,4 @@
+import { colorDelIcono } from "@/lib/anotaciones/colores-de-icono";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import { nombreDelColor } from "@/lib/anotaciones/colores-de-trazo";
 import type { Anotacion, IconoPunto } from "@/types/database";
@@ -63,12 +64,14 @@ export function IconoDeAnotacion({ anotacion }: { anotacion: Anotacion }) {
 
   const trazo =
     anotacion.tipo === "trazo" ? TRAZO_DE_ALAMBRADO : TRAZOS_DEL_ICONO[anotacion.icono ?? "cruce"];
+  const colores = colorDelIcono(anotacion.tipo === "punto" ? anotacion.icono : null);
 
   return (
     <span
       aria-hidden
       // Atención: el mismo contorno rojo que en el mapa (decisión 078).
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-verde-fondo text-verde-texto ${anotacion.atencion ? "ring-2 ring-rojo" : ""}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${anotacion.atencion ? "ring-2 ring-rojo" : ""}`}
+      style={{ backgroundColor: colores.fondo, color: colores.trazo }}
     >
       <svg
         viewBox="0 0 24 24"

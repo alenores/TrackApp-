@@ -17,9 +17,10 @@ Desde una salida solo como Camino. Los puntos del archivo se eligen aparte.
 
 - Muestra el borrador **por encima** y, debajo, los Caminos que ya existen en
   una línea fina: se ven los dos, y el GPS no queda tapado (Ale, 2026-11-02).
-  Al elegir una parte, esa se marca con un halo y las demás se atenúan. Al
-  pasar el cursor por un tramo aparece qué parte es; al tocarlo, la tarjeta
-  de esa parte sube sola en el panel (Ale, 2026-11-02).
+  También se ven los **puntos y trazos** ya marcados, solo de referencia, para
+  orientarse (Ale, 2026-11-02). Al elegir una parte, esa se marca con un halo y
+  las demás se atenúan. Al pasar el cursor por un tramo aparece qué parte es;
+  al tocarlo, la tarjeta de esa parte sube sola en el panel (Ale, 2026-11-02).
 - Marca en verde las partes del borrador que van sobre un Camino existente.
   Una parte va sobre un Camino si el GPS se mantiene a menos de **20 m** de él
   (el pasillo) durante al menos 100 m; una escapada de menos de 40 m fuera del
@@ -44,8 +45,12 @@ Reglas:
 - Cuando una punta de una parte nueva queda a menos de 40 m de un Camino, la app
   propone pegarla a él para que queden conectados. El usuario lo tilda o no.
 - Los Caminos nuevos llevan nombre y al menos una actividad, empiezan por
-  explorar y se clasifican después en su ficha, como al traer de afuera. Su
-  largo y sus alturas salen del relieve al guardar (decisión 049).
+  explorar. Al crear, se eligen condición y complejidad en la misma tarjeta
+  (Ale, 2026-11-02): desde una salida ninguna condición viene marcada (hay que
+  elegirla); desde un archivo, «por explorar» viene marcado; la complejidad
+  empieza sin elegir en ambos. La clasificación vale para todas las
+  actividades del Camino nuevo. Su largo y sus alturas salen del relieve al
+  guardar (decisión 049). Descartar una parte pide confirmación.
 
 **Un Camino a la vez** (Ale, 2026-10-22). Al tocar «Crear Camino», esa parte se
 vuelve la tarjeta de un Camino nuevo: título «Camino nuevo», nombre,

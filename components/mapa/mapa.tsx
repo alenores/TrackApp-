@@ -42,6 +42,7 @@ import { prepararElMotorDelMapa } from "@/lib/mapas/motor";
 import { PROTOCOLO_DE_GOOGLE_EN_VIVO, registrarElMapaGuardado } from "@/lib/mapas/protocolo";
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { escalaDelMapa, type Escala } from "@/lib/mapas/escala";
+import { colorDelCirculoDelPunto } from "@/lib/anotaciones/colores-de-icono";
 import { DESCRIPCION_DESDE, descripcionCorta } from "@/lib/anotaciones/descripcion-en-el-mapa";
 import { tituloDelPunto } from "@/lib/anotaciones/titulo-del-punto";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
@@ -439,6 +440,11 @@ type MapaProps = {
   /** Se llama al tocar una parte de una ruta. También sirve para elegirla al editar. */
   alTocarRuta?: (lon: number, lat: number, propiedades: Record<string, unknown>) => void;
   alTocarCamino?: (lon: number, lat: number, propiedades: Record<string, unknown>) => void;
+  /**
+   * Un clic (no un arrastre) fuera de cualquier Camino/borrador. Sirve para
+   * soltar la parte elegida y volver a ver todos los colores.
+   */
+  alTocarFueraDeCamino?: () => void;
   /** `false` cuando quien lo llama ya muestra la ficha compartida por su cuenta. */
   mostrarFichaAnotacion?: boolean;
   /**
@@ -560,8 +566,10 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
       properties: {
         // El número, para poder abrir la anotación al tocarla en el mapa.
         id: anotacion.id,
-        // Un color elegido a mano es un dato del usuario y manda sobre el del modo.
-        color: anotacion.color ?? null,
+        // Trazo: el color elegido a mano. Punto: el color del tipo de ícono.
+        color: anotacion.tipo === "trazo"
+          ? (anotacion.color ?? null)
+          : colorDelCirculoDelPunto(anotacion.icono),
         titulo: tituloDelPunto(anotacion) ?? [anotacion.icono, anotacion.comentario].filter(Boolean).join(" · "),
         ...(anotacion.icono ? { icono: anotacion.icono } : {}),
         // El marco rojo de Atención: un aviso y nada más (decisión 078).
@@ -631,6 +639,7 @@ export function Mapa({
   alTocarAnotacion,
   alTocarRuta,
   alTocarCamino,
+  alTocarFueraDeCamino,
   mostrarFichaAnotacion = true,
   mostrarAutorEnFicha = true,
   alCambiarAnotacion,
@@ -1357,11 +1366,11 @@ export function Mapa({
             "match",
             ["get", "icono"],
             "refugio", "alpine_hut",
-            "cumbre", "peak",
+            "cumbre", "cumbre",
             "pueblo", "townspot",
             "fuente", "spring",
             "mirador", "viewpoint",
-            "iglesia", "place_of_worship",
+            "iglesia", "iglesia",
             "arroyo", "arroyo",
             "cascada", "cascada",
             "puente", "puente",
@@ -2274,6 +2283,8 @@ export function Mapa({
           alSenalarZona?.(null);
           return;
         }
+        // Clic limpio fuera de la línea: no es arrastrar el mapa (eso no dispara click).
+        alTocarFueraDeCamino?.();
       }
       if (alSenalarZona) alSenalarZona(buscarZona(evento));
     };
@@ -2293,7 +2304,7 @@ export function Mapa({
       mapa.off("click", tocar);
       mapa.getCanvas().style.cursor = "";
     };
-  }, [alSenalarZona, alTocarAnotacion, alTocarRuta, alTocarCamino, alTocarVerticeDeCamino, alMarcarPuntoDelCircuito, mostrarActividadesDeCaminoAlPasar, marcandoPunto]);
+  }, [alSenalarZona, alTocarAnotacion, alTocarRuta, alTocarCamino, alTocarFueraDeCamino, alTocarVerticeDeCamino, alMarcarPuntoDelCircuito, mostrarActividadesDeCaminoAlPasar, marcandoPunto]);
 
   // Los pedazos de mapa: el que se está definiendo y los que ya existen.
   useEffect(() => {

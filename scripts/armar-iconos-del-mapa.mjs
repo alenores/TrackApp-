@@ -55,12 +55,23 @@ const colorDelModo = (nombre, modo) => {
 const LADO_DEL_MARCO = 25;
 const marcoDeAtencion = (modo) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${LADO_DEL_MARCO}" height="${LADO_DEL_MARCO}"><rect x="1.5" y="1.5" width="${LADO_DEL_MARCO - 3}" height="${LADO_DEL_MARCO - 3}" rx="5" fill="none" stroke="${colorDelModo("rojo", modo)}" stroke-width="3"/></svg>`;
+/**
+ * Una sola actividad: círculo, para no confundirse con un punto (que es
+ * cuadrado redondeado). Varias: rectángulo bien redondeado (Ale, 2026-11-02).
+ */
 const GRUPOS = Array.from({ length: (1 << actividades.length) - 1 }, (_, indice) => {
   const elegidas = actividades.filter((_, bit) => (indice + 1) & (1 << bit));
-  const ancho = 24 * elegidas.length + 8;
+  const sola = elegidas.length === 1;
+  const ancho = sola ? 32 : 24 * elegidas.length + 8;
   const trazos = elegidas.map((cada, posicion) => `<g transform="translate(${4 + posicion * 24},4)"><path d="${cada.trazo}" fill="none" stroke="${color("parte-x")}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></g>`).join("");
-  return { nombre: `actividades-${elegidas.map((cada) => cada.tipo).join("-")}`, ancho,
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="32"><rect x="1" y="1" width="${ancho - 2}" height="30" rx="6" fill="${color("parte-x-halo")}" stroke="${color("parte-x")}" stroke-width="2"/>${trazos}</svg>` };
+  const fondo = sola
+    ? `<circle cx="16" cy="16" r="14.5" fill="${color("parte-x-halo")}" stroke="${color("parte-x")}" stroke-width="2"/>`
+    : `<rect x="1" y="1" width="${ancho - 2}" height="30" rx="12" fill="${color("parte-x-halo")}" stroke="${color("parte-x")}" stroke-width="2"/>`;
+  return {
+    nombre: `actividades-${elegidas.map((cada) => cada.tipo).join("-")}`,
+    ancho,
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="32">${fondo}${trazos}</svg>`,
+  };
 });
 
 /** Cuánto más grande es la hoja de alta densidad. */
@@ -71,33 +82,51 @@ const AL_DOBLE = 2;
  * de qué dibujo sale y con qué paleta se pinta.
  */
 const PROPIOS = [
-  { nombre: "alpine_hut", dibujo: "refugio", paleta: "natural" },
-  { nombre: "wilderness_hut", dibujo: "refugio", paleta: "natural" },
-  { nombre: "camp_site", dibujo: "carpa", paleta: "natural" },
-  { nombre: "viewpoint", dibujo: "mirador", paleta: "natural" },
-  { nombre: "cave_entrance", dibujo: "cueva", paleta: "natural" },
+  // Edificio: blanco y gris (refugio, campamento, casa, iglesia).
+  { nombre: "alpine_hut", dibujo: "refugio", paleta: "edificio" },
+  { nombre: "wilderness_hut", dibujo: "refugio", paleta: "edificio" },
+  { nombre: "camp_site", dibujo: "carpa", paleta: "edificio" },
+  { nombre: "casa", dibujo: "casa", paleta: "edificio" },
+  { nombre: "iglesia", dibujo: "iglesia", paleta: "edificio" },
+  // Agua: azul (arroyo, fuente, cascada, puente).
   { nombre: "spring", dibujo: "manantial", paleta: "agua" },
   { nombre: "arroyo", dibujo: "arroyo", paleta: "agua" },
   { nombre: "cascada", dibujo: "cascada", paleta: "agua" },
-  { nombre: "puente", dibujo: "puente", paleta: "natural" },
+  { nombre: "puente", dibujo: "puente", paleta: "agua" },
+  // Montaña: marrón (cumbre, tranquera).
+  { nombre: "cumbre", dibujo: "cumbre", paleta: "montana" },
+  { nombre: "tranquera", dibujo: "tranquera", paleta: "montana" },
+  // Estacionamiento: amarillo.
+  { nombre: "estacionamiento", dibujo: "estacionamiento", paleta: "estacionamiento" },
+  // El resto sigue en verde natural.
+  { nombre: "viewpoint", dibujo: "mirador", paleta: "natural" },
+  { nombre: "cave_entrance", dibujo: "cueva", paleta: "natural" },
   { nombre: "cartel", dibujo: "cartel", paleta: "natural" },
   { nombre: "cruce", dibujo: "cruce", paleta: "natural" },
-  { nombre: "tranquera", dibujo: "tranquera", paleta: "natural" },
-  { nombre: "estacionamiento", dibujo: "estacionamiento", paleta: "natural" },
   { nombre: "sitio", dibujo: "sitio", paleta: "natural" },
-  // Chimenea y ventana: no se confunde con la puerta del refugio.
-  { nombre: "casa", dibujo: "casa", paleta: "natural" },
 ];
 
-/** Medidos sobre los íconos de Protomaps de cada familia, píxel por píxel. */
+/** Paletas por familia de punto (Ale, 2026-11-02). */
 const PALETAS = {
   natural: {
     light: { FONDO: "#d6f2e3", TRAZO: "#4fa074", RELLENO: "#bde3cf" },
     dark: { FONDO: "#202623", TRAZO: "#2c9c5e", RELLENO: "#223c2d" },
   },
   agua: {
-    light: { FONDO: "#dcebfa", TRAZO: "#8780ab", RELLENO: "#ccd8ec" },
-    dark: { FONDO: "#242425", TRAZO: "#76767f", RELLENO: "#333335" },
+    light: { FONDO: "#dbeafe", TRAZO: "#0284c7", RELLENO: "#bfdbfe" },
+    dark: { FONDO: "#0c4a6e", TRAZO: "#7dd3fc", RELLENO: "#075985" },
+  },
+  edificio: {
+    light: { FONDO: "#f3f4f6", TRAZO: "#4b5563", RELLENO: "#e5e7eb" },
+    dark: { FONDO: "#374151", TRAZO: "#e5e7eb", RELLENO: "#4b5563" },
+  },
+  montana: {
+    light: { FONDO: "#f5e6d3", TRAZO: "#92400e", RELLENO: "#e7d3b8" },
+    dark: { FONDO: "#451a03", TRAZO: "#fdba74", RELLENO: "#78350f" },
+  },
+  estacionamiento: {
+    light: { FONDO: "#fef08a", TRAZO: "#ca8a04", RELLENO: "#fde047" },
+    dark: { FONDO: "#713f12", TRAZO: "#facc15", RELLENO: "#a16207" },
   },
 };
 

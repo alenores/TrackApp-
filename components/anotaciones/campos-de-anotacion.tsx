@@ -5,6 +5,7 @@ import { Campo } from "@/components/ui/campo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
+import { colorDelIcono } from "@/lib/anotaciones/colores-de-icono";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
 import { TRAZOS_DEL_ICONO } from "@/components/anotaciones/icono-de-anotacion";
 import {
@@ -97,8 +98,9 @@ export function CamposDeAnotacion({
                 aria-pressed={icono === cual}
                 className={`inline-flex items-center gap-2 ${claseDeTipo(icono === cual)}`}
               >
-                {/* El mismo dibujo que tiene en las listas de Marcas. */}
-                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden>
+                {/* El mismo dibujo y color que tiene en las listas de Marcas. */}
+                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden
+                  style={{ color: colorDelIcono(cual).trazo }}>
                   <path d={TRAZOS_DEL_ICONO[cual]} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 {COMO_SE_LLAMA[cual]}

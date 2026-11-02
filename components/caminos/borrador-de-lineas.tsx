@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FeatureCollection, LineString, Position } from "geojson";
-import { crearCaminoNuevo, leerCaminos } from "@/app/actions/caminos";
+import { clasificarParteDelCamino, crearCaminoNuevo, leerCaminos } from "@/app/actions/caminos";
 import { crearAnotacionesEnTanda } from "@/app/actions/territorio";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
 import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { ElegirActividades } from "@/components/rutas/elegir-actividades";
+import { MuestraDeComplejidad, MuestraDeLinea, nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { Casilla } from "@/components/ui/casilla";
@@ -17,6 +18,7 @@ import { Opciones } from "@/components/ui/opciones";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { TRAZO_DE_AGREGAR_PUNTO, TRAZO_DE_MOVER_PUNTOS, TRAZO_DE_QUITAR_PUNTO } from "@/components/ui/iconos";
 import { COLORES_DE_TRAZO, TRAZO, type ColorDeTrazo } from "@/lib/anotaciones/colores-de-trazo";
+import { type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
 import {
   achicarLinea,
   ANCHO_DEL_PASILLO_M,
@@ -34,13 +36,15 @@ import {
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
+import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
-import type { ActividadRuta } from "@/types/database";
+import type { ActividadRuta, Rectangulo } from "@/types/database";
 
 /**
  * Borrador compartido: líneas traídas (salida o archivo) contra Caminos que ya
  * existen. Verde = coincide; color de salidas = nuevo. Cortar, descartar y
- * crear de a un Camino. La app propone; nada se guarda hasta Guardar.
+ * crear de a un Camino. Los puntos y trazos que ya existen se ven de
+ * referencia. La app propone; nada se guarda hasta Guardar.
  */
 
 type Destino = "pendiente" | "descartada";
@@ -79,6 +83,10 @@ type Creacion = {
   clave: number;
   nombre: string;
   actividades: ActividadRuta[];
+  /** Obligatoria al guardar. Desde archivo viene «por explorar»; desde salida, sin elegir. */
+  paso: CondicionDePaso | null;
+  /** Opcional: sin elegir = sin clasificar. «Sin paso» no lleva complejidad. */
+  complejidad: ComplejidadDeParte | null;
   pegarInicio: boolean;
   pegarFinal: boolean;
 };
@@ -106,6 +114,8 @@ export function BorradorDeLineas({
   alVolver,
   consultaGoogle = false,
   permitirTrazo = false,
+  /** Condición al abrir «Crear Camino»: `por_explorar` desde archivo; `null` desde una salida (hay que elegirla). */
+  condicionInicial = "por_explorar" as CondicionDePaso | null,
   panelAlFinal = null,
 }: {
   subtitulo: string;
@@ -121,9 +131,12 @@ export function BorradorDeLineas({
   consultaGoogle?: boolean;
   /** En Traer de afuera: una parte nueva también puede sumarse como trazo. */
   permitirTrazo?: boolean;
+  condicionInicial?: CondicionDePaso | null;
   panelAlFinal?: ReactNode;
 }) {
   const { confirmar } = useDialogos();
+  const { paquete } = useDatosDeLaApp();
+  const anotacionesDeReferencia = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
   const [carga, setCarga] = useState<Carga>({ estado: "cargando" });
   const [intento, setIntento] = useState(0);
   const [piezas, setPiezas] = useState<Pieza[]>([]);
@@ -136,6 +149,8 @@ export function BorradorDeLineas({
   const [avisoDelCamino, setAvisoDelCamino] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [tocado, setTocado] = useState(false);
+  const [encuadreDeParte, setEncuadreDeParte] = useState<Rectangulo | null>(null);
+  const [viaje, setViaje] = useState(0);
   const tarjetasDeParte = useRef(new Map<number, HTMLElement>());
   const claveAMostrar = creacion?.clave ?? creacionDeTrazo?.clave ?? elegida;
 
@@ -244,9 +259,25 @@ export function BorradorDeLineas({
     })),
   }), [caminos]);
 
-  const encuadre = useMemo(() => carga.estado === "listo"
+  const encuadreInicial = useMemo(() => carga.estado === "listo"
     ? rectanguloQueAbarca(carga.original.flat().map((punto): [number, number] => [punto[0], punto[1]]))
     : null, [carga]);
+  const encuadre = encuadreDeParte ?? encuadreInicial;
+
+  const enfocarParte = (pieza: Pieza) => {
+    const caja = rectanguloQueAbarca(
+      lineaDe(pieza).map((punto): [number, number] => [punto[0], punto[1]]),
+    );
+    if (!caja) return;
+    setEncuadreDeParte(caja);
+    setViaje((vez) => vez + 1);
+  };
+
+  const elegirParte = (pieza: Pieza) => {
+    setElegida(pieza.clave);
+    setAviso(null);
+    enfocarParte(pieza);
+  };
 
   const cambiarPieza = (clave: number, cambio: Partial<Pieza>) => {
     setPiezas((actuales) => actuales.map((pieza) => pieza.clave === clave ? { ...pieza, ...cambio } : pieza));
@@ -312,12 +343,31 @@ export function BorradorDeLineas({
   };
 
   const empezarCamino = (pieza: Pieza) => {
-    setCreacion({ clave: pieza.clave, nombre: "", actividades: [], pegarInicio: false, pegarFinal: false });
+    setCreacion({
+      clave: pieza.clave,
+      nombre: "",
+      actividades: [],
+      paso: condicionInicial,
+      complejidad: null,
+      pegarInicio: false,
+      pegarFinal: false,
+    });
     setCreacionDeTrazo(null);
     setElegida(pieza.clave);
     setAviso(null);
     setAvisoDelCamino(null);
     setTocado(true);
+  };
+
+  const descartarParte = async (clave: number) => {
+    if (!(await confirmar({
+      titulo: "¿Descartar esta parte?",
+      mensaje: "Deja de verse en el mapa. Después la podés volver a usar.",
+      textoDeAceptar: "Descartar",
+      textoDeCancelar: "Seguir con ella",
+      destructivo: true,
+    }))) return;
+    cambiarPieza(clave, { destino: "descartada" });
   };
 
   const empezarTrazo = (pieza: Pieza) => {
@@ -333,7 +383,7 @@ export function BorradorDeLineas({
     if (!creacion) return;
     if (!(await confirmar({
       titulo: "¿Cancelar este Camino?",
-      mensaje: "Se pierden el nombre, las actividades y las puntas pegadas. La parte vuelve a quedar como estaba.",
+      mensaje: "Se pierden el nombre, las actividades, la clasificación y las puntas pegadas. La parte vuelve a quedar como estaba.",
       textoDeAceptar: "Cancelar el Camino",
       textoDeCancelar: "Seguir creándolo",
       destructivo: true,
@@ -401,10 +451,13 @@ export function BorradorDeLineas({
     const nombre = creacion.nombre.trim();
     if (!nombre) { setAvisoDelCamino("Escribí el nombre del Camino."); return; }
     if (creacion.actividades.length === 0) { setAvisoDelCamino("Elegí al menos una actividad."); return; }
+    if (!creacion.paso) { setAvisoDelCamino("Elegí la condición de paso."); return; }
     if (analisis.get(pieza.clave)?.va) {
       setAvisoDelCamino("Así como está, esta parte va sobre un Camino que ya existe y sería un Camino repetido. Cortala para separar lo nuevo.");
       return;
     }
+    const paso = creacion.paso;
+    const complejidad = paso === "sin_paso" ? null : creacion.complejidad;
     setGuardando(true);
     setAvisoDelCamino(null);
     try {
@@ -415,10 +468,33 @@ export function BorradorDeLineas({
         coordenadas: lineaDe(pieza),
       });
       if (!resultado.ok) { setAvisoDelCamino(`No se guardó el Camino: ${resultado.error}`); return; }
-      const nuevo = resultado.datos;
+      let alDia = resultado.datos;
+      const parte = alDia.partes[0];
+      if (parte) {
+        for (const actividad of creacion.actividades) {
+          const clasificada = await clasificarParteDelCamino(alDia.id, alDia.actualizadoEn, {
+            desdeM: parte.desdeM,
+            hastaM: parte.hastaM,
+            actividad,
+            paso,
+            complejidad,
+          });
+          if (!clasificada.ok) {
+            setAvisoDelCamino(`El Camino «${nombre}» quedó guardado, pero no se pudo cargar la clasificación: ${clasificada.error}. Completala en su ficha.`);
+            setPiezas((actuales) => actuales.map((cada) => cada.clave === pieza.clave
+              ? { ...cada, coordenadas: lineaDe(pieza), nombre, guardadoComo: alDia.id } : cada));
+            setCaminos((actuales) => [...actuales, { id: alDia.id, nombre: alDia.nombre, coordenadas: alDia.coordenadas }]);
+            setCreacion(null);
+            setElegida(null);
+            await ponerAlDiaDespuesDeGuardar();
+            return;
+          }
+          alDia = clasificada.datos;
+        }
+      }
       setPiezas((actuales) => actuales.map((cada) => cada.clave === pieza.clave
-        ? { ...cada, coordenadas: lineaDe(pieza), nombre, guardadoComo: nuevo.id } : cada));
-      setCaminos((actuales) => [...actuales, { id: nuevo.id, nombre: nuevo.nombre, coordenadas: nuevo.coordenadas }]);
+        ? { ...cada, coordenadas: lineaDe(pieza), nombre, guardadoComo: alDia.id } : cada));
+      setCaminos((actuales) => [...actuales, { id: alDia.id, nombre: alDia.nombre, coordenadas: alDia.coordenadas }]);
       setCreacion(null);
       setElegida(null);
       const puesta = await ponerAlDiaDespuesDeGuardar();
@@ -470,7 +546,7 @@ export function BorradorDeLineas({
   };
 
   const ayudaDeHerramienta: Record<Herramienta, string> = {
-    elegir: "Tocá una parte en el mapa o en la lista para elegirla.",
+    elegir: "Tocá una parte en el mapa o en la lista para elegirla. Un clic fuera de la línea (sin arrastrar) suelta la elección y vuelve a mostrar todos los colores.",
     cortar: creandoAlgo ? "Tocá la línea que estás creando donde la querés cortar." : "Tocá la línea donde la querés cortar.",
     mover: creandoAlgo ? "Arrastrá los puntos de la parte que estás creando." : "Elegí una parte y arrastrá sus puntos hasta su lugar.",
     agregar: creandoAlgo ? "Tocá la línea que estás creando, entre dos puntos." : "Elegí una parte y tocá su línea entre dos puntos.",
@@ -492,9 +568,16 @@ export function BorradorDeLineas({
           panelPrimeroEnComputadora
           mapa={
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora consultaGoogle={consultaGoogle}
-              encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+              encuadre={encuadre} encuadrarSoloAlAbrir viaje={viaje} caminos={dibujo}
               caminosEncima={caminosExistentes}
+              anotaciones={anotacionesDeReferencia}
+              mostrarFichaAnotacion={false}
               alTocarCamino={tocarElMapa}
+              alTocarFueraDeCamino={() => {
+                if (creandoAlgo) return;
+                setElegida(null);
+                setAviso(null);
+              }}
               verticesDeCamino={editandoLinea && piezaEnUso && piezaEnUso.guardadoComo === null && !piezaEnUso.guardadoComoTrazo ? piezaEnUso.coordenadas : null}
               alTocarVerticeDeCamino={herramienta === "quitar" ? quitarPunto : undefined}
               alMoverVerticeDeCamino={herramienta === "mover" ? moverPunto : undefined} />
@@ -541,16 +624,19 @@ export function BorradorDeLineas({
                   );
                 }
                 const esElegida = pieza.clave === elegida && !creandoAlgo;
+                const hayOtraElegida = elegida !== null && !esElegida && !creandoAlgo;
                 const bloqueada = guardando || pieza.guardadoComo !== null || pieza.guardadoComoTrazo;
+                // Con una parte elegida, las acciones de las otras no responden: evita tocar la equivocada.
+                const accionesDeOtra = bloqueada || creandoAlgo || hayOtraElegida;
                 return (
                   <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
-                    <Tarjeta className={`space-y-3 ${esElegida ? "ring-2 ring-acento-borde" : ""}`}>
+                    <Tarjeta className={`space-y-3 ${esElegida ? "border-2 border-marca-de-parte" : ""}`}>
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-base font-semibold text-texto">
                           Parte {indice + 1} · {largo}{esElegida ? " · elegida" : ""}
                         </p>
                         {!esElegida && !creandoAlgo && pieza.destino !== "descartada" && pieza.guardadoComo === null && !pieza.guardadoComoTrazo ? (
-                          <Boton variante="secundario" onClick={() => setElegida(pieza.clave)}>Elegir</Boton>
+                          <Boton variante="secundario" onClick={() => elegirParte(pieza)}>Elegir</Boton>
                         ) : null}
                       </div>
                       {pieza.guardadoComo !== null ? (
@@ -560,7 +646,7 @@ export function BorradorDeLineas({
                       ) : pieza.destino === "descartada" ? (
                         <>
                           <p className="text-base text-texto-suave">Descartada: no se guarda y no se ve en el mapa.</p>
-                          <Boton variante="secundario" disabled={guardando || creandoAlgo}
+                          <Boton variante="secundario" disabled={guardando || creandoAlgo || hayOtraElegida}
                             onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
                         </>
                       ) : datos?.va ? (
@@ -569,8 +655,8 @@ export function BorradorDeLineas({
                             Va sobre «{datos.va.sobre.nombre}» ({Math.round(datos.va.proporcion * 100)} % de esta parte).
                             Ese Camino ya existe y no se toca.
                           </p>
-                          <Boton variante="secundario" disabled={bloqueada || creandoAlgo}
-                            onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
+                          <Boton variante="secundario" disabled={accionesDeOtra}
+                            onClick={() => void descartarParte(pieza.clave)}>Descartar</Boton>
                         </>
                       ) : (
                         <>
@@ -579,12 +665,12 @@ export function BorradorDeLineas({
                             <p className="text-base text-texto-suave">Para usar esta parte, terminá o cancelá lo que estás creando.</p>
                           ) : (
                             <div className="flex flex-wrap gap-2">
-                              <Boton variante="secundario" disabled={bloqueada} onClick={() => empezarCamino(pieza)}>Crear Camino</Boton>
+                              <Boton variante="secundario" disabled={accionesDeOtra} onClick={() => empezarCamino(pieza)}>Crear Camino</Boton>
                               {permitirTrazo ? (
-                                <Boton variante="secundario" disabled={bloqueada} onClick={() => empezarTrazo(pieza)}>Sumar como trazo</Boton>
+                                <Boton variante="secundario" disabled={accionesDeOtra} onClick={() => empezarTrazo(pieza)}>Sumar como trazo</Boton>
                               ) : null}
-                              <Boton variante="secundario" disabled={bloqueada}
-                                onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
+                              <Boton variante="secundario" disabled={accionesDeOtra}
+                                onClick={() => void descartarParte(pieza.clave)}>Descartar</Boton>
                             </div>
                           )}
                         </>
@@ -621,6 +707,9 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
   alCancelar: () => void;
   alGuardar: () => void;
 }) {
+  const elegirPaso = (paso: CondicionDePaso) => {
+    alCambiar({ paso, complejidad: paso === "sin_paso" ? null : creacion.complejidad });
+  };
   return (
     <Tarjeta franja="verde" className="space-y-4">
       <div className="space-y-1">
@@ -637,6 +726,40 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
       <ElegirActividades etiqueta="Actividades" modo="varias" obligatorio elegidas={creacion.actividades} deshabilitado={guardando}
         alTocar={(actividad) => alCambiar({ actividades: creacion.actividades.includes(actividad)
           ? creacion.actividades.filter((cada) => cada !== actividad) : [...creacion.actividades, actividad] })} />
+      <div className="space-y-2">
+        <p className="text-base font-semibold text-texto">Condición de paso</p>
+        <div className="flex flex-wrap gap-2">
+          {(["por_explorar", "tentativo", "transitable", "a_pie", "sin_paso"] as CondicionDePaso[]).map((paso) => (
+            <Boton key={paso}
+              variante={creacion.paso === paso ? "principal" : "secundario"}
+              aria-pressed={creacion.paso === paso} disabled={guardando}
+              onClick={() => elegirPaso(paso)}>
+              <span className="inline-flex items-center gap-2">
+                <MuestraDeLinea paso={paso} />
+                {nombreDelPaso(paso, creacion.actividades)}
+              </span>
+            </Boton>
+          ))}
+        </div>
+      </div>
+      {creacion.paso && creacion.paso !== "sin_paso" ? (
+        <div className="space-y-2">
+          <p className="text-base font-semibold text-texto">Complejidad</p>
+          <div className="flex flex-wrap gap-2">
+            {([null, "facil", "media", "dificil"] as Array<ComplejidadDeParte | null>).map((complejidad) => (
+              <Boton key={complejidad ?? "ninguna"}
+                variante={creacion.complejidad === complejidad ? "principal" : "secundario"}
+                aria-pressed={creacion.complejidad === complejidad} disabled={guardando}
+                onClick={() => alCambiar({ complejidad })}>
+                <span className="inline-flex items-center gap-2">
+                  <MuestraDeComplejidad complejidad={complejidad} />
+                  {nombreDeComplejidad(complejidad)}
+                </span>
+              </Boton>
+            ))}
+          </div>
+        </div>
+      ) : null}
       {inicio || final ? (
         <div className="space-y-1">
           {([["inicio", inicio, "pegarInicio", "inicial"], ["final", final, "pegarFinal", "final"]] as const).map(([extremo, cercana, campo, palabra]) => cercana ? (
@@ -648,7 +771,7 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
           ) : null)}
         </div>
       ) : null}
-      <p className="text-base text-texto-suave">Empieza por explorar. La condición y la complejidad se cargan después, en su ficha.</p>
+      <p className="text-base text-texto-suave">La condición y la complejidad valen para todas las actividades elegidas.</p>
       {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
       <div className="flex flex-wrap justify-between gap-2 border-t border-borde pt-3">
         <Boton variante="secundario" disabled={guardando} onClick={alCancelar}>Cancelar</Boton>

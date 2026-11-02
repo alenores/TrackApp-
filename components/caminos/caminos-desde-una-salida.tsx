@@ -134,7 +134,7 @@ function CargarBorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolv
     <BorradorDeLineas
       subtitulo={salida.titulo}
       textoDeCarga="Comparando con los Caminos que ya existen…"
-      textoDeAyuda={`La línea gruesa es el GPS, como borrador (va por encima). En verde, las partes que van sobre un Camino que ya existe (a menos de ${ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no coinciden con ninguno. Los Caminos existentes se ven debajo, en una línea fina gris. Al pasar el cursor por un tramo ves qué parte es; al tocarlo, la tarjeta sube sola en el panel. Es una propuesta: revisala.`}
+      textoDeAyuda={`La línea gruesa es el GPS, como borrador (va por encima). En verde, las partes que van sobre un Camino que ya existe (a menos de ${ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no coinciden con ninguno. Los Caminos existentes se ven debajo, en una línea fina gris; los puntos y trazos también, de referencia. Al pasar el cursor por un tramo ves qué parte es; al tocarlo, la tarjeta sube sola en el panel. Es una propuesta: revisala.`}
       textoEmpezarDeNuevo="Si te perdiste entre cortes y correcciones, podés volver a empezar con la línea del GPS como vino."
       tituloEmpezarDeNuevo="¿Volver al GPS como vino?"
       mensajeEmpezarDeNuevo="Se pierden los cortes, las correcciones y el Camino que estás creando. Los Caminos ya guardados quedan."
@@ -142,6 +142,7 @@ function CargarBorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolv
       descripcionDelCamino={`Desde la salida «${salida.titulo}» del ${diaEnPalabras(salida.fecha)}.`}
       lineas={carga.lineas}
       alVolver={alVolver}
+      condicionInicial={null}
     />
   );
 }
