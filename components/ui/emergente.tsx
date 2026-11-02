@@ -66,6 +66,11 @@ type PropiedadesDeEmergente = {
    * dentro de Mapas, van al costado y no tapan el mapa. En el resto, al medio.
    */
   alCostado?: boolean;
+  /**
+   * Contorno rojo de la ventana: Atención en un punto (decisión 078).
+   * El mismo rojo del mapa, no otro.
+   */
+  contornoRojo?: boolean;
 };
 
 export function Emergente({
@@ -79,6 +84,7 @@ export function Emergente({
   ancho = "normal",
   hoja = false,
   alCostado = false,
+  contornoRojo = false,
 }: PropiedadesDeEmergente) {
   const lugarAlCostado = useContext(LugarAlCostado);
   const vaAlCostado = alCostado && lugarAlCostado !== null;
@@ -103,7 +109,14 @@ export function Emergente({
 
   if (vaAlCostado && lugarAlCostado) {
     return createPortal(
-      <div role="dialog" aria-label={titulo} className="flex min-h-0 flex-1 flex-col">
+      <div
+        role="dialog"
+        aria-label={titulo}
+        className={[
+          "flex min-h-0 flex-1 flex-col",
+          contornoRojo ? "rounded-xl border-2 border-rojo" : "",
+        ].join(" ")}
+      >
         <CabezaDeEmergente
           titulo={titulo}
           iconoDelTitulo={iconoDelTitulo}
@@ -139,7 +152,8 @@ export function Emergente({
           // cabecera en el gris más oscuro y el cuerpo en el color del panel,
           // así las opciones de adentro se despegan como tarjetas y con sol se
           // ve dónde empieza. Uniformidad total (Ale, 2026-10-13).
-          "panel-que-sube flex max-h-[85dvh] w-full flex-col overflow-hidden border border-panel-borde bg-panel shadow-xl",
+          "panel-que-sube flex max-h-[85dvh] w-full flex-col overflow-hidden bg-panel shadow-xl",
+          contornoRojo ? "border-2 border-rojo" : "border border-panel-borde",
           hoja ? "rounded-t-2xl pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0" : "rounded-2xl",
           ancho === "amplio" ? "max-w-2xl" : "max-w-md",
           hoja && !arrastrando ? "transition-transform duration-200 ease-out" : "",

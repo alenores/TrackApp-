@@ -139,6 +139,7 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
             tipo: "trazo" as const,
             icono: null,
             color: TRAZO[lineas[indice].color].color,
+            titulo: null,
             comentario: textoDelMarcador(linea.nombre, linea.descripcionEsHtml ? null : linea.descripcion),
             geometria: { type: "LineString" as const, coordinates: linea.coordenadas },
           }] : []),
@@ -146,7 +147,8 @@ export function TraerCaminosDeAfuera({ alVolver }: { alVolver: () => void }) {
             tipo: "punto" as const,
             icono: puntos[indice].icono,
             color: null,
-            comentario: textoDelMarcador(punto.nombre, punto.descripcionEsHtml ? null : punto.descripcion),
+            titulo: punto.nombre?.trim() || "Punto",
+            comentario: punto.descripcionEsHtml ? null : (punto.descripcion?.trim() || null),
             geometria: { type: "Point" as const, coordinates: punto.coordenada },
           }] : []),
         ];

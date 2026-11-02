@@ -4,6 +4,86 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Conservar el foco al agrandar el mapa
+
+### Estado al inicio
+Condición Tentativo ya con script corrido en la base.
+
+### Lo que se hizo
+Al abrir o cerrar el mapa en grande, ya no se reencuadra el contenido: quedan
+el mismo centro y el mismo zoom. El foco no se pierde.
+
+### Decisiones tomadas
+Cambia la 020: al agrandar/achicar se conserva la vista, no se reencuadra.
+
+### Documentos actualizados
+`AGENTS.md`, `docs/decisiones/020-la-ruta-sobre-su-zona-y-sus-sectores.md`,
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-01 — Condición Tentativo en Caminos
+
+### Estado al inicio
+Columna `titulo` de puntos ya aplicada en la base.
+
+### Lo que se hizo
+Las partes de un Camino ganan la condición **Tentativo**: posible camino
+todavía sin comprobar bien. En el mapa se ve entrecortada como «por explorar»,
+pero más fina y con signos «?». También en el editor, la miniatura, el gráfico
+de alturas y el resumen de Circuitos.
+
+### Decisiones tomadas
+Extiende la 033: quinta condición de paso `tentativo`.
+
+### Documentos actualizados
+`docs/GLOSARIO.md`, `docs/DISENO_EXTERIOR.md`,
+`docs/decisiones/033-partes-de-una-ruta.md`, `docs/SESIONES.md`,
+`scripts/supabase-paso-tentativo.sql`.
+
+### Deuda o inconsistencias detectadas
+Hay que correr el script de la condición tentativo en la base.
+
+### Pendientes para la próxima
+Ninguno de este tema una vez aplicado el script.
+
+---
+
+## Sesión 2026-11-01 — Título y descripción en puntos
+
+### Estado al inicio
+Trabajo local sobre lo ya publicado de Marcas/Consultas/Zonas.
+
+### Lo que se hizo
+Los puntos pasan a tener título y descripción por separado. En el mapa, al
+acercarse, solo se ve el título. La descripción completa queda para la ficha.
+En Atención, la ficha lleva contorno rojo y un «?» rojo junto al título; se
+sacó la tarjeta que decía «Atención».
+
+### Decisiones tomadas
+Extiende la 078 (cómo se muestra Atención en la ficha) y la regla del mapa
+sobre el texto debajo del ícono: es el título, no la descripción.
+
+### Documentos actualizados
+`AGENTS.md`, `docs/SCHEMA.md`, `docs/GLOSARIO.md`, `docs/DISENO_EXTERIOR.md`,
+`docs/decisiones/078-casa-y-atencion-en-puntos.md`, `docs/SESIONES.md`,
+`scripts/supabase-titulo-de-puntos.sql`.
+
+### Deuda o inconsistencias detectadas
+Hay que correr el script de la columna `titulo` en la base de TrackApp si
+todavía no está aplicada.
+
+### Pendientes para la próxima
+Ninguno de este tema una vez aplicada la columna en la base.
+
+---
+
 ## Sesión 2026-11-01 — Editar Camino sin perder el lugar
 
 ### Estado al inicio

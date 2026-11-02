@@ -131,7 +131,7 @@ siete filas independientes.
 | `descripcion` | text | hasta 2.000 caracteres |
 | `actividades` | actividad_ruta[] | al menos una, sin repetir |
 | `geometria` | jsonb | GeoJSON `LineString`, coordenadas reales; la base verifica el largo. Desde el 2026-10-08 la app guarda solo longitud y latitud: el tercer número en cero de Google Earth se descarta |
-| `partes` | jsonb | cubren toda la línea, sin huecos; paso y complejidad por actividad, observación y fecha únicas por parte |
+| `partes` | jsonb | cubren toda la línea, sin huecos; paso (`por_explorar`, `tentativo`, `transitable`, `a_pie`, `sin_paso`) y complejidad por actividad; observación y fecha únicas por parte. `tentativo` se habilitó el 2026-11-01 (`scripts/supabase-paso-tentativo.sql`) |
 | `largo_m` | numeric | calculado desde la línea |
 | `alturas` | jsonb | `{"cada_m": 25, "valores": [...]}`: altura del terreno cada 25 m y en el final, medida con el relieve al guardar (decisión 049). Vacía si no se calculó |
 | `desnivel_positivo_m`, `desnivel_negativo_m` | integer | desde el comienzo de la línea; van junto con `alturas` (las tres o ninguna) |
@@ -209,7 +209,8 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 | `tipo` | tipo_anotacion | `punto` o `trazo` |
 | `icono` | icono_punto | solo si es punto |
 | `color` | text | solo si es trazo |
-| `comentario` | text | texto libre, para las dos formas |
+| `titulo` | text | solo en puntos: nombre corto del mapa (hasta 120). Vacío en puntos viejos y en trazos |
+| `comentario` | text | descripción libre. En puntos va aparte del título; en trazos es lo único |
 | `atencion` | boolean | obligatorio, por defecto `false`. Contorno rojo del punto (decisión 078). Solo puntos que no vienen de OpenStreetMap: lo exige `anotaciones_atencion_solo_en_puntos_propios` |
 | `geometria` | jsonb | el punto o la línea, obligatorio |
 | `foto_url` | text | la foto grande, hasta 2 MB. Se ve con internet |
@@ -240,6 +241,10 @@ Casa y la columna `atencion` se habilitaron el 2026-10-24 con `casa_y_atencion`
 Se probó con el rol del administrador, en una transacción que se deshizo:
 crear una casa con Atención, sacársela, y que una tranquera de OpenStreetMap
 con Atención se rechace.
+
+La columna `titulo` de los puntos se agregó el 2026-11-01 con
+`titulo_de_puntos` (`scripts/supabase-titulo-de-puntos.sql`), con tope de 120
+caracteres y el mismo `GRANT` de insertar y actualizar para `authenticated`.
 
 **Tipo de punto nuevo = valor nuevo en `icono_punto`, en la misma tanda.** La
 app no controla el tipo por su cuenta: si la lista de la base no lo tiene, el

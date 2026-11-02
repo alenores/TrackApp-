@@ -20,8 +20,11 @@ la bicicleta o el kayak a pie durante una sección corta.
 
 - Cada ruta se divide en partes independientes marcando inicio y final en el
   editor de computadora.
-- Cada parte tiene condición de paso: `por_explorar`, `transitable`, `a_pie` o
-  `sin_paso`. La línea sin paso permanece visible con X negras.
+- Cada parte tiene condición de paso: `por_explorar`, `tentativo`,
+  `transitable`, `a_pie` o `sin_paso`. La línea sin paso permanece visible con
+  X negras. **Tentativo** (Ale, 2026-11-01): posible camino todavía sin
+  comprobar bien; se dibuja entrecortado como por explorar, pero más fino y
+  con signos «?».
 - La complejidad local es `facil`, `media`, `dificil` o sin clasificar. Verde,
   amarillo y rojo indican solamente complejidad. Una X nunca asigna rojo.
 - Una parte por explorar puede tener una complejidad estimada; si no la tiene,

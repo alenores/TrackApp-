@@ -64,9 +64,12 @@ adentro de un sector en siete centímetros no se puede.
 
 **Todos los mapas de la app tienen un botón para abrirlos a pantalla completa**,
 abajo a la derecha, al alcance del pulgar. Se cierra con la cruz y también con
-el botón físico de atrás. Al abrirse y al cerrarse **se vuelve a encuadrar lo
-que hay que mirar**: conservar el acercamiento dejaría la ruta como una
-estampilla en el medio de la pantalla grande.
+el botón físico de atrás.
+
+Al abrirse y al cerrarse **se conservan el centro y el zoom** (Ale, 2026-11-01):
+el foco no se pierde. Agrandar muestra más alrededor del mismo lugar; achicar
+deja el mismo punto en el medio. Antes se volvía a encuadrar el contenido «que
+hay que mirar», y eso sacaba al usuario de donde estaba mirando.
 
 La pantalla de navegar no lo lleva: ya está en grande.
 

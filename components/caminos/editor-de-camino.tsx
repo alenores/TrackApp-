@@ -387,7 +387,7 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
                       <div className="space-y-2">
                         <p className="text-base font-semibold text-texto">Condición para {mostrarActividad(actividad).etiqueta}</p>
                         <div className="flex flex-wrap gap-2">
-                          {(["por_explorar", "transitable", "a_pie", "sin_paso"] as CondicionDePaso[]).map((paso) => <Boton key={paso}
+                          {(["por_explorar", "tentativo", "transitable", "a_pie", "sin_paso"] as CondicionDePaso[]).map((paso) => <Boton key={paso}
                             variante={pasoElegido === paso ? "principal" : "secundario"}
                             aria-pressed={pasoElegido === paso} disabled={ocupado}
                             onClick={() => elegirEnLaParte(paso, complejidadElegida)}>

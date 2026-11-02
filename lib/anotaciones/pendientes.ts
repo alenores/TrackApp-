@@ -25,6 +25,8 @@ export type DatosDeLaMarca = {
   tipo: TipoAnotacion;
   icono: IconoPunto | null;
   color: string | null;
+  /** Solo en puntos. Vacío en trazos. */
+  titulo: string | null;
   comentario: string | null;
   geometria: Point | LineString;
   /** Cuánto podía errar el GPS. `null` si se marcó a mano o es un trazo. */

@@ -51,7 +51,7 @@ afterEach(() => { act(() => raiz.unmount()); contenedor.remove(); });
 
 async function completarUnPunto() {
   await act(async () => anotar.empezarUnPunto());
-  await act(async () => { anotar.setCoordenada(COORDENADA); anotar.setComentario("Cruce del arroyo"); anotar.setIcono("arroyo"); });
+  await act(async () => { anotar.setCoordenada(COORDENADA); anotar.setTitulo("Cruce del arroyo"); anotar.setIcono("arroyo"); });
 }
 
 describe("marcar puntos", () => {
@@ -62,10 +62,11 @@ describe("marcar puntos", () => {
     expect(anotar.enfoque).toBeNull();
     expect(anotar.enElMapa.at(-1)?.geometria).toEqual({ type: "Point", coordinates: [-64.812345678, -31.412345678] });
     expect(dobles.crear).not.toHaveBeenCalled();
-    await act(async () => anotar.setIcono("sitio"));
+    await act(async () => { anotar.setIcono("sitio"); anotar.setTitulo("Sitio marcado"); });
     await act(async () => { await anotar.guardar(); });
     expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({
       geometria: { type: "Point", coordinates: [-64.812345678, -31.412345678] },
+      titulo: "Sitio marcado",
     }));
     await act(async () => anotar.empezarUnPunto());
     expect(anotar.coordenada).toBe("");
@@ -78,8 +79,9 @@ describe("marcar puntos", () => {
     expect(previa.geometria.coordinates[0]).toBeCloseTo(-64.32036, 5);
     expect(previa.geometria.coordinates[1]).toBeCloseTo(-31.27528, 5);
     await act(async () => { await anotar.guardar(); });
-    expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({ sectorId: null, tipo: "punto", icono: "arroyo", comentario: "Cruce del arroyo" }));
+    expect(dobles.crear).toHaveBeenCalledWith(expect.objectContaining({ sectorId: null, tipo: "punto", icono: "arroyo", titulo: "Cruce del arroyo", comentario: null }));
     expect(anotar.coordenada).toBe("");
+    expect(anotar.titulo).toBe("");
     expect(anotar.comentario).toBe("");
     expect(anotar.seleccionado).toBeNull();
     expect(anotar.borrador).toBeNull();
@@ -241,7 +243,7 @@ describe("dibujar trazos", () => {
   it("abre un trazo guardado con su línea y permite volver a dibujarlo", async () => {
     dobles.anotaciones = [{
       id: 40, sectorId: 9, perfilId: "p", deAdministrador: true, tipo: "trazo", origen: "manual",
-      icono: null, color: "#f59e0b", atencion: false, comentario: "Huella", fotoUrl: null, fotoChicaUrl: null,
+      icono: null, color: "#f59e0b", atencion: false, titulo: null, comentario: "Huella", fotoUrl: null, fotoChicaUrl: null,
       geometria: { type: "LineString", coordinates: [[-64.6, -31.6], [-64.5, -31.5]] },
       marcadaEn: "", precisionGpsMetros: null, creadoEn: "", actualizadoEn: "",
     }];

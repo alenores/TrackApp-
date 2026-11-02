@@ -226,13 +226,17 @@ function elementosParaBuscar(
     })),
     ...anotaciones.map((anotacion): ElementoBuscable => {
       const nombre = queEs(anotacion);
+      const titulo =
+        anotacion.tipo === "punto"
+          ? anotacion.titulo?.trim() || anotacion.comentario?.trim() || ""
+          : anotacion.comentario?.trim() || "";
       const comentario = anotacion.comentario?.trim() ?? "";
       return {
         capa: "detalles",
         id: anotacion.id,
-        titulo: comentario || nombre,
-        aclaracion: comentario ? nombre : "Detalle",
-        textos: comentario ? [comentario, nombre] : [nombre],
+        titulo: titulo || nombre,
+        aclaracion: titulo ? nombre : "Detalle",
+        textos: [titulo, comentario, nombre].filter(Boolean),
         grupo: anotacion.tipo === "trazo" ? "trazo" : "punto",
       };
     }),

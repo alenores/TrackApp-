@@ -403,6 +403,8 @@ export type DatosDeAnotacion = {
    * deja el que tenía: lo que se trae de afuera no lo toca.
    */
   atencion?: boolean;
+  /** Solo en puntos: el nombre corto del mapa. */
+  titulo?: string | null;
   comentario: string | null;
   geometria: Point | LineString;
   /** La foto nueva, cuando el usuario eligió una. */
@@ -416,6 +418,9 @@ export type DatosDeAnotacion = {
 function revisarAnotacion(datos: DatosDeAnotacion): string | null {
   if (datos.tipo === "punto") {
     if (!datos.icono) return "Elegí qué es el punto que estás marcando.";
+    if (!limpiar(datos.titulo ?? null)) {
+      return "Ponele un título al punto: es lo que se ve en el mapa.";
+    }
     if (datos.geometria.type !== "Point") {
       return "Un punto tiene que marcarse en un solo lugar del mapa.";
     }
@@ -457,6 +462,7 @@ export async function crearAnotacion(
       icono: datos.tipo === "punto" ? datos.icono : null,
       atencion: datos.tipo === "punto" && datos.atencion === true,
       color: datos.tipo === "trazo" ? datos.color : null,
+      titulo: datos.tipo === "punto" ? limpiar(datos.titulo ?? null) : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,
     })
@@ -541,6 +547,7 @@ export async function crearAnotacionesEnTanda(
         tipo: datos.tipo,
         icono: datos.tipo === "punto" ? datos.icono : null,
         color: datos.tipo === "trazo" ? datos.color : null,
+        titulo: datos.tipo === "punto" ? limpiar(datos.titulo ?? null) : null,
         comentario: limpiar(datos.comentario),
         geometria: datos.geometria,
       })),
@@ -600,6 +607,7 @@ export async function editarAnotacion(
       icono: datos.tipo === "punto" ? datos.icono : null,
       ...(datos.atencion === undefined ? {} : { atencion: datos.tipo === "punto" && datos.atencion }),
       color: datos.tipo === "trazo" ? datos.color : null,
+      titulo: datos.tipo === "punto" ? limpiar(datos.titulo ?? null) : null,
       comentario: limpiar(datos.comentario),
       geometria: datos.geometria,
       ...(fotos ?? {}),
@@ -695,6 +703,7 @@ export async function traerTranquerasYAlambradosDeLaZona(zonaId: number): Promis
         tipo: barrera.tipo,
         icono: barrera.icono,
         color: barrera.color,
+        titulo: barrera.titulo,
         comentario: barrera.comentario,
         geometria: barrera.geometria,
       })))

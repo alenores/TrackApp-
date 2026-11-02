@@ -71,8 +71,9 @@ describe("desde OpenStreetMap", () => {
     const tranqueras = candidatas.filter((cada) => cada.icono === "tranquera");
     const alambrados = candidatas.filter((cada) => cada.tipo === "trazo");
     expect(tranqueras).toHaveLength(2);
-    expect(tranqueras[0].comentario).toBe("Tranquera");
-    expect(tranqueras[1].comentario).toBe("Tranquera: La Estancia");
+    expect(tranqueras[0].titulo).toBe("Tranquera");
+    expect(tranqueras[0].comentario).toBeNull();
+    expect(tranqueras[1].titulo).toBe("Tranquera: La Estancia");
     expect(alambrados).toHaveLength(1);
     expect(alambrados[0].color).toBe(TRAZO.limite.color);
     expect(alambrados[0].comentario).toBe("Alambrado");

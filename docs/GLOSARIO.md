@@ -208,16 +208,18 @@ estacionamiento, sitio, campamento, casa). Campamento es una carpa, el mismo
 dibujo que los campings que trae el mapa: es el mismo concepto. Casa lleva
 chimenea y ventana, para no confundirse con el refugio.
 Puede llevar **Atención**.
-Puede llevar comentario y foto. Se ubica tocando el mapa propio o pegando la
-coordenada de Google Earth. No pertenece a ningún sector: se carga desde
-**Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las demás
-marcas, aunque no se haya bajado ningún mapa. Ver decisiones 027 y 052.
+Lleva **título** (lo que se ve en el mapa al acercarse) y **descripción**
+(solo en la ficha), y puede llevar foto. Se ubica tocando el mapa propio o
+pegando la coordenada de Google Earth. No pertenece a ningún sector: se carga
+desde **Mapas → Marcas**, y lo mismo vale para un trazo. Se descarga con las
+demás marcas, aunque no se haya bajado ningún mapa. Ver decisiones 027 y 052.
 
 **Atención**
 Marca de un punto que dice «mirá esto»: no es «prohibido pasar» ni «peligro».
-El ícono se ve con contorno rojo en todos los mapas y la ficha dice «Atención»;
-el motivo va en la descripción. Se pone y se saca con señal desde Mapas, nunca
-navegando. No afecta Caminos, Circuitos ni trazos. Ver decisión 078.
+El ícono se ve con contorno rojo en todos los mapas; la ficha también lleva
+contorno rojo y un signo de interrogación rojo junto al título. El motivo va
+en la descripción. Se pone y se saca con señal desde Mapas, nunca navegando.
+No afecta Caminos, Circuitos ni trazos. Ver decisión 078.
 
 **Trazo**
 Marca de una línea dibujada a mano uniendo varios puntos, con color
@@ -386,9 +388,11 @@ partes de cada **Camino**.
 
 **Condición de paso**
 Lo que se sabe sobre atravesar una parte: **por explorar** (línea entrecortada),
-**transitable** en la actividad (línea continua), **a pie con equipo** (línea
-continua con triangulitos chicos) o **sin paso** (línea visible con X). En una ruta solo de bicicleta o
-solo de kayak, la pantalla usa esos nombres concretos.
+**tentativo** (posible camino todavía sin comprobar bien: línea entrecortada más
+fina, con signos «?»), **transitable** en la actividad (línea continua), **a pie
+con equipo** (línea continua con triangulitos chicos) o **sin paso** (línea
+visible con X). En una ruta solo de bicicleta o solo de kayak, la pantalla usa
+esos nombres concretos.
 
 **Complejidad de una parte**
 Fácil (verde), media (amarillo) o difícil (rojo). Es independiente de la condición

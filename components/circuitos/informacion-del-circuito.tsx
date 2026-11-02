@@ -35,8 +35,12 @@ const COLOR: Record<EstiloDeTramo, string> = {
 };
 
 function guionesDe(paso: CondicionDePaso | null): string | undefined {
-  if (paso === "por_explorar") return "8 6";
+  if (paso === "por_explorar" || paso === "tentativo") return "8 6";
   return undefined;
+}
+
+function grosorDe(paso: CondicionDePaso | null): number {
+  return paso === "tentativo" ? 3 : 6;
 }
 
 function Miniatura({ segmentos, aqui }: { segmentos: SegmentoDeMiniatura[]; aqui: Position | null }) {
@@ -53,7 +57,7 @@ function Miniatura({ segmentos, aqui }: { segmentos: SegmentoDeMiniatura[]; aqui
               points={trazo.puntos.map(([x, y]) => `${x},${y}`).join(" ")}
               fill="none"
               stroke={COLOR[trazo.estilo]}
-              strokeWidth={6}
+              strokeWidth={grosorDe(trazo.paso)}
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeDasharray={guionesDe(trazo.paso)}
@@ -80,6 +84,21 @@ function Miniatura({ segmentos, aqui }: { segmentos: SegmentoDeMiniatura[]; aqui
                 paintOrder="stroke"
               >
                 ✕
+              </text>
+            ) : null}
+            {trazo.interrogante ? (
+              <text
+                x={trazo.interrogante[0]}
+                y={trazo.interrogante[1] - 6}
+                textAnchor="middle"
+                fontSize={15}
+                fontWeight={800}
+                fill="var(--parte-x)"
+                stroke="var(--parte-x-halo)"
+                strokeWidth={3}
+                paintOrder="stroke"
+              >
+                ?
               </text>
             ) : null}
           </g>

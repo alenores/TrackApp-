@@ -244,7 +244,10 @@ function queMostrar(
   const anotacion = detalles.get(marca.id);
   if (!anotacion) return { titulo: NOMBRE_DE_LA_CLASE[marca.grupo].una, detalle: "", icono: null };
   return {
-    titulo: anotacion.comentario?.trim() || queEs(anotacion),
+    titulo:
+      anotacion.tipo === "punto"
+        ? anotacion.titulo?.trim() || anotacion.comentario?.trim() || queEs(anotacion)
+        : anotacion.comentario?.trim() || queEs(anotacion),
     detalle: [queEs(anotacion), deDondeSalio(anotacion)].join(" · "),
     icono: <IconoDeAnotacion anotacion={anotacion} />,
   };

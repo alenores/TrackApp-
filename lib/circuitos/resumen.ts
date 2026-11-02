@@ -8,9 +8,9 @@ import { partesDelCircuitoEnElMapa, type PropiedadDeParteDelCircuito } from "@/l
 import { exito, falla, type Resultado } from "@/lib/datos/resultado";
 
 type Medida = { metros: number; porcentaje: number };
-type Paso = "por_explorar" | "transitable" | "a_pie" | "sin_paso";
+type Paso = "por_explorar" | "tentativo" | "transitable" | "a_pie" | "sin_paso";
 type Complejidad = "facil" | "media" | "dificil" | "sin_clasificar";
-type TipoDeConsideracion = "por_explorar" | "a_pie" | "sin_paso" | "otra_actividad" | "camino_retirado";
+type TipoDeConsideracion = "por_explorar" | "tentativo" | "a_pie" | "sin_paso" | "otra_actividad" | "camino_retirado";
 
 export type ConsideracionDelCircuito = {
   tipo: TipoDeConsideracion;
@@ -29,6 +29,7 @@ export type ResumenDelCircuito = {
   complejidades: Record<Complejidad, Medida>;
   deOtraActividad: Medida;
   tramosPorExplorar: number;
+  tramosTentativos: number;
   tramosAPie: number;
   tramosSinPaso: number;
   tramosDeOtraActividad: number;
@@ -38,9 +39,9 @@ export type ResumenDelCircuito = {
   consideraciones: ConsideracionDelCircuito[];
 };
 
-const PASOS: readonly Paso[] = ["por_explorar", "transitable", "a_pie", "sin_paso"];
+const PASOS: readonly Paso[] = ["por_explorar", "tentativo", "transitable", "a_pie", "sin_paso"];
 const COMPLEJIDADES: readonly Complejidad[] = ["facil", "media", "dificil", "sin_clasificar"];
-const TIPOS: readonly TipoDeConsideracion[] = ["por_explorar", "a_pie", "sin_paso", "otra_actividad", "camino_retirado"];
+const TIPOS: readonly TipoDeConsideracion[] = ["por_explorar", "tentativo", "a_pie", "sin_paso", "otra_actividad", "camino_retirado"];
 
 function porcentaje(metros: number, total: number): number {
   return total > 0 ? Math.round((metros / total) * 1000) / 10 : 0;
@@ -68,7 +69,7 @@ export function resumirCircuito(
   if (!dibujo.ok) return dibujo;
 
   const metrosPorPaso: Record<Paso, number> = {
-    por_explorar: 0, transitable: 0, a_pie: 0, sin_paso: 0,
+    por_explorar: 0, tentativo: 0, transitable: 0, a_pie: 0, sin_paso: 0,
   };
   const metrosPorComplejidad: Record<Complejidad, number> = {
     facil: 0, media: 0, dificil: 0, sin_clasificar: 0,
@@ -139,6 +140,7 @@ export function resumirCircuito(
     pasos, complejidades,
     deOtraActividad: medir(metrosDeOtraActividad, metrosTotales),
     tramosPorExplorar: contar("por_explorar"),
+    tramosTentativos: contar("tentativo"),
     tramosAPie: contar("a_pie"),
     tramosSinPaso: contar("sin_paso"),
     tramosDeOtraActividad: contar("otra_actividad"),

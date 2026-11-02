@@ -16,7 +16,7 @@ vi.mock("@/hooks/use-datos-de-la-app", () => ({
         id: 3, tipo: "punto", icono: "refugio", atencion: false, color: null,
         geometria: { type: "Point", coordinates: [-64.79, -31.39] },
         sectorId: null, perfilId: "otro", deAdministrador: false, origen: "manual",
-        comentario: "Refugio viejo", fotoUrl: null, fotoChicaUrl: null,
+        titulo: "Refugio viejo", comentario: null, fotoUrl: null, fotoChicaUrl: null,
         marcadaEn: "", precisionGpsMetros: null, creadoEn: "", actualizadoEn: "",
       }],
       zonas: [],

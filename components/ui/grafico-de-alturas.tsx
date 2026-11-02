@@ -49,8 +49,12 @@ const COLOR: Record<EstiloDeTramo, string> = {
 };
 
 function trazoDe(paso: CondicionDePaso | null | undefined): string | undefined {
-  if (paso === "por_explorar") return "8 6";
+  if (paso === "por_explorar" || paso === "tentativo") return "8 6";
   return undefined;
+}
+
+function grosorDe(paso: CondicionDePaso | null | undefined): number {
+  return paso === "tentativo" ? 2.5 : 4;
 }
 
 /** Un triangulito chico cada tanto, sobre la línea de a pie con equipo. */
@@ -199,7 +203,7 @@ export function GraficoDeAlturas({ perfil, tramos, aquiM = null, alSenalar, enNa
                   points={puntos.map((punto) => `${x(punto.distanciaM)},${y(punto.alturaM)}`).join(" ")}
                   fill="none"
                   stroke={tramo.estilo ? COLOR[tramo.estilo] : "var(--texto)"}
-                  strokeWidth={4}
+                  strokeWidth={grosorDe(tramo.paso)}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeDasharray={trazoDe(tramo.paso)}
@@ -228,6 +232,22 @@ export function GraficoDeAlturas({ perfil, tramos, aquiM = null, alSenalar, enNa
                     paintOrder="stroke"
                   >
                     ✕
+                  </text>
+                )) : null}
+                {tramo.paso === "tentativo" ? puntos.filter((_, i) => i % Math.max(1, Math.round(puntos.length / 3)) === 0).map((punto) => (
+                  <text
+                    key={`q${punto.distanciaM}`}
+                    x={x(punto.distanciaM)}
+                    y={y(punto.alturaM) - 8}
+                    textAnchor="middle"
+                    fontSize={letra}
+                    fontWeight={800}
+                    fill="var(--parte-x)"
+                    stroke="var(--parte-x-halo)"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                  >
+                    ?
                   </text>
                 )) : null}
               </g>

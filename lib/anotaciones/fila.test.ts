@@ -5,7 +5,7 @@ import { leerFilaDeAnotacion } from "@/lib/anotaciones/fila";
 
 const fila = {
   id: 5, sector_id: null, perfil_id: "abc", tipo: "punto", origen: "manual", icono: "fuente", color: null,
-  atencion: false, comentario: "Agua", foto_url: null, foto_chica_url: null,
+  atencion: false, titulo: "Ojo de agua", comentario: "Agua", foto_url: null, foto_chica_url: null,
   geometria: { type: "Point", coordinates: [-64.8, -31.4] }, marcada_en: "2026-10-31T12:00:00Z",
   precision_gps_metros: 3, creado_en: "2026-10-31T12:00:00Z", actualizado_en: "2026-10-31T12:00:00Z",
 };

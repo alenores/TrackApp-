@@ -12,9 +12,10 @@ identidad»).
   ser un dato o un lugar donde el dueño no deja pasar; una tranquera puede ser
   común o imposible. El motivo se escribe en la descripción del punto.
 - **Se ve como un contorno rojo alrededor del ícono**, en todos los mapas,
-  también en las dos navegaciones, y en las listas. La ficha del punto dice
-  «Atención». Es una excepción aceptada a «un solo rojo para borrar»: se usa
-  ese mismo rojo, no otro.
+  también en las dos navegaciones, y en las listas. La ficha del punto lleva
+  el mismo contorno rojo y un signo de interrogación rojo a la izquierda del
+  título; no hay una tarjeta que diga «Atención». Es una excepción aceptada a
+  «un solo rojo para borrar»: se usa ese mismo rojo, no otro.
 - En el mapa el marco nunca se esconde por chocar con otro ícono: un aviso no
   desaparece antes que un dato.
 - **Es un dato aislado.** No cambia Caminos, Circuitos, trazos, condición de

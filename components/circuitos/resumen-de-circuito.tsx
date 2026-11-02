@@ -20,6 +20,7 @@ function textoDeConsideracion(cada: ConsideracionDelCircuito): string {
   const actividad = mostrarActividad(cada.actividadDelCamino).etiqueta;
   switch (cada.tipo) {
     case "por_explorar": return `${cada.caminoNombre}: por explorar para ${actividad} (${kilometros(cada.metros)}).`;
+    case "tentativo": return `${cada.caminoNombre}: tentativo para ${actividad}: posible camino, todavía sin comprobar bien (${kilometros(cada.metros)}).`;
     case "a_pie": return `${cada.caminoNombre}: hay que avanzar a pie con el equipo en ${actividad} (${kilometros(cada.metros)}).`;
     case "sin_paso": return `${cada.caminoNombre}: sin paso para ${actividad} (${kilometros(cada.metros)}).`;
     case "otra_actividad": return `${cada.caminoNombre}: figura para ${actividad}, otra actividad distinta de la del Circuito (${kilometros(cada.metros)}).`;
@@ -50,7 +51,7 @@ export function ResumenDeCircuito({ resultado }: { resultado: Resultado<ResumenD
         <InsigniaDeActividad tipo={datos.actividad} tamano="mediano" />
       </div>
       <p className="text-base text-texto">{porciento(datos.propia.porcentaje)} dibujado solo para este Circuito · {porciento(datos.sobreCaminos.porcentaje)} tomado de Caminos.</p>
-      <p className="text-base text-texto">En los Caminos: por explorar {kilometros(datos.pasos.por_explorar.metros)} ({datos.tramosPorExplorar} {datos.tramosPorExplorar === 1 ? "tramo" : "tramos"}); transitables {kilometros(datos.pasos.transitable.metros)}; a pie con el equipo {kilometros(datos.pasos.a_pie.metros)} ({datos.tramosAPie} {datos.tramosAPie === 1 ? "tramo" : "tramos"}); sin paso {kilometros(datos.pasos.sin_paso.metros)} ({datos.tramosSinPaso} {datos.tramosSinPaso === 1 ? "tramo" : "tramos"}).</p>
+      <p className="text-base text-texto">En los Caminos: por explorar {kilometros(datos.pasos.por_explorar.metros)} ({datos.tramosPorExplorar} {datos.tramosPorExplorar === 1 ? "tramo" : "tramos"}); tentativos {kilometros(datos.pasos.tentativo.metros)} ({datos.tramosTentativos} {datos.tramosTentativos === 1 ? "tramo" : "tramos"}); transitables {kilometros(datos.pasos.transitable.metros)}; a pie con el equipo {kilometros(datos.pasos.a_pie.metros)} ({datos.tramosAPie} {datos.tramosAPie === 1 ? "tramo" : "tramos"}); sin paso {kilometros(datos.pasos.sin_paso.metros)} ({datos.tramosSinPaso} {datos.tramosSinPaso === 1 ? "tramo" : "tramos"}).</p>
       <p className="text-base text-texto">Dificultad sobre el Circuito total: verde {porciento(datos.complejidades.facil.porcentaje)}, amarillo {porciento(datos.complejidades.media.porcentaje)}, rojo {porciento(datos.complejidades.dificil.porcentaje)}.</p>
       {datos.tramosDeOtraActividad > 0 ? <p className="text-base text-texto">{datos.tramosDeOtraActividad} {datos.tramosDeOtraActividad === 1 ? "tramo usa" : "tramos usan"} Caminos de otra actividad. Mirá el detalle antes de salir.</p> : null}
       {datos.tramosDeCaminosRetirados > 0 ? <p className="text-base text-texto">{datos.tramosDeCaminosRetirados} {datos.tramosDeCaminosRetirados === 1 ? "tramo pertenece" : "tramos pertenecen"} a Caminos retirados de Mapas.</p> : null}

@@ -90,7 +90,7 @@ de la zona sigue mostrando sus sectores. Los nombres y
 los íconos de los puntos aparecen gradualmente al acercarse; con poco zoom casi
 no se muestran y los íconos que se pisan se ocultan. Ver
 `decisiones/029-mapa-general-de-cordoba.md`. En cualquier mapa, tocar un punto
-abre su ficha con el nombre del ícono, el comentario y la foto disponible. En
+abre su ficha con el título del punto, la descripción y la foto disponible. En
 PC, el cursor cambia a una mano al pasar por encima.
 
 ### Partes de una ruta en el mapa
@@ -98,9 +98,9 @@ PC, el cursor cambia a una mano al pasar por encima.
 Cada parte combina dos señales independientes: el **color** expresa su
 complejidad local (verde, amarillo, rojo o gris si todavía no se clasificó),
 y la **forma de la línea** expresa cómo se pasa. Por explorar va entrecortada,
-transitable va continua, a pie con equipo va continua con triangulitos chicos
-(parecidos a las X, pero más pequeños), y sin paso conserva su
-línea con X negras. Esas X se achican al alejarse, como el resto de las
+tentativo va entrecortada pero más fina y con signos «?», transitable va
+continua, a pie con equipo va continua con triangulitos chicos (parecidos a las
+X, pero más pequeños), y sin paso conserva su línea con X negras. Esas X se achican al alejarse, como el resto de las
 marcas: de lejos no se amontonan en una mancha. Una X no vuelve roja la línea
 por sí sola. Al tocar un Camino —en Consultas, en la navegación libre y al
 navegar un Circuito— se abre la misma ficha: arriba dice Consulta Camino y

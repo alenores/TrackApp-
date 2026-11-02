@@ -29,9 +29,11 @@ export type TrazoDeMiniatura = {
   cruz: [number, number] | null;
   /** El medio del tramo, si es a pie con equipo: ahí va el triangulito. */
   triangulo: [number, number] | null;
+  /** El medio del tramo, si es tentativo: ahí va el signo de interrogación. */
+  interrogante: [number, number] | null;
 };
 
-const PASOS: readonly CondicionDePaso[] = ["por_explorar", "transitable", "a_pie", "sin_paso"];
+const PASOS: readonly CondicionDePaso[] = ["por_explorar", "tentativo", "transitable", "a_pie", "sin_paso"];
 
 function esPaso(valor: string | null): valor is CondicionDePaso {
   return PASOS.some((paso) => paso === valor);
@@ -113,6 +115,7 @@ export function dibujarMiniatura(
       paso: segmento.paso,
       cruz: segmento.paso === "sin_paso" ? cruz : null,
       triangulo: segmento.paso === "a_pie" ? cruz : null,
+      interrogante: segmento.paso === "tentativo" ? cruz : null,
     }];
   });
   if (trazos.length === 0) return null;

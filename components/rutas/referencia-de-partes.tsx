@@ -4,6 +4,7 @@ import { BotonCerrar } from "@/components/ui/boton-redondo";
 
 export function nombreDelPaso(paso: PasoDeParte, actividades: ActividadRuta[] = []): string {
   if (paso === "por_explorar") return "Por explorar";
+  if (paso === "tentativo") return "Tentativo";
   if (paso === "sin_paso") return "Sin paso";
   const sola = actividades.length === 1 ? actividades[0] : null;
   if (paso === "transitable") {
@@ -40,6 +41,16 @@ export function MuestraDeComplejidad({ complejidad }: { complejidad: Complejidad
 /** El dibujo de la línea de una condición de paso, como se ve en el mapa. */
 export function MuestraDeLinea({ paso }: { paso: PasoDeParte }) {
   if (paso === "sin_paso") return <span aria-hidden className="w-6 shrink-0 text-center leading-none">×</span>;
+  if (paso === "tentativo") {
+    return (
+      <span aria-hidden className="inline-flex w-6 shrink-0 items-center justify-center gap-0.5">
+        <svg viewBox="0 0 12 4" className="h-1 w-3" fill="none">
+          <line x1="1" y1="2" x2="11" y2="2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="3 2" />
+        </svg>
+        <span className="text-xs font-bold leading-none">?</span>
+      </span>
+    );
+  }
   if (paso === "a_pie") {
     return (
       <svg aria-hidden viewBox="0 0 24 8" className="h-2 w-6 shrink-0" fill="currentColor">
@@ -89,6 +100,7 @@ export function ReferenciaDePartes({ navegando = false, conPartesPropias = false
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-semibold">Línea:</span>
         <span>┄ Por explorar</span>
+        <span className="inline-flex items-center gap-1"><MuestraDeLinea paso="tentativo" /> Tentativo</span>
         <span>━ Transitable</span>
         <span className="inline-flex items-center gap-1"><MuestraDeLinea paso="a_pie" /> A pie con equipo</span>
         <span>× Sin paso</span>

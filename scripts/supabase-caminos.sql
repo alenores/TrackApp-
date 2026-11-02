@@ -268,7 +268,7 @@ begin
       clasificacion := parte -> 'por_actividad' -> actividad;
       if clasificacion is null
         or jsonb_typeof(clasificacion) <> 'object'
-        or coalesce(clasificacion ->> 'paso', '') not in ('por_explorar', 'transitable', 'a_pie', 'sin_paso')
+        or coalesce(clasificacion ->> 'paso', '') not in ('por_explorar', 'tentativo', 'transitable', 'a_pie', 'sin_paso')
         or coalesce(jsonb_typeof(clasificacion -> 'complejidad'), '') not in ('string', 'null')
         or (jsonb_typeof(clasificacion -> 'complejidad') = 'string'
             and (clasificacion ->> 'complejidad') not in ('facil', 'media', 'dificil'))

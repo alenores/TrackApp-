@@ -20,6 +20,8 @@ export type AnotacionParaImportar = {
   tipo: "punto" | "trazo";
   icono: IconoPunto | null;
   color: string | null;
+  /** Solo en puntos. */
+  titulo: string | null;
   comentario: string | null;
   geometria: Point | LineString;
 };
@@ -93,7 +95,8 @@ export function candidatasDeOsm(respuesta: RespuestaDeOsm): Array<AnotacionParaI
         tipo: "punto",
         icono: "tranquera",
         color: null,
-        comentario: nombre ? `Tranquera: ${nombre}` : "Tranquera",
+        titulo: nombre ? `Tranquera: ${nombre}` : "Tranquera",
+        comentario: null,
         geometria: { type: "Point", coordinates: [elemento.lon, elemento.lat] },
       };
     }
@@ -103,6 +106,7 @@ export function candidatasDeOsm(respuesta: RespuestaDeOsm): Array<AnotacionParaI
         tipo: "trazo",
         icono: null,
         color: ALAMBRADO,
+        titulo: null,
         comentario: nombre ? `Alambrado: ${nombre}` : "Alambrado",
         geometria: {
           type: "LineString",

@@ -31,7 +31,7 @@ import {
  * o clasificar no lo convierte en otro.
  */
 
-export const CONDICIONES_DE_PASO = ["por_explorar", "transitable", "a_pie", "sin_paso"] as const;
+export const CONDICIONES_DE_PASO = ["por_explorar", "tentativo", "transitable", "a_pie", "sin_paso"] as const;
 export type CondicionDePaso = (typeof CONDICIONES_DE_PASO)[number];
 
 /** Sin clasificar no es una cuarta complejidad: es que todavía no se evaluó (`null`). */
@@ -258,7 +258,7 @@ export function clasificarTramo<T extends Camino>(
     return falla(`Este Camino no está marcado para ${nombreDe(actividad)}. Sumá esa actividad antes de clasificarla.`);
   }
   if (cambio.paso !== undefined && !CONDICIONES_DE_PASO.includes(cambio.paso)) {
-    return falla("Esa condición de paso no existe. Elegí por explorar, transitable, a pie o sin paso.");
+    return falla("Esa condición de paso no existe. Elegí por explorar, tentativo, transitable, a pie o sin paso.");
   }
   if (cambio.complejidad !== undefined && cambio.complejidad !== null && !COMPLEJIDADES_DE_PARTE.includes(cambio.complejidad)) {
     return falla("Esa complejidad no existe. Elegí fácil, media, difícil o sin clasificar.");

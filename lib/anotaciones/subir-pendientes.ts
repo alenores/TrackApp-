@@ -56,6 +56,7 @@ function columnasDe(datos: DatosDeLaMarca) {
     tipo: datos.tipo,
     icono: datos.tipo === "punto" ? datos.icono : null,
     color: datos.tipo === "trazo" ? datos.color : null,
+    titulo: datos.tipo === "punto" ? datos.titulo?.trim() || null : null,
     comentario: datos.comentario?.trim() || null,
     geometria: datos.geometria,
     precision_gps_metros: datos.precisionGpsMetros,

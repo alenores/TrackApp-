@@ -135,6 +135,8 @@ export function FormularioDeAnotacion({ anotar }: { anotar: Anotar }) {
             alCambiarIcono={anotar.setIcono}
             color={borrador.tipo === "trazo" ? borrador.color : null}
             alCambiarColor={anotar.setColor}
+            titulo={anotar.titulo}
+            alCambiarTitulo={anotar.setTitulo}
             comentario={anotar.comentario}
             alCambiarComentario={anotar.setComentario}
             foto={anotar.foto}

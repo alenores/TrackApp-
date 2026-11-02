@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { IconoDeAnotacion } from "@/components/anotaciones/icono-de-anotacion";
 import { useFotoDelCelular } from "@/hooks/use-foto-del-celular";
 import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import { tituloDelPunto } from "@/lib/anotaciones/titulo-del-punto";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
 /**
@@ -39,6 +40,13 @@ function cuando(fecha: string): string | null {
   return momento.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function tituloDeLaFicha(anotacion: AnotacionEnPantalla): string {
+  if (anotacion.tipo === "punto") {
+    return tituloDelPunto(anotacion) ?? (anotacion.icono ? COMO_SE_LLAMA[anotacion.icono] : "Punto");
+  }
+  return "Trazo";
+}
+
 export function FichaDeAnotacion({
   anotacion,
   alCerrar,
@@ -50,11 +58,8 @@ export function FichaDeAnotacion({
   const foto = useFotoDelCelular(anotacion?.fotoChicaUrl ?? null);
   const [fotoRemotaFallida, setFotoRemotaFallida] = useState<string | null>(null);
 
-  const titulo = anotacion?.icono
-    ? COMO_SE_LLAMA[anotacion.icono]
-    : anotacion?.tipo === "trazo"
-      ? "Trazo"
-      : "Marca";
+  const titulo = anotacion ? tituloDeLaFicha(anotacion) : "Marca";
+  const conAtencion = anotacion?.tipo === "punto" && anotacion.atencion;
 
   // Tiene foto grande pero no chica: se subió antes de que existiera la chica.
   const tieneSoloLaGrande = Boolean(anotacion?.fotoUrl) && !anotacion?.fotoChicaUrl;
@@ -64,12 +69,37 @@ export function FichaDeAnotacion({
   const falloDeFotoRemota = fotoRemotaNecesaria && fotoRemotaFallida === anotacion?.fotoUrl;
   const marcadaEl = anotacion ? cuando(anotacion.marcadaEn) : null;
 
+  // En puntos con título propio, la descripción es el comentario. En puntos
+  // viejos sin título, el comentario ya se usó como título: no se repite.
+  // En trazos el comentario sigue siendo la descripción.
+  const descripcion =
+    anotacion?.tipo === "punto"
+      ? anotacion.titulo?.trim()
+        ? anotacion.comentario?.trim() || null
+        : null
+      : anotacion?.comentario?.trim() || null;
+
   return (
     <Emergente
       abierto={anotacion !== null}
       alCerrar={alCerrar}
       titulo={titulo}
-      iconoDelTitulo={anotacion ? <IconoDeAnotacion anotacion={anotacion} /> : undefined}
+      iconoDelTitulo={
+        anotacion ? (
+          <>
+            <IconoDeAnotacion anotacion={anotacion} />
+            {conAtencion ? (
+              <span
+                aria-label="Atención"
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-lg font-bold leading-none text-rojo"
+              >
+                ?
+              </span>
+            ) : null}
+          </>
+        ) : undefined
+      }
+      contornoRojo={conAtencion}
       ancho="amplio"
       alCostado
       acciones={
@@ -79,13 +109,6 @@ export function FichaDeAnotacion({
       }
     >
       <div className="space-y-3">
-        {anotacion?.atencion ? (
-          // El mismo rojo del contorno en el mapa. El motivo va en la descripción.
-          <p className="rounded-xl border-2 border-rojo px-3 py-2 text-lg font-semibold text-texto">
-            Atención
-          </p>
-        ) : null}
-
         {anotacion?.subida ? (
           <p
             role="status"
@@ -101,8 +124,8 @@ export function FichaDeAnotacion({
         ) : null}
 
         {/* La descripción va primero. Sin descripción, no se dice nada. */}
-        {anotacion?.comentario ? (
-          <p className="text-lg leading-7 text-texto">{anotacion.comentario}</p>
+        {descripcion ? (
+          <p className="text-lg leading-7 text-texto">{descripcion}</p>
         ) : null}
 
         {foto.paso === "buscando" ? (
@@ -118,8 +141,8 @@ export function FichaDeAnotacion({
           <img
             src={foto.direccion}
             alt={
-              anotacion?.comentario
-                ? `Foto de ${titulo}: ${anotacion.comentario}`
+              descripcion
+                ? `Foto de ${titulo}: ${descripcion}`
                 : `Foto de ${titulo}`
             }
             className="w-full rounded-xl border border-borde-suave bg-fondo"
@@ -130,7 +153,7 @@ export function FichaDeAnotacion({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={anotacion?.fotoUrl ?? undefined}
-            alt={anotacion?.comentario ? `Foto de ${titulo}: ${anotacion.comentario}` : `Foto de ${titulo}`}
+            alt={descripcion ? `Foto de ${titulo}: ${descripcion}` : `Foto de ${titulo}`}
             onError={() => setFotoRemotaFallida(anotacion?.fotoUrl ?? null)}
             className="w-full rounded-xl border border-borde-suave bg-fondo"
           />

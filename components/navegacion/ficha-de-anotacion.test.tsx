@@ -6,12 +6,20 @@ import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 
 vi.mock("@/components/ui/emergente", () => ({
-  Emergente: ({ abierto, titulo, children, acciones }: {
+  Emergente: ({ abierto, titulo, children, acciones, contornoRojo, iconoDelTitulo }: {
     abierto: boolean;
     titulo: string;
     children: React.ReactNode;
     acciones?: React.ReactNode;
-  }) => abierto ? <section aria-label={titulo}>{children}{acciones}</section> : null,
+    contornoRojo?: boolean;
+    iconoDelTitulo?: React.ReactNode;
+  }) => abierto ? (
+    <section aria-label={titulo} data-contorno-rojo={contornoRojo ? "si" : "no"}>
+      <div data-testid="iconos-del-titulo">{iconoDelTitulo}</div>
+      {children}
+      {acciones}
+    </section>
+  ) : null,
   BotonDeEmergente: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
 }));
 vi.mock("@/hooks/use-foto-del-celular", () => ({
@@ -30,6 +38,7 @@ const anotacion = {
   icono: "refugio",
   color: null,
   atencion: false,
+  titulo: "Refugio del arroyo",
   comentario: "Agua a la sombra",
   fotoUrl: "https://fotos.test/refugio.webp",
   fotoChicaUrl: "https://fotos.test/refugio-chica.webp",
@@ -54,10 +63,10 @@ function montar(props: Partial<React.ComponentProps<typeof FichaDeAnotacion>> = 
 afterEach(() => vi.clearAllMocks());
 
 describe("ficha de anotación en mapas", () => {
-  it("muestra el nombre y el comentario, y abre la foto remota solo cuando se habilita", () => {
+  it("muestra el título y la descripción, y abre la foto remota solo cuando se habilita", () => {
     const { contenedor, desmontar } = montar({ fotoRemotaAlFaltar: true });
     try {
-      expect(contenedor.querySelector("section")?.getAttribute("aria-label")).toBe("Refugio");
+      expect(contenedor.querySelector("section")?.getAttribute("aria-label")).toBe("Refugio del arroyo");
       expect(contenedor.textContent).toContain("Agua a la sombra");
       expect(contenedor.querySelector("img")?.getAttribute("src")).toBe("https://fotos.test/refugio.webp");
     } finally {
@@ -65,16 +74,20 @@ describe("ficha de anotación en mapas", () => {
     }
   });
 
-  it("dice Atención solo en los puntos que la tienen", () => {
+  it("en Atención pone contorno rojo y un signo de interrogación, sin la tarjeta", () => {
     const sin = montar();
     try {
-      expect(sin.contenedor.textContent).not.toContain("Atención");
+      expect(sin.contenedor.querySelector("section")?.getAttribute("data-contorno-rojo")).toBe("no");
+      expect(sin.contenedor.textContent).not.toMatch(/\bAtención\b/);
+      expect(sin.contenedor.querySelector('[aria-label="Atención"]')).toBeNull();
     } finally {
       sin.desmontar();
     }
     const con = montar({ anotacion: { ...anotacion, atencion: true } });
     try {
-      expect(con.contenedor.textContent).toContain("Atención");
+      expect(con.contenedor.querySelector("section")?.getAttribute("data-contorno-rojo")).toBe("si");
+      expect(con.contenedor.querySelector('[aria-label="Atención"]')?.textContent).toBe("?");
+      expect(con.contenedor.textContent).not.toMatch(/Atención(?!")/);
     } finally {
       con.desmontar();
     }
@@ -112,7 +125,7 @@ describe("ficha de anotación en mapas", () => {
       alBorrar: () => {},
     });
     try {
-      const opciones = contenedor.querySelector('[aria-label="Opciones de Refugio"]');
+      const opciones = contenedor.querySelector('[aria-label="Opciones de Refugio del arroyo"]');
       expect(opciones).not.toBeNull();
       const fila = Array.from(contenedor.querySelectorAll(".flex.w-full")).find((nodo) =>
         nodo.contains(opciones),

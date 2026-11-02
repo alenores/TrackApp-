@@ -83,7 +83,9 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
   // Lo existente lleva su nombre, el mismo que en la lista de Marcas.
   const titulo = que.clase === "existente"
     ? anotar.seleccionado
-      ? anotar.seleccionado.comentario?.trim() || queEs(anotar.seleccionado)
+      ? anotar.seleccionado.tipo === "punto"
+        ? anotar.seleccionado.titulo?.trim() || anotar.seleccionado.comentario?.trim() || queEs(anotar.seleccionado)
+        : anotar.seleccionado.comentario?.trim() || queEs(anotar.seleccionado)
       : borrador?.tipo === "trazo" ? "Trazo" : "Punto"
     : que.tipo === "trazo" ? "Trazo nuevo" : "Punto nuevo";
 

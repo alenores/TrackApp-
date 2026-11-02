@@ -201,6 +201,11 @@ describe("clasificar por actividad", () => {
     expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "a_pie", complejidad: null });
   });
 
+  it("tentativo se guarda y puede llevar complejidad estimada", () => {
+    const camino = abrir(clasificarTramo(nuevo(), 0, 300, "trekking", { paso: "tentativo", complejidad: "media" }));
+    expect(clasificacionDe(camino.partes[0], "trekking")).toEqual({ paso: "tentativo", complejidad: "media" });
+  });
+
   it("una parte sin paso nunca tiene complejidad (Ale, 2026-10-14)", () => {
     let camino = abrir(clasificarTramo(nuevo(), 0, 300, "trekking", { paso: "transitable", complejidad: "dificil" }));
     camino = sano(abrir(clasificarTramo(camino, 0, 300, "trekking", { paso: "sin_paso" })));

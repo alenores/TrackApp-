@@ -124,6 +124,7 @@ function marca(codigo: string, conFoto: boolean): PendienteDeCrear {
       tipo: "punto",
       icono: "cruce",
       color: null,
+      titulo: "Cruce del arroyo",
       comentario: "Por acá se cruza el arroyo",
       geometria: { type: "Point", coordinates: [-64.9, -31.9] },
       precisionGpsMetros: 8,
@@ -171,6 +172,7 @@ describe("una marca nueva", () => {
       codigo_local: "a",
       marcada_en: "2026-09-24T12:00:00Z",
       precision_gps_metros: 8,
+      titulo: "Cruce del arroyo",
       comentario: "Por acá se cruza el arroyo",
     });
     expect(guardados.get("a")).toMatchObject({ terminada: true, anotacionId: base.filas[0].id });

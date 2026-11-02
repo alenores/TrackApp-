@@ -263,14 +263,18 @@ function armarElementos(
     })),
     ...anotaciones.map((anotacion): ElementoAlMarcar => {
       const nombre = queEs(anotacion);
+      const titulo =
+        anotacion.tipo === "punto"
+          ? anotacion.titulo?.trim() || anotacion.comentario?.trim() || ""
+          : anotacion.comentario?.trim() || "";
       const comentario = anotacion.comentario?.trim() ?? "";
       const esTrazo = anotacion.tipo === "trazo";
       return {
         clase: esTrazo ? "trazo" : "punto",
         id: anotacion.id,
-        titulo: comentario || nombre,
+        titulo: titulo || nombre,
         aclaracion: esTrazo ? "Trazo" : nombre,
-        textos: comentario ? [comentario, nombre] : [nombre],
+        textos: [titulo, comentario, nombre].filter(Boolean),
       };
     }),
   ];

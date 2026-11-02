@@ -200,6 +200,13 @@ export type Anotacion = {
    * Mapas, nunca navegando (decisión 078).
    */
   atencion: boolean;
+  /**
+   * Solo en puntos: el nombre corto que se ve en el mapa al acercarse.
+   * La descripción larga va en `comentario` y solo en la ficha.
+   * Vacío en puntos viejos: ahí el mapa usa el comentario hasta que se editen.
+   */
+  titulo: string | null;
+  /** Descripción libre. En puntos va aparte del título; en trazos es lo único. */
   comentario: string | null;
   /**
    * La foto del lugar, cuando la hay.

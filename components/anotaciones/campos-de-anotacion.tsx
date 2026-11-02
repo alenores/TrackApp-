@@ -1,6 +1,7 @@
 "use client";
 
 import { AreaDeTexto } from "@/components/ui/area-de-texto";
+import { Campo } from "@/components/ui/campo";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
@@ -17,8 +18,9 @@ import { ICONOS_PUNTO, type IconoPunto } from "@/types/database";
  * Lo que se completa de una anotación: qué es, qué hay que saber y la foto.
  *
  * **Es la misma pieza en la pantalla del sector y en la navegación.** Una sola
- * forma de elegir el ícono, el color, escribir el comentario y sumar la foto:
- * cambiar una regla de cómo se anota se cambia acá y vale para las dos.
+ * forma de elegir el ícono, el color, escribir el título y la descripción y
+ * sumar la foto: cambiar una regla de cómo se anota se cambia acá y vale para
+ * las dos.
  *
  * En la navegación va con `delCerro`: letra de 18, que es lo que pide esa
  * pantalla. Los botones tienen el tamaño normal (decisión 024).
@@ -30,6 +32,9 @@ type Props = {
   alCambiarIcono: (icono: IconoPunto) => void;
   color: ColorDeTrazo | null;
   alCambiarColor: (color: ColorDeTrazo) => void;
+  /** Solo en puntos: lo que se ve en el mapa al acercarse. */
+  titulo: string;
+  alCambiarTitulo: (titulo: string) => void;
   comentario: string;
   alCambiarComentario: (comentario: string) => void;
   foto: FotoDeFormulario;
@@ -47,6 +52,8 @@ export function CamposDeAnotacion({
   alCambiarIcono,
   color,
   alCambiarColor,
+  titulo,
+  alCambiarTitulo,
   comentario,
   alCambiarComentario,
   foto,
@@ -123,6 +130,20 @@ export function CamposDeAnotacion({
           </div>
         </Tarjeta>
       )}
+
+      {tipo === "punto" ? (
+        <Campo
+          label="Título"
+          id="titulo-de-la-anotacion"
+          obligatorio
+          value={titulo}
+          onChange={(evento) => alCambiarTitulo(evento.target.value)}
+          maxLength={120}
+          className={delCerro ? "text-lg" : undefined}
+          placeholder="Cruce del arroyo"
+          ayuda="Es lo que se ve en el mapa al acercarse."
+        />
+      ) : null}
 
       <AreaDeTexto
         label="Descripción"

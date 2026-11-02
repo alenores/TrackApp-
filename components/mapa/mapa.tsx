@@ -30,6 +30,7 @@ import { PROTOCOLO_DE_GOOGLE_EN_VIVO, registrarElMapaGuardado } from "@/lib/mapa
 import { registrarElRelieveGuardado } from "@/lib/mapas/relieve";
 import { escalaDelMapa, type Escala } from "@/lib/mapas/escala";
 import { DESCRIPCION_DESDE, descripcionCorta } from "@/lib/anotaciones/descripcion-en-el-mapa";
+import { tituloDelPunto } from "@/lib/anotaciones/titulo-del-punto";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
 import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
 import {
@@ -47,7 +48,7 @@ import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { accionDeLaCamara, type VistaDelMapa } from "@/lib/mapas/vista";
 import { opacidadDelNombreDeZona, zonaEnElLugar } from "@/lib/mapas/general";
 import type { Anotacion, Rectangulo } from "@/types/database";
-import { puntosAPie, puntosSinPaso } from "@/lib/rutas/partes";
+import { puntosAPie, puntosSinPaso, puntosTentativos } from "@/lib/rutas/partes";
 import { FichaDeAnotacion } from "@/components/navegacion/ficha-de-anotacion";
 import { LugarAlCostado } from "@/components/ui/emergente";
 import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
@@ -71,12 +72,12 @@ type EventoDelPuntero = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
  */
 
 const FUENTE_RUTA = "ruta";
-const CAPAS_DE_PARTES = ["ruta-por-explorar", "ruta-transitable", "ruta-a-pie", "ruta-sin-paso"];
+const CAPAS_DE_PARTES = ["ruta-por-explorar", "ruta-tentativo", "ruta-transitable", "ruta-a-pie", "ruta-sin-paso"];
 const FUENTE_CAMINOS = "caminos";
-const CAPAS_DE_CAMINOS = ["camino-otra-actividad", "camino-por-explorar", "camino-transitable", "camino-a-pie", "camino-sin-paso"];
+const CAPAS_DE_CAMINOS = ["camino-otra-actividad", "camino-por-explorar", "camino-tentativo", "camino-transitable", "camino-a-pie", "camino-sin-paso"];
 const FUENTE_CIRCUITO = "circuito";
 const FUENTE_FINAL_CONSERVADO = "final-conservado-del-circuito";
-const CAPAS_DEL_CIRCUITO = ["circuito-propio", "circuito-camino-por-explorar", "circuito-camino-transitable", "circuito-camino-a-pie", "circuito-camino-sin-paso"];
+const CAPAS_DEL_CIRCUITO = ["circuito-propio", "circuito-camino-por-explorar", "circuito-camino-tentativo", "circuito-camino-transitable", "circuito-camino-a-pie", "circuito-camino-sin-paso"];
 const FUENTE_POSICION = "mi-posicion";
 const FUENTE_ANOTACIONES = "anotaciones";
 const FUENTE_RECTANGULOS = "rectangulos";
@@ -153,6 +154,32 @@ function agregarTriangulosAPie(
       "icon-color": colores.parteX,
       "icon-halo-color": colores.parteXHalo,
       "icon-halo-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 12, 0.6, 15, 1],
+    },
+  });
+}
+
+/** Los «?» de un tramo tentativo: mismo color que las X, sobre la línea fina. */
+function agregarInterrogantesTentativos(
+  mapa: maplibregl.Map,
+  id: string,
+  source: string,
+  colores: Pick<ColoresDelMapa, "parteX" | "parteXHalo">,
+) {
+  mapa.addLayer({
+    id,
+    type: "symbol",
+    source,
+    layout: {
+      "text-field": "?",
+      "text-font": ["Noto Sans Regular"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 8, 8, 11, 14, 13, 18, 16, 22],
+      "text-allow-overlap": false,
+      "text-padding": 4,
+    },
+    paint: {
+      "text-color": colores.parteX,
+      "text-halo-color": colores.parteXHalo,
+      "text-halo-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 11, 1, 16, 2],
     },
   });
 }
@@ -498,10 +525,10 @@ function limitesDe(rectangulo: Rectangulo): maplibregl.LngLatBoundsLike {
 }
 
 /** Las anotaciones, pasadas a algo que el mapa sepa dibujar. */
-/** La capa con la descripción de los puntos (Ale, 2026-11-01). */
+/** La capa con el título de los puntos debajo del ícono (Ale, 2026-11-01). */
 const DESCRIPCION_DE_PUNTOS = "anotaciones-punto-descripcion";
 
-/** Los puntos con descripción, menos los que el usuario escondió tocándolos. */
+/** Los puntos con título, menos los que el usuario escondió tocándolos. */
 function filtroDeDescripciones(escondidas: number[]): maplibregl.FilterSpecification {
   return [
     "all",
@@ -522,14 +549,12 @@ function anotacionesComoCapa(anotaciones: Anotacion[]): FeatureCollection {
         id: anotacion.id,
         // Un color elegido a mano es un dato del usuario y manda sobre el del modo.
         color: anotacion.color ?? null,
-        titulo: [anotacion.icono, anotacion.comentario]
-          .filter(Boolean)
-          .join(" · "),
+        titulo: tituloDelPunto(anotacion) ?? [anotacion.icono, anotacion.comentario].filter(Boolean).join(" · "),
         ...(anotacion.icono ? { icono: anotacion.icono } : {}),
         // El marco rojo de Atención: un aviso y nada más (decisión 078).
         atencion: anotacion.atencion,
-        // Lo que se escribe debajo del ícono al acercarse (Ale, 2026-11-01).
-        descripcion: descripcionCorta(anotacion.comentario),
+        // Solo el título debajo del ícono al acercarse; la descripción va en la ficha.
+        descripcion: descripcionCorta(tituloDelPunto(anotacion)),
       },
       geometry: anotacion.geometria,
     })),
@@ -747,34 +772,36 @@ export function Mapa({
   const modo = modoDelMapa(modoElegido, tipoDeFondo, enVivo);
   const [aPantallaCompleta, setAPantallaCompleta] = useState(false);
   /**
-   * Qué pedazo de mundo se veía justo antes de cambiar de tamaño.
+   * Centro y zoom justo antes de agrandar o achicar el mapa.
    *
-   * Solo se usa cuando la pantalla no dijo a qué encuadrar: en las de armar
-   * zonas y sectores, donde el usuario anda buscando el lugar a mano.
+   * Al cambiar de tamaño se conservan: el foco no se pierde. Ver decisión 020
+   * (Ale, 2026-11-01): ya no se vuelve a encuadrar el contenido.
    */
-  const loQueSeMirabaRef = useRef<maplibregl.LngLatBoundsLike | null>(null);
+  const vistaAlCambiarTamanoRef = useRef<{ lon: number; lat: number; zoom: number } | null>(null);
 
   const anotarLoQueSeMira = () => {
     const mapa = mapaRef.current;
     if (!mapa) return;
-    const limites = mapa.getBounds();
-    loQueSeMirabaRef.current = [
-      [limites.getWest(), limites.getSouth()],
-      [limites.getEast(), limites.getNorth()],
-    ];
+    const centro = mapa.getCenter();
+    vistaAlCambiarTamanoRef.current = {
+      lon: centro.lng,
+      lat: centro.lat,
+      zoom: mapa.getZoom(),
+    };
   };
 
   const cerrarLoGrande = useCallback(() => {
     const mapa = mapaRef.current;
     if (mapa) {
-      const limites = mapa.getBounds();
-      loQueSeMirabaRef.current = [
-        [limites.getWest(), limites.getSouth()],
-        [limites.getEast(), limites.getNorth()],
-      ];
+      const centro = mapa.getCenter();
+      vistaAlCambiarTamanoRef.current = {
+        lon: centro.lng,
+        lat: centro.lat,
+        zoom: mapa.getZoom(),
+      };
     }
     setAPantallaCompleta(false);
-  }, [setAPantallaCompleta]);
+  }, []);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
   const chequeoDeDescargaRef = useRef(chequeoDeDescarga);
@@ -975,11 +1002,14 @@ export function Mapa({
       }
       mapa.addSource("x-sin-paso-circuito", { type: "geojson", data: VACIO });
       mapa.addSource("triangulos-a-pie-circuito", { type: "geojson", data: VACIO });
+      mapa.addSource("interrogantes-tentativos-circuito", { type: "geojson", data: VACIO });
       mapa.addSource("vertices-de-camino", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("triangulos-a-pie-caminos", { type: "geojson", data: VACIO });
+      mapa.addSource("interrogantes-tentativos-caminos", { type: "geojson", data: VACIO });
       mapa.addSource("x-sin-paso", { type: "geojson", data: VACIO });
       mapa.addSource("triangulos-a-pie", { type: "geojson", data: VACIO });
+      mapa.addSource("interrogantes-tentativos", { type: "geojson", data: VACIO });
       mapa.addSource("extremos-de-parte", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("cortes-marcados", { type: "geojson", data: VACIO, generateId: true });
       mapa.addSource("punto-senalado", { type: "geojson", data: VACIO });
@@ -1084,23 +1114,24 @@ export function Mapa({
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.caminoSecundario, "line-width": colores.caminoSecundarioAncho, "line-opacity": 1 },
       });
-      for (const [paso, capa, guiones] of [
-        ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5]],
-        ["transitable", CAPAS_DE_CAMINOS[2], null],
-        ["a_pie", CAPAS_DE_CAMINOS[3], null],
-        ["sin_paso", CAPAS_DE_CAMINOS[4], null],
+      for (const [paso, capa, guiones, ancho, borde] of [
+        ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5], 5, 8],
+        ["tentativo", CAPAS_DE_CAMINOS[2], [2.4, 1.5], 2.5, 4.5],
+        ["transitable", CAPAS_DE_CAMINOS[3], null, 5, 8],
+        ["a_pie", CAPAS_DE_CAMINOS[4], null, 5, 8],
+        ["sin_paso", CAPAS_DE_CAMINOS[5], null, 5, 8],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["==", ["get", "paso"], paso];
         const estilo = {
           "line-color": colorDeParte,
-          "line-width": 5,
+          "line-width": ancho,
           "line-opacity": 0.98,
           ...(guiones ? { "line-dasharray": [...guiones] } : {}),
         };
         mapa.addLayer({
           id: `${capa}-borde`, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": conEnvoltorio ? 0.95 : 0 },
+          paint: { "line-color": envoltorio, "line-width": borde, "line-opacity": conEnvoltorio ? 0.95 : 0 },
         });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
@@ -1115,6 +1146,7 @@ export function Mapa({
       });
       agregarCrucesSinPaso(mapa, "camino-sin-paso-x", "x-sin-paso-caminos", colores);
       agregarTriangulosAPie(mapa, "camino-a-pie-triangulo", "triangulos-a-pie-caminos", colores);
+      agregarInterrogantesTentativos(mapa, "camino-tentativo-interrogante", "interrogantes-tentativos-caminos", colores);
       mapa.addLayer({ id: "otros-circuitos", type: "line", source: "otros-circuitos",
         layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.circuitoPropio, "line-width": 4, "line-opacity": 0.55 } });
@@ -1125,24 +1157,26 @@ export function Mapa({
       mapa.addLayer({ id: CAPAS_DEL_CIRCUITO[0], type: "line", source: FUENTE_CIRCUITO,
         filter: filtroPropio, layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.circuitoPropio, "line-width": 6 } });
-      for (const [paso, capa, guiones] of [
-        ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5]],
-        ["transitable", CAPAS_DEL_CIRCUITO[2], null],
-        ["a_pie", CAPAS_DEL_CIRCUITO[3], null],
-        ["sin_paso", CAPAS_DEL_CIRCUITO[4], null],
+      for (const [paso, capa, guiones, ancho, borde] of [
+        ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5], 7, 10],
+        ["tentativo", CAPAS_DEL_CIRCUITO[2], [2.4, 1.5], 3.5, 5.5],
+        ["transitable", CAPAS_DEL_CIRCUITO[3], null, 7, 10],
+        ["a_pie", CAPAS_DEL_CIRCUITO[4], null, 7, 10],
+        ["sin_paso", CAPAS_DEL_CIRCUITO[5], null, 7, 10],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["all", ["==", ["get", "clase"], "camino"], ["==", ["get", "paso"], paso]];
         const opacidad: maplibregl.ExpressionSpecification = ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1];
         mapa.addLayer({ id: `${capa}-borde`, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 10, "line-opacity": conEnvoltorio ? opacidad : 0 } });
+          paint: { "line-color": envoltorio, "line-width": borde, "line-opacity": conEnvoltorio ? opacidad : 0 } });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CIRCUITO,
           filter: filtro, layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": colorDeParte, "line-width": 7, "line-opacity": opacidad,
+          paint: { "line-color": colorDeParte, "line-width": ancho, "line-opacity": opacidad,
             ...(guiones ? { "line-dasharray": [...guiones] } : {}) } });
       }
       agregarCrucesSinPaso(mapa, "circuito-sin-paso-x", "x-sin-paso-circuito", colores);
       agregarTriangulosAPie(mapa, "circuito-a-pie-triangulo", "triangulos-a-pie-circuito", colores);
+      agregarInterrogantesTentativos(mapa, "circuito-tentativo-interrogante", "interrogantes-tentativos-circuito", colores);
       mapa.addLayer({ id: "circuito-final-conservado", type: "circle", source: FUENTE_FINAL_CONSERVADO,
         paint: { "circle-color": colores.circuitoPropio, "circle-radius": 7,
           "circle-stroke-color": colores.circuitoBorde, "circle-stroke-width": 3 } });
@@ -1161,11 +1195,12 @@ export function Mapa({
         paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
           "circle-stroke-width": 3, "circle-stroke-color": colores.parteX },
       });
-      for (const [paso, capa, guiones] of [
-        ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5]],
-        ["transitable", CAPAS_DE_PARTES[1], null],
-        ["a_pie", CAPAS_DE_PARTES[2], null],
-        ["sin_paso", CAPAS_DE_PARTES[3], null],
+      for (const [paso, capa, guiones, ancho, borde] of [
+        ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5], 5, 8],
+        ["tentativo", CAPAS_DE_PARTES[1], [2.4, 1.5], 2.5, 4.5],
+        ["transitable", CAPAS_DE_PARTES[2], null, 5, 8],
+        ["a_pie", CAPAS_DE_PARTES[3], null, 5, 8],
+        ["sin_paso", CAPAS_DE_PARTES[4], null, 5, 8],
       ] as const) {
         const filtroDeParte: maplibregl.FilterSpecification = ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso];
         mapa.addLayer({
@@ -1174,7 +1209,7 @@ export function Mapa({
           source: FUENTE_RUTA,
           filter: filtroDeParte,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": 8, "line-opacity": conEnvoltorio ? 0.95 : 0 },
+          paint: { "line-color": envoltorio, "line-width": borde, "line-opacity": conEnvoltorio ? 0.95 : 0 },
         });
         mapa.addLayer({
           id: capa,
@@ -1184,7 +1219,7 @@ export function Mapa({
           layout: { "line-cap": "round", "line-join": "round" },
           paint: {
             "line-color": colorDeParte,
-            "line-width": 5,
+            "line-width": ancho,
             "line-opacity": 0.98,
             ...(guiones ? { "line-dasharray": [...guiones] } : {}),
           },
@@ -1192,6 +1227,7 @@ export function Mapa({
       }
       agregarCrucesSinPaso(mapa, "ruta-sin-paso-x", "x-sin-paso", colores);
       agregarTriangulosAPie(mapa, "ruta-a-pie-triangulo", "triangulos-a-pie", colores);
+      agregarInterrogantesTentativos(mapa, "ruta-tentativo-interrogante", "interrogantes-tentativos", colores);
       mapa.addLayer({
         id: "cortes-marcados",
         type: "circle",
@@ -1462,6 +1498,8 @@ export function Mapa({
       mapa.setPaintProperty("circuito-sin-paso-x", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("circuito-a-pie-triangulo", "icon-color", colores.parteX);
       mapa.setPaintProperty("circuito-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("circuito-tentativo-interrogante", "text-color", colores.parteX);
+      mapa.setPaintProperty("circuito-tentativo-interrogante", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("circuito-final-conservado", "circle-color", colores.circuitoPropio);
       mapa.setPaintProperty("circuito-final-conservado", "circle-stroke-color", colores.circuitoBorde);
       mapa.setPaintProperty("circuito-final-conservado-nombre", "text-color", colores.circuitoPropio);
@@ -1471,12 +1509,16 @@ export function Mapa({
       mapa.setPaintProperty("camino-sin-paso-x", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("camino-a-pie-triangulo", "icon-color", colores.parteX);
       mapa.setPaintProperty("camino-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("camino-tentativo-interrogante", "text-color", colores.parteX);
+      mapa.setPaintProperty("camino-tentativo-interrogante", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("vertices-de-camino", "circle-color", colores.rectanguloNuevo);
       mapa.setPaintProperty("vertices-de-camino", "circle-stroke-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-color", colores.parteX);
       mapa.setPaintProperty("ruta-sin-paso-x", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("ruta-a-pie-triangulo", "icon-color", colores.parteX);
       mapa.setPaintProperty("ruta-a-pie-triangulo", "icon-halo-color", colores.parteXHalo);
+      mapa.setPaintProperty("ruta-tentativo-interrogante", "text-color", colores.parteX);
+      mapa.setPaintProperty("ruta-tentativo-interrogante", "text-halo-color", colores.parteXHalo);
       mapa.setPaintProperty("parte-elegida", "line-color", colores.marcaDeParte);
       mapa.setPaintProperty("cortes-marcados", "circle-color", ["case", ["==", ["get", "elegido"], true], colores.marcaDeParte, colores.marcaDeCorte]);
       mapa.setPaintProperty("extremos-de-parte-punto", "circle-color", colores.marcaDeParte);
@@ -1572,6 +1614,7 @@ export function Mapa({
       ponerDatos(mapa, FUENTE_RUTA, recorrido ?? VACIO);
       ponerDatos(mapa, "x-sin-paso", recorrido ? puntosSinPaso(recorrido) : VACIO);
       ponerDatos(mapa, "triangulos-a-pie", recorrido ? puntosAPie(recorrido) : VACIO);
+      ponerDatos(mapa, "interrogantes-tentativos", recorrido ? puntosTentativos(recorrido) : VACIO);
 
       // `viaje` se anima aunque el mapa ya se haya encuadrado al abrir: si no,
       // buscar un lugar en un Camino nuevo no movería la vista.
@@ -1620,6 +1663,7 @@ export function Mapa({
       ponerDatos(mapa, FUENTE_CAMINOS, caminos ?? VACIO);
       ponerDatos(mapa, "x-sin-paso-caminos", caminos ? puntosSinPaso(caminos) : VACIO);
       ponerDatos(mapa, "triangulos-a-pie-caminos", caminos ? puntosAPie(caminos) : VACIO);
+      ponerDatos(mapa, "interrogantes-tentativos-caminos", caminos ? puntosTentativos(caminos) : VACIO);
     });
   }, [caminos]);
 
@@ -1630,6 +1674,7 @@ export function Mapa({
       ponerDatos(mapa, FUENTE_CIRCUITO, circuito ?? VACIO);
       ponerDatos(mapa, "x-sin-paso-circuito", circuito ? puntosSinPaso(circuito) : VACIO);
       ponerDatos(mapa, "triangulos-a-pie-circuito", circuito ? puntosAPie(circuito) : VACIO);
+      ponerDatos(mapa, "interrogantes-tentativos-circuito", circuito ? puntosTentativos(circuito) : VACIO);
     });
   }, [circuito]);
 
@@ -2406,10 +2451,8 @@ export function Mapa({
   /**
    * El mapa mide su lienzo al armarse: si cambia de tamaño hay que avisarle.
    *
-   * Y hay que **volver a encuadrar lo que se estaba mirando**: con solo
-   * avisarle del tamaño nuevo, el mapa conserva el acercamiento y lo que
-   * ocupaba todo el recuadro chico queda como una estampilla en el medio de la
-   * pantalla grande, que es justo lo contrario de para qué se agranda.
+   * Centro y zoom se conservan (Ale, 2026-11-01): agrandar muestra más alrededor
+   * del mismo lugar; achicar deja el mismo punto en el medio. No se reencuadra.
    */
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -2419,18 +2462,15 @@ export function Mapa({
       mapa.resize();
 
       // Al nacer con un lugar conservado, esta primera medida no puede
-      // encuadrar: pisaría el acercamiento que el usuario dejó al guardar.
+      // mover la cámara: pisaría el acercamiento que el usuario dejó al guardar.
       if (vistaAlAbrirRef.current && !yaMidioConVistaRef.current) {
         yaMidioConVistaRef.current = true;
         return;
       }
 
-      // Se vuelve a encuadrar lo que hay que mirar, no lo que se estaba
-      // mirando: un recuadro ancho y bajo metido en una pantalla alta deja la
-      // ruta chiquita en el medio, que es lo contrario de agrandar.
-      const aQueVolver = encuadreRef.current ?? loQueSeMirabaRef.current;
-      if (aQueVolver) {
-        mapa.fitBounds(aQueVolver, { padding: 36, animate: false });
+      const vista = vistaAlCambiarTamanoRef.current;
+      if (vista) {
+        mapa.jumpTo({ center: [vista.lon, vista.lat], zoom: vista.zoom });
       }
     }, 60);
 

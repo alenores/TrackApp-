@@ -2,7 +2,7 @@ import type { Feature, FeatureCollection, LineString, Position } from "geojson";
 import { distanciaEnKm, puntoDeCoordenada } from "@/lib/geo";
 
 /** La condición de paso y la complejidad pertenecen a cada parte, nunca a la ruta entera. */
-export type PasoDeParte = "por_explorar" | "transitable" | "a_pie" | "sin_paso";
+export type PasoDeParte = "por_explorar" | "tentativo" | "transitable" | "a_pie" | "sin_paso";
 export type ComplejidadDeParte = "facil" | "media" | "dificil" | null;
 
 export type DatosDeParte = {
@@ -239,7 +239,10 @@ export function marcarParte(
 export function datosDeParte(propiedades: Record<string, unknown> | null): DatosDeParte {
   const p = propiedades ?? {};
   return {
-    paso: p.paso === "transitable" || p.paso === "a_pie" || p.paso === "sin_paso" ? p.paso : "por_explorar",
+    paso:
+      p.paso === "transitable" || p.paso === "a_pie" || p.paso === "sin_paso" || p.paso === "tentativo"
+        ? p.paso
+        : "por_explorar",
     complejidad: p.complejidad === "facil" || p.complejidad === "media" || p.complejidad === "dificil" ? p.complejidad : null,
     observacion: typeof p.observacion === "string" ? p.observacion : null,
     comprobadoEl: typeof p.comprobado_el === "string" ? p.comprobado_el : null,
@@ -248,10 +251,13 @@ export function datosDeParte(propiedades: Record<string, unknown> | null): Datos
 
 /**
  * Marcas repartidas sobre una parte: al menos una, aunque mida pocos metros.
- * Sin paso va más espaciada (la X se lee de lejos). A pie va más seguida,
- * porque el triangulito es chico y si no la línea parece transitable.
+ * Sin paso va más espaciada (la X se lee de lejos). A pie y tentativo van más
+ * seguidos, porque el signo es chico y si no la línea se confunde.
  */
-export function puntosDeMarca(geometria: FeatureCollection, paso: "sin_paso" | "a_pie"): FeatureCollection {
+export function puntosDeMarca(
+  geometria: FeatureCollection,
+  paso: "sin_paso" | "a_pie" | "tentativo",
+): FeatureCollection {
   const cadaMetros = paso === "sin_paso" ? 200 : 90;
   const features: Feature[] = [];
   for (const feature of geometria.features) {
@@ -279,4 +285,9 @@ export function puntosSinPaso(geometria: FeatureCollection): FeatureCollection {
 /** Triangulitos de «a pie con equipo», más juntos que las X. */
 export function puntosAPie(geometria: FeatureCollection): FeatureCollection {
   return puntosDeMarca(geometria, "a_pie");
+}
+
+/** Signos de interrogación de un tramo tentativo. */
+export function puntosTentativos(geometria: FeatureCollection): FeatureCollection {
+  return puntosDeMarca(geometria, "tentativo");
 }

@@ -79,6 +79,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
   const [borrador, setBorrador] = useState<Borrador | null>(null);
   const [seleccionado, setSeleccionado] = useState<Anotacion | null>(null);
   const [coordenada, setCoordenadaEscrita] = useState("");
+  const [titulo, setTitulo] = useState("");
   const [comentario, setComentario] = useState("");
   const [quitarLaFoto, setQuitarLaFoto] = useState(false);
   const [marcando, setMarcando] = useState(false);
@@ -126,6 +127,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
       perfilId: seleccionado?.perfilId ?? "",
       deAdministrador: seleccionado?.deAdministrador ?? false,
       origen: seleccionado?.origen ?? ("manual" as const),
+      titulo: borrador.tipo === "punto" ? titulo.trim() || null : null,
       comentario,
       fotoUrl: seleccionado?.fotoUrl ?? null,
       fotoChicaUrl: seleccionado?.fotoChicaUrl ?? null,
@@ -169,6 +171,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     setBorrador(null);
     setSeleccionado(null);
     setCoordenadaEscrita("");
+    setTitulo("");
     setComentario("");
     setQuitarLaFoto(false);
     setMarcando(false);
@@ -203,7 +206,16 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     limpiar();
     setMensaje(null);
     setSeleccionado(anotacion);
-    setComentario(anotacion.comentario ?? "");
+    // Puntos viejos solo tenían comentario: al editarlo el texto corto pasa a
+    // ser el título; si era largo, el resto queda como descripción.
+    if (anotacion.tipo === "punto" && !anotacion.titulo?.trim()) {
+      const legado = (anotacion.comentario ?? "").trim();
+      setTitulo(legado.slice(0, 120));
+      setComentario(legado.length > 120 ? legado : "");
+    } else {
+      setTitulo(anotacion.titulo ?? "");
+      setComentario(anotacion.comentario ?? "");
+    }
     if (anotacion.geometria.type === "Point") {
       const [lon, lat] = anotacion.geometria.coordinates;
       setBorrador({ tipo: "punto", icono: anotacion.icono, atencion: anotacion.atencion });
@@ -293,6 +305,10 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
       setError(falta);
       return false;
     }
+    if (borrador.tipo === "punto" && !titulo.trim()) {
+      setError("Ponele un título al punto: es lo que se ve en el mapa.");
+      return false;
+    }
     if (!geometria) {
       setError(
         borrador.tipo === "punto"
@@ -318,6 +334,7 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
         icono: borrador.tipo === "punto" ? borrador.icono : null,
         atencion: borrador.tipo === "punto" ? borrador.atencion : false,
         color: borrador.tipo === "trazo" && borrador.color ? TRAZO[borrador.color].color : null,
+        titulo: borrador.tipo === "punto" ? titulo.trim() || null : null,
         comentario: comentario.trim() || null,
         geometria,
       };
@@ -404,6 +421,8 @@ export function useAnotaciones(lugar: LugarDeAnotaciones) {
     coordenada,
     setCoordenada,
     lectura,
+    titulo,
+    setTitulo,
     comentario,
     setComentario,
     setIcono,

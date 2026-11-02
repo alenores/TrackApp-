@@ -289,6 +289,8 @@ export function PanelDeAnotar({ marcado, gps, alCentrarEnMi, alMedirElPanel, alG
             alCambiarIcono={marcado.cambiarIcono}
             color={borrador.color}
             alCambiarColor={marcado.cambiarColor}
+            titulo={borrador.titulo}
+            alCambiarTitulo={marcado.cambiarTitulo}
             comentario={borrador.comentario}
             alCambiarComentario={marcado.cambiarComentario}
             foto={marcado.foto}

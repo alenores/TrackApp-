@@ -49,6 +49,7 @@ type Borrador = {
   cambiando: AnotacionEnPantalla | null;
   icono: IconoPunto | null;
   color: ColorDeTrazo | null;
+  titulo: string;
   comentario: string;
   /**
    * Un punto: de dónde sale el lugar. Con `gps`, de tu posición; si el GPS no
@@ -94,6 +95,7 @@ export type Marcado = {
   deshacerElUltimoPunto: () => void;
   cambiarIcono: (icono: IconoPunto) => void;
   cambiarColor: (color: ColorDeTrazo) => void;
+  cambiarTitulo: (titulo: string) => void;
   cambiarComentario: (comentario: string) => void;
   quitarLaFotoActual: () => void;
   guardar: () => Promise<boolean>;
@@ -106,6 +108,7 @@ function borradorVacio(tipo: TipoDeMarca): Borrador {
     cambiando: null,
     icono: null,
     color: null,
+    titulo: "",
     comentario: "",
     modo: "gps",
     aMano: null,
@@ -160,7 +163,16 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
         cambiando: anotacion,
         icono: anotacion.icono,
         color: claveDelColor(anotacion.color),
-        comentario: anotacion.comentario ?? "",
+        // Puntos viejos solo tenían comentario: el texto corto pasa a ser el
+        // título; si era largo, el resto queda como descripción.
+        titulo:
+          anotacion.tipo === "punto" && !anotacion.titulo?.trim()
+            ? (anotacion.comentario ?? "").trim().slice(0, 120)
+            : anotacion.titulo ?? "",
+        comentario:
+          anotacion.tipo === "punto" && !anotacion.titulo?.trim()
+            ? ((anotacion.comentario ?? "").trim().length > 120 ? (anotacion.comentario ?? "").trim() : "")
+            : anotacion.comentario ?? "",
         // Al cambiarla, el punto se queda donde estaba hasta que digas otra cosa.
         modo: "a_mano",
         aMano:
@@ -244,6 +256,9 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     setError(null);
     setBorrador((actual) => (actual ? { ...actual, color } : actual));
   }, []);
+  const cambiarTitulo = useCallback((titulo: string) => {
+    setBorrador((actual) => (actual ? { ...actual, titulo } : actual));
+  }, []);
   const cambiarComentario = useCallback((comentario: string) => {
     setBorrador((actual) => (actual ? { ...actual, comentario } : actual));
   }, []);
@@ -260,7 +275,8 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
 
   const hayAlgo =
     borrador !== null &&
-    (borrador.comentario.trim() !== "" ||
+    (borrador.titulo.trim() !== "" ||
+      borrador.comentario.trim() !== "" ||
       borrador.puntos.length > 0 ||
       foto.archivo !== null ||
       (borrador.cambiando === null && borrador.modo === "a_mano" && borrador.aMano !== null) ||
@@ -273,6 +289,10 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     const falta = avisoSiNoEligio(borrador.tipo, borrador.icono, borrador.color);
     if (falta) {
       setError(falta);
+      return false;
+    }
+    if (borrador.tipo === "punto" && !borrador.titulo.trim()) {
+      setError("Ponele un título al punto: es lo que se ve en el mapa.");
       return false;
     }
 
@@ -297,6 +317,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       tipo: borrador.tipo,
       icono: borrador.tipo === "punto" ? borrador.icono : null,
       color: borrador.tipo === "trazo" && borrador.color ? TRAZO[borrador.color].color : null,
+      titulo: borrador.tipo === "punto" ? borrador.titulo.trim() || null : null,
       comentario: borrador.comentario.trim() || null,
       geometria:
         borrador.tipo === "punto"
@@ -349,6 +370,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
       origen: "navegacion" as const,
       // Navegando no se pone ni se saca Atención (decisión 078).
       atencion: false,
+      titulo: borrador.tipo === "punto" ? borrador.titulo.trim() || null : null,
       comentario: borrador.comentario,
       fotoUrl: null,
       fotoChicaUrl: null,
@@ -396,6 +418,7 @@ export function useMarcarAnotacion(gps: Gps): Marcado {
     deshacerElUltimoPunto,
     cambiarIcono,
     cambiarColor,
+    cambiarTitulo,
     cambiarComentario,
     quitarLaFotoActual,
     guardar,

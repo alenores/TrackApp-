@@ -184,17 +184,20 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **Tranqueras y alambrados los trae OpenStreetMap solos al crear una zona** y
   quedan fijos: no se corrigen, no se borran, no se vuelven a buscar. Zonas y
   sectores no cargan marcas, y borrarlos no borra marcas.
-- **Desde el acercamiento 15, cada punto muestra su descripción debajo del
-  ícono**, corta (unas 40 letras con «…»). Tocar el texto lo esconde hasta salir
-  de ese mapa. Ale, 2026-11-01.
+- **Un punto tiene título y descripción.** El título es corto y es lo único que
+  se ve en el mapa al acercarse (desde el 15, unas 40 letras con «…»; tocar el
+  texto lo esconde hasta salir de ese mapa). La descripción puede ser larga y
+  solo aparece en la ficha. Ale, 2026-11-01.
 - **En cualquier mapa, tocar un punto abre su ficha**: en el encabezado, el
-  ícono con su nombre; después la descripción, la foto, quién lo marcó (foto y
+  ícono con el título; después la descripción, la foto, quién lo marcó (foto y
   nombre, como en Salidas) y la fecha en día/mes/año. Sin GPS ni «Tuya». Si no
   tiene descripción o foto, simplemente no aparecen, sin aclararlo. Ale,
   2026-11-01. En PC el cursor muestra una mano sobre los
   puntos. Navegación libre y navegación de Circuitos conservan su ficha completa.
 - **Un punto puede llevar Atención: contorno rojo del ícono**, «mirá esto», no
-  «prohibido» ni «peligro»; el motivo va en la descripción. Se pone y se saca
+  «prohibido» ni «peligro»; el motivo va en la descripción. En la ficha, el
+  contorno de la ventana también es rojo y hay un signo de interrogación rojo
+  a la izquierda del título, sin tarjeta que diga «Atención». Se pone y se saca
   con señal desde Mapas, nunca navegando; Administrador en todos, Premium en
   los suyos; nunca en lo de OpenStreetMap. No afecta Caminos, Circuitos ni
   trazos. Decisión 078; Ale, 2026-10-24.
@@ -206,12 +209,12 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un
-  sector. Al agrandarse y al cerrarse se vuelve a encuadrar lo que hay que
-  mirar, no lo que se estaba mirando. La cruz para cerrarlo queda en el margen
-  de arriba a la derecha. La navegación libre y la de un Circuito no la llevan
-  ahí: se salen con el botón de abajo a la izquierda (Ale, 2026-10-14).
-  **Única excepción al botón de agrandar:** el mapa de la zona adentro de
-  «Circuitos en el mapa», que va sin botones propios (decisión 025).
+  sector. Al agrandarse y al cerrarse se conservan el centro y el zoom: no se
+  pierde el foco (Ale, 2026-11-01; decisión 020). La cruz para cerrarlo queda en
+  el margen de arriba a la derecha. La navegación libre y la de un Circuito no
+  la llevan ahí: se salen con el botón de abajo a la izquierda (Ale,
+  2026-10-14). **Única excepción al botón de agrandar:** el mapa de la zona
+  adentro de «Circuitos en el mapa», que va sin botones propios (decisión 025).
 - **Siempre tiene que haber una forma visible de salir**, y tiene que responder
   también al botón físico de atrás.
 - **En los mapas del cerro el GPS se prende solo al entrar y se apaga al
