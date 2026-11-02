@@ -27,6 +27,13 @@ describe("adivinar el ícono por el nombre", () => {
     ["Casa de los Ortiz", "casa"],
     ["Refugio Casa Vieja", "refugio"],
     ["Mirador", "mirador"],
+    ["Laguna Los Hornillos", "laguna"],
+    ["Lago El Cajón", "lago"],
+    ["Juntura norte", "juntura"],
+    ["Escalada del Cóndor", "escalada"],
+    ["Posible escalada norte", "posible_escalada"],
+    ["Quebrada del Toro", "quebrada"],
+    ["Objeto metálico", "objeto"],
     ["", "cruce"],
     ["Cosa rara", "cruce"],
   ])("«%s» → %s", (nombre, icono) => {

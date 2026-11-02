@@ -250,6 +250,46 @@ describe("Marcas: líneas de zonas y sectores", () => {
     }
   });
 
+  it.each([true, false])("cambiar líneas o bajar el panel conserva la cámara (pantalla ancha: %s)", async (ancha) => {
+    const consulta = vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
+      matches: ancha, media, onchange: null,
+      addListener: () => {}, removeListener: () => {},
+      addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => true,
+    }));
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    const abrirPanel = async () => {
+      if (ancha) return;
+      await act(async () => contenedor.querySelector<HTMLElement>('[aria-label="Abrir marcas"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+    };
+    try {
+      await act(async () => raiz.render(<PantallaDeMarcas />));
+      await abrirPanel();
+      await act(async () => [...contenedor.querySelectorAll<HTMLButtonElement>("button[aria-expanded]")]
+        .find((cada) => cada.textContent?.startsWith("Zonas"))!.click());
+      const irAZona = [...contenedor.querySelectorAll<HTMLButtonElement>('button[title="Mostrar en el mapa"]')]
+        .find((cada) => cada.textContent?.includes("Gigantes Este"))!;
+      await act(async () => irAZona.click());
+      const encuadreElegido = ordenDeCamara.encuadre;
+      const viajeElegido = ordenDeCamara.viaje;
+      await act(async () => moverVista?.({ lat: -31.4, lon: -64.8, zoom: 14.3 }));
+      await abrirPanel();
+      await act(async () => radio(contenedor, "Nada").click());
+      expect(ordenDeCamara.encuadre).toBe(encuadreElegido);
+      expect(ordenDeCamara.viaje).toBe(viajeElegido);
+      if (!ancha) {
+        await act(async () => contenedor.querySelector<HTMLElement>('[aria-label="Ver mapa"]')!
+          .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+        expect(ordenDeCamara.encuadre).toBe(encuadreElegido);
+        expect(ordenDeCamara.viaje).toBe(viajeElegido);
+      }
+    } finally {
+      act(() => raiz.unmount());
+      consulta.mockRestore();
+    }
+  });
+
   it.each([true, false])("tildar o destildar un grupo conserva la cámara (pantalla ancha: %s)", async (ancha) => {
     const consulta = vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
       matches: ancha, media, onchange: null,

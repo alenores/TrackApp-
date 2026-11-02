@@ -6,14 +6,14 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { SelectorDeFoto } from "@/components/fotos/selector-de-foto";
 import type { FotoDeFormulario } from "@/hooks/use-foto";
 import { colorDelIcono } from "@/lib/anotaciones/colores-de-icono";
-import { COMO_SE_LLAMA } from "@/lib/anotaciones/iconos";
+import { COMO_SE_LLAMA, SECCIONES_DE_ICONO } from "@/lib/anotaciones/iconos";
 import { TRAZOS_DEL_ICONO } from "@/components/anotaciones/icono-de-anotacion";
 import {
   COLORES_DE_TRAZO,
   type ColorDeTrazo,
   TRAZO,
 } from "@/lib/anotaciones/colores-de-trazo";
-import { ICONOS_PUNTO, type IconoPunto } from "@/types/database";
+import type { IconoPunto } from "@/types/database";
 
 /**
  * Lo que se completa de una anotación: qué es, qué hay que saber y la foto.
@@ -89,22 +89,29 @@ export function CamposDeAnotacion({
       {tipo === "punto" ? (
         <Tarjeta className="space-y-2">
           <p className={claseDeTitulo}>Qué es</p>
-          <div className="flex flex-wrap gap-2">
-            {ICONOS_PUNTO.map((cual) => (
-              <button
-                key={cual}
-                type="button"
-                onClick={() => alCambiarIcono(cual)}
-                aria-pressed={icono === cual}
-                className={`inline-flex items-center gap-2 ${claseDeTipo(icono === cual)}`}
+          <div className="space-y-3">
+            {SECCIONES_DE_ICONO.map((seccion, indice) => (
+              <div
+                key={seccion.join("-")}
+                className={`flex flex-wrap gap-2 ${indice > 0 ? "border-t border-borde pt-3" : ""}`}
               >
-                {/* El mismo dibujo y color que tiene en las listas de Marcas. */}
-                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden
-                  style={{ color: colorDelIcono(cual).trazo }}>
-                  <path d={TRAZOS_DEL_ICONO[cual]} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {COMO_SE_LLAMA[cual]}
-              </button>
+                {seccion.map((cual) => (
+                  <button
+                    key={cual}
+                    type="button"
+                    onClick={() => alCambiarIcono(cual)}
+                    aria-pressed={icono === cual}
+                    className={`inline-flex items-center gap-2 ${claseDeTipo(icono === cual)}`}
+                  >
+                    {/* El mismo dibujo y color que tiene en las listas de Marcas. */}
+                    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" aria-hidden
+                      style={{ color: colorDelIcono(cual).trazo }}>
+                      <path d={TRAZOS_DEL_ICONO[cual]} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {COMO_SE_LLAMA[cual]}
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
         </Tarjeta>

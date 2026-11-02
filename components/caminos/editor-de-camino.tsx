@@ -24,7 +24,6 @@ import { dibujarCaminos } from "@/lib/caminos/dibujo";
 import { corregirLinea, LARGO_MINIMO_DE_PARTE_M, ubicarEnCamino, type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
 import { puntoEnDistancia } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
-import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { mostrarActividad } from "@/lib/rutas/actividades";
@@ -40,9 +39,10 @@ type Pestana = "datos" | "linea" | "partes";
  * Editar un Camino ya guardado, desde Marcas.
  *
  * Abre en satelital (lo más parecido a Google, que en el editor no se usa) y
- * conserva el centro y el zoom que se estaban mirando. Sin esa vista, encuadra
- * el Camino entero. Los demás Caminos, puntos y trazos se ven de referencia
- * (como al dibujar uno nuevo): no se editan desde acá.
+ * conserva el centro y el zoom que se estaban mirando. Editar no pide un
+ * traslado: sin esa vista no se encuadra el Camino. Los demás Caminos, puntos
+ * y trazos se ven de referencia (como al dibujar uno nuevo): no se editan
+ * desde acá.
  */
 export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
   id: number;
@@ -117,11 +117,6 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
       porActividad: { ...borradorVigente, [actividad]: { paso, complejidad: paso === "sin_paso" ? null : complejidad } },
     });
   };
-  // Si viene el lugar de Marcas, manda ese; si no, se ve el Camino entero.
-  const encuadre = useMemo(() => {
-    if (vistaInicial || !camino) return null;
-    return rectanguloQueAbarca(camino.coordenadas.map((punto) => [punto[0], punto[1]]));
-  }, [camino, vistaInicial]);
   const vistaPrevia = useMemo(() => camino && borradorLinea ? corregirLinea(camino, borradorLinea) : null, [camino, borradorLinea]);
   // La sección Línea ya es para editarla: entrar es empezar a corregir, sin botón de más.
   const corrigiendo = pestana === "linea";
@@ -321,7 +316,7 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
           panelPrimeroEnComputadora
           mapa={
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora fondoInicial="satelital"
-              vista={vistaInicial} encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+              vista={vistaInicial} encuadrarSoloAlAbrir caminos={dibujo}
               caminosEncima={caminosDeReferencia}
               anotaciones={marcar.anotaciones}
               mostrarFichaAnotacion={false}

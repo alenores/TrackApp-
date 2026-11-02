@@ -110,6 +110,20 @@ describe("abrir el editor desde Marcas", () => {
     }
   });
 
+  it("editar un punto sin vista previa no encuadra al punto: editar no pide un traslado", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(
+        <EditorDeDetalle que={{ clase: "existente", id: 3 }} alVolver={() => {}} />,
+      ));
+      expect(mapa.vista).toBeNull();
+      expect(mapa.encuadre).toBeNull();
+    } finally {
+      act(() => raiz.unmount());
+    }
+  });
+
   it.each(["punto", "trazo"] as const)("abre %s en satelital con las marcas de referencia, conserva la cámara y permite buscar", async (tipo) => {
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);

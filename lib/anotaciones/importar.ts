@@ -33,6 +33,9 @@ const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
   // Primero: un camping suele llevar el nombre del lugar («Camping La
   // Cumbrecita») y ese nombre no tiene que ganarle.
   campamento: ["campamento", "camping", "acampe", "carpa"],
+  // Antes que «escalada» a secas: «posible escalada» no debe quedar en Escalada.
+  posible_escalada: ["posible escalada", "posible_escalada"],
+  escalada: ["escalada", "climbing"],
   refugio: ["refugio", "puesto", "rancho"],
   // Después de refugio: «Refugio Casa Vieja» sigue siendo un refugio.
   casa: ["casa", "vivienda"],
@@ -41,6 +44,10 @@ const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
   puente: ["puente", "pasarela"],
   pueblo: ["pueblo", "paraje", "villa"],
   cartel: ["cartel", "señal", "senal", "letrero"],
+  // Antes que «agua» genérico de fuente: laguna / lago / juntura.
+  laguna: ["laguna"],
+  lago: ["lago"],
+  juntura: ["juntura"],
   fuente: ["fuente", "manantial", "vertiente", "ojo de agua", "agua"],
   iglesia: ["iglesia", "capilla", "ermita", "gruta"],
   cruce: ["cruce", "bifurcaci", "desvio", "desvío", "empalme"],
@@ -49,6 +56,8 @@ const PALABRAS_DE_CADA_ICONO: Record<IconoPunto, string[]> = {
   tranquera: ["tranquera", "porton", "portón", "puerta"],
   estacionamiento: ["estacionamiento", "parking", "aparcamiento"],
   sitio: ["sitio", "sitios"],
+  quebrada: ["quebrada", "cañadon", "cañadón", "canyon", "cañón", "canon"],
+  objeto: ["objeto"],
 };
 
 export function iconoPorElNombre(nombre: string | null | undefined): IconoPunto {

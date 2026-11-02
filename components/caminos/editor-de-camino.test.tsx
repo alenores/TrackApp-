@@ -103,7 +103,7 @@ describe("editar un Camino desde Marcas", () => {
       ));
       expect(mapa.fondoInicial).toBe("satelital");
       expect(mapa.vista).toBe(vistaInicial);
-      expect(mapa.encuadre).toBeNull();
+      expect(mapa.encuadre == null).toBe(true);
 
       const ultimaVista = { lon: -64.81, lat: -31.41, zoom: 16 };
       await act(async () => mapa.alMoverVista?.(ultimaVista));
@@ -114,19 +114,14 @@ describe("editar un Camino desde Marcas", () => {
     }
   });
 
-  it("sin vista previa encuadra el Camino entero", async () => {
+  it("sin vista previa no encuadra el Camino: editar no pide un traslado", async () => {
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);
     try {
       await act(async () => raiz.render(<EditorDeCamino id={7} alVolver={() => {}} />));
       expect(mapa.fondoInicial).toBe("satelital");
       expect(mapa.vista).toBeNull();
-      expect(mapa.encuadre).toEqual({
-        latNorte: -31.4,
-        latSur: -31.42,
-        lonOeste: -64.82,
-        lonEste: -64.8,
-      });
+      expect(mapa.encuadre == null).toBe(true);
     } finally {
       act(() => raiz.unmount());
     }

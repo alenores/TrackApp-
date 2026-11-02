@@ -194,31 +194,15 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const encuadreDe = useCallback((lista: MarcaDeLaLista[]): Rectangulo | null =>
     rectanguloDe(lista.flatMap((marca) => coordenadasDe(marca, porId.caminos, porId.detalles, porId.zonas))), [porId]);
 
-  // Cambiar origen, autoría o clases se encuadra a lo que queda visible.
-  // Tildar o destildar (grupo o una marca) solo prende o apaga el dibujo:
-  // el lugar y el zoom se quedan. Elegir «Mostrar en el mapa» viaja hasta ella.
-  const alCambiarLoElegido = (nuevosFiltros: FiltrosDeMarcas, nuevasDestildadas: string[]) => {
-    if (!ancha) return;
-    setDondeEstaba(null);
-    setEncuadre(encuadreDe(lasDelMapa(marcas, filtrosQueSeAplican(nuevosFiltros), miPerfilId, new Set(nuevasDestildadas))));
-  };
+  // El mapa solo se mueve si el usuario pidió ir a un lugar («Mostrar en el
+  // mapa», buscar). Filtrar, tildar o bajar el panel solo cambia lo dibujado.
   const cambiarFiltros = (nuevos: FiltrosDeMarcas) => {
     guardarFiltros({ clases: nuevos.clases, actividad: null, autoria: nuevos.autoria, origen: nuevos.origen });
-    // La actividad cambia lo dibujado, nunca el lugar ni el zoom que se mira.
-    // Repetir la actividad elegida (también «Todas») tampoco reencuadra.
-    const cambiaOtroFiltro = nuevos.origen !== filtros.origen || nuevos.autoria !== filtros.autoria
-      || nuevos.clases.length !== filtros.clases.length
-      || nuevos.clases.some((clase) => !filtros.clases.includes(clase));
-    if (cambiaOtroFiltro) alCambiarLoElegido(nuevos, destildadasGuardadas);
   };
   const cambiarDestildadas = (nuevas: string[]) => {
     guardarDestildadas(nuevas);
   };
   const alCambiarPanel = (arriba: boolean) => {
-    if (!arriba && !eligiendoPunto) {
-      setDondeEstaba(null);
-      setEncuadre(encuadreDe(enElMapa));
-    }
     setPanelArriba(arriba);
   };
   const mostrar = (marca: MarcaDeLaLista) => {
@@ -229,6 +213,7 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     setPanelArriba(false);
   };
 
+  /** Vuelve a la lista sin pedir un traslado: conserva centro y zoom. */
   const volverALista = useCallback((nuevoMensaje: string | null, lugar?: VistaDelMapa | null) => {
     setVista(LISTA);
     // «Guardado» no se anuncia: el cartel de arriba obligaba a apretar Cerrar.
@@ -237,16 +222,17 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     const conservar = lugar ?? vistaActual;
     if (conservar) {
       setDondeEstaba(conservar);
+      setVistaActual(conservar);
       setEncuadre(null);
-    } else {
-      setDondeEstaba(null);
     }
+    // Sin lugar conocido no se toca la cámara: un encuadre viejo o Córdoba
+    // sería un salto que el usuario no pidió.
   }, [setVista, vistaActual]);
-  // Adentro de agregar o editar, el atrás del celular vuelve a la lista.
+  // Traer / desde-salida: el atrás vuelve a la lista. Punto, trazo y Camino
+  // manejan el atrás ellos, para devolver el lugar que se estaba mirando.
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
-  // Camino nuevo y editar Camino manejan el atrás ellos: así no se pierde el lugar.
   useCerrarConAtras(
-    vista.clase !== "lista" && vista.clase !== "dibujar-camino" && vista.clase !== "editar-camino",
+    vista.clase === "traer" || vista.clase === "desde-salida",
     alAtras,
   );
 
@@ -303,12 +289,12 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
     ];
   };
 
-  if (vista.clase === "traer") return <TraerCaminosDeAfuera alVolver={() => volverALista(null)} />;
-  if (vista.clase === "desde-salida") return <CaminosDesdeUnaSalida alVolver={() => volverALista(null)} />;
+  if (vista.clase === "traer") return <TraerCaminosDeAfuera alVolver={() => volverALista(null, vistaActual)} />;
+  if (vista.clase === "desde-salida") return <CaminosDesdeUnaSalida alVolver={() => volverALista(null, vistaActual)} />;
   if (vista.clase === "dibujar-camino") return <DibujarCamino alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "detalle") return <EditorDeDetalle que={vista.que} alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "editar-camino") {
-    return <EditorDeCamino id={vista.id} vistaInicial={vista.lugar} alVolver={(lugar) => volverALista(null, lugar)} />;
+    return <EditorDeCamino id={vista.id} vistaInicial={vista.lugar} alVolver={(lugar) => volverALista(null, lugar ?? vistaActual)} />;
   }
 
   const cuantas = enElMapa.filter((marca) => marca.grupo !== "zona").length;

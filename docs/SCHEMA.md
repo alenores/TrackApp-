@@ -220,10 +220,14 @@ sesión pueden leerla; no pueden escribir ni borrar directamente.
 | `precision_gps_metros` | real | cuánto podía errar el GPS. Vacío si se marcó a mano o es un trazo |
 | `creado_en`, `actualizado_en`, `eliminado_en` | timestamptz | como en toda tabla |
 
-**Íconos disponibles:** refugio · arroyo · cumbre · puente · pueblo · cartel ·
-fuente · iglesia · cruce · mirador · cascada · tranquera (desde 2026-09-21) ·
-estacionamiento · sitio (desde 2026-10-15) · campamento (desde 2026-10-22) ·
-casa (desde 2026-10-24)
+**Íconos disponibles:** cascada · arroyo · puente · fuente · laguna · lago ·
+juntura · campamento · refugio · casa · estacionamiento · pueblo · iglesia ·
+escalada · posible_escalada · cruce · mirador · tranquera · cumbre · cartel ·
+sitio · quebrada · objeto.
+
+Laguna, lago, juntura, escalada, posible_escalada, quebrada y objeto se
+habilitaron el 2026-11-02 con `iconos_nuevos_2026_11_02`
+(`scripts/supabase-iconos-nuevos-2026-11-02.sql`).
 
 Los dos últimos se incorporaron a la interfaz el 2026-10-15, pero faltaban en
 la base. Se habilitaron y verificaron en producción el 2026-10-22 mediante

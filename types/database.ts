@@ -47,40 +47,55 @@ export const NIVELES_ESFUERZO: NivelEsfuerzo[] = [
 export type TipoAnotacion = "punto" | "trazo";
 
 export type IconoPunto =
-  | "refugio"
+  | "cascada"
   | "arroyo"
-  | "cumbre"
   | "puente"
-  | "pueblo"
-  | "cartel"
   | "fuente"
+  | "laguna"
+  | "lago"
+  | "juntura"
+  | "campamento"
+  | "refugio"
+  | "casa"
+  | "estacionamiento"
+  | "pueblo"
   | "iglesia"
+  | "escalada"
+  | "posible_escalada"
   | "cruce"
   | "mirador"
-  | "cascada"
   | "tranquera"
-  | "estacionamiento"
+  | "cumbre"
+  | "cartel"
   | "sitio"
-  | "campamento"
-  | "casa";
+  | "quebrada"
+  | "objeto";
 
+/** Orden de pantalla: agua · parada · escalada · orientación. */
 export const ICONOS_PUNTO: IconoPunto[] = [
-  "refugio",
+  "cascada",
   "arroyo",
-  "cumbre",
   "puente",
-  "pueblo",
-  "cartel",
   "fuente",
+  "laguna",
+  "lago",
+  "juntura",
+  "campamento",
+  "refugio",
+  "casa",
+  "estacionamiento",
+  "pueblo",
   "iglesia",
+  "escalada",
+  "posible_escalada",
   "cruce",
   "mirador",
-  "cascada",
   "tranquera",
-  "estacionamiento",
+  "cumbre",
+  "cartel",
   "sitio",
-  "campamento",
-  "casa",
+  "quebrada",
+  "objeto",
 ];
 
 // ---------------------------------------------------------------- geometría

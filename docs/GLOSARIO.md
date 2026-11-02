@@ -202,14 +202,18 @@ Mientras esté pendiente no se cuenta como perdido: si se contara, la app le
 ofrecería recuperar justo lo que él decidió tirar.
 
 **Punto**
-Marca de un lugar, con su ícono según el tipo (refugio, arroyo, cumbre,
-puente, pueblo, cartel, fuente, iglesia, cruce, mirador, cascada, tranquera,
-estacionamiento, sitio, campamento, casa). El color sale del tipo: azul para
-arroyo, fuente, cascada y puente; blanco y gris para iglesia, casa, campamento
-y refugio; marrón para cumbre y tranquera; amarillo para estacionamiento.
-Campamento es una carpa, el mismo dibujo que los campings que trae el mapa: es
-el mismo concepto. Casa lleva chimenea y ventana, para no confundirse con el
-refugio.
+Marca de un lugar, con su ícono según el tipo. En el selector van por secciones:
+agua (cascada, arroyo, puente, fuente, laguna, lago, juntura); parada
+(campamento, refugio, casa, estacionamiento, pueblo, iglesia); escalada
+(escalada, posible escalada); orientación (cruce, mirador, tranquera, cumbre,
+cartel, sitio, quebrada, objeto). El color sale del tipo: azul para agua;
+blanco y gris para iglesia, casa, campamento, refugio, posible escalada y
+objeto; marrón para cumbre, tranquera y quebrada; amarillo para
+estacionamiento; naranja para escalada; verde para el resto. Campamento es una
+carpa, el mismo dibujo que los campings que trae el mapa. Refugio es una
+camita. Casa lleva chimenea y ventana. Juntura usa el mismo dibujo que el cruce,
+en azul. Laguna y lago comparten el óvalo de agua. Quebrada es un valle en V.
+Objeto es una cajita gris.
 Puede llevar **Atención**.
 Lleva **título** (lo que se ve en el mapa al acercarse) y **descripción**
 (solo en la ficha), y puede llevar foto. Se ubica tocando el mapa propio o

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { BuscadorDelMapa } from "@/components/marcas/buscador-del-mapa";
 import { LineasDelTerritorio } from "@/components/mapas/lineas-del-territorio";
 import { useAlMarcar } from "@/hooks/use-al-marcar";
@@ -10,6 +10,7 @@ import { EncabezadoDeMapas } from "@/components/mapas/pantalla-de-mapas";
 import { MapaConPanel } from "@/components/ui/mapa-con-panel";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useAnotaciones } from "@/hooks/use-anotaciones";
+import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { CORDOBA_COMPLETA } from "@/lib/mapas/general";
 import { queEs } from "@/components/anotaciones/icono-de-anotacion";
 import type { VistaDelMapa } from "@/lib/mapas/vista";
@@ -20,8 +21,9 @@ import type { VistaDelMapa } from "@/lib/mapas/vista";
  * ubicado desde Google (excepción de la decisión 074).
  *
  * Abre en satelital, conserva el centro y el zoom de Marcas, y deja
- * visibles las marcas que ya existen. Al guardar, cerrar o borrar vuelve
- * a la lista con lo que pasó.
+ * visibles las marcas que ya existen. Editar no pide un traslado: el mapa
+ * no salta al punto. Buscar o escribir una coordenada sí mueven. Al
+ * guardar, cerrar o borrar vuelve a la lista con el mismo lugar.
  */
 
 export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo"; puntoInicial?: { lon: number; lat: number } } | { clase: "existente"; id: number };
@@ -44,7 +46,8 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
   const huboFormulario = useRef(false);
   const datosListos = anotar.estado !== "abriendo" && anotar.estado !== "sin_datos";
 
-  // Una coordenada escrita mueve el mapa de un salto, aunque antes se haya buscado un pueblo.
+  // Solo en punto/trazo nuevo: la coordenada escrita es un pedido de ir ahí.
+  // Editar uno existente no mueve el mapa por abrir el formulario.
   useEffect(() => {
     if (!esNuevo || anotar.enfoque === enfoqueAnterior.current) return;
     enfoqueAnterior.current = anotar.enfoque;
@@ -57,7 +60,7 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
     if (empezo.current || !datosListos) return;
     empezo.current = true;
     if (que.clase === "existente" && !anotar.anotaciones.some((cada) => cada.id === que.id)) {
-      alVolver("Esa marca ya no está en el mapa: alguien la borró. La lista ya está al día.");
+      alVolver("Esa marca ya no está en el mapa: alguien la borró. La lista ya está al día.", dondeEstaba.current);
       return;
     }
     if (que.clase === "existente") anotar.abrir(que.id);
@@ -74,6 +77,12 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
     if (huboFormulario.current && !anotar.guardando) alVolver(anotar.mensaje, dondeEstaba.current);
   }, [anotar.borrador, anotar.guardando, anotar.mensaje, alVolver]);
 
+  const volver = useCallback(() => {
+    if (anotar.guardando) return;
+    alVolver(null, dondeEstaba.current);
+  }, [alVolver, anotar.guardando]);
+  useCerrarConAtras(true, volver);
+
   const borrador = anotar.borrador;
   const queHacer = anotar.marcando
     ? borrador?.tipo === "trazo"
@@ -89,9 +98,14 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
       : borrador?.tipo === "trazo" ? "Trazo" : "Punto"
     : que.tipo === "trazo" ? "Trazo nuevo" : "Punto nuevo";
 
+  // Editar no pide traslado: sin vista de Marcas no se encuadra al punto.
+  // Buscar (marcar.vista) o, en uno nuevo, la coordenada escrita sí.
+  const encuadre = marcar.vista
+    ?? (vistaConservada ? null : (esNuevo ? (anotar.enfoque ?? CORDOBA_COMPLETA) : null));
+
   return (
     <div className="space-y-3">
-      <EncabezadoDeMapas titulo="Marcas" subtitulo={titulo} alVolver={() => alVolver(null, dondeEstaba.current)} volverDeshabilitado={anotar.guardando} />
+      <EncabezadoDeMapas titulo="Marcas" subtitulo={titulo} alVolver={volver} volverDeshabilitado={anotar.guardando} />
       {anotar.estado === "abriendo" ? (
         <Tarjeta><p role="status" className="text-base text-texto-suave">Abriendo las marcas…</p></Tarjeta>
       ) : anotar.estado === "sin_datos" ? (
@@ -107,7 +121,7 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
               llenarElAltoEnLaComputadora
               fondoInicial="satelital"
               vista={vistaConservada}
-              encuadre={marcar.vista ?? (vistaConservada ? null : (anotar.enfoque ?? CORDOBA_COMPLETA))}
+              encuadre={encuadre}
               alMoverVista={(vista) => { dondeEstaba.current = vista; }}
               viaje={marcar.viaje}
               rectangulos={marcar.rectangulos}

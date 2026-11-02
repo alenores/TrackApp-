@@ -9,20 +9,38 @@ import type { IconoPunto } from "@/types/database";
  * computadora y en el celular.
  */
 export const COMO_SE_LLAMA: Record<IconoPunto, string> = {
-  refugio: "Refugio",
+  cascada: "Cascada",
   arroyo: "Arroyo",
-  cumbre: "Cumbre",
   puente: "Puente",
-  pueblo: "Pueblo",
-  cartel: "Cartel",
   fuente: "Fuente",
+  laguna: "Laguna",
+  lago: "Lago",
+  juntura: "Juntura",
+  campamento: "Campamento",
+  refugio: "Refugio",
+  casa: "Casa",
+  estacionamiento: "Estacionamiento",
+  pueblo: "Pueblo",
   iglesia: "Iglesia",
+  escalada: "Escalada",
+  posible_escalada: "Posible escalada",
   cruce: "Cruce",
   mirador: "Mirador",
-  cascada: "Cascada",
   tranquera: "Tranquera",
-  estacionamiento: "Estacionamiento",
+  cumbre: "Cumbre",
+  cartel: "Cartel",
   sitio: "Sitio",
-  campamento: "Campamento",
-  casa: "Casa",
+  quebrada: "Quebrada",
+  objeto: "Objeto",
 };
+
+/**
+ * Secciones del selector «Qué es», en el orden de uso en el cerro.
+ * Entre una y otra va una línea sutil.
+ */
+export const SECCIONES_DE_ICONO: IconoPunto[][] = [
+  ["cascada", "arroyo", "puente", "fuente", "laguna", "lago", "juntura"],
+  ["campamento", "refugio", "casa", "estacionamiento", "pueblo", "iglesia"],
+  ["escalada", "posible_escalada"],
+  ["cruce", "mirador", "tranquera", "cumbre", "cartel", "sitio", "quebrada", "objeto"],
+];

@@ -10,7 +10,8 @@ import type { Anotacion, IconoPunto } from "@/types/database";
  */
 
 export const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
-  refugio: "M3 12l9-8 9 8M5 10v10h14V10M9 20v-6h6v6",
+  // Camita: el dibujo típico de alojamiento.
+  refugio: "M3 7v11M3 11h10v7M13 11h7a1 1 0 0 1 1 1v6M3 18h18M5 11V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3",
   cumbre: "M8 14l4-8 4 8M4 20h16",
   pueblo: "M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h6M9 11h6M9 15h6",
   fuente: "M12 22a8 8 0 0 0 8-8c0-4-8-12-8-12S4 10 4 14a8 8 0 0 0 8 8z",
@@ -21,13 +22,25 @@ export const TRAZOS_DEL_ICONO: Record<IconoPunto, string> = {
   puente: "M3 18 Q 12 4 21 18M3 18h18",
   cartel: "M5 4h14v8H5zM12 12v8",
   cruce: "M12 21v-8M12 13 5 4M12 13l7-9",
+  // Mismo dibujo que el cruce; el color azul lo marca como juntura de agua.
+  juntura: "M12 21v-8M12 13 5 4M12 13l7-9",
   tranquera: "M4 4v16M20 4v16M4 12h16M4 8l16 8",
   estacionamiento: "M7 20V4h6a4 4 0 0 1 0 8H7",
   sitio: "M12 21s-6-4.5-6-9a6 6 0 0 1 12 0c0 4.5-6 9-6 9zM14 11.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0",
   // Una carpa con su puerta: el mismo dibujo que los campings del mapa.
   campamento: "M12 4 3 20h18L12 4ZM12 11l-3 9M12 11l3 9",
-  // Con chimenea y ventana, para no confundirla con el refugio, que lleva puerta.
+  // Con chimenea y ventana, para no confundirla con el refugio (camita).
   casa: "M3 12l9-8 9 8M5 10v10h14V10M16 7V3h2v6M10 13h4v4h-4z",
+  // Laguna y lago: el mismo óvalo de agua; se distinguen por el nombre.
+  laguna: "M3 13c1.5-3.5 5-6 9-6s7.5 2.5 9 6c-1.5 3.5-5 6-9 6s-7.5-2.5-9-6z",
+  lago: "M3 13c1.5-3.5 5-6 9-6s7.5 2.5 9 6c-1.5 3.5-5 6-9 6s-7.5-2.5-9-6z",
+  // Hombrecito escalando una pared.
+  escalada: "M10 4.5a1.5 1.5 0 1 0 .01 0M10 6l1.5 5.5M10 8l-3.5-1.5M10 8l4-2.5M11.5 11.5 8 19M11.5 11.5 16 17.5M18 3v18",
+  posible_escalada: "M10 4.5a1.5 1.5 0 1 0 .01 0M10 6l1.5 5.5M10 8l-3.5-1.5M10 8l4-2.5M11.5 11.5 8 19M11.5 11.5 16 17.5M18 3v18",
+  // Valle en V: dos paredes de la quebrada.
+  quebrada: "M3 5l6 15M21 5l-6 15M9 20h6",
+  // Cajita.
+  objeto: "M5 8h14v11H5zM5 12h14M9 8V5h6v3",
 };
 
 /** Un alambrado traído de OpenStreetMap: postes y dos hilos. */

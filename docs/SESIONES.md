@@ -4,6 +4,62 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Íconos de punto: camita, agua, escalada y secciones
+
+### Estado al inicio
+El selector «Qué es» mezclaba todos los tipos sin orden. Faltaban lago,
+laguna, juntura, escalada, posible escalada, quebrada y objeto. Refugio se
+veía como una casita.
+
+### Lo que se hizo
+Refugio pasó a camita. Se sumaron los tipos nuevos con sus colores (azul,
+naranja, gris, marrón). El selector quedó en cuatro bloques con una línea
+sutil: agua, parada, escalada y orientación. Quedó el script de la base para
+habilitar los valores nuevos.
+
+### Decisiones tomadas
+Pedido de Ale, 2026-11-02: secciones, camita de refugio, y los tipos nuevos
+(lago/laguna mismo dibujo; juntura = cruce azul; objeto = cajita gris;
+quebrada = valle en V marrón).
+
+### Documentos actualizados
+`docs/GLOSARIO.md`, `docs/SCHEMA.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Hay que correr en la base `scripts/supabase-iconos-nuevos-2026-11-02.sql`:
+sin eso, al guardar un tipo nuevo la base lo rechaza.
+
+### Pendientes para la próxima
+Aplicar el script en la base de TrackApp.
+
+---
+
+## Sesión 2026-11-02 — El mapa solo se mueve si lo pedís
+
+### Estado al inicio
+En Marcas, guardar un punto, filtrar, bajar el panel o volver de editar podía
+sacar el zoom y el foco. El tilde de grupos ya no movía; el resto sí.
+
+### Lo que se hizo
+Regla: el mapa solo se mueve si el usuario pide ir a un lugar (mostrar,
+buscar, coordenada, GPS, abrir una salida o navegar). Filtrar, tildar, bajar
+el panel, editar y volver dejan el mismo centro y zoom. Editar un punto o
+Camino ya no encuadra la marca al abrir.
+
+### Decisiones tomadas
+Pedido de Ale, 2026-11-02: distinguir pedido de traslado de cualquier otra acción.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Subir.
+
+---
+
 ## Sesión 2026-11-02 — Tilde de Marcas no mueve el mapa
 
 ### Estado al inicio
