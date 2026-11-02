@@ -4,8 +4,14 @@ Decisión de Ale, 2026-10-22.
 
 En Marcas, el «+» suma una tercera forma de agregar, junto a «A mano» y «Traer
 de afuera»: **«Desde una salida»**. Se elige una salida con archivo GPS, de
-cualquier usuario, y su línea se abre como **borrador del GPS**. La ven solo
-quienes pueden crear Caminos (Administrador y Premium), como el resto del «+».
+cualquier usuario, y su línea se abre como **borrador**. La ven solo quienes
+pueden crear Caminos (Administrador y Premium), como el resto del «+».
+
+**El mismo borrador sirve para «Traer de afuera»** (Ale, 2026-11-02): las
+líneas de un KML/KMZ/GPX se comparan igual con los Caminos existentes (verde =
+coincide; color de salidas = nuevo), se parten, se descartan y se crean de a
+un pedazo. En Traer, una parte nueva también puede sumarse como **trazo**; en
+Desde una salida solo como Camino. Los puntos del archivo se eligen aparte.
 
 **La app propone, el usuario decide.** La app nunca confirma nada:
 

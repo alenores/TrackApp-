@@ -4,6 +4,34 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Traer de afuera con el mismo borrador
+
+### Estado al inicio
+Al traer un KML no se veía qué líneas ya coincidían con Caminos existentes; se
+podía sumar de nuevo lo que ya estaba.
+
+### Lo que se hizo
+«Traer de afuera» usa el mismo borrador que «Desde una salida»: verde si
+coincide, color de salidas si es nuevo; partir, descartar y crear de a un
+pedazo. En Traer, además se puede sumar un trazo. Los puntos se eligen aparte.
+Colores: mismos que en Desde una salida (sin inventar un color nuevo).
+
+### Decisiones tomadas
+Extiende 077 y actualiza 052 / glosario.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`,
+`docs/decisiones/052-marcas-y-mapas-en-el-menu.md`, `docs/GLOSARIO.md`,
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-02 — Referencia al editar la línea
 
 ### Estado al inicio

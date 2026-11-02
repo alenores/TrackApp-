@@ -229,18 +229,21 @@ alambrado. Se dibuja de a toques, un punto por toque. No confundir con el
 
 **Traer de afuera**
 Sumar marcas desde un archivo de Google Earth o de un GPS (KML, KMZ o GPX), en
-vez de dibujarlas. Cada línea se decide como Camino, trazo u omitir; cada
-punto se suma o no. Con vista previa antes de guardar. Ver decisión 052.
+vez de dibujarlas. Las líneas entran al mismo **borrador** que «Desde una
+salida»: se ve qué coincide con Caminos existentes, se parte, se descarta y se
+crea de a un pedazo (Camino o trazo). Los puntos se suman o no, aparte. Ver
+decisiones 052 y 077.
 
 **Desde una salida**
 La tercera forma de agregar en Marcas: la línea del GPS de una salida se abre
-como **borrador del GPS** para ver qué Caminos pisó y crear Caminos nuevos con
-lo que no coincide. Ver decisión 077.
+como **borrador** para ver qué Caminos pisó y crear Caminos nuevos con lo que
+no coincide. Ver decisión 077.
 
-**Borrador del GPS**
-La línea del archivo GPS de una salida mientras se la revisa en «Desde una
-salida»: se corta en partes, se corrige y se descarta. En verde, lo que va
-sobre un Camino existente; nada se guarda hasta tocar Guardar.
+**Borrador**
+La línea de un archivo (GPS de una salida o KML/KMZ/GPX) mientras se la revisa:
+se corta en partes, se corrige y se descarta. En verde, lo que va sobre un
+Camino existente; en el color de las salidas, lo nuevo. Nada se guarda hasta
+tocar Guardar.
 
 **Pasillo**
 La franja de 20 m a cada lado de un Camino. Si el GPS va dentro de ella un

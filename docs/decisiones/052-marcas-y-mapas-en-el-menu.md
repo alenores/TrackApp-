@@ -44,8 +44,10 @@ menos de 1 % de un mapa. Por eso viajan siempre, sin preguntar.
 El «+» lo ven Administrador y Premium. Primero se elige **a mano** o **traer
 de afuera**:
 
-- **Traer de afuera**: un archivo de Google Earth o de un GPS. Cada línea se
-  decide como Camino, trazo u omitir; cada punto se suma o no.
+- **Traer de afuera**: un archivo de Google Earth o de un GPS. Las líneas se
+  abren como borrador (igual que «Desde una salida», decisión 077): se ve qué
+  ya coincide con Caminos, se parte, se descarta y se crea de a un pedazo
+  (Camino o trazo). Cada punto se suma o no.
 - **A mano**: primero se elige qué es —Camino, punto o trazo— y después se
   dibuja **sobre el mapa propio**, nunca sobre Google (decisión 050). Un
   Camino dibujado pide nombre y actividades **al terminar la línea**; largo,
