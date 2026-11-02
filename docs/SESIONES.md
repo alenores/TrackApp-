@@ -4,6 +4,31 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Zoom cercano al pegar la coordenada
+
+### Estado al inicio
+Al pegar la coordenada y confirmar, el mapa a veces se alejaba hasta verse
+casi el continente.
+
+### Lo que se hizo
+Al abrir el editor sobre el punto elegido, el acercamiento no baja de cerca
+(nivel 15) ni pasa del tope satelital. Pegar la coordenada muestra el lugar,
+no el mundo.
+
+### Decisiones tomadas
+Sigue la 074: el punto se ve de cerca; no se conserva un zoom lejano.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-01 — Coordenada al elegir punto y foco en satelital
 
 ### Estado al inicio

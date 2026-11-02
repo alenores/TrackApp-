@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TOPE_DE_ACERCAMIENTO } from "@/components/mapa/capas-base";
-import { accionDeLaCamara, vistaSobreElPunto } from "@/lib/mapas/vista";
+import { ACERCAMIENTO_AL_ELEGIR_PUNTO, accionDeLaCamara, vistaSobreElPunto } from "@/lib/mapas/vista";
 
 describe("vista sobre el punto", () => {
   it("centra en el punto y conserva el zoom si el satelital lo aguanta", () => {
@@ -15,9 +15,15 @@ describe("vista sobre el punto", () => {
     });
   });
 
-  it("usa un zoom razonable si todavía no había vista", () => {
+  it("usa un zoom cercano si todavía no había vista", () => {
     expect(vistaSobreElPunto(-64.81, -31.41, null)).toEqual({
-      lon: -64.81, lat: -31.41, zoom: 15,
+      lon: -64.81, lat: -31.41, zoom: ACERCAMIENTO_AL_ELEGIR_PUNTO,
+    });
+  });
+
+  it("no deja el mapa lejos aunque la vista anterior estuviera en el continente", () => {
+    expect(vistaSobreElPunto(-64.81, -31.41, { zoom: 2 })).toEqual({
+      lon: -64.81, lat: -31.41, zoom: ACERCAMIENTO_AL_ELEGIR_PUNTO,
     });
   });
 });

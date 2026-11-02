@@ -8,7 +8,8 @@ En Marcas, «+», «A mano», «Punto» deja el mapa de Google abierto en el mis
 lugar. Se elige la ubicación tocando el mapa o pegando la coordenada (link de
 Maps o los dos números, como salen de Google Earth) y confirmando. Después se
 abre el formulario sobre el mapa propio, con esa coordenada ya cargada y el
-mapa centrado en el punto. El zoom se conserva, sin pasar del tope del
+mapa centrado en el punto. El zoom se conserva si ya estaba cerca; si estaba
+lejos, se acerca lo suficiente para ver el lugar. Nunca pasa del tope del
 satelital propio (Google puede acercar más). Elegir el lugar no guarda nada: se
 guarda con «Guardar». La elección se puede cancelar; Escape y el botón físico
 de atrás también permiten salir de ella.

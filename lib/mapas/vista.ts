@@ -13,22 +13,33 @@ export type VistaDelMapa = {
 };
 
 /**
+ * Acercamiento mínimo al abrir el editor sobre un punto elegido.
+ *
+ * Pegar una coordenada exacta no sirve si el mapa se aleja al continente:
+ * hay que ver el lugar de cerca. Si la vista anterior estaba más lejos, se
+ * acerca hasta acá; si estaba más cerca, se respeta (hasta el tope satelital).
+ */
+export const ACERCAMIENTO_AL_ELEGIR_PUNTO = 15;
+
+/**
  * Vista para abrir el editor satelital sobre un punto elegido.
  *
- * El centro es el punto (no el centro anterior del mapa). El zoom se conserva,
- * pero no pasa del tope del satelital propio: Google puede acercar más, y si
- * se manda ese zoom el mapa propio se aleja solo al cargar y se pierde el foco.
+ * El centro es el punto (no el centro anterior del mapa). El zoom queda entre
+ * el mínimo para ver el lugar y el tope del satelital propio.
  */
 export function vistaSobreElPunto(
   lon: number,
   lat: number,
   actual: Pick<VistaDelMapa, "zoom"> | null,
-  zoomSiFalta = 15,
 ): VistaDelMapa {
+  const pedido = actual?.zoom ?? ACERCAMIENTO_AL_ELEGIR_PUNTO;
   return {
     lon,
     lat,
-    zoom: Math.min(actual?.zoom ?? zoomSiFalta, TOPE_DE_ACERCAMIENTO.satelital),
+    zoom: Math.min(
+      Math.max(pedido, ACERCAMIENTO_AL_ELEGIR_PUNTO),
+      TOPE_DE_ACERCAMIENTO.satelital,
+    ),
   };
 }
 

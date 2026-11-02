@@ -180,7 +180,7 @@ describe("Marcas: líneas de zonas y sectores", () => {
         puntoInicial: { lon: -64.812345678, lat: -31.412345678 },
       });
       expect(leerEditor()?.vistaInicial).toEqual({
-        lon: -64.812345678, lat: -31.412345678, zoom: 14.3,
+        lon: -64.812345678, lat: -31.412345678, zoom: 15,
       });
     } finally {
       act(() => raiz.unmount());
