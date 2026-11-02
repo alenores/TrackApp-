@@ -1,5 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { accionDeLaCamara } from "@/lib/mapas/vista";
+import { TOPE_DE_ACERCAMIENTO } from "@/components/mapa/capas-base";
+import { accionDeLaCamara, vistaSobreElPunto } from "@/lib/mapas/vista";
+
+describe("vista sobre el punto", () => {
+  it("centra en el punto y conserva el zoom si el satelital lo aguanta", () => {
+    expect(vistaSobreElPunto(-64.81, -31.41, { zoom: 15.7 })).toEqual({
+      lon: -64.81, lat: -31.41, zoom: 15.7,
+    });
+  });
+
+  it("baja el zoom al tope del satelital propio si Google estaba más cerca", () => {
+    expect(vistaSobreElPunto(-64.81, -31.41, { zoom: 19.2 })).toEqual({
+      lon: -64.81, lat: -31.41, zoom: TOPE_DE_ACERCAMIENTO.satelital,
+    });
+  });
+
+  it("usa un zoom razonable si todavía no había vista", () => {
+    expect(vistaSobreElPunto(-64.81, -31.41, null)).toEqual({
+      lon: -64.81, lat: -31.41, zoom: 15,
+    });
+  });
+});
 
 describe("acción de la cámara", () => {
   it("la vista dejada al guardar gana al encuadre de apertura", () => {

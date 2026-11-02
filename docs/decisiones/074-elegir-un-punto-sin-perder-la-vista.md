@@ -5,11 +5,13 @@
 ## La decisión
 
 En Marcas, «+», «A mano», «Punto» deja el mapa de Google abierto en el mismo
-lugar. Se toca la ubicación exacta del punto y después se abre el formulario,
-sobre el mapa propio, con esa coordenada ya cargada y el centro y zoom exactos
-del momento del toque. Elegir el lugar no guarda nada: se guarda con «Guardar».
-La elección se puede cancelar; Escape y el botón físico de atrás también
-permiten salir de ella.
+lugar. Se elige la ubicación tocando el mapa o pegando la coordenada (link de
+Maps o los dos números, como salen de Google Earth) y confirmando. Después se
+abre el formulario sobre el mapa propio, con esa coordenada ya cargada y el
+mapa centrado en el punto. El zoom se conserva, sin pasar del tope del
+satelital propio (Google puede acercar más). Elegir el lugar no guarda nada: se
+guarda con «Guardar». La elección se puede cancelar; Escape y el botón físico
+de atrás también permiten salir de ella.
 
 Es una excepción explícita a la decisión 050: solo se elige la ubicación
 inicial de un punto. Caminos y trazos se dibujan sobre el mapa propio.

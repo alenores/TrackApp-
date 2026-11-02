@@ -110,7 +110,8 @@ describe("Marcas: líneas de zonas y sectores", () => {
       expect(editor).toBeUndefined();
       expect(elegirPunto).toBeTypeOf("function");
       expect(ordenDeCamara.encuadre).toBeNull();
-      expect(contenedor.textContent).toContain("Tocá el mapa donde querés agregar el punto.");
+      expect(contenedor.textContent).toContain("Tocá el mapa donde querés agregar el punto, o pegá la coordenada.");
+      expect(contenedor.querySelector("#coordenada-del-punto-nuevo")).not.toBeNull();
       await tocar("Cancelar");
       expect(elegirPunto).toBeUndefined();
       // Cancelar no mueve el mapa. Se puede empezar de nuevo en el mismo lugar.
@@ -119,14 +120,68 @@ describe("Marcas: líneas de zonas y sectores", () => {
       await act(async () => contenedor.querySelector<HTMLButtonElement>('[aria-label="Agregar una marca"]')!.click());
       await tocar("A mano");
       await tocar("Punto");
-      const alTocar = { lat: -31.401, lon: -64.801, zoom: 15.7 };
+      // El mapa manda el punto tocado como centro; el zoom de Google más cerca
+      // del tope satelital se baja para que el editor no se aleje al abrir.
+      const alTocar = { lat: -31.412345678, lon: -64.812345678, zoom: 18.4 };
       await act(async () => elegirPunto?.(-64.812345678, -31.412345678, alTocar));
       expect(leerEditor()?.que).toEqual({ clase: "nuevo", tipo: "punto", puntoInicial: { lon: -64.812345678, lat: -31.412345678 } });
-      expect(leerEditor()?.vistaInicial).toEqual(alTocar);
+      expect(leerEditor()?.vistaInicial).toEqual({ lon: -64.812345678, lat: -31.412345678, zoom: 16 });
       expect(contenedor.querySelector("[data-editor]")).not.toBeNull();
-      await act(async () => editor?.alVolver(null, alTocar));
-      expect(ordenDeCamara.dondeEstaba).toEqual(alTocar);
+      const vuelta = { lon: -64.812345678, lat: -31.412345678, zoom: 16 };
+      await act(async () => editor?.alVolver(null, vuelta));
+      expect(ordenDeCamara.dondeEstaba).toEqual(vuelta);
       expect(ordenDeCamara.encuadre).toBeNull();
+    } finally {
+      act(() => raiz.unmount());
+      contenedor.remove();
+      consulta.mockRestore();
+      categoria = "normal";
+    }
+  });
+
+  it.each([true, false])("pega la coordenada, confirma y abre el editor centrado en ese punto (pantalla ancha: %s)", async (ancha) => {
+    categoria = "administrador";
+    editor = undefined;
+    const consulta = vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
+      matches: ancha, media, onchange: null,
+      addListener: () => {}, removeListener: () => {},
+      addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => true,
+    }));
+    const contenedor = document.createElement("div");
+    document.body.append(contenedor);
+    const raiz = createRoot(contenedor);
+    const tocar = async (texto: string) => {
+      const boton = [...document.querySelectorAll<HTMLButtonElement>("button")]
+        .find((cada) => cada.textContent?.startsWith(texto));
+      if (!boton) throw new Error(`No está ${texto}`);
+      await act(async () => boton.click());
+    };
+    try {
+      await act(async () => raiz.render(<PantallaDeMarcas />));
+      await act(async () => moverVista?.({ lat: -31.4, lon: -64.8, zoom: 14.3 }));
+      if (!ancha) await act(async () => contenedor.querySelector<HTMLElement>('[aria-label="Abrir marcas"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+      await act(async () => contenedor.querySelector<HTMLButtonElement>('[aria-label="Agregar una marca"]')!.click());
+      await tocar("A mano");
+      await tocar("Punto");
+      const confirmar = () => [...document.querySelectorAll<HTMLButtonElement>("button")]
+        .find((cada) => cada.textContent === "Usar esta coordenada")!;
+      expect(confirmar().disabled).toBe(true);
+      const campo = contenedor.querySelector<HTMLInputElement>("#coordenada-del-punto-nuevo")!;
+      await act(async () => {
+        const poner = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+        poner?.call(campo, "-31.412345678, -64.812345678");
+        campo.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      expect(confirmar().disabled).toBe(false);
+      await act(async () => confirmar().click());
+      expect(leerEditor()?.que).toEqual({
+        clase: "nuevo", tipo: "punto",
+        puntoInicial: { lon: -64.812345678, lat: -31.412345678 },
+      });
+      expect(leerEditor()?.vistaInicial).toEqual({
+        lon: -64.812345678, lat: -31.412345678, zoom: 14.3,
+      });
     } finally {
       act(() => raiz.unmount());
       contenedor.remove();

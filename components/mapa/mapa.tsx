@@ -2049,9 +2049,10 @@ export function Mapa({
     mapa.getCanvas().style.cursor = "crosshair";
 
     const tocar = (evento: { lngLat: maplibregl.LngLat }) => {
-      const centro = mapa.getCenter();
+      // Centro = el punto tocado, no el centro anterior del mapa: la pantalla
+      // siguiente (satelital propio) tiene que abrir mirando ese lugar.
       alMarcarPunto(evento.lngLat.lng, evento.lngLat.lat, {
-        lon: centro.lng, lat: centro.lat, zoom: mapa.getZoom(),
+        lon: evento.lngLat.lng, lat: evento.lngLat.lat, zoom: mapa.getZoom(),
       });
     };
 

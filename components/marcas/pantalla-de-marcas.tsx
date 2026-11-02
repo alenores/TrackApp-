@@ -16,6 +16,7 @@ import { CaminosDesdeUnaSalida } from "@/components/caminos/caminos-desde-una-sa
 import { EditorDeCamino } from "@/components/caminos/editor-de-camino";
 import { BotonAgregar } from "@/components/ui/boton-agregar";
 import { Boton } from "@/components/ui/boton";
+import { CampoDeCoordenada } from "@/components/ui/campo-de-coordenada";
 import { EnlaceAGoogleMaps } from "@/components/ui/enlace-a-google-maps";
 import { Emergente, BotonDeEmergente } from "@/components/ui/emergente";
 import { ListaYMapa } from "@/components/ui/lista-y-mapa";
@@ -27,9 +28,10 @@ import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
 import { usePreferencia } from "@/hooks/use-preferencia";
+import { leerCoordenada } from "@/lib/coordenadas";
 import { sectoresPorZona } from "@/lib/mapas/general";
 import type { VistaDeLineas } from "@/lib/mapas/lineas-del-territorio";
-import type { VistaDelMapa } from "@/lib/mapas/vista";
+import { vistaSobreElPunto, type VistaDelMapa } from "@/lib/mapas/vista";
 import { puedeCambiarDelMapa, puedeSumarAlMapa } from "@/lib/mapas/permisos";
 import {
   alternarGrupo,
@@ -110,13 +112,26 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [eligiendo, setEligiendo] = useState<"nada" | "como" | "que">("nada");
   const [eligiendoPunto, setEligiendoPunto] = useState(false);
-  const cancelarEleccion = useCallback(() => setEligiendoPunto(false), []);
+  const [coordenadaDelPunto, setCoordenadaDelPunto] = useState("");
+  const lecturaDelPunto = useMemo(() => leerCoordenada(coordenadaDelPunto), [coordenadaDelPunto]);
+  const cancelarEleccion = useCallback(() => {
+    setEligiendoPunto(false);
+    setCoordenadaDelPunto("");
+  }, []);
   useCerrarConAtras(eligiendoPunto, cancelarEleccion);
   const [panelArriba, setPanelArriba] = useState(false);
   const [encuadre, setEncuadre] = useState<Rectangulo | null>(null);
   const [pedazo, setPedazo] = useState<Rectangulo | null>(null);
   const [dondeEstaba, setDondeEstaba] = useState<VistaDelMapa | null>(null);
   const [vistaActual, setVistaActual] = useState<VistaDelMapa | null>(null);
+  const abrirPuntoElegido = useCallback((lon: number, lat: number, actual: VistaDelMapa | null) => {
+    const lugar = vistaSobreElPunto(lon, lat, actual);
+    setEligiendoPunto(false);
+    setCoordenadaDelPunto("");
+    setPanelArriba(false);
+    setVistaActual(lugar);
+    setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto", puntoInicial: { lon, lat } }, lugar });
+  }, [setVista]);
   const [viaje, setViaje] = useState(0);
   const [lineas, setLineas] = useState<VistaDeLineas>("zonas");
   const [seleccion, elegirSeleccion] = useSeleccionDelMapa();
@@ -300,7 +315,26 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   const zonasEnElMapa = enElMapa.length - cuantas;
   const indicacionDelPunto = (
     <Tarjeta className="space-y-3">
-      <p role="status" className="text-base text-texto">Tocá el mapa donde querés agregar el punto.</p>
+      <p role="status" className="text-base text-texto">
+        Tocá el mapa donde querés agregar el punto, o pegá la coordenada.
+      </p>
+      <CampoDeCoordenada
+        id="coordenada-del-punto-nuevo"
+        etiqueta="Coordenada"
+        ayuda="Pegá el link de Maps o los dos números, como salen de Google Earth."
+        valor={coordenadaDelPunto}
+        lectura={lecturaDelPunto}
+        alCambiar={setCoordenadaDelPunto}
+      />
+      <Boton
+        disabled={lecturaDelPunto.clase !== "leida"}
+        onClick={() => {
+          if (lecturaDelPunto.clase !== "leida") return;
+          abrirPuntoElegido(lecturaDelPunto.lon, lecturaDelPunto.lat, vistaActual);
+        }}
+      >
+        Usar esta coordenada
+      </Boton>
       <Boton variante="secundario" onClick={cancelarEleccion}>Cancelar</Boton>
     </Tarjeta>
   );
@@ -363,12 +397,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
             viaje={viaje}
             alMirar={guardarPedazo}
             alMoverVista={setVistaActual}
-            alElegirPunto={eligiendoPunto ? (lon, lat, lugar) => {
-              setEligiendoPunto(false);
-              setPanelArriba(false);
-              setVistaActual(lugar);
-              setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto", puntoInicial: { lon, lat } }, lugar });
-            } : undefined}
+            alElegirPunto={eligiendoPunto
+              ? (lon, lat, lugar) => abrirPuntoElegido(lon, lat, lugar)
+              : undefined}
             alEditarCamino={(id) => setVista({ clase: "editar-camino", id, lugar: vistaActual })}
             alEliminarCamino={eliminarCamino}
             puedeEditarCamino={(autorId) => puedeCambiarDelMapa(categoria, miPerfilId, autorId)}

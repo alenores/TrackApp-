@@ -4,6 +4,34 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Coordenada al elegir punto y foco en satelital
+
+### Estado al inicio
+Punto nuevo en Marcas solo se elegía tocando Google; al pasar al satelital
+propio a veces se perdía el centro o el zoom.
+
+### Lo que se hizo
+En la pantalla de elegir ubicación se puede pegar la coordenada y confirmar.
+Al tocar o confirmar, el editor abre centrado en el punto y con el zoom que el
+satelital propio aguanta (si Google estaba más cerca, se baja al tope).
+
+### Decisiones tomadas
+Extiende la 074: pegar coordenada vale igual que tocar; el centro es el punto
+elegido y el zoom no pasa del tope satelital.
+
+### Documentos actualizados
+`AGENTS.md`, `docs/DISENO_EXTERIOR.md`,
+`docs/decisiones/074-elegir-un-punto-sin-perder-la-vista.md`,
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-01 — Conservar el foco al agrandar el mapa
 
 ### Estado al inicio

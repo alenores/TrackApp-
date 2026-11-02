@@ -40,8 +40,10 @@ tanto en computadora como en celular. Abre la zona que se está mirando
 en otra pestaña; las coordenadas se usan por dentro y no se muestran
 (Ale, 2026-10-22, decisión 072).
 
-Al agregar un punto desde Marcas, primero se toca su ubicación sobre Google;
-el formulario abre sobre el mapa propio con esa coordenada y la misma vista.
+Al agregar un punto desde Marcas, primero se elige su ubicación sobre Google
+(tocando el mapa o pegando la coordenada y confirmando); el formulario abre
+sobre el mapa propio centrado en ese punto, con el zoom que el satelital
+propio aguanta.
 Punto, Trazo y Camino nuevo conservan el centro y el zoom al abrirse desde
 Marcas; abren en satelital y muestran las marcas que ya hay. Editar un Camino
 o un punto/trazo también conserva la vista y abre en satelital. La ficha de
