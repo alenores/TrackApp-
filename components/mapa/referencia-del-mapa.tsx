@@ -33,8 +33,9 @@ const COMO_SE_LLAMA: Record<ClaseDeRectangulo, string> = {
 const COMO_SE_DIBUJA: Record<ClaseDeRectangulo, string> = {
   nuevo: "border-dato bg-dato/15",
   zona: "border-borde-fuerte border-dashed",
-  zona_general: "border-verde-borde",
-  sector: "border-mapa-linea bg-mapa-linea/15",
+  // Celeste como el sector: el verde se perdía en el satelital.
+  zona_general: "border-dato",
+  sector: "border-dato bg-dato/15",
   sector_bajado: "border-verde-borde bg-verde-borde/15",
   sector_sin_bajar: "border-ambar-borde bg-ambar-borde/15",
   sector_elegido: "border-verde-borde bg-verde-borde/30",

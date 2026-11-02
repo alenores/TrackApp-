@@ -10,12 +10,44 @@ let mapa: ComponentProps<typeof CargadorDeMapa>;
 const destino = { latNorte: -30, latSur: -31, lonOeste: -65, lonEste: -64 };
 vi.mock("@/hooks/use-hay-senal", () => ({ useHaySenal: () => true }));
 vi.mock("@/hooks/use-datos-de-la-app", () => ({
-  useDatosDeLaApp: () => ({ paquete: { anotaciones: [], zonas: [], sectores: [], caminos: [] }, estado: "listo", aviso: null }),
+  useDatosDeLaApp: () => ({
+    paquete: {
+      anotaciones: [{
+        id: 3, tipo: "punto", icono: "refugio", atencion: false, color: null,
+        geometria: { type: "Point", coordinates: [-64.79, -31.39] },
+        sectorId: null, perfilId: "otro", deAdministrador: false, origen: "manual",
+        comentario: "Refugio viejo", fotoUrl: null, fotoChicaUrl: null,
+        marcadaEn: "", precisionGpsMetros: null, creadoEn: "", actualizadoEn: "",
+      }],
+      zonas: [],
+      sectores: [],
+      caminos: [{ id: 7, perfilId: "yo", nombre: "Ya marcado", largoM: 500, actividades: ["trekking"] }],
+    },
+    estado: "listo",
+    aviso: null,
+  }),
 }));
 vi.mock("@/hooks/use-caminos-guardados", () => ({
-  useCaminosGuardados: () => ({ caminos: [], cargando: false }),
+  useCaminosGuardados: () => ({
+    caminos: [{
+      id: 7, perfilId: "yo", nombre: "Ya marcado", descripcion: null,
+      actividades: ["trekking"],
+      coordenadas: [[-64.8, -31.4], [-64.81, -31.41]],
+      partes: [{
+        desdeM: 0, hastaM: 500,
+        porActividad: { trekking: { paso: "transitable", complejidad: "facil" } },
+        observacion: null, comprobadoEl: null,
+      }],
+      largoM: 500, alturas: null, versionForma: 1,
+      creadoEn: "", actualizadoEn: "", eliminadoEn: null,
+    }],
+    cargando: false,
+  }),
 }));
 vi.mock("@/hooks/use-foto", () => ({ useFoto: () => ({ estado: "vacio", quitar: () => {} }) }));
+vi.mock("@/components/armazon/quien-soy", () => ({
+  useQuienSoy: () => ({ misActividades: ["trekking"], miActividadPrincipal: "trekking" }),
+}));
 vi.mock("@/components/anotaciones/campos-de-anotacion", () => ({ CamposDeAnotacion: () => null }));
 vi.mock("@/components/ui/dialogos", () => ({ useDialogos: () => ({ confirmar: async () => false }) }));
 vi.mock("@/lib/vibracion", () => ({ vibrarAlTocar: () => {} }));
@@ -34,14 +66,18 @@ vi.mock("@/components/mapa/cargador-de-mapa", () => ({
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("abrir el editor desde Marcas", () => {
-  it("Camino nuevo conserva la cámara al dibujar y pasar a los datos", async () => {
+  it("Camino nuevo abre en satelital, conserva la cámara y muestra las marcas que ya hay", async () => {
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);
     const vistaInicial = { lon: -64.8, lat: -31.4, zoom: 15.7 };
     try {
       await act(async () => raiz.render(<DibujarCamino alVolver={() => {}} vistaInicial={vistaInicial} />));
+      expect(mapa.fondoInicial).toBe("satelital");
       expect(mapa.vista).toBe(vistaInicial);
       expect(mapa.encuadre).toBeNull();
+      expect(mapa.caminos?.features.length).toBeGreaterThan(0);
+      expect(mapa.anotaciones?.some((cada) => cada.id === 3)).toBe(true);
+      expect(mapa.mostrarFichaAnotacion).toBe(false);
       await act(async () => mapa.alMarcarPunto?.(-64.8, -31.4, vistaInicial));
       await act(async () => mapa.alMarcarPunto?.(-64.81, -31.41, vistaInicial));
       const terminar = [...contenedor.querySelectorAll<HTMLButtonElement>("button")]
@@ -50,11 +86,31 @@ describe("abrir el editor desde Marcas", () => {
       expect(contenedor.textContent).toContain("Los datos del Camino");
       expect(mapa.vista).toBe(vistaInicial);
       expect(mapa.encuadre).toBeNull();
+      expect(mapa.fondoInicial).toBe("satelital");
+      expect(mapa.caminos?.features.length).toBeGreaterThan(0);
       expect(contenedor.querySelector("[data-pantalla-fija]")?.children[1].classList.contains("lg:order-1")).toBe(true);
     } finally { act(() => raiz.unmount()); }
   });
 
-  it.each(["punto", "trazo"] as const)("conserva el centro y zoom al abrir %s, permite buscar y devuelve la última vista", async (tipo) => {
+  it("editar un punto existente abre en satelital y conserva el lugar de Marcas", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    const vistaInicial = { lon: -64.805, lat: -31.405, zoom: 15.2 };
+    try {
+      await act(async () => raiz.render(
+        <EditorDeDetalle que={{ clase: "existente", id: 3 }} alVolver={() => {}} vistaInicial={vistaInicial} />,
+      ));
+      expect(mapa.fondoInicial).toBe("satelital");
+      expect(mapa.vista).toBe(vistaInicial);
+      expect(mapa.encuadre).toBeNull();
+      expect(mapa.caminos?.features.length).toBeGreaterThan(0);
+      expect(mapa.anotaciones?.some((cada) => cada.id === 3)).toBe(true);
+    } finally {
+      act(() => raiz.unmount());
+    }
+  });
+
+  it.each(["punto", "trazo"] as const)("abre %s en satelital con las marcas de referencia, conserva la cámara y permite buscar", async (tipo) => {
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);
     const alVolver = vi.fn();
@@ -63,9 +119,12 @@ describe("abrir el editor desde Marcas", () => {
       ...(tipo === "punto" ? { puntoInicial: { lon: -64.812345678, lat: -31.412345678 } } : {}) };
     try {
       await act(async () => raiz.render(<EditorDeDetalle que={que} alVolver={alVolver} vistaInicial={vistaInicial} />));
+      expect(mapa.fondoInicial).toBe("satelital");
       expect(mapa.vista).toBe(vistaInicial);
       expect(mapa.encuadre).toBeNull();
       expect(mapa.consultaGoogle).not.toBe(true);
+      expect(mapa.caminos?.features.length).toBeGreaterThan(0);
+      expect(mapa.anotaciones?.some((cada) => cada.id === 3)).toBe(true);
       expect(mapa.marcandoPunto).toBe(tipo === "trazo");
       if (tipo === "punto") {
         expect(contenedor.querySelector<HTMLInputElement>("#coordenada-de-la-anotacion")?.value)

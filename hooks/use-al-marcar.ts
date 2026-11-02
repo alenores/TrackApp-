@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { useCaminosGuardados } from "@/hooks/use-caminos-guardados";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { useSeleccionDelMapa } from "@/hooks/use-seleccion-del-mapa";
+import { dibujarCaminos } from "@/lib/caminos/dibujo";
 import { rectangulosDeLineas, type VistaDeLineas } from "@/lib/mapas/lineas-del-territorio";
 import type { ClaseAlMarcar } from "@/lib/marcas/buscar-al-marcar";
 import type { Rectangulo } from "@/types/database";
@@ -12,9 +14,13 @@ import type { Rectangulo } from "@/types/database";
  *
  * Abre sin líneas. Elegir una zona las prende, si estaban apagadas; elegir un
  * sector prende también las de los sectores, para que se vea a dónde se fue.
+ *
+ * Las marcas que ya existen (Caminos, puntos y trazos) van al mapa de
+ * referencia: sin ellas, dibujar de cero es a ciegas.
  */
 export function useAlMarcar() {
   const { paquete } = useDatosDeLaApp();
+  const [seleccion] = useSeleccionDelMapa();
   const zonas = useMemo(() => paquete?.zonas ?? [], [paquete]);
   const sectores = useMemo(() => paquete?.sectores ?? [], [paquete]);
   const caminosSinLinea = useMemo(() => paquete?.caminos ?? [], [paquete]);
@@ -27,6 +33,10 @@ export function useAlMarcar() {
   const rectangulos = useMemo(
     () => rectangulosDeLineas(zonas, sectores, lineas),
     [zonas, sectores, lineas],
+  );
+  const dibujoDeCaminos = useMemo(
+    () => dibujarCaminos(caminos, seleccion.principal, true),
+    [caminos, seleccion.principal],
   );
 
   const ir = useCallback((encuadre: Rectangulo, clase: ClaseAlMarcar | null) => {
@@ -46,6 +56,7 @@ export function useAlMarcar() {
     sectores,
     caminosSinLinea,
     caminos,
+    dibujoDeCaminos,
     anotaciones,
     cargandoCaminos: cargando,
     lineas,

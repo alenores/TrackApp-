@@ -30,6 +30,11 @@ import type { Paquete } from "@/lib/offline/paquete";
  * **Consultas**, la entrada de Mapas para todo público: el mapa con todo lo
  * marcado y las zonas, para mirar.
  *
+ * El fondo se elige: Google (con señal), Simple o Satelital. Simple y
+ * Satelital muestran solo lo bajado en el celular —sin internet ni caché de
+ * Google— para chequear en casa qué va a verse en el cerro. Las marcas van
+ * encima siempre.
+ *
  * Arriba del panel hay un buscador. No distingue mayúsculas ni tildes, y si
  * el mismo texto está en una zona, un Camino y un detalle, la zona queda
  * primera. Los resultados van justo debajo del cuadro, todos en un recuadro.
@@ -158,6 +163,7 @@ function Consultas({ paquete, incompleto }: { paquete: Paquete | null; incomplet
         mapa={
           <MapaDeMarcas
             llenarElLugar
+            chequeoDeDescarga
             zonas={ver("zonas") ? zonas : []}
             sectores={paquete?.sectores ?? []}
             lineas={lineas}

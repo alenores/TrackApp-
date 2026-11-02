@@ -4,6 +4,40 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-01 — Editar Camino sin perder el lugar
+
+### Estado al inicio
+Local alineado con GitHub y producción.
+
+### Lo que se hizo
+Al editar un Camino desde Marcas, el mapa ya no pasaba a Simple ni se alejaba
+para mostrar el Camino entero. Ahora abre en Satelital y conserva el mismo
+centro y zoom que se estaban mirando; al volver, también. Con prueba.
+También al agregar a mano (Camino, punto o trazo): abre en Satelital y deja
+visibles las marcas que ya existen, de referencia. Con prueba.
+La ficha del punto en Marcas muestra autor y fecha como en navegación, con
+los tres puntitos según permiso. Editar un punto existente también abre en
+Satelital y conserva el lugar.
+El borde de las zonas en el mapa deja el verde (se perdía en el satelital) y
+pasa al mismo celeste de los sectores.
+Consultas ofrece Google, Simple y Satelital: Simple/Satelital solo lo bajado
+(sin caché de Google). El detalle de una zona al mirar usa Google. Navegación
+sin cambios.
+
+### Decisiones tomadas
+Extiende la 074: editar Camino conserva la vista y abre en satelital.
+Agregar a mano también abre en satelital y muestra las marcas ya guardadas.
+
+### Documentos actualizados
+`AGENTS.md`, `docs/decisiones/074-elegir-un-punto-sin-perder-la-vista.md`,
+`docs/DISENO_EXTERIOR.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
 ## Sesión 2026-11-01 — Contraste de pasos y tres puntitos del punto
 
 - Decisión 081: en navegación, el satelital usa siempre apariencia de noche sin

@@ -1,7 +1,7 @@
 "use client";
 
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   cambiarActividadesDelCamino, cambiarDatosDeParteDelCamino, cambiarNombreDelCamino,
   clasificarParteDelCamino, corregirLineaDelCamino, leerCamino, partirEntreEnElCamino, quitarParteDelCamino, retirarCamino,
@@ -25,14 +25,28 @@ import { puntoEnDistancia } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
+import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { MuestraDeComplejidad, MuestraDeLinea, nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
+import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { ActividadRuta } from "@/types/database";
 
 type Pestana = "datos" | "linea" | "partes";
 
-export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => void }) {
+/**
+ * Editar un Camino ya guardado, desde Marcas.
+ *
+ * Abre en satelital (lo más parecido a Google, que en el editor no se usa) y
+ * conserva el centro y el zoom que se estaban mirando. Sin esa vista, encuadra
+ * el Camino entero.
+ */
+export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
+  id: number;
+  alVolver: (lugar?: VistaDelMapa | null) => void;
+  vistaInicial?: VistaDelMapa | null;
+}) {
+  const dondeEstaba = useRef<VistaDelMapa | null>(vistaInicial);
   const [camino, setCamino] = useState<CaminoGuardado | null>(null);
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
@@ -99,7 +113,11 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
       porActividad: { ...borradorVigente, [actividad]: { paso, complejidad: paso === "sin_paso" ? null : complejidad } },
     });
   };
-  const encuadre = useMemo(() => camino ? rectanguloQueAbarca(camino.coordenadas.map((punto) => [punto[0], punto[1]])) : null, [camino]);
+  // Si viene el lugar de Marcas, manda ese; si no, se ve el Camino entero.
+  const encuadre = useMemo(() => {
+    if (vistaInicial || !camino) return null;
+    return rectanguloQueAbarca(camino.coordenadas.map((punto) => [punto[0], punto[1]]));
+  }, [camino, vistaInicial]);
   const vistaPrevia = useMemo(() => camino && borradorLinea ? corregirLinea(camino, borradorLinea) : null, [camino, borradorLinea]);
   // La sección Línea ya es para editarla: entrar es empezar a corregir, sin botón de más.
   const corrigiendo = pestana === "linea";
@@ -269,9 +287,15 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
     : null;
   const avisoAlPie = camino && !avisoDePartir ? cartelDeAviso : null;
 
+  const volver = useCallback(() => alVolver(dondeEstaba.current), [alVolver]);
+  const volverRef = useRef(volver);
+  useLayoutEffect(() => { volverRef.current = volver; });
+  const alAtras = useCallback(() => volverRef.current(), []);
+  useCerrarConAtras(true, alAtras);
+
   return (
     <div className="space-y-4">
-      <EncabezadoDeMapas titulo="Marcas" subtitulo={camino?.nombre ?? "Camino"} alVolver={alVolver}
+      <EncabezadoDeMapas titulo="Marcas" subtitulo={camino?.nombre ?? "Camino"} alVolver={volver}
         accion={camino ? <MenuDeAcciones etiqueta={`Opciones de ${camino.nombre}`}
           acciones={[{ etiqueta: "Eliminar", destructiva: true, deshabilitada: ocupado,
             alElegir: () => setConfirmarRetiro(true) }]} /> : null} />
@@ -281,7 +305,9 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
         <MapaConPanel
           panelPrimeroEnComputadora
           mapa={
-            <CargadorDeMapa enVivo llenarElAltoEnLaComputadora encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+            <CargadorDeMapa enVivo llenarElAltoEnLaComputadora fondoInicial="satelital"
+              vista={vistaInicial} encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+              alMoverVista={(vista) => { dondeEstaba.current = vista; }}
               extremosDeParte={marcaDeLaParte}
               cortesMarcados={cortesMarcados}
               alTocarCamino={corrigiendo ? (modoCorreccion === "agregar" ? agregarPunto : undefined) : tocarCamino}
@@ -441,7 +467,7 @@ export function EditorDeCamino({ id, alVolver }: { id: number; alVolver: () => v
             void retirarCamino(camino.id, camino.actualizadoEn).then(async (resultado) => {
               if (!resultado.ok) { setAviso(resultado.error); return; }
               await ponerAlDiaDespuesDeGuardar();
-              alVolver();
+              volver();
             }).catch((causa) => setAviso(`No se pudo retirar el Camino: ${causa instanceof Error ? causa.message : String(causa)}`))
               .finally(() => setOcupado(false));
           }}>Retirar Camino</BotonDeEmergente></>} />

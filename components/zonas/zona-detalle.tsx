@@ -132,6 +132,7 @@ export function ZonaDetalle({ zonaId }: ZonaDetalleProps) {
         mapa={
           <CargadorDeMapa
             enVivo
+            consultaGoogle
             llenarElAltoEnLaComputadora
             otrosCircuitos={circuitosPrendidos}
             controlesAdicionales={

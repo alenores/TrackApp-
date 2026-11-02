@@ -35,11 +35,26 @@ describe("mapa de las marcas", () => {
       await act(async () => raiz.render(<MapaDeMarcas zonas={[]} anotaciones={[]} actividad="trekking"
         sectoresPorZona={{}} alElegirPunto={elegir} />));
       expect(mapa.consultaGoogle).toBe(true);
+      expect(mapa.enVivo).toBe(true);
+      expect(mapa.chequeoDeDescarga).toBe(false);
       expect(mapa.marcandoPunto).toBe(true);
       expect(mapa.mostrarFichaAnotacion).toBe(false);
       expect(mapa.fichaSobreElMapa).toBeNull();
       await act(async () => mapa.alMarcarPunto?.(-64.82, -31.42, vista));
       expect(elegir).toHaveBeenCalledWith(-64.82, -31.42, vista);
+    } finally { act(() => raiz.unmount()); }
+  });
+
+  it("en Consultas lee Simple y Satelital de lo bajado, con los tres fondos", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(
+        <MapaDeMarcas zonas={[]} anotaciones={[]} actividad="trekking" sectoresPorZona={{}} chequeoDeDescarga />,
+      ));
+      expect(mapa.consultaGoogle).toBe(true);
+      expect(mapa.chequeoDeDescarga).toBe(true);
+      expect(mapa.enVivo).toBe(false);
     } finally { act(() => raiz.unmount()); }
   });
 
@@ -53,13 +68,18 @@ describe("mapa de las marcas", () => {
     const punto = { id: 5, tipo: "punto" } as Anotacion;
     const contenedor = document.createElement("div");
     const raiz = createRoot(contenedor);
+    const alEditarDetalle = vi.fn();
+    const puedeEditarDetalle = vi.fn(() => true);
     try {
       await act(async () => raiz.render(
-        <MapaDeMarcas zonas={[zona]} anotaciones={[punto]} actividad="trekking" sectoresPorZona={{ 1: 4 }} />,
+        <MapaDeMarcas zonas={[zona]} anotaciones={[punto]} actividad="trekking" sectoresPorZona={{ 1: 4 }}
+          alEditarDetalle={alEditarDetalle} puedeEditarDetalle={puedeEditarDetalle} />,
       ));
       expect(contenedor.querySelector("[data-clases]")?.getAttribute("data-clases")).toBe("zona_general");
       expect(contenedor.querySelector("[data-puntos]")?.getAttribute("data-puntos")).toBe("1");
       expect(contenedor.querySelector("[data-altura-extendida]")?.getAttribute("data-altura-extendida")).toBe("true");
+      expect(mapa.alCambiarAnotacion).toBe(alEditarDetalle);
+      expect(mapa.puedeCambiarAnotacion).toBe(puedeEditarDetalle);
       await act(async () => {
         ([...contenedor.querySelectorAll("button")].find((boton) => boton.textContent === "Señalar zona") as HTMLButtonElement).click();
       });

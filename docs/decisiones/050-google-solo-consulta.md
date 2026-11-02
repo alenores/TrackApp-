@@ -6,11 +6,14 @@
 
 Las dos navegaciones siguen usando solamente mapas descargados. Las pantallas
 para dibujar o corregir zonas, sectores, Caminos, Circuitos y anotaciones usan
-el mapa propio en vivo. También lo usan las vistas de zonas y sectores. El mapa
-general de Mapas, el detalle de Circuitos y el mapa de Salidas muestran Google
-debajo de los datos que TrackApp ya conoce. No se crean ni modifican coordenadas
-sobre Google, salvo la elección inicial de un punto en Marcas aprobada en la
-decisión 074. Si Google falla, se informa el motivo y no se muestra otro fondo.
+el mapa propio en vivo. Al **mirar** una zona (detalle), Marcas, el detalle de
+Circuitos y Salidas muestran Google debajo de los datos que TrackApp ya conoce.
+**Consultas** ofrece tres fondos: Google (con señal), Simple y Satelital. Simple
+y Satelital leen solo lo bajado en el celular —sin internet y sin la caché
+volátil de Google— para chequear en casa qué se verá en el cerro. No se crean
+ni modifican coordenadas sobre Google, salvo la elección inicial de un punto en
+Marcas aprobada en la decisión 074. Si Google falla, se informa el motivo y no
+se muestra otro fondo.
 
 El 2026-10-20 Ale sumó una excepción acotada: al traer un archivo de afuera, la
 vista previa usa Google. Ahí solo se mira si cada línea o punto, con las
@@ -30,11 +33,13 @@ una cuenta iniciada. El motor offline tiene una regla `NetworkOnly` anterior a
 la que guarda imágenes, y el servidor responde `no-store`. Google no alimenta
 ninguna descarga ni navegación.
 
-Las tres vistas de consulta ofrecen solo Google. Sus fallos se muestran de la
-misma manera mediante el mapa compartido. La consulta de créditos corre en
-paralelo: una demora o falla de esa consulta no tapa ni reemplaza el mapa. Los
-créditos se muestran cuando llegan. También aparecen el logotipo oficial de
-Google y una etiqueta que distingue su fondo de los datos de TrackApp.
+Marcas, el detalle de zona, Circuitos y Salidas ofrecen Google al consultar.
+Consultas suma Simple y Satelital solo con lo bajado. Los fallos de Google se
+muestran de la misma manera mediante el mapa compartido. La consulta de
+créditos corre en paralelo: una demora o falla de esa consulta no tapa ni
+reemplaza el mapa. Los créditos se muestran cuando llegan. También aparecen el
+logotipo oficial de Google y una etiqueta que distingue su fondo de los datos
+de TrackApp.
 
 El 2026-10-12 Ale eligió detener el acercamiento en el último nivel con imagen
 real disponible para el lugar. La consulta de créditos también informa límites

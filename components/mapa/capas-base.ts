@@ -43,14 +43,23 @@ export function modoDelMapa(modo: Modo, tipo: TipoDeFondo, enVivo: boolean): Mod
   return !enVivo && tipo === "satelital" ? "noche" : modo;
 }
 
-/** La consulta conserva el fondo elegido aunque Google todavía no responda. */
+/**
+ * Qué fondos ofrece el mapa.
+ *
+ * **Chequeo de descarga** (Consultas): Google + Simple + Satelital. Simple y
+ * Satelital leen solo lo bajado; sin lo bajado el fondo queda vacío. No
+ * mezclan la caché volátil de Google (eso es solo de la navegación).
+ */
 export function opcionesDelMapa({
-  enVivo, consultaGoogle, fondosDescargados,
+  enVivo, consultaGoogle, fondosDescargados, chequeoDeDescarga = false,
 }: {
   enVivo: boolean;
   consultaGoogle: boolean;
   fondosDescargados: TipoDeFondo[];
+  /** Consultas: los tres fondos; Simple/Satelital = solo lo bajado. */
+  chequeoDeDescarga?: boolean;
 }): TipoDeFondo[] {
+  if (chequeoDeDescarga && consultaGoogle) return ["google", "dibujo", "satelital"];
   if (!enVivo) return fondosDescargados.filter((fondo) => fondo !== "google");
   if (!consultaGoogle) return ["dibujo", "satelital"];
   return ["google"];
@@ -301,11 +310,16 @@ function conSombraDebajoDeLasLineas(
   capas: LayerSpecification[],
   colores: ColoresDelMapa,
   velo: RasterLayerSpecification["paint"],
+  /** La caché de Google solo en navegación; en el chequeo de Consultas, no. */
+  conGoogleGuardado: boolean,
 ): LayerSpecification[] {
   const agua = capas.findIndex((capa) => capa.type === "fill" && capa.id === "water");
   const primeraEncima = capas.findIndex((capa) => capa.type === "line" || capa.type === "symbol");
   const corte = agua !== -1 ? agua + 1 : primeraEncima === -1 ? capas.length : primeraEncima;
-  return [...capas.slice(0, corte), capaDeLaSombra(colores), capaDeGoogleGuardado(velo), ...capas.slice(corte)];
+  const medio = conGoogleGuardado
+    ? [capaDeLaSombra(colores), capaDeGoogleGuardado(velo)]
+    : [capaDeLaSombra(colores)];
+  return [...capas.slice(0, corte), ...medio, ...capas.slice(corte)];
 }
 
 /**
@@ -331,6 +345,11 @@ export function capasDelFondo(
    * existe la fuente del sombreado.
    */
   conSombra = false,
+  /**
+   * La imagen de Google guardada encima (decisión 080). Solo navegación.
+   * En el chequeo de Consultas va apagada: ahí manda únicamente lo bajado.
+   */
+  conGoogleGuardado = conSombra,
 ): LayerSpecification[] {
   const colores = coloresDelMapa(modo);
   const dibujo = ajustarParaLaMontana(
@@ -362,7 +381,9 @@ export function capasDelFondo(
       ? { "raster-brightness-min": 0.2, "raster-contrast": -0.15 }
       : { "raster-brightness-max": 0.75, "raster-contrast": -0.15 };
 
-  if (tipo === "dibujo") return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores, velo) : dibujo;
+  if (tipo === "dibujo") {
+    return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores, velo, conGoogleGuardado) : dibujo;
+  }
   if (tipo === "google") {
     return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE }];
   }
@@ -381,7 +402,7 @@ export function capasDelFondo(
     ...(conLineas ? lineasSobreLaFoto(dibujo, colores) : []),
     ...dibujo.filter((capa) => capa.type === "symbol"),
   ];
-  return conSombra ? conSombraDebajoDeLasLineas(conFoto, colores, velo) : conFoto;
+  return conSombra ? conSombraDebajoDeLasLineas(conFoto, colores, velo, conGoogleGuardado) : conFoto;
 }
 
 /** Todas las capas de fondo posibles, para poder sacarlas al cambiar de tipo. */

@@ -79,6 +79,15 @@ describe("la receta del fondo", () => {
     expect(opcionesDelMapa({ ...datos, consultaGoogle: false })).toEqual(["dibujo", "satelital"]);
   });
 
+  it("el chequeo de Consultas ofrece Google, Simple y Satelital", () => {
+    expect(opcionesDelMapa({
+      enVivo: false,
+      consultaGoogle: true,
+      chequeoDeDescarga: true,
+      fondosDescargados: [],
+    })).toEqual(["google", "dibujo", "satelital"]);
+  });
+
   it("el fondo de Google no mezcla nombres ni teselas del proveedor propio", () => {
     const capas = capasDelFondo("sol", "google");
     expect(capas).toHaveLength(1);
@@ -152,6 +161,12 @@ describe("el sombreado del terreno", () => {
         expect(lugar(id)).toBeGreaterThan(sombra);
       }
     }
+  });
+
+  it("el chequeo de Consultas no pone la caché de Google sobre lo bajado", () => {
+    const ids = capasDelFondo("noche", "satelital", true, true, true, false).map((capa) => capa.id);
+    expect(ids).toContain(SOMBRA_DEL_TERRENO);
+    expect(ids).not.toContain(FOTO_DE_GOOGLE_GUARDADA);
   });
 
   it("Google guardado va encima del sombreado y debajo de arroyos, senderos y nombres (decisión 080)", () => {

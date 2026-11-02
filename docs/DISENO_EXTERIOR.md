@@ -43,13 +43,19 @@ en otra pestaña; las coordenadas se usan por dentro y no se muestran
 Al agregar un punto desde Marcas, primero se toca su ubicación sobre Google;
 el formulario abre sobre el mapa propio con esa coordenada y la misma vista.
 Punto, Trazo y Camino nuevo conservan el centro y el zoom al abrirse desde
-Marcas. En PC, agregar, traer y editar marcas mantienen los datos a la izquierda
+Marcas; abren en satelital y muestran las marcas que ya hay. Editar un Camino
+o un punto/trazo también conserva la vista y abre en satelital. La ficha de
+un punto en Marcas muestra autor y fecha como en navegación, con los tres
+puntitos según permiso. En PC, agregar, traer y editar marcas mantienen los
+datos a la izquierda
 y el mapa a la derecha; el orden del celular se conserva (decisión 074).
 
 «Navegación libre» nombra la navegación sin seguir una ruta. «Descargas» nombra
 la pantalla que muestra los mapas guardados en el celular. «Mapas» tiene cuatro
 entradas en el menú, sin pestañas adentro: Consultas, Marcas, Zonas y
-Descargas (decisión 052). Consultas y Marcas usan **lista y mapa**: lado a lado
+Descargas (decisión 052). Consultas ofrece Google, Simple y Satelital: Simple y
+Satelital muestran solo lo bajado (chequeo en casa). Marcas y el detalle de
+una zona al mirar usan Google. Consultas y Marcas usan **lista y mapa**: lado a lado
 en la computadora; en el celular el mapa llena la pantalla y la lista es un
 panel que sube desde abajo, con los gestos de Vías de Escalada, una barrita con
 el resumen al bajarlo y el botón «Ver mapa». Consultas abre encuadrando Córdoba y muestra las marcas. Arriba del panel hay

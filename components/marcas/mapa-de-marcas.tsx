@@ -12,6 +12,7 @@ import { rectangulosDeLineas, type VistaDeLineas } from "@/lib/mapas/lineas-del-
 import type { Anotacion, ActividadRuta, Rectangulo, Sector, Zona } from "@/types/database";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import { dibujarCaminos } from "@/lib/caminos/dibujo";
+import type { AnotacionEnPantalla } from "@/lib/anotaciones/en-pantalla";
 import { FichaDeCamino } from "@/components/caminos/ficha-de-camino";
 
 type Propiedades = {
@@ -58,6 +59,15 @@ type Propiedades = {
   /** La misma eliminación de la lista. Devuelve si de verdad se eliminó. */
   alEliminarCamino?: (camino: CaminoGuardado) => Promise<boolean>;
   puedeEditarCamino?: (autorId: string) => boolean;
+  /** Tres puntos de la ficha del punto/trazo, con los mismos permisos de la lista. */
+  alEditarDetalle?: (anotacion: AnotacionEnPantalla) => void;
+  alEliminarDetalle?: (anotacion: AnotacionEnPantalla) => void;
+  puedeEditarDetalle?: (anotacion: AnotacionEnPantalla) => boolean;
+  /**
+   * Consultas: Google + Simple + Satelital. Simple y Satelital muestran solo
+   * lo bajado (sin caché de Google). Marcas no lo usa: ahí solo Google.
+   */
+  chequeoDeDescarga?: boolean;
 };
 
 const SIN_CAMINOS: CaminoGuardado[] = [];
@@ -92,6 +102,10 @@ export function MapaDeMarcas({
   alEditarCamino,
   alEliminarCamino,
   puedeEditarCamino,
+  alEditarDetalle,
+  alEliminarDetalle,
+  puedeEditarDetalle,
+  chequeoDeDescarga = false,
 }: Propiedades) {
   const [zonaId, setZonaId] = useState<number | null>(null);
   const [caminoTocado, setCaminoTocado] = useState<{ id: number; indice: number } | null>(null);
@@ -121,8 +135,10 @@ export function MapaDeMarcas({
 
   return (
     <CargadorDeMapa
-      enVivo
+      // Chequeo: lee Simple/Satelital del celular. Sin chequeo (Marcas): Google en vivo.
+      enVivo={!chequeoDeDescarga}
       consultaGoogle
+      chequeoDeDescarga={chequeoDeDescarga}
       principal
       alturaExtendida={!llenarElLugar}
       llenarElLugar={llenarElLugar}
@@ -134,6 +150,9 @@ export function MapaDeMarcas({
       marcandoPunto={Boolean(alElegirPunto)}
       alMarcarPunto={alElegirPunto}
       mostrarFichaAnotacion={!alElegirPunto}
+      alCambiarAnotacion={alEditarDetalle}
+      alBorrarAnotacion={alEliminarDetalle}
+      puedeCambiarAnotacion={puedeEditarDetalle}
       rectangulos={rectangulos}
       anotaciones={anotaciones}
       caminos={dibujo}

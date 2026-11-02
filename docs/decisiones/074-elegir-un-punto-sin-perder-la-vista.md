@@ -15,9 +15,12 @@ Es una excepción explícita a la decisión 050: solo se elige la ubicación
 inicial de un punto. Caminos y trazos se dibujan sobre el mapa propio.
 
 Punto, Trazo y Camino nuevo reciben la vista de Marcas al abrirse. Al volver,
-se conserva el lugar. Agregar, traer y editar marcas en PC mantienen los
-datos a la izquierda y el mapa a la derecha. En el celular se conserva el
-orden de mapa y formulario.
+se conserva el lugar. Abren en satelital y dejan visibles las marcas que ya
+existen (Caminos, puntos y trazos), de referencia. **Editar un Camino**
+también conserva el centro y el zoom, y abre en satelital (lo más parecido a
+Google; el editor no usa Google). Agregar, traer y editar marcas en PC
+mantienen los datos a la izquierda y el mapa a la derecha. En el celular se
+conserva el orden de mapa y formulario.
 
 Ale aprobó el boceto y pidió implementar directamente sin hacer más bocetos.
 El cambio queda local, sin publicación.

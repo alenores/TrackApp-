@@ -31,7 +31,8 @@ import type { ActividadRuta } from "@/types/database";
  * la línea queda corrida, después se corrige como el mismo Camino.
  *
  * Nunca sobre Google: su imagen no se usa para crear coordenadas (decisión
- * 050).
+ * 050). Abre en satelital y deja visibles las marcas que ya existen, de
+ * referencia.
  */
 
 const PUNTOS_MINIMOS = 2;
@@ -112,11 +113,15 @@ export function DibujarCamino({ alVolver, vistaInicial = null }: {
           <CargadorDeMapa
             enVivo
             llenarElAltoEnLaComputadora
+            fondoInicial="satelital"
             vista={marcar.vista ? null : vistaInicial}
             encuadre={marcar.vista ?? (vistaInicial ? null : CORDOBA_COMPLETA)}
             viaje={marcar.viaje}
             encuadrarSoloAlAbrir
             rectangulos={marcar.rectangulos}
+            caminos={marcar.dibujoDeCaminos}
+            anotaciones={marcar.anotaciones}
+            mostrarFichaAnotacion={false}
             controlesAdicionales={
               <BuscadorDelMapa
                 zonas={marcar.zonas}

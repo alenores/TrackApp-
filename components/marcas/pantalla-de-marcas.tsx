@@ -47,6 +47,7 @@ import {
   type MarcaDeLaLista,
 } from "@/lib/marcas/lista";
 import { entraEnLoQueSeMira, lugarDeMarca } from "@/lib/marcas/en-la-vista";
+import { esFija } from "@/lib/marcas/clases";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 import type { Paquete } from "@/lib/offline/paquete";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
@@ -78,7 +79,7 @@ type Vista =
   | { clase: "desde-salida" }
   | { clase: "dibujar-camino"; lugar: VistaDelMapa | null }
   | { clase: "detalle"; que: QueEditar; lugar?: VistaDelMapa | null }
-  | { clase: "editar-camino"; id: number };
+  | { clase: "editar-camino"; id: number; lugar: VistaDelMapa | null };
 
 const LISTA: Vista = { clase: "lista" };
 
@@ -228,7 +229,11 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   }, [setVista, vistaActual]);
   // Adentro de agregar o editar, el atrás del celular vuelve a la lista.
   const alAtras = useCallback(() => volverALista(null), [volverALista]);
-  useCerrarConAtras(vista.clase !== "lista" && vista.clase !== "dibujar-camino", alAtras);
+  // Camino nuevo y editar Camino manejan el atrás ellos: así no se pierde el lugar.
+  useCerrarConAtras(
+    vista.clase !== "lista" && vista.clase !== "dibujar-camino" && vista.clase !== "editar-camino",
+    alAtras,
+  );
 
   const eliminarCamino = async (camino: { id: number; nombre: string; actualizadoEn: string }): Promise<boolean> => {
     const seguro = await confirmar({ titulo: `¿Eliminar «${camino.nombre}»?`,
@@ -271,14 +276,14 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
       const camino = porId.caminosSinLinea.get(marca.id);
       if (!camino) return [];
       return [
-        { etiqueta: "Editar", alElegir: () => setVista({ clase: "editar-camino", id: marca.id }) },
+        { etiqueta: "Editar", alElegir: () => setVista({ clase: "editar-camino", id: marca.id, lugar: vistaActual }) },
         { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminarCamino(camino) },
       ];
     }
     const detalle = porId.detalles.get(marca.id);
     if (!detalle) return [];
     return [
-      { etiqueta: "Editar", alElegir: () => setVista({ clase: "detalle", que: { clase: "existente", id: marca.id } }) },
+      { etiqueta: "Editar", alElegir: () => setVista({ clase: "detalle", que: { clase: "existente", id: marca.id }, lugar: vistaActual }) },
       { etiqueta: "Eliminar", destructiva: true, alElegir: () => void eliminarDetalle(detalle) },
     ];
   };
@@ -287,7 +292,9 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
   if (vista.clase === "desde-salida") return <CaminosDesdeUnaSalida alVolver={() => volverALista(null)} />;
   if (vista.clase === "dibujar-camino") return <DibujarCamino alVolver={volverALista} vistaInicial={vista.lugar} />;
   if (vista.clase === "detalle") return <EditorDeDetalle que={vista.que} alVolver={volverALista} vistaInicial={vista.lugar} />;
-  if (vista.clase === "editar-camino") return <EditorDeCamino id={vista.id} alVolver={() => volverALista(null)} />;
+  if (vista.clase === "editar-camino") {
+    return <EditorDeCamino id={vista.id} vistaInicial={vista.lugar} alVolver={(lugar) => volverALista(null, lugar)} />;
+  }
 
   const cuantas = enElMapa.filter((marca) => marca.grupo !== "zona").length;
   const zonasEnElMapa = enElMapa.length - cuantas;
@@ -362,9 +369,17 @@ function Marcas({ paquete, incompleto, categoria, miPerfilId, vista, setVista }:
               setVistaActual(lugar);
               setVista({ clase: "detalle", que: { clase: "nuevo", tipo: "punto", puntoInicial: { lon, lat } }, lugar });
             } : undefined}
-            alEditarCamino={(id) => setVista({ clase: "editar-camino", id })}
+            alEditarCamino={(id) => setVista({ clase: "editar-camino", id, lugar: vistaActual })}
             alEliminarCamino={eliminarCamino}
             puedeEditarCamino={(autorId) => puedeCambiarDelMapa(categoria, miPerfilId, autorId)}
+            alEditarDetalle={(anotacion) => setVista({
+              clase: "detalle",
+              que: { clase: "existente", id: anotacion.id },
+              lugar: vistaActual,
+            })}
+            alEliminarDetalle={(anotacion) => void eliminarDetalle(anotacion)}
+            puedeEditarDetalle={(anotacion) => !esFija(anotacion)
+              && puedeCambiarDelMapa(categoria, miPerfilId, anotacion.perfilId)}
             avisoSinNada={!eligiendoPunto && enElMapa.length === 0
               ? marcas.length === 0
                 ? "Todavía no hay marcas en el mapa."

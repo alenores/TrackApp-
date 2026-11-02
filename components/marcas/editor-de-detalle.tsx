@@ -19,7 +19,9 @@ import type { VistaDelMapa } from "@/lib/mapas/vista";
  * Marcas. El editor usa el mapa propio; un punto nuevo puede llegar ya
  * ubicado desde Google (excepción de la decisión 074).
  *
- * Al guardar, cerrar o borrar vuelve a la lista con lo que pasó.
+ * Abre en satelital, conserva el centro y el zoom de Marcas, y deja
+ * visibles las marcas que ya existen. Al guardar, cerrar o borrar vuelve
+ * a la lista con lo que pasó.
  */
 
 export type QueEditar = { clase: "nuevo"; tipo: "punto" | "trazo"; puntoInicial?: { lon: number; lat: number } } | { clase: "existente"; id: number };
@@ -33,7 +35,9 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
   const marcar = useAlMarcar();
   const esNuevo = que.clase === "nuevo";
   const dondeEstaba = useRef(vistaInicial);
-  const vistaConservada = esNuevo && !marcar.vista && !anotar.enfoque ? vistaInicial : null;
+  // Si Marcas mandó el lugar, manda ese. Buscar otro lugar o escribir una
+  // coordenada nueva sí mueven el mapa (vía marcar.vista).
+  const vistaConservada = marcar.vista ? null : vistaInicial;
   const enfoqueAnterior = useRef(anotar.enfoque);
   const mostrarLugar = marcar.mostrar;
   const empezo = useRef(false);
@@ -99,16 +103,18 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
             <CargadorDeMapa
               enVivo
               llenarElAltoEnLaComputadora
+              fondoInicial="satelital"
               vista={vistaConservada}
-              encuadre={vistaConservada ? null : (esNuevo ? marcar.vista : null) ?? anotar.enfoque ?? CORDOBA_COMPLETA}
+              encuadre={marcar.vista ?? (vistaConservada ? null : (anotar.enfoque ?? CORDOBA_COMPLETA))}
               alMoverVista={(vista) => { dondeEstaba.current = vista; }}
-              viaje={esNuevo ? marcar.viaje : 0}
-              rectangulos={esNuevo ? marcar.rectangulos : []}
+              viaje={marcar.viaje}
+              rectangulos={marcar.rectangulos}
+              caminos={marcar.dibujoDeCaminos}
               anotaciones={anotar.enElMapa}
               marcandoPunto={anotar.marcando}
               alMarcarPunto={anotar.alTocarElMapa}
               mostrarFichaAnotacion={false}
-              controlesAdicionales={esNuevo ? (
+              controlesAdicionales={(
                 <BuscadorDelMapa
                   zonas={marcar.zonas}
                   sectores={marcar.sectores}
@@ -118,13 +124,13 @@ export function EditorDeDetalle({ que, alVolver, vistaInicial = null }: {
                   cargandoCaminos={marcar.cargandoCaminos}
                   alElegir={marcar.ir}
                 />
-              ) : null}
+              )}
             />
           }
           debajoDelMapa={queHacer ? <p className="text-sm leading-6 text-texto-suave">{queHacer}</p> : null}
           panel={
             <div className="space-y-3">
-              {esNuevo ? <LineasDelTerritorio valor={marcar.lineas} alElegir={marcar.setLineas} /> : null}
+              <LineasDelTerritorio valor={marcar.lineas} alElegir={marcar.setLineas} />
               <FormularioDeAnotacion anotar={anotar} />
             </div>
           }

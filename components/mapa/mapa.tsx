@@ -184,6 +184,8 @@ function ponerElFondo(
   conCurvas: boolean,
   /** Navegando, la foto lleva ríos, arroyos, senderos y huellas. */
   conLineas: boolean,
+  /** Caché de Google encima: solo navegación, nunca en el chequeo de Consultas. */
+  conGoogleGuardado = conLineas,
 ): string | null {
   try {
     for (const vieja of todasLasCapasDelFondo(modo)) {
@@ -197,7 +199,9 @@ function ponerElFondo(
     const debajoDe = CAPAS_DE_LA_APP_DE_ABAJO_HACIA_ARRIBA.find((capa) => mapa.getLayer(capa));
 
     // El sombreado va con las líneas: solo cuando el mapa lee lo guardado.
-    for (const capa of capasDelFondo(modo, tipo, conCurvas, conLineas, conLineas)) mapa.addLayer(capa, debajoDe);
+    for (const capa of capasDelFondo(modo, tipo, conCurvas, conLineas, conLineas, conGoogleGuardado)) {
+      mapa.addLayer(capa, debajoDe);
+    }
 
     // Las curvas: siempre en el simple; en el satelital, según el botón.
     for (const capa of CAPAS_DE_RELIEVE) {
@@ -397,6 +401,16 @@ type MapaProps = {
   alTocarCamino?: (lon: number, lat: number, propiedades: Record<string, unknown>) => void;
   /** `false` cuando quien lo llama ya muestra la ficha compartida por su cuenta. */
   mostrarFichaAnotacion?: boolean;
+  /**
+   * Quién lo marcó y la fecha van siempre, igual que en navegación (Ale,
+   * 2026-11-01). Solo se apaga si una pantalla lo pide a propósito.
+   */
+  mostrarAutorEnFicha?: boolean;
+  /** Editar desde los tres puntos de la ficha, según el permiso de quien mira. */
+  alCambiarAnotacion?: (anotacion: AnotacionEnPantalla) => void;
+  alBorrarAnotacion?: (anotacion: AnotacionEnPantalla) => void;
+  /** Sin esto, o si dice que no, la ficha no muestra los tres puntos. */
+  puedeCambiarAnotacion?: (anotacion: AnotacionEnPantalla) => boolean;
   /** Abrir o cerrar la ficha de zona con un clic o toque en el mapa. */
   alSenalarZona?: (zonaId: number | null) => void;
   /** Ficha que aparece sobre el mapa, también cuando se abre en grande. */
@@ -411,6 +425,11 @@ type MapaProps = {
   enVivo?: boolean;
   /** Solo consulta: ofrece imagen de Google con señal, nunca en edición ni navegación. */
   consultaGoogle?: boolean;
+  /**
+   * Consultas: Google + Simple + Satelital. Simple y Satelital leen solo lo
+   * bajado en el celular (sin internet ni caché de Google).
+   */
+  chequeoDeDescarga?: boolean;
   /**
    * `true` si a esta pantalla le falta mapa bajado. Arriba a la izquierda, junto
    * a Simple/Satelital, aparece un círculo ámbar con «!».
@@ -575,10 +594,15 @@ export function Mapa({
   alTocarRuta,
   alTocarCamino,
   mostrarFichaAnotacion = true,
+  mostrarAutorEnFicha = true,
+  alCambiarAnotacion,
+  alBorrarAnotacion,
+  puedeCambiarAnotacion,
   alSenalarZona,
   fichaSobreElMapa,
   enVivo = false,
   consultaGoogle = false,
+  chequeoDeDescarga = false,
   sinMapaDescargado = false,
   textoDelAvisoDeMapa = null,
   miniatura = false,
@@ -688,25 +712,29 @@ export function Mapa({
    */
   const [armado, setArmado] = useState(false);
   /** Dibujo o foto del terreno: el que eligió el usuario. */
-  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(consultaGoogle && enVivo ? "google" : fondoInicial);
+  const [tipoElegido, setTipoDeFondo] = useState<TipoDeFondo>(
+    consultaGoogle && (enVivo || chequeoDeDescarga) ? "google" : fondoInicial,
+  );
   const [sesionGoogle, setSesionGoogle] = useState<string | null>(null);
   const [googleNoConfigurado, setGoogleNoConfigurado] = useState(false);
   const [creditosGoogle, setCreditosGoogle] = useState<string | null>(null);
   const [avisoDeCreditosGoogle, setAvisoDeCreditosGoogle] = useState<string | null>(null);
   const [avisoDeImagenGoogle, setAvisoDeImagenGoogle] = useState<string | null>(null);
   const [falloGoogle, setFalloGoogle] = useState<string | null>(null);
-  const sesionGoogleActiva = consultaGoogle && enVivo && haySenal ? sesionGoogle : null;
+  // Google en vivo: consulta normal o chequeo de Consultas (Simple/Satelital van aparte).
+  const googleEnVivo = consultaGoogle && (enVivo || chequeoDeDescarga);
+  const sesionGoogleActiva = googleEnVivo && haySenal ? sesionGoogle : null;
   const opcionesDeFondo = opcionesDelMapa({
-    enVivo, consultaGoogle, fondosDescargados: fondosDisponibles ?? [],
+    enVivo, consultaGoogle, fondosDescargados: fondosDisponibles ?? [], chequeoDeDescarga,
   });
-  const falloVisibleDeGoogle = consultaGoogle && enVivo
+  const falloVisibleDeGoogle = googleEnVivo
     ? !haySenal
       ? "Sin conexión no se puede mostrar Google. Volvé a abrir esta consulta cuando tengas señal."
       : googleNoConfigurado
         ? "Google no está configurado en la app. Revisá su configuración para mostrar este mapa."
         : (falloGoogle ?? avisoDeImagenGoogle)
     : null;
-  const preparandoGoogle = consultaGoogle && enVivo && haySenal && !sesionGoogle && !falloVisibleDeGoogle;
+  const preparandoGoogle = googleEnVivo && haySenal && !sesionGoogle && !falloVisibleDeGoogle;
   /**
    * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
    * simple no hay botón: se ven siempre.
@@ -749,11 +777,14 @@ export function Mapa({
   }, [setAPantallaCompleta]);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
+  const chequeoDeDescargaRef = useRef(chequeoDeDescarga);
   const tipoDeFondoRef = useRef<TipoDeFondo>("dibujo");
   useEffect(() => {
     tipoDeFondoRef.current = tipoDeFondo;
   }, [tipoDeFondo]);
   const conCurvas = tipoDeFondo !== "satelital" || curvasSobreLaFoto;
+  /** Navegación: caché de Google encima. Chequeo de Consultas: solo lo bajado. */
+  const conGoogleGuardado = !enVivo && !chequeoDeDescarga;
   const curvasRef = useRef(conCurvas);
   useEffect(() => {
     curvasRef.current = conCurvas;
@@ -791,7 +822,7 @@ export function Mapa({
 
   // La sesión se abre solo para consulta con señal. No participa del mapa offline.
   useEffect(() => {
-    if (!consultaGoogle || !enVivo || !haySenal || sesionGoogle || googleNoConfigurado) return;
+    if (!googleEnVivo || !haySenal || sesionGoogle || googleNoConfigurado) return;
     let activo = true;
     void (async () => {
       try {
@@ -810,7 +841,7 @@ export function Mapa({
       }
     })();
     return () => { activo = false; };
-  }, [consultaGoogle, enVivo, haySenal, sesionGoogle, googleNoConfigurado]);
+  }, [googleEnVivo, haySenal, sesionGoogle, googleNoConfigurado]);
 
   useEffect(() => {
     if (!sesionGoogleActiva) return;
@@ -827,7 +858,10 @@ export function Mapa({
           maxzoom: 22,
         });
       }
-      setAvisoDelFondo(ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current, !enVivoRef.current));
+      setAvisoDelFondo(ponerElFondo(
+        mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current,
+        !enVivoRef.current, !enVivoRef.current && !chequeoDeDescargaRef.current,
+      ));
     });
   }, [sesionGoogleActiva]);
 
@@ -1007,11 +1041,12 @@ export function Mapa({
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "sector", colores.rectanguloNuevo, // Usamos el color llamativo (dato) para el sector
+            "sector", colores.rectanguloNuevo,
+            // Zona: mismo celeste que el sector. El verde se perdía en el satelital.
+            "zona_general", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
             "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
-            "zona_general", colores.rectanguloBajado,
             colores.rectanguloExistente,
           ],
           "line-width": ["match", ["get", "clase"], "nuevo", 3, "sector_elegido", 4, "zona_general", 2.4, 2.4],
@@ -1334,7 +1369,10 @@ export function Mapa({
       esperandoRef.current = [];
 
       setAvisoDelFondo(
-        ponerElFondo(mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current, !enVivoRef.current),
+        ponerElFondo(
+          mapa, modoRef.current, tipoDeFondoRef.current, curvasRef.current,
+          !enVivoRef.current, !enVivoRef.current && !chequeoDeDescargaRef.current,
+        ),
       );
     });
 
@@ -1392,7 +1430,7 @@ export function Mapa({
 
       // El fondo se cambia capa por capa, no rearmando el estilo: rearmarlo se
       // lleva puestas las capas de la app y habría que volver a dibujarlas.
-      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo));
+      setAvisoDelFondo(ponerElFondo(mapa, modo, tipoDeFondo, conCurvas, !enVivo, conGoogleGuardado));
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
       const conEnvoltorio = tipoDeFondo !== "dibujo" || modo === "noche";
@@ -1486,11 +1524,11 @@ export function Mapa({
             "match",
             ["get", "clase"],
             "nuevo", colores.rectanguloNuevo,
-            "sector", colores.rectanguloNuevo, // Mantenemos el color llamativo (dato) para el sector
+            "sector", colores.rectanguloNuevo,
+            "zona_general", colores.rectanguloNuevo,
             "sector_bajado", colores.rectanguloBajado,
             "sector_elegido", colores.rectanguloBajado,
             "sector_sin_bajar", colores.rectanguloSinBajar,
-            "zona_general", colores.rectanguloBajado,
             colores.rectanguloExistente,
           ]);
       mapa.setPaintProperty(
@@ -1515,7 +1553,7 @@ export function Mapa({
     };
 
     cuandoEsteListo(pintar);
-  }, [modo, tipoDeFondo, conCurvas, enVivo]);
+  }, [modo, tipoDeFondo, conCurvas, enVivo, conGoogleGuardado]);
 
   // La línea de la ruta.
   const yaEncuadroRef = useRef(false);
@@ -2220,7 +2258,7 @@ export function Mapa({
           if (cada.clase === "zona_general") {
             const titulo = document.createElement("span");
             titulo.dataset.etiquetaZonaGeneral = "true";
-            titulo.className = "inline-block rounded bg-superficie/90 px-1 py-0 text-xs font-bold text-verde-texto transition-[font-size,opacity]";
+            titulo.className = "inline-block rounded bg-superficie/90 px-1 py-0 text-xs font-bold text-dato transition-[font-size,opacity]";
             titulo.textContent = cada.etiqueta;
             el.appendChild(titulo);
           } else {
@@ -2475,17 +2513,18 @@ export function Mapa({
       ) : null}
 
       {/*
-        Arriba a la izquierda y chatos, para no tapar el mapa: Simple o
-        Satelital (solo los que hay: sin ninguno bajado no aparece), el
-        círculo de las curvas al lado, y el «!» si falta un pedazo de mapa.
+        Arriba a la izquierda y chatos, para no tapar el mapa: en Consultas
+        Google/Simple/Satelital; en el resto Simple/Satelital (solo los que
+        hay). El círculo de las curvas al lado, y el «!» si falta un pedazo.
       */}
-      {(!consultaGoogle && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado || (conEscala && escala) ? (
+      {((chequeoDeDescarga || !consultaGoogle) && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado || (conEscala && escala) ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
-            {!consultaGoogle && opcionesDeFondo.length > 0 ? (
+            {(chequeoDeDescarga || !consultaGoogle) && opcionesDeFondo.length > 0 ? (
               <div className="pointer-events-auto flex h-7 overflow-hidden rounded-full border border-borde-fuerte bg-superficie shadow-[var(--sombra-alta)]">
                 {(
                   [
+                    ["google", "Google"],
                     ["dibujo", "Simple"],
                     ["satelital", "Satelital"],
                   ] as const
@@ -2661,8 +2700,14 @@ export function Mapa({
           anotacion={anotacionDeLaFicha}
           alCerrar={cerrarFichaAnotacion}
           miPerfilId={null}
-          mostrarAutor={false}
+          mostrarAutor={mostrarAutorEnFicha}
           fotoRemotaAlFaltar
+          alCambiar={anotacionDeLaFicha && alCambiarAnotacion && puedeCambiarAnotacion?.(anotacionDeLaFicha)
+            ? alCambiarAnotacion
+            : undefined}
+          alBorrar={anotacionDeLaFicha && alBorrarAnotacion && puedeCambiarAnotacion?.(anotacionDeLaFicha)
+            ? alBorrarAnotacion
+            : undefined}
         />
       ) : null}
     </div>
