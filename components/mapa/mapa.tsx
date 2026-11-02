@@ -1382,6 +1382,13 @@ export function Mapa({
             // La misma carpa que los campings que trae el mapa.
             "campamento", "camp_site",
             "casa", "casa",
+            "lago", "lago",
+            "laguna", "laguna",
+            "juntura", "juntura",
+            "escalada", "escalada",
+            "posible_escalada", "posible_escalada",
+            "quebrada", "quebrada",
+            "objeto", "objeto",
             "none"
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.35, 9, 0.65, 11, 1, 13, 1.2],

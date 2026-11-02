@@ -4,6 +4,32 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Íconos nuevos también en el mapa
+
+### Estado al inicio
+En el formulario se veían bien la camita y los tipos nuevos; en el mapa,
+refugio seguía con la casita y laguna (y los demás nuevos) solo un puntito
+de color.
+
+### Lo que se hizo
+Se dibujaron los íconos para la hoja del mapa (camita, lago/laguna, juntura,
+escalada, posible escalada, quebrada, objeto), se regeneró la hoja y se
+conectaron en el mapa. La base ya tenía los valores nuevos.
+
+### Decisiones tomadas
+Ninguna nueva: completa lo pedido el mismo día.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Subir.
+
+---
+
 ## Sesión 2026-11-02 — Íconos de punto: camita, agua, escalada y secciones
 
 ### Estado al inicio
@@ -26,11 +52,10 @@ quebrada = valle en V marrón).
 `docs/GLOSARIO.md`, `docs/SCHEMA.md`, `docs/SESIONES.md`.
 
 ### Deuda o inconsistencias detectadas
-Hay que correr en la base `scripts/supabase-iconos-nuevos-2026-11-02.sql`:
-sin eso, al guardar un tipo nuevo la base lo rechaza.
+Ninguna: el script de la base ya se corrió.
 
 ### Pendientes para la próxima
-Aplicar el script en la base de TrackApp.
+Ninguno de esa tanda.
 
 ---
 

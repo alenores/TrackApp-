@@ -82,22 +82,31 @@ const AL_DOBLE = 2;
  * de qué dibujo sale y con qué paleta se pinta.
  */
 const PROPIOS = [
-  // Edificio: blanco y gris (refugio, campamento, casa, iglesia).
+  // Edificio: blanco y gris (refugio, campamento, casa, iglesia, posible escalada, objeto).
   { nombre: "alpine_hut", dibujo: "refugio", paleta: "edificio" },
   { nombre: "wilderness_hut", dibujo: "refugio", paleta: "edificio" },
   { nombre: "camp_site", dibujo: "carpa", paleta: "edificio" },
   { nombre: "casa", dibujo: "casa", paleta: "edificio" },
   { nombre: "iglesia", dibujo: "iglesia", paleta: "edificio" },
-  // Agua: azul (arroyo, fuente, cascada, puente).
+  { nombre: "posible_escalada", dibujo: "escalada", paleta: "edificio" },
+  { nombre: "objeto", dibujo: "objeto", paleta: "edificio" },
+  // Agua: azul (arroyo, fuente, cascada, puente, lago, laguna, juntura).
   { nombre: "spring", dibujo: "manantial", paleta: "agua" },
   { nombre: "arroyo", dibujo: "arroyo", paleta: "agua" },
   { nombre: "cascada", dibujo: "cascada", paleta: "agua" },
   { nombre: "puente", dibujo: "puente", paleta: "agua" },
-  // Montaña: marrón (cumbre, tranquera).
+  { nombre: "lago", dibujo: "lago", paleta: "agua" },
+  { nombre: "laguna", dibujo: "lago", paleta: "agua" },
+  // Mismo dibujo que el cruce, en azul.
+  { nombre: "juntura", dibujo: "cruce", paleta: "agua" },
+  // Montaña: marrón (cumbre, tranquera, quebrada).
   { nombre: "cumbre", dibujo: "cumbre", paleta: "montana" },
   { nombre: "tranquera", dibujo: "tranquera", paleta: "montana" },
+  { nombre: "quebrada", dibujo: "quebrada", paleta: "montana" },
   // Estacionamiento: amarillo.
   { nombre: "estacionamiento", dibujo: "estacionamiento", paleta: "estacionamiento" },
+  // Escalada: naranja.
+  { nombre: "escalada", dibujo: "escalada", paleta: "escalada" },
   // El resto sigue en verde natural.
   { nombre: "viewpoint", dibujo: "mirador", paleta: "natural" },
   { nombre: "cave_entrance", dibujo: "cueva", paleta: "natural" },
@@ -127,6 +136,10 @@ const PALETAS = {
   estacionamiento: {
     light: { FONDO: "#fef08a", TRAZO: "#ca8a04", RELLENO: "#fde047" },
     dark: { FONDO: "#713f12", TRAZO: "#facc15", RELLENO: "#a16207" },
+  },
+  escalada: {
+    light: { FONDO: "#ffedd5", TRAZO: "#ea580c", RELLENO: "#fed7aa" },
+    dark: { FONDO: "#7c2d12", TRAZO: "#fb923c", RELLENO: "#9a3412" },
   },
 };
 
