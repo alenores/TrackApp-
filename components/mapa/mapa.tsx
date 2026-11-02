@@ -801,7 +801,7 @@ export function Mapa({
       };
     }
     setAPantallaCompleta(false);
-  }, []);
+  }, [setAPantallaCompleta]);
   /** Se lee una sola vez, al armar el mapa: no cambia mientras está abierto. */
   const enVivoRef = useRef(enVivo);
   const chequeoDeDescargaRef = useRef(chequeoDeDescarga);
