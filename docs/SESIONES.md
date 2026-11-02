@@ -4,6 +4,125 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Pantallita del Camino en Consultas
+
+### Estado al inicio
+En Consultas, al pasar el mouse por un Camino no se veía nombre ni clasificación.
+
+### Lo que se hizo
+Al pasar el mouse por un Camino aparece nombre, descripción y la condición /
+complejidad de esa parte para la actividad elegida.
+
+### Decisiones tomadas
+Ninguna nueva: mejora de lectura en Consultas (y Marcas, mismo mapa).
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-02 — Etiqueta al pasar y tarjeta al frente
+
+### Estado al inicio
+Al tocar un tramo en el mapa había que buscar a mano la tarjeta en el panel.
+
+### Lo que se hizo
+Al pasar el cursor por un tramo aparece qué parte es. Al tocarlo, la tarjeta
+de esa parte sube sola en el panel.
+
+### Decisiones tomadas
+Extiende la 077.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-02 — Borrador encima y parte elegida visible
+
+### Estado al inicio
+En Caminos desde una salida, el GPS quedaba tapado por los Caminos viejos y
+al elegir una parte el cambio en el mapa casi no se notaba.
+
+### Lo que se hizo
+El borrador va por encima de los Caminos existentes. Al elegir una parte, esa
+lleva un halo naranja y las demás se atenúan.
+
+### Decisiones tomadas
+Cambia la 077: borrador encima; parte elegida bien marcada.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-02 — Caminos más finos al alejarse
+
+### Estado al inicio
+En Consultas y Marcas, al alejarse el grosor de los Caminos no bajaba y
+armaban una mancha de líneas.
+
+### Lo que se hizo
+El grosor de los Caminos cambia con el zoom: de lejos se afina, de cerca
+queda como antes. Incluye tentativos, de otra actividad y los de un Circuito.
+
+### Decisiones tomadas
+Ninguna nueva: mejora de lectura del mapa.
+
+### Documentos actualizados
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
+## Sesión 2026-11-01 — Salir del borrador y parte elegida al cortar
+
+### Estado al inicio
+Desde una salida, al guardar un Camino el cartel de salir decía «sin
+guardar» aunque ya estaba guardado. Al cortar, no quedaba elegida la parte nueva.
+
+### Lo que se hizo
+Si ya está todo guardado o descartado, se sale sin cartel. Si falta algo, el
+aviso dice qué se pierde y qué queda. Al cortar, queda elegida la parte nueva.
+
+### Decisiones tomadas
+Extiende la 077: parte nueva elegida al cortar; cartel de salir solo cuando
+hace falta.
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-01 — Zoom cercano al pegar la coordenada
 
 ### Estado al inicio

@@ -15,6 +15,19 @@ import {
   todasLasCapasDelFondo,
   type TipoDeFondo,
 } from "@/components/mapa/capas-base";
+import {
+  ANCHO_DE_CAMINO,
+  ANCHO_DE_CAMINO_EN_CIRCUITO,
+  ANCHO_DE_CAMINO_SECUNDARIO,
+  ANCHO_DE_CAMINO_TENTATIVO,
+  ANCHO_DE_CAMINO_TENTATIVO_EN_CIRCUITO,
+  ANCHO_DE_PARTE_ELEGIDA,
+  BORDE_DE_CAMINO,
+  BORDE_DE_CAMINO_EN_CIRCUITO,
+  BORDE_DE_CAMINO_SECUNDARIO,
+  BORDE_DE_CAMINO_TENTATIVO,
+  BORDE_DE_CAMINO_TENTATIVO_EN_CIRCUITO,
+} from "@/components/mapa/anchos-de-camino";
 import { colorDeLasCurvas, colorDeLasPartes, colorDelEnvoltorio, coloresDelMapa, type ColoresDelMapa } from "@/components/mapa/colores";
 import { NIVEL_DEL_MAPA_EN_GRANDE } from "@/lib/capas";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
@@ -288,9 +301,9 @@ type MapaProps = {
    */
   otrosCircuitos?: FeatureCollection | null;
   /**
-   * Caminos que ya existen, finos y **por encima** de los demás, para
-   * compararlos con otra línea sin que esa línea los tape (Caminos desde una
-   * salida: el GPS va debajo y el Camino se sigue viendo).
+   * Caminos que ya existen, finos y **por debajo** del borrador, de referencia
+   * (Caminos desde una salida: el GPS se ve encima para poder cortarlo y
+   * revisarlo; los Caminos viejos no lo tapan).
    */
   caminosEncima?: FeatureCollection | null;
   /** Los puntos y trazos dibujados sobre el territorio. */
@@ -1096,42 +1109,69 @@ export function Mapa({
       });
 
       const colorDeParte = colorDeLasPartes(colores) as maplibregl.ExpressionSpecification;
+      // Opacidad del borrador: si hay una parte elegida, las demás se atenúan
+      // para que se note al toque cuál está seleccionada.
+      const opacidadDeCamino: maplibregl.ExpressionSpecification = [
+        "case",
+        ["==", ["get", "hayEleccion"], true],
+        ["case", ["==", ["get", "elegida"], true], 1, 0.28],
+        0.98,
+      ];
+      // Caminos existentes primero (abajo). El borrador del GPS va después, encima.
+      mapa.addLayer({
+        id: "caminos-encima-borde", type: "line", source: "caminos-encima",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": BORDE_DE_CAMINO_SECUNDARIO },
+      });
+      mapa.addLayer({
+        id: "caminos-encima", type: "line", source: "caminos-encima",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colores.caminoSecundario, "line-width": ANCHO_DE_CAMINO_SECUNDARIO },
+      });
+      // Halo naranja debajo del color de la parte: se ve el pedazo elegido.
       mapa.addLayer({
         id: "parte-elegida", type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "elegida"], true],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.marcaDeParte, "line-width": 10, "line-opacity": 0.95 },
+        paint: { "line-color": colores.marcaDeParte, "line-width": ANCHO_DE_PARTE_ELEGIDA, "line-opacity": 0.9 },
       });
       mapa.addLayer({
         id: `${CAPAS_DE_CAMINOS[0]}-borde`, type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": colores.caminoSecundarioBordeAncho, "line-opacity": 1 },
+        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": BORDE_DE_CAMINO_SECUNDARIO, "line-opacity": opacidadDeCamino },
       });
       mapa.addLayer({
         id: CAPAS_DE_CAMINOS[0], type: "line", source: FUENTE_CAMINOS,
         filter: ["==", ["get", "paso"], "otra_actividad"],
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.caminoSecundario, "line-width": colores.caminoSecundarioAncho, "line-opacity": 1 },
+        paint: { "line-color": colores.caminoSecundario, "line-width": ANCHO_DE_CAMINO_SECUNDARIO, "line-opacity": opacidadDeCamino },
       });
       for (const [paso, capa, guiones, ancho, borde] of [
-        ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5], 5, 8],
-        ["tentativo", CAPAS_DE_CAMINOS[2], [2.4, 1.5], 2.5, 4.5],
-        ["transitable", CAPAS_DE_CAMINOS[3], null, 5, 8],
-        ["a_pie", CAPAS_DE_CAMINOS[4], null, 5, 8],
-        ["sin_paso", CAPAS_DE_CAMINOS[5], null, 5, 8],
+        ["por_explorar", CAPAS_DE_CAMINOS[1], [2.4, 1.5], ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["tentativo", CAPAS_DE_CAMINOS[2], [2.4, 1.5], ANCHO_DE_CAMINO_TENTATIVO, BORDE_DE_CAMINO_TENTATIVO],
+        ["transitable", CAPAS_DE_CAMINOS[3], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["a_pie", CAPAS_DE_CAMINOS[4], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["sin_paso", CAPAS_DE_CAMINOS[5], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["==", ["get", "paso"], paso];
         const estilo = {
           "line-color": colorDeParte,
           "line-width": ancho,
-          "line-opacity": 0.98,
+          "line-opacity": opacidadDeCamino,
           ...(guiones ? { "line-dasharray": [...guiones] } : {}),
         };
         mapa.addLayer({
           id: `${capa}-borde`, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": envoltorio, "line-width": borde, "line-opacity": conEnvoltorio ? 0.95 : 0 },
+          paint: {
+            "line-color": envoltorio,
+            "line-width": borde,
+            "line-opacity": conEnvoltorio
+              ? ["case", ["==", ["get", "hayEleccion"], true],
+                ["case", ["==", ["get", "elegida"], true], 0.95, 0.2], 0.95] as maplibregl.ExpressionSpecification
+              : 0,
+          },
         });
         mapa.addLayer({ id: capa, type: "line", source: FUENTE_CAMINOS, filter: filtro,
           layout: { "line-cap": "round", "line-join": "round" }, paint: estilo });
@@ -1158,11 +1198,11 @@ export function Mapa({
         filter: filtroPropio, layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": colores.circuitoPropio, "line-width": 6 } });
       for (const [paso, capa, guiones, ancho, borde] of [
-        ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5], 7, 10],
-        ["tentativo", CAPAS_DEL_CIRCUITO[2], [2.4, 1.5], 3.5, 5.5],
-        ["transitable", CAPAS_DEL_CIRCUITO[3], null, 7, 10],
-        ["a_pie", CAPAS_DEL_CIRCUITO[4], null, 7, 10],
-        ["sin_paso", CAPAS_DEL_CIRCUITO[5], null, 7, 10],
+        ["por_explorar", CAPAS_DEL_CIRCUITO[1], [2.4, 1.5], ANCHO_DE_CAMINO_EN_CIRCUITO, BORDE_DE_CAMINO_EN_CIRCUITO],
+        ["tentativo", CAPAS_DEL_CIRCUITO[2], [2.4, 1.5], ANCHO_DE_CAMINO_TENTATIVO_EN_CIRCUITO, BORDE_DE_CAMINO_TENTATIVO_EN_CIRCUITO],
+        ["transitable", CAPAS_DEL_CIRCUITO[3], null, ANCHO_DE_CAMINO_EN_CIRCUITO, BORDE_DE_CAMINO_EN_CIRCUITO],
+        ["a_pie", CAPAS_DEL_CIRCUITO[4], null, ANCHO_DE_CAMINO_EN_CIRCUITO, BORDE_DE_CAMINO_EN_CIRCUITO],
+        ["sin_paso", CAPAS_DEL_CIRCUITO[5], null, ANCHO_DE_CAMINO_EN_CIRCUITO, BORDE_DE_CAMINO_EN_CIRCUITO],
       ] as const) {
         const filtro: maplibregl.FilterSpecification = ["all", ["==", ["get", "clase"], "camino"], ["==", ["get", "paso"], paso]];
         const opacidad: maplibregl.ExpressionSpecification = ["case", ["==", ["get", "otra_actividad"], true], 0.72, 1];
@@ -1184,23 +1224,17 @@ export function Mapa({
         layout: { "text-field": "Fin marcado", "text-font": ["Noto Sans Regular"],
           "text-size": 15, "text-offset": [0, 1.6], "text-allow-overlap": true },
         paint: { "text-color": colores.circuitoPropio, "text-halo-color": colores.circuitoBorde, "text-halo-width": 2 } });
-      mapa.addLayer({ id: "caminos-encima-borde", type: "line", source: "caminos-encima",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.caminoSecundarioBorde, "line-width": colores.caminoSecundarioBordeAncho } });
-      mapa.addLayer({ id: "caminos-encima", type: "line", source: "caminos-encima",
-        layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colores.caminoSecundario, "line-width": colores.caminoSecundarioAncho } });
       mapa.addLayer({
         id: "vertices-de-camino", type: "circle", source: "vertices-de-camino",
         paint: { "circle-radius": 7, "circle-color": colores.rectanguloNuevo,
           "circle-stroke-width": 3, "circle-stroke-color": colores.parteX },
       });
       for (const [paso, capa, guiones, ancho, borde] of [
-        ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5], 5, 8],
-        ["tentativo", CAPAS_DE_PARTES[1], [2.4, 1.5], 2.5, 4.5],
-        ["transitable", CAPAS_DE_PARTES[2], null, 5, 8],
-        ["a_pie", CAPAS_DE_PARTES[3], null, 5, 8],
-        ["sin_paso", CAPAS_DE_PARTES[4], null, 5, 8],
+        ["por_explorar", CAPAS_DE_PARTES[0], [2.4, 1.5], ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["tentativo", CAPAS_DE_PARTES[1], [2.4, 1.5], ANCHO_DE_CAMINO_TENTATIVO, BORDE_DE_CAMINO_TENTATIVO],
+        ["transitable", CAPAS_DE_PARTES[2], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["a_pie", CAPAS_DE_PARTES[3], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
+        ["sin_paso", CAPAS_DE_PARTES[4], null, ANCHO_DE_CAMINO, BORDE_DE_CAMINO],
       ] as const) {
         const filtroDeParte: maplibregl.FilterSpecification = ["==", ["coalesce", ["get", "paso"], "por_explorar"], paso];
         mapa.addLayer({
@@ -2146,16 +2180,26 @@ export function Mapa({
       const sobreCamino = caminoEncontrado !== null;
       mapa.getCanvas().style.cursor = alMarcarPuntoDelCircuito ? "crosshair"
         : sobreCorte || sobrePunto || sobreZona || sobreRuta || sobreCamino ? "pointer" : "";
-      if (mostrarActividadesDeCaminoAlPasar && caminoEncontrado) {
-        const id = Number(caminoEncontrado.properties?.camino_id);
-        const nombre = String(caminoEncontrado.properties?.nombre ?? "Camino");
-        const actividades = String(caminoEncontrado.properties?.actividades_texto ?? "Actividad sin indicar");
-        if (Number.isInteger(id)) {
-          const x = Math.max(8, Math.min(evento.point.x + 12, mapa.getCanvas().clientWidth - 260));
-          const y = Math.max(8, Math.min(evento.point.y + 12, mapa.getCanvas().clientHeight - 70));
-          setCaminoBajoCursor((actual) => actual?.id === id ? actual : { id, texto: `${nombre} · ${actividades}`, x, y });
+      if (caminoEncontrado) {
+        const x = Math.max(8, Math.min(evento.point.x + 12, mapa.getCanvas().clientWidth - 260));
+        const y = Math.max(8, Math.min(evento.point.y + 12, mapa.getCanvas().clientHeight - 70));
+        const etiqueta = caminoEncontrado.properties?.etiqueta_al_pasar;
+        if (typeof etiqueta === "string" && etiqueta.trim() !== "") {
+          const id = Number(caminoEncontrado.properties?.borrador ?? caminoEncontrado.properties?.camino_id ?? 0);
+          setCaminoBajoCursor({ id: Number.isFinite(id) ? id : 0, texto: etiqueta, x, y });
+        } else if (mostrarActividadesDeCaminoAlPasar) {
+          const id = Number(caminoEncontrado.properties?.camino_id);
+          const nombre = String(caminoEncontrado.properties?.nombre ?? "Camino");
+          const actividades = String(caminoEncontrado.properties?.actividades_texto ?? "Actividad sin indicar");
+          if (Number.isInteger(id)) {
+            setCaminoBajoCursor({ id, texto: `${nombre} · ${actividades}`, x, y });
+          }
+        } else {
+          setCaminoBajoCursor(null);
         }
-      } else if (mostrarActividadesDeCaminoAlPasar) setCaminoBajoCursor(null);
+      } else {
+        setCaminoBajoCursor(null);
+      }
     };
     const tocar = (evento: maplibregl.MapMouseEvent) => {
       if (alTocarVerticeDeCamino && mapa.getLayer("vertices-de-camino")) {
@@ -2516,8 +2560,8 @@ export function Mapa({
     >
       <div className="relative min-h-0 flex-1">
       <div ref={contenedorRef} className="h-full w-full" />
-      {mostrarActividadesDeCaminoAlPasar && caminoBajoCursor ? (
-        <div className="pointer-events-none absolute z-10 max-w-64 rounded-lg border border-borde bg-superficie px-3 py-2 text-base font-medium text-texto shadow-lg"
+      {caminoBajoCursor ? (
+        <div className="pointer-events-none absolute z-10 max-w-72 whitespace-pre-line rounded-lg border border-borde bg-superficie px-3 py-2 text-base font-medium leading-snug text-texto shadow-lg"
           style={{ left: caminoBajoCursor.x, top: caminoBajoCursor.y }}>
           {caminoBajoCursor.texto}
         </div>

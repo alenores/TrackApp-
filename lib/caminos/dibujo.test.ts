@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { actividadParaMostrar, dibujarCaminos, dibujarCaminosVisibles } from "@/lib/caminos/dibujo";
+import { actividadParaMostrar, dibujarCaminos, dibujarCaminosVisibles, etiquetaAlPasarPorCamino } from "@/lib/caminos/dibujo";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
 
 describe("dibujo de Caminos por actividad", () => {
   const camino = {
     id: 8,
     nombre: "Huella del arroyo",
+    descripcion: "Baja al puente viejo.",
     actividades: ["mountain_bike", "trekking"],
     coordenadas: [[-64.2, -31.2], [-64.21, -31.21]],
     largoM: 1464.4,
@@ -21,6 +22,26 @@ describe("dibujo de Caminos por actividad", () => {
     expect(enBici.features[0].properties).toMatchObject({ camino_id: 8, paso: "sin_paso", complejidad: "media" });
     expect(aPie.features[0].properties).toMatchObject({ camino_id: 8, paso: "transitable", complejidad: "facil" });
     expect(camino.partes[0].porActividad.mountain_bike?.paso).toBe("sin_paso");
+  });
+
+  it("al pasar el mouse arma nombre, descripción y clasificación de la parte", () => {
+    const enBici = dibujarCaminos([camino], "mountain_bike");
+    expect(enBici.features[0].properties?.etiqueta_al_pasar).toBe(
+      "Huella del arroyo\nBaja al puente viejo.\nSin paso",
+    );
+    const aPie = dibujarCaminos([camino], "trekking");
+    expect(aPie.features[0].properties?.etiqueta_al_pasar).toBe(
+      "Huella del arroyo\nBaja al puente viejo.\nTransitable · Fácil",
+    );
+    expect(etiquetaAlPasarPorCamino({
+      nombre: "Largo",
+      descripcion: null,
+      indiceDeParte: 1,
+      cuantasPartes: 3,
+      actividad: "mountain_bike",
+      paso: "a_pie",
+      complejidad: "dificil",
+    })).toBe("Largo\nParte 2 · A pie con la bici · Difícil");
   });
 
   it("deja visible en gris un Camino de otra actividad", () => {

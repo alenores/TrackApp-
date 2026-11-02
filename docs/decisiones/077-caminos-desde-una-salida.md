@@ -9,8 +9,11 @@ quienes pueden crear Caminos (Administrador y Premium), como el resto del «+».
 
 **La app propone, el usuario decide.** La app nunca confirma nada:
 
-- Muestra el borrador y, encima, los Caminos que ya existen en una línea fina:
-  se ven los dos.
+- Muestra el borrador **por encima** y, debajo, los Caminos que ya existen en
+  una línea fina: se ven los dos, y el GPS no queda tapado (Ale, 2026-11-02).
+  Al elegir una parte, esa se marca con un halo y las demás se atenúan. Al
+  pasar el cursor por un tramo aparece qué parte es; al tocarlo, la tarjeta
+  de esa parte sube sola en el panel (Ale, 2026-11-02).
 - Marca en verde las partes del borrador que van sobre un Camino existente.
   Una parte va sobre un Camino si el GPS se mantiene a menos de **20 m** de él
   (el pasillo) durante al menos 100 m; una escapada de menos de 40 m fuera del
@@ -43,7 +46,13 @@ vuelve la tarjeta de un Camino nuevo: título «Camino nuevo», nombre,
 actividades propias de ese Camino, pegar puntas, y abajo Cancelar (siempre
 pide confirmación) y Guardar, que guarda solo ese Camino. Mientras tanto las
 demás partes no ofrecen crear otro y las herramientas trabajan sobre esa parte;
-cortarla deja el Camino con el primer pedazo y el resto como otra parte.
+cortarla deja el Camino con la parte nueva (después del corte) y el otro
+pedazo como otra parte. Fuera de «Crear Camino», al cortar también queda
+elegida la parte nueva (Ale, 2026-11-01).
+
+Al salir: si ya guardaste los Caminos y no queda nada pendiente ni un Camino
+a medio crear, se sale sin cartel. El aviso de «sin guardar» solo aparece
+cuando todavía hay algo sin guardar de verdad (Ale, 2026-11-01).
 
 Fuera por ahora: vincular la salida con los Caminos que pisó y procesar las
 salidas ya cargadas de forma masiva.

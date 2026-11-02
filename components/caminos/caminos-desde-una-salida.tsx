@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FeatureCollection, LineString, Position } from "geojson";
 import { crearCaminoNuevo, leerCaminos } from "@/app/actions/caminos";
 import { CargadorDeMapa } from "@/components/mapa/cargador-de-mapa";
@@ -21,7 +21,9 @@ import { useSalidasDeLaApertura } from "@/hooks/use-salidas-de-la-apertura";
 import {
   achicarLinea,
   ANCHO_DEL_PASILLO_M,
+  cartelAlSalir,
   cortarLinea,
+  hayQueConfirmarSalida,
   largoDeParte,
   pegarPunta,
   porDondeVa,
@@ -160,6 +162,21 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
   const [avisoDelCamino, setAvisoDelCamino] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [tocado, setTocado] = useState(false);
+  const tarjetasDeParte = useRef(new Map<number, HTMLElement>());
+  const claveAMostrar = creacion?.clave ?? elegida;
+
+  // Al elegir una parte en el mapa, la tarjeta sube sola en el panel.
+  useEffect(() => {
+    if (claveAMostrar === null) return;
+    const tarjeta = tarjetasDeParte.current.get(claveAMostrar);
+    if (!tarjeta) return;
+    tarjeta.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [claveAMostrar]);
+
+  const guardarRefDeParte = (clave: number, nodo: HTMLElement | null) => {
+    if (nodo) tarjetasDeParte.current.set(clave, nodo);
+    else tarjetasDeParte.current.delete(clave);
+  };
 
   useEffect(() => {
     let vigente = true;
@@ -211,22 +228,32 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
   // El borrador: verde donde va sobre un Camino, con el color de la línea de las salidas donde es nuevo.
   const dibujo = useMemo((): FeatureCollection<LineString> => ({
     type: "FeatureCollection",
-    features: piezas.filter((pieza) => pieza.destino !== "descartada").map((pieza) => {
-      const sobre = Boolean(analisis.get(pieza.clave)?.va);
-      return {
+    features: piezas.flatMap((pieza, indice) => {
+      if (pieza.destino === "descartada") return [];
+      const datos = analisis.get(pieza.clave);
+      const sobre = Boolean(datos?.va);
+      const largo = km(datos?.largo ?? 0);
+      const detalle = pieza.guardadoComo !== null
+        ? `Guardada como «${pieza.nombre}»`
+        : datos?.va
+          ? `Va sobre «${datos.va.sobre.nombre}»`
+          : "No coincide con ningún Camino";
+      return [{
         type: "Feature" as const,
         properties: {
           borrador: pieza.clave, paso: "transitable",
           ...(sobre ? { complejidad: "facil" } : { complejidad: null, lineaDeSalida: true }),
           elegida: pieza.clave === enUso,
+          hayEleccion: enUso !== null,
+          etiqueta_al_pasar: `Parte ${indice + 1} · ${largo} · ${detalle}`,
         },
         geometry: { type: "LineString" as const, coordinates: lineaDe(pieza) },
-      };
+      }];
     }),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [piezas, analisis, enUso, creacion]);
 
-  // Los Caminos que ya existen van encima, finos: así se ven los dos.
+  // Los Caminos que ya existen van debajo, finos: el borrador se ve encima.
   const caminosExistentes = useMemo((): FeatureCollection<LineString> => ({
     type: "FeatureCollection",
     features: caminos.map((camino) => ({
@@ -264,13 +291,14 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
       if (!corte.ok) { setAviso(corte.error); return; }
       const [antes, despues] = corte.datos.map(piezaNueva);
       setPiezas((actuales) => actuales.flatMap((cada) => cada.clave === clave ? [antes, despues] : [cada]));
+      // La parte nueva (después del corte) queda elegida: cortar para seguir
+      // con el pedazo que acabás de separar, no con otro.
       if (creacion) {
-        // El Camino sigue con el primer pedazo; el resto queda como otra parte.
-        setCreacion({ ...creacion, clave: antes.clave, pegarFinal: false });
-        setAviso("Se cortó: el Camino que estás creando sigue con el primer pedazo y el resto quedó como otra parte.");
+        setCreacion({ ...creacion, clave: despues.clave, pegarInicio: false });
+        setAviso("Se cortó: el Camino que estás creando sigue con la parte nueva; el otro pedazo quedó aparte.");
       } else {
-        setElegida(null);
-        setAviso("Se cortó la parte en dos. Revisá qué hacer con cada una.");
+        setElegida(despues.clave);
+        setAviso("Se cortó en dos. Quedó elegida la parte nueva.");
       }
       setTocado(true);
       return;
@@ -322,10 +350,22 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
   };
 
   const volver = async () => {
-    if ((tocado || creacion) && !(await confirmar({
-      titulo: "¿Salir sin guardar?",
-      mensaje: "Los cortes, las correcciones y el Camino que estás creando se pierden. Los Caminos ya guardados quedan.",
-      textoDeAceptar: "Salir sin guardar",
+    const hayGuardados = piezas.some((pieza) => pieza.guardadoComo !== null);
+    const hayPartesPendientes = piezas.some((pieza) =>
+      pieza.destino === "pendiente" && pieza.guardadoComo === null);
+    if (!hayQueConfirmarSalida({
+      creandoCamino: Boolean(creacion),
+      tocado,
+      hayPartesPendientes,
+    })) {
+      alVolver();
+      return;
+    }
+    const cartel = cartelAlSalir({ creandoCamino: Boolean(creacion), hayGuardados });
+    if (!(await confirmar({
+      titulo: cartel.titulo,
+      mensaje: cartel.mensaje,
+      textoDeAceptar: cartel.textoDeAceptar,
       destructivo: true,
     }))) return;
     alVolver();
@@ -419,9 +459,11 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
             <div className="space-y-4">
               <Tarjeta className="space-y-2">
                 <p className="text-base text-texto">
-                  La línea gruesa es el GPS, como borrador. En verde, las partes que van sobre un Camino que ya
-                  existe (a menos de {ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no coinciden con
-                  ninguno. Los Caminos existentes se ven encima, en una línea fina gris. Es una propuesta: revisala.
+                  La línea gruesa es el GPS, como borrador (va por encima). En verde, las partes que van sobre un
+                  Camino que ya existe (a menos de {ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no
+                  coinciden con ninguno. Los Caminos existentes se ven debajo, en una línea fina gris. Al pasar el
+                  cursor por un tramo ves qué parte es; al tocarlo, la tarjeta sube sola en el panel. Es una
+                  propuesta: revisala.
                 </p>
                 <Opciones etiqueta="Herramienta" columnas={3} iconoArriba elegidas={[herramienta]}
                   alElegir={(nueva) => { setHerramienta(nueva); setAviso(null); }}
@@ -442,56 +484,60 @@ function BorradorDeLaSalida({ salida, alVolver }: { salida: Salida; alVolver: ()
                 const largo = km(datos?.largo ?? 0);
                 if (creacion?.clave === pieza.clave) {
                   return (
-                    <TarjetaDelCaminoNuevo key={pieza.clave} numero={indice + 1} largo={largo} creacion={creacion}
-                      inicio={datos?.inicio ?? null} final={datos?.final ?? null} vaSobre={datos?.va?.sobre.nombre ?? null}
-                      guardando={guardando} aviso={avisoDelCamino} alCambiar={cambiarCreacion}
-                      alCancelar={() => void cancelarCamino()} alGuardar={() => void guardarCamino()} />
+                    <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
+                      <TarjetaDelCaminoNuevo numero={indice + 1} largo={largo} creacion={creacion}
+                        inicio={datos?.inicio ?? null} final={datos?.final ?? null} vaSobre={datos?.va?.sobre.nombre ?? null}
+                        guardando={guardando} aviso={avisoDelCamino} alCambiar={cambiarCreacion}
+                        alCancelar={() => void cancelarCamino()} alGuardar={() => void guardarCamino()} />
+                    </div>
                   );
                 }
                 const esElegida = pieza.clave === elegida && !creacion;
                 const bloqueada = guardando || pieza.guardadoComo !== null;
                 return (
-                  <Tarjeta key={pieza.clave} className={`space-y-3 ${esElegida ? "ring-2 ring-acento-borde" : ""}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-base font-semibold text-texto">
-                        Parte {indice + 1} · {largo}{esElegida ? " · elegida" : ""}
-                      </p>
-                      {!esElegida && !creacion && pieza.destino !== "descartada" && pieza.guardadoComo === null ? (
-                        <Boton variante="secundario" onClick={() => setElegida(pieza.clave)}>Elegir</Boton>
-                      ) : null}
-                    </div>
-                    {pieza.guardadoComo !== null ? (
-                      <p className="text-base text-verde-texto">Guardada como el Camino «{pieza.nombre}».</p>
-                    ) : pieza.destino === "descartada" ? (
-                      <>
-                        <p className="text-base text-texto-suave">Descartada: no se guarda y no se ve en el mapa.</p>
-                        <Boton variante="secundario" disabled={guardando || Boolean(creacion)}
-                          onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
-                      </>
-                    ) : datos?.va ? (
-                      <>
-                        <p className="text-base text-texto">
-                          Va sobre «{datos.va.sobre.nombre}» ({Math.round(datos.va.proporcion * 100)} % de esta parte).
-                          Ese Camino ya existe y no se toca.
+                  <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
+                    <Tarjeta className={`space-y-3 ${esElegida ? "ring-2 ring-acento-borde" : ""}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-base font-semibold text-texto">
+                          Parte {indice + 1} · {largo}{esElegida ? " · elegida" : ""}
                         </p>
-                        <Boton variante="secundario" disabled={bloqueada || Boolean(creacion)}
-                          onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-base text-texto">No coincide con ningún Camino.</p>
-                        {creacion ? (
-                          <p className="text-base text-texto-suave">Para usar esta parte, terminá o cancelá el Camino que estás creando.</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            <Boton variante="secundario" disabled={bloqueada} onClick={() => empezarCamino(pieza)}>Crear Camino</Boton>
-                            <Boton variante="secundario" disabled={bloqueada}
-                              onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </Tarjeta>
+                        {!esElegida && !creacion && pieza.destino !== "descartada" && pieza.guardadoComo === null ? (
+                          <Boton variante="secundario" onClick={() => setElegida(pieza.clave)}>Elegir</Boton>
+                        ) : null}
+                      </div>
+                      {pieza.guardadoComo !== null ? (
+                        <p className="text-base text-verde-texto">Guardada como el Camino «{pieza.nombre}».</p>
+                      ) : pieza.destino === "descartada" ? (
+                        <>
+                          <p className="text-base text-texto-suave">Descartada: no se guarda y no se ve en el mapa.</p>
+                          <Boton variante="secundario" disabled={guardando || Boolean(creacion)}
+                            onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
+                        </>
+                      ) : datos?.va ? (
+                        <>
+                          <p className="text-base text-texto">
+                            Va sobre «{datos.va.sobre.nombre}» ({Math.round(datos.va.proporcion * 100)} % de esta parte).
+                            Ese Camino ya existe y no se toca.
+                          </p>
+                          <Boton variante="secundario" disabled={bloqueada || Boolean(creacion)}
+                            onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-base text-texto">No coincide con ningún Camino.</p>
+                          {creacion ? (
+                            <p className="text-base text-texto-suave">Para usar esta parte, terminá o cancelá el Camino que estás creando.</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              <Boton variante="secundario" disabled={bloqueada} onClick={() => empezarCamino(pieza)}>Crear Camino</Boton>
+                              <Boton variante="secundario" disabled={bloqueada}
+                                onClick={() => cambiarPieza(pieza.clave, { destino: "descartada" })}>Descartar</Boton>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </Tarjeta>
+                  </div>
                 );
               })}
 

@@ -260,3 +260,43 @@ export function pegarPunta(linea: Position[], extremo: "inicio" | "final", coord
 export function largoDeParte(linea: Position[]): number {
   return linea.length < 2 ? 0 : distanciasAcumuladas(linea).at(-1) ?? 0;
 }
+
+// ---------------------------------------------------------------- salir de la pantalla
+
+/**
+ * Si hace falta preguntar antes de salir del borrador de una salida.
+ *
+ * No se pregunta cuando no hubo cambios, ni cuando lo tocado ya quedó
+ * guardado o descartado: el cartel de «sin guardar» asustaba al pedo.
+ */
+export function hayQueConfirmarSalida(entrada: {
+  creandoCamino: boolean;
+  tocado: boolean;
+  hayPartesPendientes: boolean;
+}): boolean {
+  if (entrada.creandoCamino) return true;
+  return entrada.tocado && entrada.hayPartesPendientes;
+}
+
+/** El cartel al salir: dice qué se pierde y qué ya quedó guardado. */
+export function cartelAlSalir(entrada: {
+  creandoCamino: boolean;
+  hayGuardados: boolean;
+}): { titulo: string; mensaje: string; textoDeAceptar: string } {
+  if (entrada.creandoCamino) {
+    return {
+      titulo: "¿Salir sin terminar el Camino?",
+      mensaje: entrada.hayGuardados
+        ? "Estás armando un Camino que todavía no guardaste: ese no se guarda. Los Caminos que ya guardaste en esta pantalla sí quedan."
+        : "Estás armando un Camino que todavía no guardaste. Si salís, no se guarda.",
+      textoDeAceptar: "Salir sin guardar el Camino",
+    };
+  }
+  return {
+    titulo: entrada.hayGuardados ? "¿Salir de esta salida?" : "¿Salir sin guardar?",
+    mensaje: entrada.hayGuardados
+      ? "Los Caminos que ya guardaste quedan. Se pierden los cortes y correcciones de las partes que todavía no son un Camino."
+      : "Los cortes y correcciones se pierden. Todavía no guardaste ningún Camino.",
+    textoDeAceptar: "Salir",
+  };
+}

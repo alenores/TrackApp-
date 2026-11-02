@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Position } from "geojson";
 import {
   achicarLinea,
+  cartelAlSalir,
   cortarLinea,
+  hayQueConfirmarSalida,
   largoDeParte,
   pegarPunta,
   porDondeVa,
@@ -98,6 +100,33 @@ describe("cortarLinea", () => {
       expect(Math.abs(largoDeParte(corte.datos[1]) - 600)).toBeLessThan(2);
     }
     expect(cortarLinea(linea, ...(en(3, 0) as [number, number])).ok).toBe(false);
+  });
+});
+
+describe("salir del borrador de una salida", () => {
+  it("no pregunta si ya está todo guardado o descartado", () => {
+    expect(hayQueConfirmarSalida({
+      creandoCamino: false, tocado: true, hayPartesPendientes: false,
+    })).toBe(false);
+  });
+
+  it("pregunta si hay un Camino a medio crear o partes todavía pendientes", () => {
+    expect(hayQueConfirmarSalida({
+      creandoCamino: true, tocado: false, hayPartesPendientes: false,
+    })).toBe(true);
+    expect(hayQueConfirmarSalida({
+      creandoCamino: false, tocado: true, hayPartesPendientes: true,
+    })).toBe(true);
+  });
+
+  it("el cartel no dice «sin guardar» cuando ya hay Caminos guardados", () => {
+    const conGuardados = cartelAlSalir({ creandoCamino: false, hayGuardados: true });
+    expect(conGuardados.titulo).toBe("¿Salir de esta salida?");
+    expect(conGuardados.mensaje).toContain("ya guardaste quedan");
+    expect(conGuardados.mensaje).not.toMatch(/^Los cortes/);
+    const creando = cartelAlSalir({ creandoCamino: true, hayGuardados: true });
+    expect(creando.titulo).toBe("¿Salir sin terminar el Camino?");
+    expect(creando.mensaje).toContain("sí quedan");
   });
 });
 
