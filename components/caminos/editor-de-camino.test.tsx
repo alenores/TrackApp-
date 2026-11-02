@@ -8,30 +8,45 @@ import type { CaminoGuardado } from "@/lib/caminos/datos";
 
 let mapa: ComponentProps<typeof CargadorDeMapa>;
 
-const camino: CaminoGuardado = {
-  id: 7,
-  perfilId: "yo",
-  nombre: "Camino de prueba",
-  descripcion: null,
-  actividades: ["trekking"],
-  coordenadas: [[-64.8, -31.4], [-64.81, -31.41], [-64.82, -31.42]],
-  partes: [{
-    desdeM: 0,
-    hastaM: 1000,
-    porActividad: { trekking: { paso: "por_explorar", complejidad: null } },
-    observacion: null,
-    comprobadoEl: null,
-  }],
-  largoM: 1000,
-  alturas: null,
-  versionForma: 1,
-  creadoEn: "2026-01-01T00:00:00Z",
-  actualizadoEn: "2026-01-01T00:00:00Z",
-  eliminadoEn: null,
-};
+const dobles = vi.hoisted(() => {
+  const camino: CaminoGuardado = {
+    id: 7,
+    perfilId: "yo",
+    nombre: "Camino de prueba",
+    descripcion: null,
+    actividades: ["trekking"],
+    coordenadas: [[-64.8, -31.4], [-64.81, -31.41], [-64.82, -31.42]],
+    partes: [{
+      desdeM: 0,
+      hastaM: 1000,
+      porActividad: { trekking: { paso: "por_explorar", complejidad: null } },
+      observacion: null,
+      comprobadoEl: null,
+    }],
+    largoM: 1000,
+    alturas: null,
+    versionForma: 1,
+    creadoEn: "2026-01-01T00:00:00Z",
+    actualizadoEn: "2026-01-01T00:00:00Z",
+    eliminadoEn: null,
+  };
+  const otroCamino: CaminoGuardado = {
+    ...camino,
+    id: 9,
+    nombre: "Otro Camino",
+    coordenadas: [[-64.79, -31.39], [-64.78, -31.38]],
+  };
+  const puntoDeReferencia = {
+    id: 3,
+    tipo: "punto" as const,
+    titulo: "Tranquera",
+    geometria: { type: "Point" as const, coordinates: [-64.8, -31.4] },
+  };
+  return { camino, otroCamino, puntoDeReferencia };
+});
 
 vi.mock("@/app/actions/caminos", () => ({
-  leerCamino: async () => ({ ok: true as const, datos: camino }),
+  leerCamino: async () => ({ ok: true as const, datos: dobles.camino }),
   cambiarActividadesDelCamino: async () => ({ ok: false as const, error: "no" }),
   cambiarDatosDeParteDelCamino: async () => ({ ok: false as const, error: "no" }),
   cambiarNombreDelCamino: async () => ({ ok: false as const, error: "no" }),
@@ -54,6 +69,24 @@ vi.mock("@/components/mapa/cargador-de-mapa", () => ({
     mapa = propiedades;
     return <div data-mapa />;
   },
+}));
+vi.mock("@/hooks/use-al-marcar", () => ({
+  useAlMarcar: () => ({
+    caminos: [dobles.camino, dobles.otroCamino],
+    anotaciones: [dobles.puntoDeReferencia],
+    dibujoDeCaminos: null,
+    caminosSinLinea: [],
+    zonas: [],
+    sectores: [],
+    cargandoCaminos: false,
+    lineas: "nada",
+    setLineas: () => {},
+    rectangulos: [],
+    vista: null,
+    viaje: 0,
+    ir: () => {},
+    mostrar: () => {},
+  }),
 }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -94,6 +127,20 @@ describe("editar un Camino desde Marcas", () => {
         lonOeste: -64.82,
         lonEste: -64.8,
       });
+    } finally {
+      act(() => raiz.unmount());
+    }
+  });
+
+  it("deja visibles los demás Caminos y puntos de referencia, sin el que se edita", async () => {
+    const contenedor = document.createElement("div");
+    const raiz = createRoot(contenedor);
+    try {
+      await act(async () => raiz.render(<EditorDeCamino id={7} alVolver={() => {}} />));
+      expect(mapa.mostrarFichaAnotacion).toBe(false);
+      expect(mapa.anotaciones).toEqual([dobles.puntoDeReferencia]);
+      expect(mapa.caminosEncima?.features.map((cada) => cada.properties?.camino_id)).toEqual([9]);
+      expect(mapa.caminosEncima?.features.map((cada) => cada.properties?.nombre)).toEqual(["Otro Camino"]);
     } finally {
       act(() => raiz.unmount());
     }

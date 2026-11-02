@@ -4,6 +4,31 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-02 — Referencia al editar la línea
+
+### Estado al inicio
+Al editar un Camino (sección Línea) el mapa solo mostraba ese Camino: no se
+veían los demás ni los puntos para ubicarse.
+
+### Lo que se hizo
+Al editar, los demás Caminos, puntos y trazos se ven de referencia (finos /
+informativos). No se editan desde ahí. El que se está corrigiendo sigue
+encima, con sus puntos.
+
+### Decisiones tomadas
+Extiende la 074: editar un Camino también deja las marcas de referencia.
+
+### Documentos actualizados
+`docs/decisiones/074-elegir-un-punto-sin-perder-la-vista.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Ninguno de este tema.
+
+---
+
 ## Sesión 2026-11-02 — Pantallita del Camino en Consultas
 
 ### Estado al inicio

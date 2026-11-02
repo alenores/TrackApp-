@@ -2,6 +2,7 @@
 
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { FeatureCollection, LineString } from "geojson";
 import {
   cambiarActividadesDelCamino, cambiarDatosDeParteDelCamino, cambiarNombreDelCamino,
   clasificarParteDelCamino, corregirLineaDelCamino, leerCamino, partirEntreEnElCamino, quitarParteDelCamino, retirarCamino,
@@ -29,6 +30,7 @@ import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { MuestraDeComplejidad, MuestraDeLinea, nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
+import { useAlMarcar } from "@/hooks/use-al-marcar";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
 import type { ActividadRuta } from "@/types/database";
 
@@ -39,7 +41,8 @@ type Pestana = "datos" | "linea" | "partes";
  *
  * Abre en satelital (lo más parecido a Google, que en el editor no se usa) y
  * conserva el centro y el zoom que se estaban mirando. Sin esa vista, encuadra
- * el Camino entero.
+ * el Camino entero. Los demás Caminos, puntos y trazos se ven de referencia
+ * (como al dibujar uno nuevo): no se editan desde acá.
  */
 export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
   id: number;
@@ -47,6 +50,7 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
   vistaInicial?: VistaDelMapa | null;
 }) {
   const dondeEstaba = useRef<VistaDelMapa | null>(vistaInicial);
+  const marcar = useAlMarcar();
   const [camino, setCamino] = useState<CaminoGuardado | null>(null);
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
@@ -134,6 +138,17 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
       })),
     };
   }, [caminoVisible, actividad, pestana, indice, partiendo]);
+  // Los demás Caminos van finos, debajo, solo de referencia: no se tocan al editar.
+  const caminosDeReferencia = useMemo((): FeatureCollection<LineString> => ({
+    type: "FeatureCollection",
+    features: marcar.caminos
+      .filter((cada) => cada.id !== id)
+      .map((cada) => ({
+        type: "Feature" as const,
+        properties: { camino_id: cada.id, nombre: cada.nombre },
+        geometry: { type: "LineString" as const, coordinates: cada.coordenadas },
+      })),
+  }), [marcar.caminos, id]);
   const bordesDelCamino = camino ? [0, ...camino.partes.map((cada) => cada.hastaM)] : [];
   const puntoDe = (metros: number | null) => camino && metros !== null ? puntoEnDistancia(camino.coordenadas, metros) : null;
   const inicioMarcado = puntoDe(inicioM);
@@ -307,6 +322,9 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
           mapa={
             <CargadorDeMapa enVivo llenarElAltoEnLaComputadora fondoInicial="satelital"
               vista={vistaInicial} encuadre={encuadre} encuadrarSoloAlAbrir caminos={dibujo}
+              caminosEncima={caminosDeReferencia}
+              anotaciones={marcar.anotaciones}
+              mostrarFichaAnotacion={false}
               alMoverVista={(vista) => { dondeEstaba.current = vista; }}
               extremosDeParte={marcaDeLaParte}
               cortesMarcados={cortesMarcados}
