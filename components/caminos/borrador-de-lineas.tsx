@@ -160,12 +160,11 @@ export function BorradorDeLineas({
   const [creacion, setCreacion] = useState<Creacion | null>(null);
   const [creacionDeTrazo, setCreacionDeTrazo] = useState<CreacionDeTrazo | null>(null);
   const [herramienta, setHerramienta] = useState<Herramienta>("elegir");
-  // En PC no hay mover/agregar/quitar: si quedó una de esas, vuelve a elegir.
-  useEffect(() => {
-    if (enPc && (herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar")) {
-      setHerramienta("elegir");
-    }
-  }, [enPc, herramienta]);
+  // En PC no hay mover/agregar/quitar: se ignora si quedó una de esas (sin effect).
+  const herramientaActiva: Herramienta = enPc
+    && (herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar")
+    ? "elegir"
+    : herramienta;
   const [aviso, setAviso] = useState<string | null>(null);
   const [avisoDelCamino, setAvisoDelCamino] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -253,9 +252,9 @@ export function BorradorDeLineas({
    */
   const editandoPuntosEnPc = enPc && piezaEnUso !== null
     && piezaEnUso.guardadoComo === null && !piezaEnUso.guardadoComoTrazo
-    && herramienta !== "cortar";
+    && herramientaActiva !== "cortar";
   const editandoLinea = editandoPuntosEnPc
-    || herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar";
+    || herramientaActiva === "mover" || herramientaActiva === "agregar" || herramientaActiva === "quitar";
 
   const dibujo = useMemo((): FeatureCollection<LineString> => ({
     type: "FeatureCollection",
@@ -335,7 +334,7 @@ export function BorradorDeLineas({
         : "Estás sumando un trazo: terminalo o cancelalo para trabajar con otra parte.");
       return;
     }
-    if (herramienta === "cortar") {
+    if (herramientaActiva === "cortar") {
       const corte = cortarLinea(pieza.coordenadas, lon, lat);
       if (!corte.ok) { setAviso(corte.error); return; }
       const [antes, despues] = corte.datos.map((coords) => piezaNueva(coords, pieza.nombreSugerido));
@@ -353,7 +352,7 @@ export function BorradorDeLineas({
       setTocado(true);
       return;
     }
-    if (herramienta === "agregar" && clave === enUso) {
+    if (herramientaActiva === "agregar" && clave === enUso) {
       const resultado = agregarPuntoEnLinea(pieza.coordenadas, lon, lat);
       if (!resultado.ok) { setAviso(resultado.error); return; }
       cambiarPieza(clave, { coordenadas: resultado.datos });
@@ -679,18 +678,18 @@ export function BorradorDeLineas({
                 setAviso(null);
               }}
               verticesDeCamino={editandoLinea && piezaEnUso && piezaEnUso.guardadoComo === null && !piezaEnUso.guardadoComoTrazo ? piezaEnUso.coordenadas : null}
-              alTocarVerticeDeCamino={herramienta === "quitar" ? quitarPunto : undefined}
+              alTocarVerticeDeCamino={herramientaActiva === "quitar" ? quitarPunto : undefined}
               alClicDerechoEnVerticeDeCamino={editandoPuntosEnPc ? quitarPunto : undefined}
-              alMoverVerticeDeCamino={editandoPuntosEnPc || herramienta === "mover" ? moverPunto : undefined} />
+              alMoverVerticeDeCamino={editandoPuntosEnPc || herramientaActiva === "mover" ? moverPunto : undefined} />
           }
           panel={
             <div className="space-y-4">
               <Tarjeta className="space-y-2">
                 <p className="text-base text-texto">{textoDeAyuda}</p>
-                <Opciones etiqueta="Herramienta" columnas={enPc ? 2 : 3} iconoArriba elegidas={[herramienta]}
+                <Opciones etiqueta="Herramienta" columnas={enPc ? 2 : 3} iconoArriba elegidas={[herramientaActiva]}
                   alElegir={(nueva) => { setHerramienta(nueva); setAviso(null); }}
                   opciones={opcionesDeHerramienta} />
-                <p className="text-base text-texto-suave">{ayudaDeHerramienta[herramienta]}</p>
+                <p className="text-base text-texto-suave">{ayudaDeHerramienta[herramientaActiva]}</p>
                 {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
               </Tarjeta>
 
