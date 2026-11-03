@@ -152,8 +152,9 @@ export function coloresDelMapa(modo?: Modo): ColoresDelMapa {
 /**
  * Color de las curvas de nivel según el fondo.
  *
- * En el mapa simple siguen en magenta. Sobre la foto satelital van en naranja
- * clarito: el violeta no se distingue del terreno (Ale, 2026-10-15).
+ * En el mapa simple siguen en magenta. Sobre la foto (satelital o Google) van
+ * en naranja clarito: el violeta no se distingue del terreno (Ale, 2026-10-15;
+ * Google igual que satelital, 2026-11-02).
  */
 export function colorDeLasCurvas(sobreLaFoto: boolean, colores: ColoresDelMapa): string {
   return sobreLaFoto ? colores.curvaSobreFoto : colores.curva;

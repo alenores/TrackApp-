@@ -248,6 +248,16 @@ acción destructiva sin confirmación se dispara sola.
 
 ---
 
+## Por qué el mapa no se inclina ni gira
+
+En el celular se podía inclinar con dos dedos; en la PC no. Quedaban dos
+comportamientos distintos. Además, inclinar fotos planas no da la vista de
+Google Earth y al navegar complica ubicarse.
+
+**Regla: el mapa queda siempre de frente, igual en celular y en PC.** Sin
+inclinación ni giro. Para mirar el terreno de costado o en profundidad se usa
+Google Earth. Decisión 082.
+
 ## Por qué el mapa va a pantalla completa
 
 La información que importa mientras caminás es: dónde estoy y por dónde sigue

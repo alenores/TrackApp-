@@ -30,21 +30,23 @@ import {
   porDondeVa,
   proponerPartes,
   puntaCercana,
+  unirLineas,
   type CaminoParaComparar,
   type PuntaCercana,
 } from "@/lib/caminos/desde-salida";
-import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
+import { agregarOExtenderPuntoEnLinea, agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import { unaVezPorApertura } from "@/lib/datos/una-vez-por-apertura";
 import { rectanguloQueAbarca } from "@/lib/datos/rectangulo";
 import { useDatosDeLaApp } from "@/hooks/use-datos-de-la-app";
+import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import type { ActividadRuta, Rectangulo } from "@/types/database";
 
 /**
  * Borrador compartido: líneas traídas (salida o archivo) contra Caminos que ya
- * existen. Verde = coincide; color de salidas = nuevo. Cortar, descartar y
- * crear de a un Camino. Los puntos y trazos que ya existen se ven de
- * referencia. La app propone; nada se guarda hasta Guardar.
+ * existen. Verde = coincide; color de salidas = nuevo. Cortar, unir al
+ * siguiente, descartar y crear de a un Camino. Los puntos y trazos que ya
+ * existen se ven de referencia. La app propone; nada se guarda hasta Guardar.
  */
 
 type Destino = "pendiente" | "descartada";
@@ -123,7 +125,6 @@ export function BorradorDeLineas({
   tituloEmpezarDeNuevo,
   mensajeEmpezarDeNuevo,
   botonEmpezarDeNuevo,
-  descripcionDelCamino,
   lineas,
   alVolver,
   consultaGoogle = false,
@@ -139,7 +140,6 @@ export function BorradorDeLineas({
   tituloEmpezarDeNuevo: string;
   mensajeEmpezarDeNuevo: string;
   botonEmpezarDeNuevo: string;
-  descripcionDelCamino: string;
   lineas: LineaDelBorrador[];
   alVolver: () => void;
   consultaGoogle?: boolean;
@@ -150,6 +150,7 @@ export function BorradorDeLineas({
 }) {
   const { confirmar } = useDialogos();
   const { paquete } = useDatosDeLaApp();
+  const enPc = usePantallaAncha();
   const anotacionesDeReferencia = useMemo(() => paquete?.anotaciones ?? [], [paquete]);
   const [carga, setCarga] = useState<Carga>({ estado: "cargando" });
   const [intento, setIntento] = useState(0);
@@ -159,6 +160,12 @@ export function BorradorDeLineas({
   const [creacion, setCreacion] = useState<Creacion | null>(null);
   const [creacionDeTrazo, setCreacionDeTrazo] = useState<CreacionDeTrazo | null>(null);
   const [herramienta, setHerramienta] = useState<Herramienta>("elegir");
+  // En PC no hay mover/agregar/quitar: si quedó una de esas, vuelve a elegir.
+  useEffect(() => {
+    if (enPc && (herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar")) {
+      setHerramienta("elegir");
+    }
+  }, [enPc, herramienta]);
   const [aviso, setAviso] = useState<string | null>(null);
   const [avisoDelCamino, setAvisoDelCamino] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -238,8 +245,17 @@ export function BorradorDeLineas({
 
   const enUso = creacion?.clave ?? creacionDeTrazo?.clave ?? elegida;
   const piezaEnUso = piezas.find((pieza) => pieza.clave === enUso) ?? null;
-  const editandoLinea = herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar";
   const creandoAlgo = Boolean(creacion || creacionDeTrazo);
+  /**
+   * En PC, con una parte en uso (y sin cortar), los puntos se editan con el
+   * mouse: arrastrar, clic izquierdo agregar/alargar, clic derecho quitar.
+   * En celular siguen las tres herramientas (Ale, 2026-11-03).
+   */
+  const editandoPuntosEnPc = enPc && piezaEnUso !== null
+    && piezaEnUso.guardadoComo === null && !piezaEnUso.guardadoComoTrazo
+    && herramienta !== "cortar";
+  const editandoLinea = editandoPuntosEnPc
+    || herramienta === "mover" || herramienta === "agregar" || herramienta === "quitar";
 
   const dibujo = useMemo((): FeatureCollection<LineString> => ({
     type: "FeatureCollection",
@@ -344,6 +360,16 @@ export function BorradorDeLineas({
       setAviso(null);
       return;
     }
+    // PC: clic izquierdo sobre la línea (o más allá del extremo) agrega o alarga.
+    if (editandoPuntosEnPc && clave === enUso) {
+      const resultado = agregarOExtenderPuntoEnLinea(pieza.coordenadas, lon, lat);
+      if (!resultado.ok) { setAviso(resultado.error); return; }
+      cambiarPieza(clave, { coordenadas: resultado.datos });
+      setAviso(resultado.datos.length > pieza.coordenadas.length
+        ? "Se sumó un punto. Si quedó más allá del extremo, el Camino se alargó en recta."
+        : null);
+      return;
+    }
     setElegida(clave);
     setAviso(null);
   };
@@ -388,6 +414,36 @@ export function BorradorDeLineas({
       destructivo: true,
     }))) return;
     cambiarPieza(clave, { destino: "descartada" });
+  };
+
+  /** Une esta parte con la de abajo en la lista. No mira coincidencias: solo pega. */
+  const unirConLaSiguiente = (indice: number) => {
+    const esta = piezas[indice];
+    const siguiente = piezas[indice + 1];
+    if (!esta || !siguiente) return;
+    if (esta.guardadoComo !== null || esta.guardadoComoTrazo || siguiente.guardadoComo !== null || siguiente.guardadoComoTrazo) {
+      setAviso("No se puede unir: alguna de las dos partes ya está guardada.");
+      return;
+    }
+    const unidas = unirLineas(esta.coordenadas, siguiente.coordenadas);
+    if (!unidas.ok) { setAviso(unidas.error); return; }
+    const junta = piezaNueva(unidas.datos, esta.nombreSugerido || siguiente.nombreSugerido);
+    // Si alguna estaba descartada, al unir vuelve a usarse.
+    junta.destino = "pendiente";
+    setPiezas((actuales) => [
+      ...actuales.slice(0, indice),
+      junta,
+      ...actuales.slice(indice + 2),
+    ]);
+    if (creacion && (creacion.clave === esta.clave || creacion.clave === siguiente.clave)) {
+      setCreacion({ ...creacion, clave: junta.clave, pegarInicio: false, pegarFinal: false });
+    }
+    if (creacionDeTrazo && (creacionDeTrazo.clave === esta.clave || creacionDeTrazo.clave === siguiente.clave)) {
+      setCreacionDeTrazo({ ...creacionDeTrazo, clave: junta.clave });
+    }
+    if (elegida === esta.clave || elegida === siguiente.clave) setElegida(junta.clave);
+    setAviso("Se unieron las dos partes.");
+    setTocado(true);
   };
 
   const empezarTrazo = (pieza: Pieza) => {
@@ -483,7 +539,7 @@ export function BorradorDeLineas({
     try {
       const resultado = await crearCaminoNuevo({
         nombre,
-        descripcion: descripcionDelCamino,
+        descripcion: null,
         actividades: creacion.actividades,
         coordenadas: lineaDe(pieza),
       });
@@ -567,12 +623,26 @@ export function BorradorDeLineas({
   };
 
   const ayudaDeHerramienta: Record<Herramienta, string> = {
-    elegir: "Tocá una parte en el mapa o en la lista para elegirla. Un clic fuera de la línea (sin arrastrar) suelta la elección y vuelve a mostrar todos los colores.",
+    elegir: enPc
+      ? "Elegí una parte. Con el mouse: arrastrá un punto para moverlo; clic izquierdo agrega o alarga el Camino; clic derecho quita un punto."
+      : "Tocá una parte en el mapa o en la lista para elegirla. Un clic fuera de la línea (sin arrastrar) suelta la elección y vuelve a mostrar todos los colores.",
     cortar: creandoAlgo ? "Tocá la línea que estás creando donde la querés cortar." : "Tocá la línea donde la querés cortar.",
     mover: creandoAlgo ? "Arrastrá los puntos de la parte que estás creando." : "Elegí una parte y arrastrá sus puntos hasta su lugar.",
     agregar: creandoAlgo ? "Tocá la línea que estás creando, entre dos puntos." : "Elegí una parte y tocá su línea entre dos puntos.",
     quitar: creandoAlgo ? "Tocá el punto de la parte que estás creando que querés quitar." : "Elegí una parte y tocá el punto que querés quitar.",
   };
+  const opcionesDeHerramienta = enPc
+    ? [
+        { valor: "elegir" as const, etiqueta: "Elegir parte" },
+        { valor: "cortar" as const, etiqueta: "Cortar" },
+      ]
+    : [
+        { valor: "elegir" as const, etiqueta: "Elegir parte" },
+        { valor: "cortar" as const, etiqueta: "Cortar" },
+        { valor: "mover" as const, etiqueta: "Mover puntos", trazo: TRAZO_DE_MOVER_PUNTOS },
+        { valor: "agregar" as const, etiqueta: "Agregar punto", trazo: TRAZO_DE_AGREGAR_PUNTO },
+        { valor: "quitar" as const, etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
+      ];
 
   return (
     <div className="space-y-4">
@@ -594,28 +664,32 @@ export function BorradorDeLineas({
               anotaciones={anotacionesDeReferencia}
               mostrarFichaAnotacion={false}
               alTocarCamino={tocarElMapa}
-              alTocarFueraDeCamino={() => {
+              alTocarFueraDeCamino={(lon, lat) => {
+                // PC: un clic fuera de la línea, con una parte en uso, alarga o
+                // agrega sobre esa parte (no suelta la elección).
+                if (editandoPuntosEnPc && piezaEnUso && lon !== undefined && lat !== undefined) {
+                  const resultado = agregarOExtenderPuntoEnLinea(piezaEnUso.coordenadas, lon, lat);
+                  if (!resultado.ok) { setAviso(resultado.error); return; }
+                  cambiarPieza(piezaEnUso.clave, { coordenadas: resultado.datos });
+                  setAviso("Se sumó un punto. Si quedó más allá del extremo, el Camino se alargó en recta.");
+                  return;
+                }
                 if (creandoAlgo) return;
                 setElegida(null);
                 setAviso(null);
               }}
               verticesDeCamino={editandoLinea && piezaEnUso && piezaEnUso.guardadoComo === null && !piezaEnUso.guardadoComoTrazo ? piezaEnUso.coordenadas : null}
               alTocarVerticeDeCamino={herramienta === "quitar" ? quitarPunto : undefined}
-              alMoverVerticeDeCamino={herramienta === "mover" ? moverPunto : undefined} />
+              alClicDerechoEnVerticeDeCamino={editandoPuntosEnPc ? quitarPunto : undefined}
+              alMoverVerticeDeCamino={editandoPuntosEnPc || herramienta === "mover" ? moverPunto : undefined} />
           }
           panel={
             <div className="space-y-4">
               <Tarjeta className="space-y-2">
                 <p className="text-base text-texto">{textoDeAyuda}</p>
-                <Opciones etiqueta="Herramienta" columnas={3} iconoArriba elegidas={[herramienta]}
+                <Opciones etiqueta="Herramienta" columnas={enPc ? 2 : 3} iconoArriba elegidas={[herramienta]}
                   alElegir={(nueva) => { setHerramienta(nueva); setAviso(null); }}
-                  opciones={[
-                    { valor: "elegir", etiqueta: "Elegir parte" },
-                    { valor: "cortar", etiqueta: "Cortar" },
-                    { valor: "mover", etiqueta: "Mover puntos", trazo: TRAZO_DE_MOVER_PUNTOS },
-                    { valor: "agregar", etiqueta: "Agregar punto", trazo: TRAZO_DE_AGREGAR_PUNTO },
-                    { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
-                  ]} />
+                  opciones={opcionesDeHerramienta} />
                 <p className="text-base text-texto-suave">{ayudaDeHerramienta[herramienta]}</p>
                 {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
               </Tarjeta>
@@ -624,12 +698,20 @@ export function BorradorDeLineas({
               {piezas.map((pieza, indice) => {
                 const datos = analisis.get(pieza.clave);
                 const largo = km(datos?.largo ?? 0);
+                const siguienteAlCrear = piezas[indice + 1];
+                const unirAlCrear = siguienteAlCrear
+                  && pieza.guardadoComo === null && !pieza.guardadoComoTrazo
+                  && siguienteAlCrear.guardadoComo === null && !siguienteAlCrear.guardadoComoTrazo
+                  && !guardando
+                  ? () => unirConLaSiguiente(indice)
+                  : null;
                 if (creacion?.clave === pieza.clave) {
                   return (
                     <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
                       <TarjetaDelCaminoNuevo numero={indice + 1} largo={largo} creacion={creacion}
                         inicio={datos?.inicio ?? null} final={datos?.final ?? null} vaSobre={datos?.va?.sobre.nombre ?? null}
                         guardando={guardando} aviso={avisoDelCamino} alCambiar={cambiarCreacion}
+                        alUnirConLaSiguiente={unirAlCrear}
                         alCancelar={() => void cancelarCamino()} alGuardar={() => void guardarCamino()} />
                     </div>
                   );
@@ -640,6 +722,7 @@ export function BorradorDeLineas({
                       <TarjetaDelTrazoNuevo numero={indice + 1} largo={largo} creacion={creacionDeTrazo}
                         vaSobre={datos?.va?.sobre.nombre ?? null} guardando={guardando} aviso={avisoDelCamino}
                         alCambiar={(cambio) => { setCreacionDeTrazo({ ...creacionDeTrazo, ...cambio }); setAvisoDelCamino(null); }}
+                        alUnirConLaSiguiente={unirAlCrear}
                         alCancelar={() => void cancelarTrazo()} alGuardar={() => void guardarTrazo()} />
                     </div>
                   );
@@ -649,6 +732,15 @@ export function BorradorDeLineas({
                 const bloqueada = guardando || pieza.guardadoComo !== null || pieza.guardadoComoTrazo;
                 // Con una parte elegida, las acciones de las otras no responden: evita tocar la equivocada.
                 const accionesDeOtra = bloqueada || creandoAlgo || hayOtraElegida;
+                const siguiente = piezas[indice + 1];
+                const sePuedeUnir = Boolean(siguiente)
+                  && pieza.guardadoComo === null && !pieza.guardadoComoTrazo
+                  && siguiente.guardadoComo === null && !siguiente.guardadoComoTrazo
+                  && !guardando;
+                const botonUnir = sePuedeUnir ? (
+                  <Boton variante="secundario" disabled={accionesDeOtra && !esElegida}
+                    onClick={() => unirConLaSiguiente(indice)}>Unir al siguiente tramo</Boton>
+                ) : null;
                 return (
                   <div key={pieza.clave} ref={(nodo) => guardarRefDeParte(pieza.clave, nodo)}>
                     <Tarjeta className={`space-y-3 ${esElegida ? "border-2 border-marca-de-parte" : ""}`}>
@@ -667,8 +759,11 @@ export function BorradorDeLineas({
                       ) : pieza.destino === "descartada" ? (
                         <>
                           <p className="text-base text-texto-suave">Descartada: no se guarda y no se ve en el mapa.</p>
-                          <Boton variante="secundario" disabled={guardando || creandoAlgo || hayOtraElegida}
-                            onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
+                          <div className="flex flex-wrap gap-2">
+                            <Boton variante="secundario" disabled={guardando || creandoAlgo || hayOtraElegida}
+                              onClick={() => cambiarPieza(pieza.clave, { destino: "pendiente" })}>Volver a usarla</Boton>
+                            {botonUnir}
+                          </div>
                         </>
                       ) : datos?.va ? (
                         <>
@@ -676,8 +771,11 @@ export function BorradorDeLineas({
                             Va sobre «{datos.va.sobre.nombre}» ({Math.round(datos.va.proporcion * 100)} % de esta parte).
                             Ese Camino ya existe y no se toca.
                           </p>
-                          <Boton variante="secundario" disabled={accionesDeOtra}
-                            onClick={() => void descartarParte(pieza.clave)}>Descartar</Boton>
+                          <div className="flex flex-wrap gap-2">
+                            <Boton variante="secundario" disabled={accionesDeOtra}
+                              onClick={() => void descartarParte(pieza.clave)}>Descartar</Boton>
+                            {botonUnir}
+                          </div>
                         </>
                       ) : (
                         <>
@@ -692,6 +790,7 @@ export function BorradorDeLineas({
                               ) : null}
                               <Boton variante="secundario" disabled={accionesDeOtra}
                                 onClick={() => void descartarParte(pieza.clave)}>Descartar</Boton>
+                              {botonUnir}
                             </div>
                           )}
                         </>
@@ -715,7 +814,7 @@ export function BorradorDeLineas({
   );
 }
 
-function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre, guardando, aviso, alCambiar, alCancelar, alGuardar }: {
+function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre, guardando, aviso, alCambiar, alUnirConLaSiguiente, alCancelar, alGuardar }: {
   numero: number;
   largo: string;
   creacion: Creacion;
@@ -725,6 +824,7 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
   guardando: boolean;
   aviso: string | null;
   alCambiar: (cambio: Partial<Creacion>) => void;
+  alUnirConLaSiguiente: (() => void) | null;
   alCancelar: () => void;
   alGuardar: () => void;
 }) {
@@ -794,6 +894,9 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
       ) : null}
       <p className="text-base text-texto-suave">La condición y la complejidad valen para todas las actividades elegidas.</p>
       {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
+      {alUnirConLaSiguiente ? (
+        <Boton variante="secundario" disabled={guardando} onClick={alUnirConLaSiguiente}>Unir al siguiente tramo</Boton>
+      ) : null}
       <div className="flex flex-wrap justify-between gap-2 border-t border-borde pt-3">
         <Boton variante="secundario" disabled={guardando} onClick={alCancelar}>Cancelar</Boton>
         <Boton disabled={guardando} onClick={alGuardar}>{guardando ? "Guardando…" : "Guardar"}</Boton>
@@ -802,7 +905,7 @@ function TarjetaDelCaminoNuevo({ numero, largo, creacion, inicio, final, vaSobre
   );
 }
 
-function TarjetaDelTrazoNuevo({ numero, largo, creacion, vaSobre, guardando, aviso, alCambiar, alCancelar, alGuardar }: {
+function TarjetaDelTrazoNuevo({ numero, largo, creacion, vaSobre, guardando, aviso, alCambiar, alUnirConLaSiguiente, alCancelar, alGuardar }: {
   numero: number;
   largo: string;
   creacion: CreacionDeTrazo;
@@ -810,6 +913,7 @@ function TarjetaDelTrazoNuevo({ numero, largo, creacion, vaSobre, guardando, avi
   guardando: boolean;
   aviso: string | null;
   alCambiar: (cambio: Partial<CreacionDeTrazo>) => void;
+  alUnirConLaSiguiente: (() => void) | null;
   alCancelar: () => void;
   alGuardar: () => void;
 }) {
@@ -834,6 +938,9 @@ function TarjetaDelTrazoNuevo({ numero, largo, creacion, vaSobre, guardando, avi
         ))}
       </div>
       {aviso ? <p role="alert" className="text-base text-ambar-texto">{aviso}</p> : null}
+      {alUnirConLaSiguiente ? (
+        <Boton variante="secundario" disabled={guardando} onClick={alUnirConLaSiguiente}>Unir al siguiente tramo</Boton>
+      ) : null}
       <div className="flex flex-wrap justify-between gap-2 border-t border-borde pt-3">
         <Boton variante="secundario" disabled={guardando} onClick={alCancelar}>Cancelar</Boton>
         <Boton disabled={guardando} onClick={alGuardar}>{guardando ? "Sumando…" : "Sumar trazo"}</Boton>

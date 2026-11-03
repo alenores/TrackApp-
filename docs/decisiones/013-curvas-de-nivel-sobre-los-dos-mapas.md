@@ -1,6 +1,6 @@
-# 013 — Curvas de nivel sobre los dos mapas
+# 013 — Curvas de nivel sobre los mapas
 
-**Fecha:** 2026-09-18 · **Estado:** vigente
+**Fecha:** 2026-09-18 · **Estado:** vigente · **Ampliada:** 2026-11-02 (Google)
 
 ## El punto de partida
 
@@ -8,9 +8,9 @@ Las curvas de nivel **no son parte de la imagen del mapa.** Son líneas, un dato
 aparte, igual que las anotaciones.
 
 Por eso **se descargan una sola vez por sector, sin importar qué mapa eligió el
-usuario**, y se dibujan encima de cualquiera de los dos fondos. El satelital
-también tiene curvas: no hay que elegir entre ver el terreno real y ver el
-desnivel.
+usuario**, y se dibujan encima de cualquiera de los fondos. El satelital y
+Google también tienen curvas: no hay que elegir entre ver el terreno real y ver
+el desnivel.
 
 ---
 
@@ -20,21 +20,22 @@ desnivel.
 |---|---|
 | **Simple** | **Siempre visibles. No se pueden apagar.** |
 | **Satelital** | Se prenden y apagan con un botón |
+| **Google** | Igual que el satelital: se prenden y apagan con el mismo botón (Ale, 2026-11-02) |
 
 En el mapa simple no hay botón porque no hay caso: un mapa de montaña sin
 desnivel no sirve, y un botón de más es una decisión de más en el cerro.
 
 ---
 
-## Cómo se dibujan sobre la foto satelital
+## Cómo se dibujan sobre la foto (satelital o Google)
 
 Sobre una foto, unas líneas sueltas se confunden con el terreno. Hacen falta las
 dos cosas juntas:
 
 ### 1. La foto se apaga
 
-Cuando las curvas están prendidas, **la imagen satelital baja su contraste** para
-que las líneas se recorten contra ella.
+Cuando las curvas están prendidas, **la imagen baja su contraste** para que las
+líneas se recorten contra ella. Vale para el satelital propio y para Google.
 
 **El velo sigue el modo, no es fijo:**
 
@@ -49,9 +50,10 @@ No inventa una regla nueva: reutiliza la que ya rige toda la app.
 **En el mapa simple: magenta.** No hay roca, pasto, agua ni tierra magenta.
 Cualquier cosa de ese color es un dibujo de la app y no parte del mapa.
 
-**Sobre la foto satelital: naranja clarito** (Ale, 2026-10-15). El violeta no
-se distingue del terreno cuando las curvas están prendidas. Vale para las dos
-navegaciones, en modo sol y en modo noche. El mapa simple no cambia.
+**Sobre la foto (satelital o Google): naranja clarito** (Ale, 2026-10-15;
+Google, 2026-11-02). El violeta no se distingue del terreno cuando las curvas
+están prendidas. Vale para las dos navegaciones y para Consultas, en modo sol y
+en modo noche. El mapa simple no cambia.
 
 **Descartados en el mapa simple, y por qué:**
 

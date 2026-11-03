@@ -6,6 +6,11 @@ Decisión de Ale, 2026-10-22.
 
 Decisión inicial: Consultas y Marcas empiezan sin actividad elegida. No recuperan preferencias ni guardan esta selección. Cada nueva entrada empieza de cero. Elegir una o varias actividades muestra los Caminos compatibles; Todas muestra los de las cinco. Siempre que haya selección hay una principal. Solo sus Caminos muestran clasificación; los demás elegidos aparecen como referencia neutra, con íconos de todas sus actividades. Sin selección se indica elegir actividades para ver los Caminos. La navegación libre conserva sus reglas propias.
 
+**Ampliación 2026-11-03 (Ale):** la ficha del Camino es siempre completa (todos
+los datos). En Marcas, Editar y Eliminar siguen el permiso, aunque el Camino no
+sea de la actividad principal. Se retiró la ficha corta «se muestra como
+referencia». La referencia neutra en el dibujo del mapa se conserva.
+
 ## Auditoría de fuentes
 
 - Leído en tiempo real: instrucción de Ale y selección compartida de Consultas y Marcas.

@@ -385,7 +385,9 @@ export function capasDelFondo(
     return conSombra ? conSombraDebajoDeLasLineas(dibujo, colores, velo, conGoogleGuardado) : dibujo;
   }
   if (tipo === "google") {
-    return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE }];
+    // Mismo velo que el satelital propio: con curvas la foto baja el contraste
+    // para que se lean (decisión 013; Ale, 2026-11-02).
+    return [{ id: "foto-google", type: "raster", source: FUENTE_GOOGLE, paint: velo }];
   }
 
   /*

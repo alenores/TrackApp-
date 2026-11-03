@@ -171,7 +171,6 @@ export function MapaDeMarcas({
           camino={elegido}
           indice={caminoTocado.indice}
           actividad={actividad}
-          soloActividadPrincipal
           alSenalarPunto={setPuntoSenalado}
           alCerrar={() => { setCaminoTocado(null); setPuntoSenalado(null); }}
           alEditar={alEditarCamino && puedeEditarCamino?.(elegido.perfilId)

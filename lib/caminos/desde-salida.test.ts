@@ -10,6 +10,7 @@ import {
   porDondeVa,
   proponerPartes,
   puntaCercana,
+  unirLineas,
   type CaminoParaComparar,
 } from "@/lib/caminos/desde-salida";
 
@@ -100,6 +101,27 @@ describe("cortarLinea", () => {
       expect(Math.abs(largoDeParte(corte.datos[1]) - 600)).toBeLessThan(2);
     }
     expect(cortarLinea(linea, ...(en(3, 0) as [number, number])).ok).toBe(false);
+  });
+});
+
+describe("unirLineas", () => {
+  it("pega dos pedazos y no duplica el punto compartido", () => {
+    const linea = [en(0, 0), en(1000, 0)];
+    const corte = cortarLinea(linea, ...(en(400, 0) as [number, number]));
+    expect(corte.ok).toBe(true);
+    if (!corte.ok) return;
+    const unidos = unirLineas(corte.datos[0], corte.datos[1]);
+    expect(unidos.ok).toBe(true);
+    if (!unidos.ok) return;
+    expect(Math.abs(largoDeParte(unidos.datos) - 1000)).toBeLessThan(2);
+    expect(unidos.datos.length).toBeLessThan(corte.datos[0].length + corte.datos[1].length);
+  });
+
+  it("si las puntas no son el mismo punto, las deja las dos", () => {
+    const unidos = unirLineas([en(0, 0), en(100, 0)], [en(110, 0), en(200, 0)]);
+    expect(unidos.ok).toBe(true);
+    if (!unidos.ok) return;
+    expect(unidos.datos).toHaveLength(4);
   });
 });
 

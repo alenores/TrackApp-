@@ -4,6 +4,135 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-03 — Editar puntos en PC con el mouse
+
+### Estado al inicio
+Para mover, agregar o quitar puntos había que cambiar de herramienta. En PC
+era tedioso. Agregar no alargaba el Camino más allá del extremo.
+
+### Lo que se hizo
+En PC (borrador y editar Camino): se sacaron esos tres botones. Arrastrar
+mueve; clic izquierdo agrega o alarga en recta; clic derecho quita. En
+celular quedó como estaba, con las tres herramientas.
+
+### Decisiones tomadas
+Gestos de mouse solo en PC; celular sin cambio (Ale).
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Que Ale pruebe en PC alargar un extremo y quitar con clic derecho.
+
+---
+
+## Sesión 2026-11-03 — Unir tramos del borrador
+
+### Estado al inicio
+Al traer de afuera o desde una salida, la app partía la línea en muchos
+pedazos y no se podían volver a juntar. Además, al crear un Camino se le
+ponía sola una descripción con el nombre del archivo o de la salida.
+
+### Lo que se hizo
+Cada tarjeta del borrador (menos la última) tiene «Unir al siguiente tramo»:
+pega con la de abajo, sin mirar si coincide con un Camino. Al crear, la
+descripción queda vacía: ya no se inventa origen ni nombre de archivo.
+
+### Decisiones tomadas
+Unir es solo pegar pedazos del borrador. Sin descripción automática (Ale).
+
+### Documentos actualizados
+`docs/decisiones/077-caminos-desde-una-salida.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Que Ale una varios pedazos en un borrador real y cree un solo Camino.
+
+---
+
+## Sesión 2026-11-03 — Ficha de Camino siempre completa
+
+### Estado al inicio
+En Marcas, un Camino de otra actividad abría una ficha corta de «referencia»,
+sin datos ni Editar.
+
+### Lo que se hizo
+La ficha quedó siempre completa. En Marcas, Editar y Eliminar siguen el
+permiso, aunque el Camino no sea de la actividad principal. Se sacó la ficha
+corta. El dibujo del mapa sigue mostrando los otros Caminos con menos
+protagonismo.
+
+### Decisiones tomadas
+En Marcas (y la misma ficha) no hay ficha corta de referencia (Ale).
+
+### Documentos actualizados
+`docs/decisiones/075-actividades-de-la-consulta-sin-recordar.md`,
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Que Ale toque en Marcas un Camino de trekking con Mountain bike al frente.
+
+---
+
+## Sesión 2026-11-03 — Mapa siempre de frente
+
+### Estado al inicio
+En el celular se podía inclinar el mapa con dos dedos; en la PC no.
+
+### Lo que se hizo
+Se apagó la inclinación y el giro en todos lados: el mapa queda de frente,
+igual en celular y en PC. Para mirar el terreno de costado queda Google Earth.
+
+### Decisiones tomadas
+Mapa siempre de frente; no se imita Google Earth (Ale).
+
+### Documentos actualizados
+`docs/decisiones/082-mapa-siempre-de-frente.md`, `docs/DISENO_EXTERIOR.md`,
+`AGENTS.md`, `docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Que Ale pruebe con dos dedos en el celular y con el mouse en la PC.
+
+---
+
+## Sesión 2026-11-02 — Curvas en Google como en el satelital
+
+### Estado al inicio
+En Consultas, el botón de curvas solo aparecía con el mapa satelital. En
+Google las curvas iban siempre prendidas, sin forma de apagarlas.
+
+### Lo que se hizo
+Google quedó igual que el satelital: el mismo botón prende y apaga las
+curvas, con el naranja de la foto y el velo cuando están prendidas. El
+mapa simple sigue con las curvas siempre.
+
+### Decisiones tomadas
+En Google las curvas no van siempre: el usuario las prende o las apaga
+(Ale).
+
+### Documentos actualizados
+`docs/decisiones/013-curvas-de-nivel-sobre-los-dos-mapas.md`,
+`docs/SESIONES.md`.
+
+### Deuda o inconsistencias detectadas
+Ninguna.
+
+### Pendientes para la próxima
+Que Ale lo mire en Consultas con Google y Satelital.
+
+---
+
 ## Sesión 2026-11-02 — Íconos nuevos también en el mapa
 
 ### Estado al inicio

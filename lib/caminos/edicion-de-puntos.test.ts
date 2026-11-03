@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
+import { agregarOExtenderPuntoEnLinea, agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import { clasificarTramo, corregirLinea, crearCamino } from "@/lib/caminos/partes";
 
 describe("corrección de puntos de un Camino", () => {
@@ -29,5 +29,28 @@ describe("corrección de puntos de un Camino", () => {
     const menosUno = quitarPuntoDeLinea(linea, 1);
     expect(menosUno.ok).toBe(true);
     if (menosUno.ok) expect(menosUno.datos).toEqual([linea[0], linea[2]]);
+  });
+
+  it("más allá del extremo alarga en recta hasta el toque", () => {
+    const alEste = agregarOExtenderPuntoEnLinea(linea, -64.197, -31.2);
+    expect(alEste.ok).toBe(true);
+    if (!alEste.ok) return;
+    expect(alEste.datos.at(-1)).toEqual([-64.197, -31.2]);
+    expect(alEste.datos).toHaveLength(4);
+
+    const alOeste = agregarOExtenderPuntoEnLinea(linea, -64.201, -31.2);
+    expect(alOeste.ok).toBe(true);
+    if (!alOeste.ok) return;
+    expect(alOeste.datos[0]).toEqual([-64.201, -31.2]);
+    expect(alOeste.datos).toHaveLength(4);
+  });
+
+  it("cerca de la línea sigue insertando entre puntos", () => {
+    const enMedio = agregarOExtenderPuntoEnLinea(linea, -64.1985, -31.2001);
+    expect(enMedio.ok).toBe(true);
+    if (!enMedio.ok) return;
+    expect(enMedio.datos).toHaveLength(4);
+    expect(enMedio.datos[0]).toEqual(linea[0]);
+    expect(enMedio.datos.at(-1)).toEqual(linea[2]);
   });
 });

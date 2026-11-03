@@ -27,9 +27,17 @@ Desde una salida solo como Camino. Los puntos del archivo se eligen aparte.
   pasillo se toma como ruido del GPS. Medido con la salida
   Challenger-Reducción-San Fernando contra «Tramo Challenger»: 9 de cada 10
   puntos a menos de 12 m, y con pasillos de 15 a 40 m el resultado fue el mismo.
-- El usuario corta la línea en partes, descarta partes (el desvío por error, el
-  salto del GPS), mueve, agrega o quita puntos, y marca qué partes son Caminos
-  nuevos. Nada se guarda hasta tocar Guardar.
+- El usuario corta la línea en partes, **une una parte con la de abajo en la
+  lista** («Unir al siguiente tramo»; Ale, 2026-11-03: solo pega, sin mirar
+  coincidencias), descarta partes (el desvío por error, el salto del GPS),
+  mueve, agrega o quita puntos, y marca qué partes son Caminos nuevos. Nada se
+  guarda hasta tocar Guardar.
+- **Sin descripción automática** al crear (Ale, 2026-11-03): no se anota el
+  nombre del archivo ni «desde la salida…».
+- **Edición de puntos en PC** (Ale, 2026-11-03): sin los botones mover /
+  agregar / quitar. Arrastrar mueve; clic izquierdo agrega o **alarga** el
+  Camino más allá del extremo; clic derecho quita. En celular siguen las tres
+  herramientas. Vale también al editar un Camino ya guardado.
 
 Reglas:
 

@@ -223,6 +223,27 @@ export function cortarLinea(linea: Position[], lon: number, lat: number): Result
   return exito([tramoDeLinea(linea, 0, lugar.distanciaM), tramoDeLinea(linea, lugar.distanciaM, largo)]);
 }
 
+/**
+ * Pega dos pedazos del borrador en uno solo (Ale, 2026-11-03).
+ *
+ * No mira si coinciden con un Camino: solo junta las coordenadas. Si la punta
+ * final del primero y la inicial del segundo son el mismo punto, no se duplica.
+ */
+export function unirLineas(antes: Position[], despues: Position[]): Resultado<Position[]> {
+  if (antes.length < 2 || despues.length < 2) {
+    return falla("No se pueden unir: alguna de las dos partes no tiene línea usable.");
+  }
+  const copiaAntes = antes.map((punto) => [punto[0], punto[1]] as Position);
+  const ultimo = copiaAntes[copiaAntes.length - 1];
+  const primero = despues[0];
+  const mismoPunto = ultimo[0] === primero[0] && ultimo[1] === primero[1];
+  const cola = (mismoPunto ? despues.slice(1) : despues).map((punto) => [punto[0], punto[1]] as Position);
+  if (copiaAntes.length + cola.length < 2) {
+    return falla("No se pueden unir: la línea quedaría sin puntos.");
+  }
+  return exito([...copiaAntes, ...cola]);
+}
+
 export type PuntaCercana = { camino: SobreUnCamino; coordenada: Position; distanciaM: number };
 
 /**

@@ -206,6 +206,9 @@ decisión de Ale: no se exige un botón grande que repita cada gesto fino.
   una mancha. Ale, 2026-11-01.
 - **Las dos navegaciones muestran la escala** («200 m», «1 km») arriba a la
   izquierda, debajo del selector de tipo de mapa. Ale, 2026-11-01.
+- **El mapa queda siempre de frente**, sin inclinación ni giro, igual en
+  celular y en PC. Para mirar el terreno de costado se usa Google Earth.
+  Decisión 082; Ale, 2026-11-03.
 - **El mapa de navegación va a pantalla completa**, sin nada alrededor.
 - **Todo mapa se puede abrir en grande**, con un botón abajo a la derecha. En el
   celular un mapa chico no alcanza para ver si el Circuito queda adentro de un

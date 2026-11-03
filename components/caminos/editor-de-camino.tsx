@@ -24,13 +24,14 @@ import { dibujarCaminos } from "@/lib/caminos/dibujo";
 import { corregirLinea, LARGO_MINIMO_DE_PARTE_M, ubicarEnCamino, type ComplejidadDeParte, type CondicionDePaso } from "@/lib/caminos/partes";
 import { puntoEnDistancia } from "@/lib/caminos/geometria";
 import type { CaminoGuardado } from "@/lib/caminos/datos";
-import { agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
+import { agregarOExtenderPuntoEnLinea, agregarPuntoEnLinea, quitarPuntoDeLinea } from "@/lib/caminos/edicion-de-puntos";
 import type { VistaDelMapa } from "@/lib/mapas/vista";
 import { mostrarActividad } from "@/lib/rutas/actividades";
 import { MuestraDeComplejidad, MuestraDeLinea, nombreDeComplejidad, nombreDelPaso } from "@/components/rutas/referencia-de-partes";
 import { ponerAlDiaDespuesDeGuardar } from "@/lib/offline/puesta-al-dia";
 import { useAlMarcar } from "@/hooks/use-al-marcar";
 import { useCerrarConAtras } from "@/hooks/use-cerrar-con-atras";
+import { usePantallaAncha } from "@/hooks/use-pantalla-ancha";
 import type { ActividadRuta } from "@/types/database";
 
 type Pestana = "datos" | "linea" | "partes";
@@ -51,6 +52,7 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
 }) {
   const dondeEstaba = useRef<VistaDelMapa | null>(vistaInicial);
   const marcar = useAlMarcar();
+  const enPc = usePantallaAncha();
   const [camino, setCamino] = useState<CaminoGuardado | null>(null);
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
@@ -275,10 +277,14 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
   const agregarPunto = (lon: number, lat: number) => {
     if (!camino) return;
     const linea = borradorLinea ?? camino.coordenadas;
-    const resultado = agregarPuntoEnLinea(linea, lon, lat);
+    const resultado = enPc
+      ? agregarOExtenderPuntoEnLinea(linea, lon, lat)
+      : agregarPuntoEnLinea(linea, lon, lat);
     if (!resultado.ok) { setAviso(resultado.error); return; }
     setBorradorLinea(resultado.datos);
-    setAviso("Se agregó un punto al borrador. Guardá la línea para conservar el cambio.");
+    setAviso(enPc
+      ? "Se sumó un punto al borrador. Si quedó más allá del extremo, el Camino se alargó en recta. Guardá la línea para conservar el cambio."
+      : "Se agregó un punto al borrador. Guardá la línea para conservar el cambio.");
     setAvisoDePartir(false);
   };
 
@@ -290,6 +296,12 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
     setBorradorLinea(resultado.datos);
     setAviso("Se quitó el punto del borrador. Guardá la línea para conservar el cambio.");
     setAvisoDePartir(false);
+  };
+
+  const moverPunto = (indiceDelPunto: number, lon: number, lat: number) => {
+    if (!camino) return;
+    setBorradorLinea((anterior) => (anterior ?? camino.coordenadas).map((punto, i) =>
+      i === indiceDelPunto ? [lon, lat, ...punto.slice(2)] : [...punto]));
   };
 
   const cartelDeAviso = aviso
@@ -323,13 +335,19 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
               alMoverVista={(vista) => { dondeEstaba.current = vista; }}
               extremosDeParte={marcaDeLaParte}
               cortesMarcados={cortesMarcados}
-              alTocarCamino={corrigiendo ? (modoCorreccion === "agregar" ? agregarPunto : undefined) : tocarCamino}
+              alTocarCamino={corrigiendo
+                ? (enPc || modoCorreccion === "agregar" ? agregarPunto : undefined)
+                : tocarCamino}
+              alTocarFueraDeCamino={corrigiendo && enPc
+                ? (lon, lat) => {
+                  if (lon === undefined || lat === undefined) return;
+                  agregarPunto(lon, lat);
+                }
+                : undefined}
               verticesDeCamino={corrigiendo ? (borradorLinea ?? camino.coordenadas) : null}
-              alTocarVerticeDeCamino={corrigiendo && modoCorreccion === "quitar" ? quitarPunto : undefined}
-              alMoverVerticeDeCamino={corrigiendo && modoCorreccion === "mover" ? (indiceDelPunto, lon, lat) => {
-                setBorradorLinea((anterior) => (anterior ?? camino.coordenadas).map((punto, i) =>
-                  i === indiceDelPunto ? [lon, lat, ...punto.slice(2)] : [...punto]));
-              } : undefined} />
+              alTocarVerticeDeCamino={corrigiendo && !enPc && modoCorreccion === "quitar" ? quitarPunto : undefined}
+              alClicDerechoEnVerticeDeCamino={corrigiendo && enPc ? quitarPunto : undefined}
+              alMoverVerticeDeCamino={corrigiendo && (enPc || modoCorreccion === "mover") ? moverPunto : undefined} />
           }
           panel={
             <div className="space-y-4">
@@ -357,14 +375,22 @@ export function EditorDeCamino({ id, alVolver, vistaInicial = null }: {
               ) : pestana === "linea" ? (
                 <div role="tabpanel" className="space-y-4">
                   <Tarjeta className="space-y-3">
-                    <Opciones etiqueta="Editar la línea" columnas={3} iconoArriba
-                      elegidas={[modoCorreccion]} alElegir={setModoCorreccion}
-                      opciones={[
-                        { valor: "mover", etiqueta: "Mover puntos", trazo: TRAZO_DE_MOVER_PUNTOS },
-                        { valor: "agregar", etiqueta: "Agregar punto", trazo: TRAZO_DE_AGREGAR_PUNTO },
-                        { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
-                      ]} />
-                    <p className="text-base text-texto-suave">{modoCorreccion === "mover" ? "Arrastrá un punto hasta su lugar." : modoCorreccion === "agregar" ? "Tocá la línea entre dos puntos." : "Tocá el punto que querés quitar."}</p>
+                    {enPc ? (
+                      <p className="text-base text-texto-suave">
+                        Arrastrá un punto para moverlo. Clic izquierdo: agregá un punto o alargá el Camino más allá del extremo. Clic derecho sobre un punto: lo quitás.
+                      </p>
+                    ) : (
+                      <>
+                        <Opciones etiqueta="Editar la línea" columnas={3} iconoArriba
+                          elegidas={[modoCorreccion]} alElegir={setModoCorreccion}
+                          opciones={[
+                            { valor: "mover", etiqueta: "Mover puntos", trazo: TRAZO_DE_MOVER_PUNTOS },
+                            { valor: "agregar", etiqueta: "Agregar punto", trazo: TRAZO_DE_AGREGAR_PUNTO },
+                            { valor: "quitar", etiqueta: "Quitar punto", trazo: TRAZO_DE_QUITAR_PUNTO },
+                          ]} />
+                        <p className="text-base text-texto-suave">{modoCorreccion === "mover" ? "Arrastrá un punto hasta su lugar." : modoCorreccion === "agregar" ? "Tocá la línea entre dos puntos." : "Tocá el punto que querés quitar."}</p>
+                      </>
+                    )}
                     <div className="flex justify-end gap-2 border-t border-borde pt-3">
                       <Boton variante="fantasma" disabled={ocupado || !borradorLinea} onClick={() => setBorradorLinea(null)}>Descartar</Boton>
                       <Boton disabled={ocupado || !borradorLinea || vistaPrevia?.ok !== true} onClick={() => void (async () => {

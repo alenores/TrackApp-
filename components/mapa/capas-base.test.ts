@@ -95,6 +95,13 @@ describe("la receta del fondo", () => {
     expect(estiloDelMapa("sol", false).sources).not.toHaveProperty("google");
   });
 
+  it("en Google, con curvas la foto lleva velo y sin curvas se ve limpia", () => {
+    const conCurvas = capasDelFondo("sol", "google", true)[0] as { paint?: object };
+    const sinCurvas = capasDelFondo("sol", "google", false)[0] as { paint?: object };
+    expect(Object.keys(conCurvas.paint ?? {}).length).toBeGreaterThan(0);
+    expect(sinCurvas.paint).toEqual({});
+  });
+
   it("las direcciones son completas, no atajos", () => {
     // El motor del mapa rechaza un camino que arranca con barra, y al
     // rechazarlo no arma nada: ni el fondo, ni la ruta, ni el punto del GPS.

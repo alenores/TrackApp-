@@ -119,12 +119,11 @@ function BorradorConPuntos({
     <BorradorDeLineas
       subtitulo={archivo.nombre}
       textoDeCarga="Comparando con los Caminos que ya existen…"
-      textoDeAyuda={`La línea gruesa es el archivo, como borrador (va por encima). En verde, las partes que van sobre un Camino que ya existe (a menos de ${ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no coinciden con ninguno. Los Caminos existentes se ven debajo, en una línea fina gris; los puntos y trazos también, de referencia. Podés cortar, descartar, crear un Camino o sumar un trazo, de a un pedazo. Es una propuesta: revisala.`}
+      textoDeAyuda={`La línea gruesa es el archivo, como borrador (va por encima). En verde, las partes que van sobre un Camino que ya existe (a menos de ${ANCHO_DEL_PASILLO_M} m); en el color de las salidas, las que no coinciden con ninguno. Los Caminos existentes se ven debajo, en una línea fina gris; los puntos y trazos también, de referencia. Podés cortar, unir al siguiente, descartar, crear un Camino o sumar un trazo. Es una propuesta: revisala.`}
       textoEmpezarDeNuevo="Si te perdiste entre cortes y correcciones, podés volver a empezar con las líneas del archivo como vinieron."
       tituloEmpezarDeNuevo="¿Volver al archivo como vino?"
       mensajeEmpezarDeNuevo="Se pierden los cortes, las correcciones y lo que estás creando. Lo ya guardado queda."
       botonEmpezarDeNuevo="Volver al archivo original"
-      descripcionDelCamino={`Traído de afuera · ${archivo.nombre}`}
       lineas={archivo.lineas}
       alVolver={alVolver}
       consultaGoogle

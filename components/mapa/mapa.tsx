@@ -244,7 +244,7 @@ function ponerElFondo(
       mapa.addLayer(capa, debajoDe);
     }
 
-    // Las curvas: siempre en el simple; en el satelital, según el botón.
+    // Las curvas: siempre en el simple; en satelital y Google, según el botón.
     for (const capa of CAPAS_DE_RELIEVE) {
       if (mapa.getLayer(capa)) {
         mapa.setLayoutProperty(capa, "visibility", conCurvas ? "visible" : "none");
@@ -282,6 +282,11 @@ type MapaProps = {
   verticesDeCamino?: number[][] | null;
   alMoverVerticeDeCamino?: (indice: number, lon: number, lat: number) => void;
   alTocarVerticeDeCamino?: (indice: number) => void;
+  /**
+   * Clic derecho sobre un vértice (PC): quitar el punto. Evita el menú del
+   * navegador (Ale, 2026-11-03).
+   */
+  alClicDerechoEnVerticeDeCamino?: (indice: number) => void;
   /** Extremos elegidos en el editor de partes. */
   extremosDeParte?: {
     inicio: number[] | null;
@@ -444,7 +449,8 @@ type MapaProps = {
    * Un clic (no un arrastre) fuera de cualquier Camino/borrador. Sirve para
    * soltar la parte elegida y volver a ver todos los colores.
    */
-  alTocarFueraDeCamino?: () => void;
+  /** Clic fuera de Caminos/borrador. En PC puede recibir lon/lat para alargar. */
+  alTocarFueraDeCamino?: (lon?: number, lat?: number) => void;
   /** `false` cuando quien lo llama ya muestra la ficha compartida por su cuenta. */
   mostrarFichaAnotacion?: boolean;
   /**
@@ -601,6 +607,7 @@ export function Mapa({
   verticesDeCamino = null,
   alMoverVerticeDeCamino,
   alTocarVerticeDeCamino,
+  alClicDerechoEnVerticeDeCamino,
   extremosDeParte,
   cortesMarcados = null,
   corteElegido = null,
@@ -783,8 +790,8 @@ export function Mapa({
     : null;
   const preparandoGoogle = googleEnVivo && haySenal && !sesionGoogle && !falloVisibleDeGoogle;
   /**
-   * Las curvas sobre la foto se prenden y apagan (decisión 013). En el mapa
-   * simple no hay botón: se ven siempre.
+   * Las curvas sobre la foto (satelital o Google) se prenden y apagan
+   * (decisión 013). En el mapa simple no hay botón: se ven siempre.
    */
   const [curvasSobreLaFoto, setCurvasSobreLaFoto] = useState(true);
   /** El que se ve: el elegido si está bajado; si no, el que haya. */
@@ -831,7 +838,7 @@ export function Mapa({
   useEffect(() => {
     tipoDeFondoRef.current = tipoDeFondo;
   }, [tipoDeFondo]);
-  const conCurvas = tipoDeFondo !== "satelital" || curvasSobreLaFoto;
+  const conCurvas = tipoDeFondo === "dibujo" || curvasSobreLaFoto;
   /** Navegación: caché de Google encima. Chequeo de Consultas: solo lo bajado. */
   const conGoogleGuardado = !enVivo && !chequeoDeDescarga;
   const curvasRef = useRef(conCurvas);
@@ -1004,10 +1011,17 @@ export function Mapa({
       zoom: vistaAlAbrirRef.current?.zoom ?? 9,
       attributionControl: false,
       // Los controles propios de la librería son chicos: se usan los de la app.
+      // El mapa queda siempre de frente, sin inclinación ni giro: igual en
+      // celular y en PC. Para mirar el terreno de costado está Google Earth
+      // (Ale, 2026-11-03; decisión 082).
       dragRotate: false,
+      touchPitch: false,
+      maxPitch: 0,
     });
 
     mapa.touchZoomRotate.disableRotation();
+    mapa.touchPitch.disable();
+    mapa.keyboard.disableRotation();
 
     mapa.on("load", () => {
       const colores = coloresDelMapa(modoRef.current);
@@ -1635,7 +1649,7 @@ export function Mapa({
       }
 
       if (mapa.getLayer(ALTURAS)) {
-        const colorDeCurva = colorDeLasCurvas(tipoDeFondo === "satelital", colores);
+        const colorDeCurva = colorDeLasCurvas(tipoDeFondo !== "dibujo", colores);
         for (const capa of [CURVAS_FINAS, CURVAS_GRUESAS]) {
           mapa.setPaintProperty(capa, "line-color", colorDeCurva);
         }
@@ -1752,11 +1766,17 @@ export function Mapa({
   }, [verticesDeCamino]);
 
   const editandoVertices = verticesDeCamino !== null && alMoverVerticeDeCamino !== undefined;
+  const clicDerechoEnVerticeRef = useRef(alClicDerechoEnVerticeDeCamino);
+  useEffect(() => { clicDerechoEnVerticeRef.current = alClicDerechoEnVerticeDeCamino; }, [alClicDerechoEnVerticeDeCamino]);
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa || !editandoVertices) return;
     let arrastrando: number | null = null;
     const empezar = (evento: EventoDelPuntero) => {
+      // En mouse, solo el botón izquierdo arrastra; el derecho es para quitar.
+      if ("originalEvent" in evento && evento.originalEvent instanceof MouseEvent && evento.originalEvent.button !== 0) {
+        return;
+      }
       const encontrados = mapa.queryRenderedFeatures(evento.point, { layers: ["vertices-de-camino"] });
       const indice = Number(encontrados[0]?.properties?.indice);
       if (!Number.isInteger(indice) || indice < 0 || indice >= (verticesDeCaminoRef.current?.length ?? 0)) return;
@@ -1785,6 +1805,22 @@ export function Mapa({
       mapa.dragPan.enable();
     };
   }, [editandoVertices]);
+
+  // Clic derecho sobre un vértice: quitar (PC). Sin menú del navegador.
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !alClicDerechoEnVerticeDeCamino || verticesDeCamino === null) return;
+    const enVertice = (evento: maplibregl.MapMouseEvent) => {
+      if (!mapa.getLayer("vertices-de-camino")) return;
+      const vertices = mapa.queryRenderedFeatures(evento.point, { layers: ["vertices-de-camino"] });
+      const indice = Number(vertices[0]?.properties?.indice);
+      if (!Number.isInteger(indice)) return;
+      evento.preventDefault();
+      clicDerechoEnVerticeRef.current?.(indice);
+    };
+    mapa.on("contextmenu", enVertice);
+    return () => { mapa.off("contextmenu", enVertice); };
+  }, [alClicDerechoEnVerticeDeCamino, verticesDeCamino]);
 
   useEffect(() => {
     const mapa = mapaRef.current;
@@ -2291,7 +2327,7 @@ export function Mapa({
           return;
         }
         // Clic limpio fuera de la línea: no es arrastrar el mapa (eso no dispara click).
-        alTocarFueraDeCamino?.();
+        alTocarFueraDeCamino?.(evento.lngLat.lng, evento.lngLat.lat);
       }
       if (alSenalarZona) alSenalarZona(buscarZona(evento));
     };
@@ -2620,7 +2656,7 @@ export function Mapa({
         Google/Simple/Satelital; en el resto Simple/Satelital (solo los que
         hay). El círculo de las curvas al lado, y el «!» si falta un pedazo.
       */}
-      {((chequeoDeDescarga || !consultaGoogle) && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo === "satelital") || sinMapaDescargado || (conEscala && escala) ? (
+      {((chequeoDeDescarga || !consultaGoogle) && opcionesDeFondo.length > 0) || (!enVivo && tipoDeFondo !== "dibujo") || sinMapaDescargado || (conEscala && escala) ? (
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <div className="flex items-center gap-1.5">
             {(chequeoDeDescarga || !consultaGoogle) && opcionesDeFondo.length > 0 ? (
@@ -2656,11 +2692,11 @@ export function Mapa({
             ) : null}
 
             {/*
-              Curvas sobre la foto: un toque las prende o las apaga, como sol y
-              noche. Apagado se ve deshabilitado. Solo con la foto guardada: en
-              vivo no hay curvas.
+              Curvas sobre satelital o Google: un toque las prende o las apaga.
+              Apagado se ve deshabilitado. En el simple van siempre. En vivo no
+              hay curvas.
             */}
-            {!enVivo && tipoDeFondo === "satelital" ? (
+            {!enVivo && tipoDeFondo !== "dibujo" ? (
               <button
                 type="button"
                 onPointerDown={() => vibrarAlTocar()}
