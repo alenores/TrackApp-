@@ -4,7 +4,7 @@ import {
   borrarImagenesVencidasDeGoogle,
   grillaDeGoogle,
   leerImagenDeGoogle,
-  traerImagenDeGoogle,
+  traerRecursoDeGoogle,
 } from "@/lib/mapas/google-guardado";
 
 /**
@@ -51,8 +51,8 @@ export const PROTOCOLO_DE_LA_SOMBRA = "sombra-guardada";
 export const DIRECCION_DE_LA_SOMBRA_GUARDADA = `${PROTOCOLO_DE_LA_SOMBRA}://{z}/{x}/{y}`;
 
 /**
- * Google en Consultas, con señal: trae la imagen y la deja guardada el tiempo
- * que Google permite (decisión 080).
+ * Google con señal: comparte cada imagen vigente entre los mapas y entrega
+ * al motor el vencimiento original, sin extenderlo al volver a una pantalla.
  */
 export const PROTOCOLO_DE_GOOGLE_EN_VIVO = "google-en-vivo";
 
@@ -148,9 +148,9 @@ export function registrarElMapaGuardado(): void {
   addProtocol(PROTOCOLO_DE_LA_SOMBRA, async ({ url }) => ({
     data: await servirSombraGuardada(url),
   }));
-  addProtocol(PROTOCOLO_DE_GOOGLE_EN_VIVO, async ({ url }, cancelador) => ({
-    data: await traerImagenDeGoogle(url, cancelador.signal),
-  }));
+  addProtocol(PROTOCOLO_DE_GOOGLE_EN_VIVO, ({ url }, cancelador) =>
+    traerRecursoDeGoogle(url, cancelador.signal),
+  );
   addProtocol(PROTOCOLO_DE_GOOGLE_GUARDADO, async ({ url }) => ({
     data: await servirGoogleGuardado(url),
   }));

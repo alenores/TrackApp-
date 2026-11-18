@@ -90,6 +90,15 @@ vi.mock("@/hooks/use-al-marcar", () => ({
 }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (consulta: string) => ({
+    matches: true,
+    media: consulta,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }),
+});
 
 describe("editar un Camino desde Marcas", () => {
   it("abre en satelital y conserva el centro y el zoom que se estaban mirando", async () => {

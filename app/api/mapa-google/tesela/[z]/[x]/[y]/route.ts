@@ -3,7 +3,12 @@ import {
   claveDeGoogle, comprobarAccesoAGoogle, motivoDeGoogle, respuestaDeGoogle,
   sesionValida, SIN_GUARDAR_GOOGLE, sinClaveDeGoogle,
 } from "@/lib/mapas/google-servidor";
-import { CABECERA_DE_GUARDADO_DE_GOOGLE } from "@/lib/mapas/google-guardado";
+import {
+  CABECERA_DE_EDAD_DE_GOOGLE,
+  CABECERA_DE_FECHA_DE_GOOGLE,
+  CABECERA_DE_GUARDADO_DE_GOOGLE,
+  CABECERA_DE_VENCIMIENTO_DE_GOOGLE,
+} from "@/lib/mapas/google-vigencia";
 
 export const runtime = "nodejs";
 
@@ -29,15 +34,21 @@ export async function GET(pedido: Request, { params }: { params: Promise<{ z: st
     if (!respuesta.ok) return respuestaDeGoogle(`Google no entregó esta imagen (${respuesta.status}). Cambiá al mapa Satelital y volvé a probar más tarde.`, 502);
     const tipo = respuesta.headers.get("content-type") || "";
     if (!tipo.startsWith("image/")) return respuestaDeGoogle("Google respondió sin una imagen válida. Cambiá al mapa Satelital.", 502);
-    return new NextResponse(await respuesta.arrayBuffer(), {
-      headers: {
-        "Content-Type": tipo,
-        "Cache-Control": SIN_GUARDAR_GOOGLE,
-        // Cuánto deja Google guardar esta imagen: la app la guarda ese tiempo y
-        // nada más (decisión 080).
-        [CABECERA_DE_GUARDADO_DE_GOOGLE]: respuesta.headers.get("cache-control") ?? "",
-      },
+    const cabeceras = new Headers({
+      "Content-Type": tipo,
+      "Cache-Control": SIN_GUARDAR_GOOGLE,
+      // La vigencia viaja aparte: la respuesta HTTP sigue sin guardarse.
+      [CABECERA_DE_GUARDADO_DE_GOOGLE]: respuesta.headers.get("cache-control") ?? "",
     });
+    for (const [original, privada] of [
+      ["age", CABECERA_DE_EDAD_DE_GOOGLE],
+      ["date", CABECERA_DE_FECHA_DE_GOOGLE],
+      ["expires", CABECERA_DE_VENCIMIENTO_DE_GOOGLE],
+    ] as const) {
+      const valor = respuesta.headers.get(original);
+      if (valor !== null) cabeceras.set(privada, valor);
+    }
+    return new NextResponse(await respuesta.arrayBuffer(), { headers: cabeceras });
   } catch (error) {
     return respuestaDeGoogle(`No se pudo traer la imagen de Google: ${motivoDeGoogle(error)}. Cambiá al mapa Satelital.`, 502);
   }
