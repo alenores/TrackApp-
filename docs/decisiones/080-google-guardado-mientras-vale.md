@@ -29,9 +29,11 @@ las imágenes de Google y en su capa del mapa.
 
 ## Cómo funciona
 
-- Consultas pide cada imagen de Google por el servidor de la app, como antes.
-  El servidor ahora pasa lo que Google dijo sobre cuánto se puede guardar.
-- El celular la muestra y, si Google lo permite, la guarda con su vencimiento.
+- Las consultas con señal reutilizan las imágenes vigentes mediante el servicio
+  común (decisión 083, aprobada por Ale el 2026-11-18). Si falta la imagen o
+  venció, la piden por el servidor, que pasa los metadatos de vigencia de Google.
+- El celular la muestra y, si Google lo permite, la guarda con su vencimiento
+  original, que nunca se prolonga al reutilizarla.
 - Navegando, la capa «Google guardado» lee solo del celular. Una imagen vencida
   no se muestra y se borra. Al abrir el mapa se borran todas las vencidas.
 - Va encima del terreno, de la foto propia y del sombreado, y debajo de

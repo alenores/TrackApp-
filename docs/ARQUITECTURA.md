@@ -247,6 +247,20 @@ leyendo el código ni abriendo la app en casa.
 - Autenticación y manejo de sesión.
 - Los archivos de mapa: de dónde salen, cómo se empaquetan y cómo se bajan.
 
+## Imágenes de Google compartidas entre pantallas (2026-11-18)
+
+Las consultas de Google de Marcas, Consultas, importación, zonas, Circuitos y
+Salidas usan un único servicio de imágenes. Primero reutiliza memoria y copias
+locales vigentes; agrupa pedidos simultáneos y solo descarga lo que falta o venció.
+La vigencia original no se renueva por leer una copia. La memoria temporal está
+limitada a 16 MiB y 256 imágenes; no se recorta la cobertura guardada para navegar.
+
+El proxy mantiene autenticación y HTTP privado/no-store. La navegación conserva
+un protocolo exclusivamente local. Cerrar sesión bloquea consultas nuevas,
+invalida las pendientes y ordena el borrado detrás de las escrituras iniciadas.
+Ver decisión 083 y las pruebas del servicio común; el cambio queda en su rama
+hasta la aprobación de publicación.
+
 ## Auditoría de fuentes
 
 **Leído en tiempo real (2026-09-19):**

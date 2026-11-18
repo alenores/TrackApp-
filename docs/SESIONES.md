@@ -4,6 +4,66 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-18 — Reutilizar imágenes de Google entre mapas
+
+### Estado al inicio
+El consumo del 2 de noviembre orientó la investigación a TrackApp. Ale confirmó
+uso intenso y legítimo del mapa ese día. Se reprodujeron descargas idénticas al
+recrear el mapa: 12 en Marcas al volver del editor y 40 al reabrir una Salida.
+La memoria de cada mapa funcionaba mientras seguía abierto; faltaba reutilizar
+las imágenes entre instancias y leer lo ya guardado antes de salir a internet.
+
+### Lo que se hizo
+Se implementó el servicio compartido para todos los usos de Google: memoria del
+documento, depósito persistente, vencimiento original, pedidos simultáneos
+compartidos y limpieza segura al salir. El servidor conserva autenticación y
+no-store; pasa solo los metadatos necesarios para calcular la vigencia.
+
+Prueba real en la copia compilada, usando la misma cuenta y Google existente:
+
+| Recorrido | Antes, en producción | Después, en la copia |
+|---|---:|---:|
+| Volver del editor a Marcas, misma vista | 12 imágenes repetidas | 0 |
+| Cerrar y reabrir el mapa de Salida 21 | 40 imágenes repetidas | 0 |
+| Recargar el documento y abrir ese mapa | Sin medición anterior equivalente | 0 |
+
+El mapa completo se comprobó visualmente en las tres pruebas. Las primeras vistas
+necesitaron 12 y 40 imágenes respectivamente. En Salidas siguen existiendo un
+pedido de sesión y cuatro de créditos al abrir; cero imágenes repetidas no
+significa cero pedidos de todo tipo. La medición se realizó con un servidor local
+temporal que contó rutas sin consultas ni claves; no se añadió instrumentación
+al código publicado. No se guardaron ni editaron datos de la cuenta.
+
+Validación: TypeScript y compilación correctos; lint sin errores (16 advertencias
+preexistentes); 140 archivos y 1174 pruebas correctas. Tres pruebas previas fallaban
+por faltar matchMedia en su entorno: se agregó solo ese mock, con las aserciones
+originales intactas y sin modificar el comportamiento de la app.
+
+### Decisiones tomadas
+Ale autorizó la mejora y el uso de la clave existente únicamente en configuración
+privada de esta copia para probar. No se creó ninguna clave ni se cambiaron permisos.
+Ale aprobó expresamente publicar la mejora por GitHub y Vercel. La mejora respeta la vigencia que entrega Google; no amplía la cobertura offline
+ni descarga zonas por adelantado. No se publica sin aprobación de Ale.
+
+### Documentos actualizados
+Nueva decisión 083; decisión 080; ARQUITECTURA; SESIONES.
+
+### Deuda o inconsistencias detectadas
+No se atribuye un porcentaje exacto del pico histórico a este defecto ni se promete
+una reducción mensual fija. Hay que contrastar el consumo real después de publicar.
+La prueba automatizada confirma que el protocolo offline no pide imágenes a la red.
+Ale completó la comprobación manual en localhost:3038/mapa-libre: desconectó
+internet, recargó con el icono Actualizar del navegador y confirmó que los caminos
+siguieron visibles. Esto verifica la pantalla y sus caminos guardados tras la
+recarga sin conexión; no mide cobertura fotográfica de Google ni mapas propios
+no descargados. La copia se preparó en un origen nuevo para evitar documentos de
+desarrollo guardados en el puerto inicial; no se modificó la app por ese entorno.
+
+### Pendientes para la próxima
+Contrastar el consumo real de TrackApp después de publicar, por separado del de
+Vías de Escalada Córdoba. No se promete una reducción mensual fija.
+
+---
 ## Sesión 2026-11-03 — Editar puntos en PC con el mouse
 
 ### Estado al inicio

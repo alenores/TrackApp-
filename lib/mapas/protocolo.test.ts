@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AddProtocolAction } from "maplibre-gl";
+import * as imagenesDeGoogle from "@/lib/mapas/google-guardado";
 
 const registrados = new Map<string, unknown>();
 
@@ -17,6 +19,8 @@ import {
   DIRECCION_DE_LA_FOTO_GUARDADA,
   PROTOCOLO,
   PROTOCOLO_DE_LA_FOTO,
+  PROTOCOLO_DE_GOOGLE_EN_VIVO,
+  PROTOCOLO_DE_GOOGLE_GUARDADO,
   registrarElMapaGuardado,
   servirFotoGuardada,
   servirSombraGuardada,
@@ -36,6 +40,11 @@ import {
 beforeEach(() => {
   olvidarElMapaGuardado();
   registrados.clear();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("leer un pedazo guardado", () => {
@@ -190,5 +199,58 @@ describe("el sombreado guardado", () => {
 
   it("la dirección del estilo usa el mismo protocolo que se registra", () => {
     expect(DIRECCION_DE_LA_SOMBRA_GUARDADA.startsWith(`${PROTOCOLO_DE_LA_SOMBRA}://`)).toBe(true);
+  });
+});
+
+describe("la vigencia de Google en el motor del mapa", () => {
+  it("entrega el vencimiento original y conserva la señal de quien pide la imagen", async () => {
+    const recurso = {
+      data: new Uint8Array([3, 4, 5]).buffer,
+      expires: "2026-11-18T12:10:00.123Z",
+    };
+    const traer = vi.spyOn(imagenesDeGoogle, "traerRecursoDeGoogle").mockResolvedValue(recurso);
+    const cancelador = new AbortController();
+    const direccion = "google-en-vivo://12/1300/2420?sesion=sesion_de_prueba";
+    registrarElMapaGuardado();
+    const servir = registrados.get(PROTOCOLO_DE_GOOGLE_EN_VIVO) as AddProtocolAction;
+
+    const entregado = await servir({ url: direccion }, cancelador);
+
+    expect(entregado).toBe(recurso);
+    expect(entregado.expires).toBe(recurso.expires);
+    expect(entregado.cacheControl).toBeUndefined();
+    expect(traer).toHaveBeenCalledExactlyOnceWith(direccion, cancelador.signal);
+  });
+
+  it("no agrega un vencimiento cuando el recurso no permite reutilización", async () => {
+    vi.spyOn(imagenesDeGoogle, "traerRecursoDeGoogle").mockResolvedValue({
+      data: new Uint8Array([8]).buffer,
+    });
+    registrarElMapaGuardado();
+    const servir = registrados.get(PROTOCOLO_DE_GOOGLE_EN_VIVO) as AddProtocolAction;
+
+    const entregado = await servir(
+      { url: "google-en-vivo://12/1300/2420?sesion=sesion_de_prueba" }, new AbortController(),
+    );
+
+    expect(entregado).not.toHaveProperty("expires");
+    expect(entregado).not.toHaveProperty("cacheControl");
+  });
+
+  it("Google guardado sigue leyendo solo el celular", async () => {
+    const leer = vi.spyOn(imagenesDeGoogle, "leerImagenDeGoogle").mockResolvedValue(new Uint8Array([6, 7]));
+    const traer = vi.spyOn(imagenesDeGoogle, "traerRecursoDeGoogle");
+    const red = vi.fn();
+    vi.stubGlobal("fetch", red);
+    registrarElMapaGuardado();
+    const servir = registrados.get(PROTOCOLO_DE_GOOGLE_GUARDADO) as AddProtocolAction;
+
+    const entregado = await servir({ url: "google-guardado://12/1300/2420" }, new AbortController());
+
+    expect(new Uint8Array(entregado.data)).toEqual(new Uint8Array([6, 7]));
+    expect(leer).toHaveBeenCalledExactlyOnceWith(12, 1300, 2420);
+    expect(traer).not.toHaveBeenCalled();
+    expect(red).not.toHaveBeenCalled();
+    expect(entregado).not.toHaveProperty("expires");
   });
 });

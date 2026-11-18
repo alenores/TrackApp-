@@ -6,6 +6,7 @@ import { borrarTodosLosRecorridos } from "@/lib/offline/recorridos";
 import { borrarCircuitosPreparadosQueSobran } from "@/lib/offline/circuitos";
 import { borrarLineasDeCaminosQueSobran } from "@/lib/offline/lineas-de-caminos";
 import { borrarTodosLosRegistros } from "@/lib/salidas/registro";
+import { bloquearConsultasDeGoogleAlSalir, borrarTodasLasImagenesDeGoogle } from "@/lib/mapas/google-guardado";
 
 /**
  * Borrar del celular todo lo de la cuenta que se va.
@@ -20,6 +21,10 @@ import { borrarTodosLosRegistros } from "@/lib/salidas/registro";
  * funcionar. Quedarse sin poder salir sería peor.
  */
 export async function borrarLoGuardadoEnElCelular(): Promise<void> {
+  // Impide nuevas consultas del mapa que sigue montado durante la salida.
+  bloquearConsultasDeGoogleAlSalir();
+  // Invalida memoria y pedidos de Google antes de esperar cualquier otra limpieza.
+  const limpiezaDeGoogle = borrarTodasLasImagenesDeGoogle().catch(() => {});
   try {
     borrarPaquete();
   } catch {
@@ -58,4 +63,5 @@ export async function borrarLoGuardadoEnElCelular(): Promise<void> {
     // Ídem. Los mapas son lo más pesado, pero quedarse sin poder salir de la
     // cuenta sería peor que quedarse con espacio ocupado.
   }
+  await limpiezaDeGoogle;
 }
