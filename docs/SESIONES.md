@@ -42,7 +42,7 @@ originales intactas y sin modificar el comportamiento de la app.
 ### Decisiones tomadas
 Ale autorizó la mejora y el uso de la clave existente únicamente en configuración
 privada de esta copia para probar. No se creó ninguna clave ni se cambiaron permisos.
-La mejora respeta la vigencia que entrega Google; no amplía la cobertura offline
+Ale aprobó expresamente publicar la mejora por GitHub y Vercel. La mejora respeta la vigencia que entrega Google; no amplía la cobertura offline
 ni descarga zonas por adelantado. No se publica sin aprobación de Ale.
 
 ### Documentos actualizados
@@ -60,9 +60,8 @@ no descargados. La copia se preparó en un origen nuevo para evitar documentos d
 desarrollo guardados en el puerto inicial; no se modificó la app por ese entorno.
 
 ### Pendientes para la próxima
-Trabajo implementado y verificado, conservado en su rama. Mostrar el resultado
-a Ale y esperar su aprobación expresa antes de publicar. Después de publicar,
-contrastar el consumo real de TrackApp por separado del de Vías de Escalada Córdoba.
+Contrastar el consumo real de TrackApp después de publicar, por separado del de
+Vías de Escalada Córdoba. No se promete una reducción mensual fija.
 
 ---
 ## Sesión 2026-11-03 — Editar puntos en PC con el mouse

@@ -1,6 +1,6 @@
 # 083 — Caché compartida de imágenes de Google
 
-**Fecha:** 2026-11-18 · **Estado:** implementada en rama; pendiente de publicación
+**Fecha:** 2026-11-18 · **Estado:** implementada y verificada; publicación autorizada por Ale
 
 ## Contexto y decisión de Ale
 
