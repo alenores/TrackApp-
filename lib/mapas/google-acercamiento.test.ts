@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso, maximoDetalleDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
+import type { Map as MapaLibre } from "maplibre-gl";
+import { COBERTURA_DE_GOOGLE, detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso, maximoDetalleDeGoogle, nivelDeImagenDeGoogle, type AreaConDetalleDeGoogle } from "@/lib/mapas/google-acercamiento";
 
 const mundo: AreaConDetalleDeGoogle = { maxZoom: 15, north: 90, south: -90, east: 180, west: -180 };
 
@@ -34,61 +35,114 @@ describe("detalle disponible en Google", () => {
     expect(maximoDetalleDeGoogle([], { lat: -31, lng: -64 })).toBeNull();
   });
 
-  it("conserva el último límite conocido cuando faltan datos y nunca aleja el mapa solo", () => {
+  it("convierte el máximo de imágenes a cámara sin alejar una vista abierta", () => {
     expect(limiteDeGoogleSinRetroceso(20, 18, null)).toBe(20);
     expect(limiteDeGoogleSinRetroceso(22, 19, 17)).toBe(19);
-    expect(limiteDeGoogleSinRetroceso(20, 19, 21)).toBe(21);
+    expect(limiteDeGoogleSinRetroceso(20, 19, 21)).toBe(20);
+    expect(limiteDeGoogleSinRetroceso(22, 20, 22)).toBe(21);
+    expect(limiteDeGoogleSinRetroceso(22, 20.8, 20)).toBe(20.8);
   });
 
-  it("busca los créditos en otro nivel y conserva el límite de la vista original", async () => {
-    const niveles: string[] = [];
-    const traer = vi.fn(async (pedido: URLSearchParams) => {
-      niveles.push(pedido.get("zoom") || "");
-      return Number(pedido.get("zoom")) > 17
-        ? { derechos: null, areasConDetalle: [{ ...mundo, maxZoom: 17 }] }
-        : { derechos: "© Google", areasConDetalle: [{ ...mundo, maxZoom: 17 }] };
-    });
+  it("consulta una vez el nivel real y devuelve su autoría y detalle", async () => {
+    const traer = vi.fn(async (pedido: URLSearchParams) => ({ derechos: pedido.get("zoom") === "14" ? "Airbus / Maxar" : null, areasConDetalle: [{ ...mundo, maxZoom: 20 }] }));
     const resultado = await detalleConCreditosDeGoogle(
-      new URLSearchParams({ zoom: "19" }), { lat: -31, lng: -64 }, traer,
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer,
     );
-    expect(resultado).toEqual({ derechos: "© Google", maximo: 17 });
-    expect(niveles).toEqual(["19", "17"]);
+    expect(resultado).toEqual({ derechos: "Airbus / Maxar", maximo: 20 });
+    expect(traer).toHaveBeenCalledTimes(1);
+    expect(traer.mock.calls[0][0].get("zoom")).toBe("14");
   });
 
-  it("no busca otros niveles si Google ya informó los créditos", async () => {
+  it("si la autoría viene vacía no busca NASA en otro nivel", async () => {
+    const traer = vi.fn(async (pedido: URLSearchParams) => ({
+      derechos: pedido.get("zoom") === "14" ? null : "NASA",
+      areasConDetalle: [{ ...mundo, maxZoom: 9 }],
+    }));
+    const informar = vi.fn();
     const resultado = await detalleConCreditosDeGoogle(
-      new URLSearchParams({ zoom: "12" }), { lat: -31, lng: -64 },
-      async () => ({ derechos: "© Google", areasConDetalle: [{ ...mundo, maxZoom: 21 }] }),
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer, () => true, informar,
     );
-    expect(resultado).toEqual({ derechos: "© Google", maximo: 21 });
+    expect(resultado).toEqual({ derechos: null, maximo: 9 });
+    expect(traer).toHaveBeenCalledTimes(1);
+    expect(traer.mock.calls[0][0].get("zoom")).toBe("14");
+    expect(informar).toHaveBeenCalledWith(9);
   });
 
-  it("busca los créditos en otro nivel sin usar ese nivel para limitar el mapa", async () => {
-    const niveles: string[] = [];
-    const orden: string[] = [];
-    const resultado = await detalleConCreditosDeGoogle(
-      new URLSearchParams({ zoom: "11" }), { lat: -31, lng: -64 },
-      async (pedido) => {
-        const nivel = pedido.get("zoom") || "";
-        niveles.push(nivel);
-        orden.push(`pedido ${nivel}`);
-        return {
-          derechos: Number(nivel) <= 9 ? "© Google" : null,
-          areasConDetalle: [{ ...mundo, maxZoom: 20 }],
-        };
-      },
-      () => true,
-      (maximo) => orden.push(`máximo ${maximo}`),
-    );
-    expect(niveles).toEqual(["11", "10", "9"]);
-    expect(orden).toEqual(["pedido 11", "máximo 20", "pedido 10", "pedido 9"]);
-    expect(resultado).toEqual({ derechos: "© Google", maximo: 20 });
-  });
-
-  it("no convierte la ausencia de créditos en una falla del mapa", async () => {
+  it("conserva sin datos el resultado vacío de la vista", async () => {
+    const traer = vi.fn(async () => ({ derechos: null, areasConDetalle: [] }));
     await expect(detalleConCreditosDeGoogle(
-      new URLSearchParams({ zoom: "2" }), { lat: -31, lng: -64 },
-      async () => ({ derechos: null, areasConDetalle: [] }),
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer,
     )).resolves.toEqual({ derechos: null, maximo: null });
+    expect(traer).toHaveBeenCalledTimes(1);
+  });
+
+  it("una vista ya obsoleta no inicia otra consulta", async () => {
+    const traer = vi.fn();
+    const informar = vi.fn();
+    await expect(detalleConCreditosDeGoogle(
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer, () => false, informar,
+    )).resolves.toBeNull();
+    expect(traer).not.toHaveBeenCalled();
+    expect(informar).not.toHaveBeenCalled();
+  });
+
+  it("la respuesta de una vista anterior no modifica créditos ni máximo", async () => {
+    let activa = true;
+    let responder!: (valor: { derechos: string; areasConDetalle: AreaConDetalleDeGoogle[] }) => void;
+    const traer = vi.fn(() => new Promise<{ derechos: string; areasConDetalle: AreaConDetalleDeGoogle[] }>((resolver) => { responder = resolver; }));
+    const informar = vi.fn();
+    const pendiente = detalleConCreditosDeGoogle(
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer, () => activa, informar,
+    );
+    activa = false;
+    responder({ derechos: "Vista vieja", areasConDetalle: [mundo] });
+    await expect(pendiente).resolves.toBeNull();
+    expect(informar).not.toHaveBeenCalled();
+    expect(traer).toHaveBeenCalledTimes(1);
+  });
+
+  it("propaga el fallo de la única consulta para que se muestre en pantalla", async () => {
+    const traer = vi.fn().mockRejectedValue(new Error("Google no respondió"));
+    await expect(detalleConCreditosDeGoogle(
+      new URLSearchParams({ zoom: "14" }), { lat: -31, lng: -64 }, traer,
+    )).rejects.toThrow("Google no respondió");
+    expect(traer).toHaveBeenCalledTimes(1);
+  });
+});
+
+function mapaConCobertura(niveles: number[], ampliado = niveles[0]) {
+  const consultar = vi.fn(() => niveles.map((z) => ({ canonical: { z }, overscaledZ: ampliado })));
+  return { consultar, mapa: { coveringTiles: consultar } as unknown as Pick<MapaLibre, "coveringTiles"> };
+}
+
+describe("nivel real de imágenes de Google", () => {
+  it("usa la cobertura raster de 256 y su nivel canónico, no el de cámara", () => {
+    const { mapa, consultar } = mapaConCobertura([14, 14, 14]);
+    expect(nivelDeImagenDeGoogle(mapa)).toBe(14);
+    expect(consultar).toHaveBeenCalledTimes(1);
+    expect(consultar).toHaveBeenCalledWith({ tileSize: 256, minzoom: 0, maxzoom: 22, roundZoom: true });
+    expect(COBERTURA_DE_GOOGLE.tileSize).toBe(256);
+  });
+
+  it("usa la imagen 22 aunque el motor la amplíe a un nivel superior", () => {
+    const { mapa } = mapaConCobertura([22], 24);
+    expect(nivelDeImagenDeGoogle(mapa)).toBe(22);
+  });
+
+  it("no inventa un nivel si la cobertura está vacía", () => {
+    expect(nivelDeImagenDeGoogle(mapaConCobertura([]).mapa)).toBeNull();
+  });
+
+  it("no atribuye niveles mezclados como si fueran uno solo", () => {
+    expect(nivelDeImagenDeGoogle(mapaConCobertura([13, 14]).mapa)).toBeNull();
+  });
+
+  it.each([-1, 23, 14.5, Number.NaN])("rechaza un nivel canónico inválido: %s", (nivel) => {
+    expect(nivelDeImagenDeGoogle(mapaConCobertura([nivel]).mapa)).toBeNull();
+  });
+
+  it("permite que el componente avise cuando el motor no obtiene cobertura", () => {
+    const mapa = { coveringTiles: vi.fn(() => { throw new Error("Todavía no hay tamaño"); }) } as unknown as Pick<MapaLibre, "coveringTiles">;
+    expect(nivelDeImagenDeGoogle(mapa)).toBeNull();
   });
 });

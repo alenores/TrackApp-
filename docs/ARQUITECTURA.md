@@ -132,8 +132,11 @@ con señal muestran Google satelital con los datos propios superpuestos; si falt
 su configuración, conservan el satelital propio; si Google ya activado falla,
 muestran el satelital propio y el motivo. La imagen
 de Google pasa por un puente con sesión iniciada y clave solo en el servidor;
-no entra a la precarga ni al depósito offline. Sus créditos se actualizan al
-mover el área visible. Ver decisión 050.
+no entra a la precarga; las copias locales respetan la vigencia de Google
+(decisiones 080 y 083). La autoría se pide una vez por vista y con el nivel
+canónico real de las fotografías, obtenido de Map.coveringTiles para la fuente
+de 256 píxeles. No se buscan textos de otros niveles si falta la respuesta.
+Ver decisiones 050 y 084.
 
 **El fondo sale de lo que el usuario bajó, sector por sector.** Un sector con
 mapa bajado se dibuja; uno sin bajar no dibuja nada y se ve el fondo liso de la

@@ -145,7 +145,7 @@ describe("el puente del mapa Google", () => {
     expect(direccionDeGoogle.searchParams.has("sesion")).toBe(false);
   });
 
-  it("informa la ausencia de créditos para que el mapa busque un nivel anterior", async () => {
+  it("informa la ausencia de créditos sin inventar una autoría", async () => {
     autenticacion.claims = true;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
       maxZoomRects: [{ maxZoom: 17, north: -29, south: -35, east: -60, west: -67 }],
