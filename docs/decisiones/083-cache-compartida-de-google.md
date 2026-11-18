@@ -52,7 +52,7 @@ siguen mostrando únicamente los mapas propios descargados.
 
 Las pruebas cubren reutilización entre sesiones de mapa, vigencia, concurrencia,
 cancelación, buffers independientes, límites de memoria, limpieza al salir y
-navegación sin red. En el navegador compilado, Marcas pasó de 12 descargas repetidas a cero; Salidas, de 40 a cero. La recarga completa del documento también reutilizó las 40 imágenes guardadas. La medición detallada se registra en SESIONES.md. La prueba manual con modo avión está pendiente.
+navegación sin red. En el navegador compilado, Marcas pasó de 12 descargas repetidas a cero; Salidas, de 40 a cero. La recarga completa del documento también reutilizó las 40 imágenes guardadas. La medición detallada se registra en SESIONES.md. Ale confirmó la prueba manual: tras cortar internet y recargar Navegación libre, los caminos siguieron visibles. Esta prueba no mide cobertura fotográfica de Google ni mapas propios no descargados.
 
 El arreglo elimina repetición comprobable. No permite atribuir retrospectivamente
 una fracción exacta del pico del 2 de noviembre a cada gesto del usuario. La
@@ -69,4 +69,4 @@ https://developers.google.com/maps/documentation/tile/policies.
 **Inferido:** la reducción acumulada de consumo depende de la cantidad de vistas
 repetidas y de la vigencia y disponibilidad de cada imagen.
 
-**Pendiente de verificación:** prueba manual en modo avión, publicación y medición de consumo posterior.
+**Pendiente de verificación:** publicación y medición de consumo posterior.

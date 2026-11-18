@@ -51,12 +51,18 @@ Nueva decisión 083; decisión 080; ARQUITECTURA; SESIONES.
 ### Deuda o inconsistencias detectadas
 No se atribuye un porcentaje exacto del pico histórico a este defecto ni se promete
 una reducción mensual fija. Hay que contrastar el consumo real después de publicar.
-La prueba automatizada confirma que el protocolo offline no pide imágenes a la red;
-la comprobación manual con modo avión sigue pendiente. Se dejó preparada Navegación libre en localhost:3038, que muestra los caminos desde el paquete local y no hace pedidos a Google. Este origen nuevo evita documentos de desarrollo que habían quedado guardados en el puerto de la prueba inicial; no se modificó la app para corregir ese entorno.
+La prueba automatizada confirma que el protocolo offline no pide imágenes a la red.
+Ale completó la comprobación manual en localhost:3038/mapa-libre: desconectó
+internet, recargó con el icono Actualizar del navegador y confirmó que los caminos
+siguieron visibles. Esto verifica la pantalla y sus caminos guardados tras la
+recarga sin conexión; no mide cobertura fotográfica de Google ni mapas propios
+no descargados. La copia se preparó en un origen nuevo para evitar documentos de
+desarrollo guardados en el puerto inicial; no se modificó la app por ese entorno.
 
 ### Pendientes para la próxima
-Completar con Ale la comprobación manual sin conexión, conservar el trabajo en su rama y
-mostrar el resultado a Ale antes de solicitar aprobación para publicar.
+Trabajo implementado y verificado, conservado en su rama. Mostrar el resultado
+a Ale y esperar su aprobación expresa antes de publicar. Después de publicar,
+contrastar el consumo real de TrackApp por separado del de Vías de Escalada Córdoba.
 
 ---
 ## Sesión 2026-11-03 — Editar puntos en PC con el mouse
