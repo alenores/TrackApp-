@@ -1,6 +1,6 @@
 # 083 — Caché compartida de imágenes de Google
 
-**Fecha:** 2026-11-18 · **Estado:** implementada y verificada; publicación autorizada por Ale
+**Fecha:** 2026-11-18 · **Estado:** publicada en producción con 712ab93; verificada
 
 ## Contexto y decisión de Ale
 
@@ -69,4 +69,4 @@ https://developers.google.com/maps/documentation/tile/policies.
 **Inferido:** la reducción acumulada de consumo depende de la cantidad de vistas
 repetidas y de la vigencia y disponibilidad de cada imagen.
 
-**Pendiente de verificación:** publicación y medición de consumo posterior.
+**Pendiente de verificación:** medición de consumo posterior.

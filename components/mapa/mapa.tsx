@@ -46,7 +46,7 @@ import { colorDelCirculoDelPunto } from "@/lib/anotaciones/colores-de-icono";
 import { DESCRIPCION_DESDE, descripcionCorta } from "@/lib/anotaciones/descripcion-en-el-mapa";
 import { tituloDelPunto } from "@/lib/anotaciones/titulo-del-punto";
 import { abrirSesionDeGoogle, traerCreditosDeGoogle } from "@/lib/mapas/google-cliente";
-import { detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso } from "@/lib/mapas/google-acercamiento";
+import { COBERTURA_DE_GOOGLE, detalleConCreditosDeGoogle, limiteDeGoogleSinRetroceso, nivelDeImagenDeGoogle } from "@/lib/mapas/google-acercamiento";
 import {
   ALTURAS,
   CAPAS_DE_RELIEVE,
@@ -910,8 +910,9 @@ export function Mapa({
           // Pasa por el protocolo que, además de mostrarla, la guarda el tiempo
           // que Google permite (decisión 080).
           tiles: [`${PROTOCOLO_DE_GOOGLE_EN_VIVO}://{z}/{x}/{y}?sesion=${encodeURIComponent(sesionGoogleActiva)}`],
-          tileSize: 256,
-          maxzoom: 22,
+          tileSize: COBERTURA_DE_GOOGLE.tileSize,
+          minzoom: COBERTURA_DE_GOOGLE.minzoom,
+          maxzoom: COBERTURA_DE_GOOGLE.maxzoom,
         });
       }
       setAvisoDelFondo(ponerElFondo(
@@ -941,12 +942,17 @@ export function Mapa({
       setCreditosGoogle(null);
       setAvisoDeCreditosGoogle(null);
       setAvisoDeImagenGoogle(null);
+      const nivelGoogle = nivelDeImagenDeGoogle(mapa);
+      if (nivelGoogle === null) {
+        setAvisoDeCreditosGoogle("No se pudo identificar el nivel de las imágenes para pedir su autoría. Mové el mapa para reintentar.");
+        return;
+      }
       const limites = mapa.getBounds();
       const normalizar = (valor: number) => ((valor + 180) % 360 + 360) % 360 - 180;
       const ancho = limites.getEast() - limites.getWest();
       const consulta = new URLSearchParams({
         sesion: sesionGoogleActiva,
-        zoom: String(Math.max(0, Math.min(22, Math.floor(mapa.getZoom())))),
+        zoom: String(nivelGoogle),
         north: String(Math.min(89.999, limites.getNorth())),
         south: String(Math.max(-89.999, limites.getSouth())),
         west: String(ancho >= 360 ? -179.999 : normalizar(limites.getWest())),
@@ -957,8 +963,8 @@ export function Mapa({
           const detalle = await detalleConCreditosDeGoogle(
             consulta, mapa.getCenter(), traerCreditosDeGoogle, () => activo && actual === pedido,
             (maximo) => {
-              // El límite llega con la primera respuesta, aunque los créditos
-              // requieran más pedidos. Nunca alejar por una respuesta tardía.
+              // El máximo de imágenes se convierte a la escala de cámara.
+              // Nunca alejar por una respuesta tardía.
               mapa.setMaxZoom(limiteDeGoogleSinRetroceso(mapa.getMaxZoom(), mapa.getZoom(), maximo));
             },
           );

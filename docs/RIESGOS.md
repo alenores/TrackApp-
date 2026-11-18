@@ -31,6 +31,14 @@ producción se repitió el acercamiento hasta el tope: Google permaneció visibl
 sin cartel, también con la pantalla en ancho de celular. La última imagen de
 esa zona es suave por la resolución que entrega Google. Falta probarlo en un
 celular físico y en zonas con distintos límites.
+**Diagnóstico adicional, 2026-11-18.** La Salida 21 consultaba la autoría en 12
+mientras sus imágenes reales eran de 14. Con misma sesión y área, Google devolvió
+vacío en 12 y autoría completa en 14. Se confirmó una causa propia: se usaba el zoom
+de cámara en lugar del nivel canónico del raster de 256 píxeles. El descenso a 9
+terminaba mostrando NASA, que no acreditaba las fotos reales de 14. La corrección
+usa la cobertura pública de MapLibre y una consulta por vista. Ya se verificó en
+la copia compilada: autoría correcta y 4 → 1 pedidos; publicación autorizada por Ale. Ver decisión 084. No se atribuye a este hallazgo un monto
+ni una fracción del pico histórico de consumo.
 
 ---
 

@@ -4,6 +4,61 @@ Formato definido en `MANTENIMIENTO.md`. Más reciente arriba.
 
 ---
 
+## Sesión 2026-11-18 — Autoría correcta sin buscar en otros niveles
+
+### Estado al inicio
+La caché compartida ya estaba publicada en 712ab93. El control posterior mostró
+seis mensajes de autoría vacía al abrir dos veces la Salida 21. La búsqueda hacía
+cuatro pedidos por apertura y terminaba mostrando NASA. Ale pidió determinar
+primero si había un error propio, y corregirlo si se confirmaba.
+
+### Lo que se hizo
+Se reprodujo en la pantalla local compilada de la versión publicada. Las imágenes
+eran de nivel 14 y la consulta de autoría enviaba 12. Manteniendo la misma sesión
+y límites, Google devolvió vacío en 12 y autoría completa en 14: causa propia
+comprobada en ese caso. No se culpa al proveedor por ese resultado.
+
+Se corrigió el componente común: nivel canónico obtenido con la API pública de
+cobertura de MapLibre y las mismas opciones de la fuente; una consulta por vista;
+sin descenso a otros niveles para conseguir cualquier autoría. El máximo de Google
+se convierte a la escala de cámara conservando la regla de no alejar automáticamente.
+Un pedido vacío sigue pendiente con el aviso existente. No se alteraron el depósito
+ni la caché de imágenes, las navegaciones sin conexión, la autenticación o el servidor.
+
+### Decisiones tomadas
+Ale autorizó corregir una causa propia después de diagnosticarla. No se da por
+cumplida la atribución solo por intentar una consulta. No se usa NASA de una escala
+distinta como reemplazo del autor real. Ale aprobó expresamente publicar esta corrección en producción, mediante GitHub y Vercel.
+
+### Documentos actualizados
+Decisión 084; ARQUITECTURA; RIESGOS; SESIONES. La decisión 083 registra ahora la
+publicación ya comprobada de la mejora anterior en 712ab93.
+
+### Deuda o inconsistencias detectadas
+La diferencia de escalas explica el caso reproducido, no cualquier posible respuesta
+vacía de Google. No se atribuye a este ajuste un gasto concreto ni una fracción del
+pico histórico del 2 de noviembre.
+
+### Verificación
+TypeScript y build correctos; lint sin errores ni advertencias nuevas. 140 archivos
+y 1185 pruebas correctas. La revisión independiente no encontró bloqueantes.
+Prueba real en localhost:3039, Salida 21:
+
+| Acción | Consultas de autoría | Nivel de imágenes / autoría | Resultado |
+|---|---:|---|---|
+| Primera apertura | 1 (antes 4) | 14 / 14 | Airbus, CNES, Landsat/Copernicus y Maxar visibles |
+| Reapertura | 1 | Sin descargas repetidas / 14 | Misma autoría correcta |
+| Acercar otro nivel | 1 | 15 / 15 | Autoría disponible; HTTP 200 |
+
+Las imágenes repetidas siguieron en cero al reabrir: se conserva la mejora anterior.
+No se guardaron ni editaron datos de la cuenta. No se repitió la prueba física offline:
+este ajuste actúa solo en Google con señal y conserva intacta la navegación local
+comprobada manualmente por Ale en la sesión anterior.
+
+### Pendientes para la próxima
+Verificar el commit fusionado y el mapa real en producción antes de confirmar el cierre de esta publicación autorizada.
+
+---
 ## Sesión 2026-11-18 — Reutilizar imágenes de Google entre mapas
 
 ### Estado al inicio
