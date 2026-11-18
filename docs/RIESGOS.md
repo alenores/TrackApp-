@@ -37,7 +37,7 @@ vacío en 12 y autoría completa en 14. Se confirmó una causa propia: se usaba 
 de cámara en lugar del nivel canónico del raster de 256 píxeles. El descenso a 9
 terminaba mostrando NASA, que no acreditaba las fotos reales de 14. La corrección
 usa la cobertura pública de MapLibre y una consulta por vista. Ya se verificó en
-la copia compilada: autoría correcta y 4 → 1 pedidos; pendiente de publicar. Ver decisión 084. No se atribuye a este hallazgo un monto
+la copia compilada: autoría correcta y 4 → 1 pedidos; publicación autorizada por Ale. Ver decisión 084. No se atribuye a este hallazgo un monto
 ni una fracción del pico histórico de consumo.
 
 ---

@@ -1,6 +1,6 @@
 # 084 — Autoría del nivel real de imágenes de Google
 
-**Fecha:** 2026-11-18 · **Estado:** corrección implementada y verificada en rama; sin publicar
+**Fecha:** 2026-11-18 · **Estado:** implementada y verificada; publicación en producción autorizada por Ale
 
 ## Qué se investigó y qué se comprobó
 
@@ -65,7 +65,7 @@ acercar otro nivel, las 15 imágenes nuevas y la única consulta de autoría coi
 en 15. Todas esas respuestas fueron HTTP 200 y no hubo mensajes de autoría vacía.
 No se editaron ni guardaron datos de la cuenta.
 
-La publicación requiere la aprobación expresa de Ale después de mostrar el resultado.
+Después de revisar el resultado, Ale autorizó expresamente publicar la corrección en producción mediante GitHub y Vercel.
 
 ## Auditoría de fuentes
 

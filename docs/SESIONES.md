@@ -28,7 +28,7 @@ ni la caché de imágenes, las navegaciones sin conexión, la autenticación o e
 ### Decisiones tomadas
 Ale autorizó corregir una causa propia después de diagnosticarla. No se da por
 cumplida la atribución solo por intentar una consulta. No se usa NASA de una escala
-distinta como reemplazo del autor real. La publicación queda sujeta a aprobación.
+distinta como reemplazo del autor real. Ale aprobó expresamente publicar esta corrección en producción, mediante GitHub y Vercel.
 
 ### Documentos actualizados
 Decisión 084; ARQUITECTURA; RIESGOS; SESIONES. La decisión 083 registra ahora la
@@ -56,7 +56,7 @@ este ajuste actúa solo en Google con señal y conserva intacta la navegación l
 comprobada manualmente por Ale en la sesión anterior.
 
 ### Pendientes para la próxima
-Mostrar el resultado concreto a Ale y recibir aprobación antes de publicar.
+Verificar el commit fusionado y el mapa real en producción antes de confirmar el cierre de esta publicación autorizada.
 
 ---
 ## Sesión 2026-11-18 — Reutilizar imágenes de Google entre mapas
